@@ -1,8 +1,10 @@
 # Architecture
 
 How chit is put together and how it is built. The *why* behind each choice is in
-[DECISIONS.md](DECISIONS.md); the behaviour being implemented is in the [README](../README.md).
-Where this document and the README disagree, the README wins — it is the design authority.
+[DECISIONS.md](DECISIONS.md); the behaviour being implemented is in
+[BEHAVIOUR.md](BEHAVIOUR.md) and [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md). Where this document
+disagrees with either of those or with the [README](../README.md), they win — the three of them
+are the design authority.
 
 ---
 
@@ -41,7 +43,7 @@ lib/
 │
 ├── core/
 │   ├── theme/
-│   │   ├── chit_colors.dart        ThemeExtension — README §6.1 tokens
+│   │   ├── chit_colors.dart        ThemeExtension — DESIGN-SYSTEM.md §6.1 tokens
 │   │   ├── chit_type.dart          ThemeExtension — the three faces, the scale
 │   │   ├── chit_space.dart         4px scale, radii, the 26px gutter
 │   │   ├── chit_motion.dart        durations, curves, travel() vs fade()
@@ -148,11 +150,11 @@ to implement by hand, and a hand-written fake is readable in six months.
 
 ### 4.1 The open chit is not a row
 
-README §3.1: opening the app six times leaves nothing behind. So the open chit lives entirely
+BEHAVIOUR.md §3.1: opening the app six times leaves nothing behind. So the open chit lives entirely
 in `ComposerController`, never in the database, and there is no draft persistence. **Save chit**
 is the only thing that inserts.
 
-**There is no mode.** README §3.2 makes the composer one surface — a live field with a
+**There is no mode.** BEHAVIOUR.md §3.2 makes the composer one surface — a live field with a
 microphone beside it — so `ComposerState` is a record of what the chit currently holds, not a
 union of which way in the user picked:
 
@@ -170,7 +172,7 @@ class ComposerState {
 bool get canSave => text.trim().isNotEmpty || audioTempPath != null;
 ```
 
-`canSave` is the whole of README §3.1 and §4.1: Discard and Save appear when it is true, and an
+`canSave` is the whole of BEHAVIOUR.md §3.1 and §4.1: Discard and Save appear when it is true, and an
 untouched chit shows neither. The five-panel state machine the first version of this document
 described is gone with the modes.
 
@@ -183,7 +185,7 @@ to break in a text controller:
 - Any subsequent keystroke on `transcript` moves it to `transcriptEdited`, once, and never back.
 - `audioTempPath` is set by recording and cleared only by Discard. No edit to `text` touches it.
 - The microphone is available on an empty chit and on a half-written one, and its target does
-  not shrink when text appears (README §6.4). It is unavailable in exactly two cases: while
+  not shrink when text appears (DESIGN-SYSTEM.md §6.4). It is unavailable in exactly two cases: while
   `isRecording`, and once `audioTempPath` is set — one row holds one recording, so a second
   take would have to silently destroy the first. That is a v1 limit, and it should read as a
   settled state rather than a broken button.
@@ -201,12 +203,12 @@ Weather and location run in parallel behind short timeouts (2s is the working fi
 Nothing here can block, spin, or fail a save (ADR-007).
 
 Weather comes back from Open-Meteo as a WMO code; `wmo_mapping.dart` turns code + `is_day` +
-wind speed into one of the five words the README allows. That function is pure and lives in
+wind speed into one of the five words BEHAVIOUR.md §3.6 allows. That function is pure and lives in
 `domain` — it encodes a product decision, not a network detail.
 
 Location is asked for at **high accuracy, with the coarse fix accepted when that is all the
 user granted** (ADR-016). This corrects what this document used to say — *"`geolocator` at low
-accuracy"* — and the reason is README §9's coarse place labels, which a neighbourhood-level fix
+accuracy"* — and the reason is OPEN-QUESTIONS.md §9's coarse place labels, which a neighbourhood-level fix
 cannot produce. Both outcomes are a successful capture and neither changes the UI: §3.6 shows a
 pin and never a name. A precise fix is the slower of the two, which is exactly what the timeout
 above is for.
@@ -238,7 +240,7 @@ model for the language. From the user's side these are the same event.
 Recording is available on a chit that already has text — that is the ordinary case of §4.1's
 append rule. It is available **once**: a row holds one `audioPath`, so a second take would have
 to destroy the first, and the microphone retires once `audioTempPath` is set rather than
-silently overwriting it (README §3.2).
+silently overwriting it (BEHAVIOUR.md §3.2).
 
 ### 4.5 Save, and why the tabs cannot disagree
 
@@ -252,7 +254,7 @@ recording.
 
 Everything downstream is a Drift stream. The thread, the day arc, the calendar heat and the
 month total are four providers reading three queries, so a save updates them together by
-construction. README §7 requires that the two tabs never disagree; the prototype held them in
+construction. DESIGN-SYSTEM.md §7 requires that the two tabs never disagree; the prototype held them in
 step by hand, and here it is the only thing the architecture allows.
 
 ### 4.6 Calendar queries
@@ -260,7 +262,7 @@ step by hand, and here it is the only thing the architecture allows.
 Two, both grouped on `localDay` (ADR-006):
 
 - `daySummaries(monthStart, monthEnd)` → `(localDay, count)` rows. The count maps to the four
-  warmth steps of README §4.2; the mapping is in the presentation layer, since it is a design
+  warmth steps of BEHAVIOUR.md §4.2; the mapping is in the presentation layer, since it is a design
   scale and not a fact about the data.
 - `chitsGroupedByDay(limit, offset)` → the archive, newest day first, paged.
 
@@ -271,7 +273,7 @@ second source of data, no copy to keep in sync.
 
 ## 5. Theme and motion
 
-README §6 becomes four `ThemeExtension`s (ADR-010). Two of them carry rules, not just values:
+DESIGN-SYSTEM.md §6 becomes four `ThemeExtension`s (ADR-010). Two of them carry rules, not just values:
 
 **`ChitColors`** exposes `seal` and `sealInk` as separate members with doc comments stating the
 split — marks, fills, borders and icons take `seal`; anything read as words takes `sealInk`.
@@ -323,7 +325,7 @@ The general shape: **ambient signals fail silently, the user's content never fai
 - **Widgets** — goldens for the slip, the perforated edge, the thread, a calendar month at each
   warmth step, and the open chit in each of its meaningful configurations: empty; typed; a
   transcript just landed; a transcript with the pill; audio with no text and the §3.5 note.
-- **The accessibility floors of README §6.4 as tests, not as intentions.** A test that computes
+- **The accessibility floors of DESIGN-SYSTEM.md §6.4 as tests, not as intentions.** A test that computes
   the contrast of every text token against every surface it is used on — including composited
   translucent surfaces, which is where the audio pill's 7% wash caught the design out.
 

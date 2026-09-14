@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// What kind of movement is being asked for, from README §6.3's pace table.
+/// What kind of movement is being asked for, from DESIGN-SYSTEM.md §6.3's pace table.
 ///
 /// The caller states intent and [ChitMotion] decides the number. That is what
 /// lets reduced motion be one decision made once rather than a condition
@@ -19,7 +19,7 @@ enum ChitPace {
   arrival,
 
   /// 700ms, deliberately slower than everything else. The five-second prompt
-  /// of README §3.3 — a prompt that fades in slowly is an offer.
+  /// of BEHAVIOUR.md §3.3 — a prompt that fades in slowly is an offer.
   prompt,
 
   /// 140ms. Exits are always quicker than entrances; a slow dismissal reads
@@ -27,7 +27,7 @@ enum ChitPace {
   exit,
 }
 
-/// The motion tokens of README §6.3, and the reduced-motion rule of §6.4.
+/// The motion tokens of DESIGN-SYSTEM.md §6.3, and the reduced-motion rule of §6.4.
 ///
 /// **Movement collapses and feedback does not.** [travel] is for anything that
 /// moves, zooms or loops, and it collapses to nothing when the user has asked
@@ -47,7 +47,7 @@ final class ChitMotion extends ThemeExtension<ChitMotion> {
     required this.durations,
   });
 
-  /// The pace table exactly as README §6.3 sets it, with movement enabled.
+  /// The pace table exactly as DESIGN-SYSTEM.md §6.3 sets it, with movement enabled.
   const ChitMotion.tokens()
     : curve = const Cubic(0.2, 0, 0, 1),
       reduceMotion = false,
@@ -68,7 +68,7 @@ final class ChitMotion extends ThemeExtension<ChitMotion> {
 
   /// The pace table: how long each kind of movement takes when motion is not
   /// reduced. Read it through [travel] or [fade], never directly — those two
-  /// are where README §6.4's rule lives.
+  /// are where DESIGN-SYSTEM.md §6.4's rule lives.
   final Map<ChitPace, Duration> durations;
 
   static const Duration _reducedFade = Duration(milliseconds: 140);

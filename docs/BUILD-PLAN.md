@@ -7,7 +7,7 @@ The principle behind the ordering: **the data spine before any screen, the field
 microphone, and real content before polish.** Voice is the most involved feature in the app and
 the one most likely to distort everything around it if it arrives first.
 
-Note that the composer is one surface (README §3.2), so M2 builds the whole of it and M5 fills
+Note that the composer is one surface (BEHAVIOUR.md §3.2), so M2 builds the whole of it and M5 fills
 in the microphone that has been sitting there since M2. The two milestones share a screen, and
 M5 should not need to rearrange it.
 
@@ -25,7 +25,7 @@ can be verified by building and the second half is code that can be verified by 
 
 - Delete the counter app. `main.dart` becomes `runApp(ProviderScope(child: ChitApp()))`.
 - Every dependency from [PACKAGES.md](PACKAGES.md), resolving; `build_runner` running clean.
-- The fonts of README §6.2 downloaded, bundled and declared — as variable fonts (ADR-015).
+- The fonts of DESIGN-SYSTEM.md §6.2 downloaded, bundled and declared — as variable fonts (ADR-015).
 - Android and iOS only: the desktop scaffolds deleted (ADR-019).
 - Platform config in one pass — `minSdk`, permissions, the speech queries intent, the iOS
   usage strings. PACKAGES.md "Platform configuration this implies" is the checklist.
@@ -42,15 +42,15 @@ Blank is correct: `ChitApp` fills the screen with `--paper` and draws nothing el
 
 - The folder skeleton of [ARCHITECTURE.md](ARCHITECTURE.md) §2, with the empty files in place
   so nothing lands in the wrong layer by default.
-- The four `ThemeExtension`s from README §6 — colours, type, spacing, motion.
+- The four `ThemeExtension`s from DESIGN-SYSTEM.md §6 — colours, type, spacing, motion.
 - `Clock`, and the lint that nobody calls `DateTime.now()`.
 - Analysis options tightened; `riverpod_lint` enabled through `plugins:` (ADR-018).
-- The floors that fail silently, as tests: the contrast floor of README §6.4, the
+- The floors that fail silently, as tests: the contrast floor of DESIGN-SYSTEM.md §6.4, the
   `fontVariations` rule of ADR-015, and the reduced-motion rule of §6.4.
 
 **Done when** the app launches to an empty screen in `--paper`, with the wordmark set in
 Newsreader and the चित्त mark in Noto Serif Devanagari; `flutter analyze` is clean; and the
-contrast test of README §6.4 passes over every token pair, composited.
+contrast test of DESIGN-SYSTEM.md §6.4 passes over every token pair, composited.
 
 M0b is where the pattern for the accessibility floors was set: **a rule that fails silently
 gets a test that checks a property, not an example.** `chit_motion_test.dart` asserting "no
@@ -99,7 +99,7 @@ The first screen a person could use.
 updates the moment it is saved; the empty day looks empty; and an untouched chit shows neither
 Discard nor Save.
 
-The microphone is drawn now, not in M5, because README §3.2 makes it an equal and the design
+The microphone is drawn now, not in M5, because BEHAVIOUR.md §3.2 makes it an equal and the design
 log warns about exactly how it stops being one — by drifting into a row of small grey icons.
 Placing it while the field is the only working thing is the honest test of whether it holds its
 weight.
@@ -142,7 +142,7 @@ time, no weather word, and no pin — with nothing in the UI noting the absence.
 refresh, because both read the same stream.
 
 Past chits stay non-interactive here. Saved chits **are** editable (ADR-014), the repository
-method exists from M1, and README §8.1 is now settled (ADR-017) — but the editor is M6, and
+method exists from M1, and OPEN-QUESTIONS.md §8.1 is now settled (ADR-017) — but the editor is M6, and
 until it exists there is no pointer affordance, no focus stop and no button semantics. The
 audio pill is still the only control in a row. The affordance and the editor arrive together.
 
@@ -181,7 +181,7 @@ the case most likely to reach a real user in India first.
 
 ## M6 — The chit editor
 
-README §8.1, settled by ADR-017. It sits here rather than earlier because the editor has to
+OPEN-QUESTIONS.md §8.1, settled by ADR-017. It sits here rather than earlier because the editor has to
 handle a chit that already carries an audio pill, and after M5 every chit shape exists.
 
 - The affordance in the thread — on Today and in the archive, both, in this change. Pointer,
@@ -206,7 +206,7 @@ leaves the recording playable and untouched; and when an edit provably moves not
 day arc and relights no calendar tile.
 
 The prompt is the point of this milestone as much as the editor is. Discarding an open chit
-needs no confirmation and gets none (README §3.1) — discarding an edit to a record does.
+needs no confirmation and gets none (BEHAVIOUR.md §3.1) — discarding an edit to a record does.
 
 ---
 
@@ -226,20 +226,20 @@ Polish, done deliberately and once. Last, so that every surface it touches alrea
   composer configuration and each calendar warmth step.
 
 **Done when** the whole app is walked through once with reduced motion on and once with a
-screen reader, and README §6.4 holds as tests rather than as intentions.
+screen reader, and DESIGN-SYSTEM.md §6.4 holds as tests rather than as intentions.
 
 ---
 
 ## After v1
 
-In the order the README's own open questions suggest, not in the order of appetite.
+In the order OPEN-QUESTIONS.md's own §8 suggests, not in the order of appetite.
 
-1. ~~**README §8.1 — where a saved chit is edited.**~~ Settled by ADR-017 and pulled forward
+1. ~~**OPEN-QUESTIONS.md §8.1 — where a saved chit is edited.**~~ Settled by ADR-017 and pulled forward
    into v1 as **M6**. It used to head this list because it blocked the most.
-2. **README §8.2 — re-transcription.** The data model already allows it, and `textOrigin` is
+2. **OPEN-QUESTIONS.md §8.2 — re-transcription.** The data model already allows it, and `textOrigin` is
    what keeps an attempt from overwriting the user's own words. Needs a design, and it gets more
    useful the moment a language model can be installed after the fact.
-3. **README §8.3 — whether Today carries enough rhythm.** Worth answering with real usage rather
+3. **OPEN-QUESTIONS.md §8.3 — whether Today carries enough rhythm.** Worth answering with real usage rather
    than more design.
 4. Backlog items 1 and 3 (richer ambient capture, resurfacing) make the app stickier; 2 and 5
    (weather as a search axis, the stitch) make it distinctive.

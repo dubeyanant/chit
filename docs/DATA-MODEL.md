@@ -40,19 +40,19 @@ recomputes it when the device changes timezone (ADR-006).
 
 **`text`** — what the chit says: typed, transcribed, or transcribed and then corrected. `NULL`
 only when a recording produced nothing and the user wrote nothing either. The failure note the
-user sees is never stored here; it is a property of the UI state, not of the chit (README §3.5,
+user sees is never stored here; it is a property of the UI state, not of the chit (BEHAVIOUR.md §3.5,
 and the design log is explicit about why — and stricter now that the body is an editable field).
 
 **`textOrigin`** — `typed | transcript | transcriptEdited`, and `NULL` exactly when `text` is.
 Provenance only: nothing in the UI renders differently because of it. It exists so a future
-re-transcription (README §8.2) can tell whether it would be overwriting the machine's words or
+re-transcription (OPEN-QUESTIONS.md §8.2) can tell whether it would be overwriting the machine's words or
 the user's. A transcript that the user then edits becomes `transcriptEdited` and never goes
 back.
 
 **`audioPath`** — relative, always. An absolute iOS container path saved today is dead after
 the next app update.
 
-**`lat` / `lon`** — stored, never displayed. README §3.6: the pin says a place was recorded and
+**`lat` / `lon`** — stored, never displayed. BEHAVIOUR.md §3.6: the pin says a place was recorded and
 stops there. Nothing in the app reverse-geocodes these, and if a future feature wants coarse
 places ("home", "office") that is a new decision, not an existing capability.
 
@@ -125,7 +125,7 @@ enum TextOrigin        { typed, transcript, transcriptEdited }
 enum WeatherCondition  { raining, clear, overcast, windy, clearNight }
 ```
 
-The five weather words are the ones README §3.6 allows, and the enum is what makes that a
+The five weather words are the ones BEHAVIOUR.md §3.6 allows, and the enum is what makes that a
 closed set. Open-Meteo's WMO codes are mapped into it by one pure function
 (`domain/weather/wmo_mapping.dart`) — a code plus the `is_day` flag plus a wind-speed threshold.
 `windy` has no WMO code of its own; it is our threshold, applied after the code lookup, and it
@@ -151,10 +151,10 @@ Every one of these lives in the DAO and returns a stream.
 | Backlog: weather search | `WHERE weather = ?` — the index is already there |
 
 The thread and the arc read **one** query; the calendar's heat and its summary are two more.
-Three queries behind six readings. That is the mechanism behind README §7's requirement that the two tabs never disagree: they are
+Three queries behind six readings. That is the mechanism behind DESIGN-SYSTEM.md §7's requirement that the two tabs never disagree: they are
 not kept in step, they are the same data.
 
-Count-to-warmth (four steps, README §4.2) is *not* in the query. It is a design scale and lives
+Count-to-warmth (four steps, BEHAVIOUR.md §4.2) is *not* in the query. It is a design scale and lives
 in the presentation layer, where it can be re-tuned without a migration.
 
 ---
@@ -198,8 +198,8 @@ committed.
 
 Changes already visible on the horizon, so the shape does not surprise us:
 
-- README §8.1 (where the editor lives) — no schema change at all; the columns are already here.
-- README §8.2 (re-transcription) — probably a nullable `transcriptionAttemptedAt`, or nothing
+- OPEN-QUESTIONS.md §8.1 (where the editor lives) — no schema change at all; the columns are already here.
+- OPEN-QUESTIONS.md §8.2 (re-transcription) — probably a nullable `transcriptionAttemptedAt`, or nothing
   at all if a null `text` beside a non-null `audioPath` is treated as the signal. `textOrigin`
   is what keeps such an attempt from overwriting words the user typed.
 - Backlog 1 (coarse place, what was playing) — new nullable columns.

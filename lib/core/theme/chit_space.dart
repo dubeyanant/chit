@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// The spacing and shape tokens of README §6.3.
+/// The spacing and shape tokens of DESIGN-SYSTEM.md §6.3.
 ///
 /// The step names match the prototype's `--s1` … `--s8` deliberately. Porting a
 /// rule out of `design/chit-app-v5.html` should be a rename and nothing more;
@@ -24,7 +24,7 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
     required this.minTouchTarget,
   });
 
-  /// The scale exactly as README §6.3 sets it.
+  /// The scale exactly as DESIGN-SYSTEM.md §6.3 sets it.
   const ChitSpace.tokens()
     : s1 = 4,
       s2 = 8,
@@ -72,7 +72,7 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
   /// 14px — the recording sheet's top corners, the one exception to [radius].
   final double sheetRadius;
 
-  /// 44px. README §6.4: touch targets clear this with no exceptions, and the
+  /// 44px. DESIGN-SYSTEM.md §6.4: touch targets clear this with no exceptions, and the
   /// microphone's does not shrink when the field has text in it.
   final double minTouchTarget;
 

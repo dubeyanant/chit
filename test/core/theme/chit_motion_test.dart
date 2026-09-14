@@ -1,7 +1,7 @@
 import 'package:chit/core/theme/chit_motion.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// README §6.4's reduced-motion rule: **movement collapses and feedback does
+/// DESIGN-SYSTEM.md §6.4's reduced-motion rule: **movement collapses and feedback does
 /// not.**
 ///
 /// The rule is easy to state and easy to half-implement. Collapsing everything
@@ -12,7 +12,7 @@ void main() {
   const ChitMotion motion = ChitMotion.tokens();
   final ChitMotion reduced = motion.resolve(reduceMotion: true);
 
-  group('the pace table of README §6.3', () {
+  group('the pace table of DESIGN-SYSTEM.md §6.3', () {
     test('is the house pace and the four exceptions to it', () {
       expect(motion.travel(ChitPace.press).inMilliseconds, 90);
       expect(motion.travel(ChitPace.routine).inMilliseconds, 220);

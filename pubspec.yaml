@@ -36,7 +36,7 @@ dependencies:
   geolocator: ^14.0.3
   http: ^1.2.2
 
-  # Dates and the tabular-figure formats of README §6.2
+  # Dates and the tabular-figure formats of DESIGN-SYSTEM.md §6.2
   intl: ^0.20.2
 
   # The audio store
@@ -60,7 +60,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Variable fonts. README §6.2 sets the three faces; the prototype uses
+  # Variable fonts. DESIGN-SYSTEM.md §6.2 sets the three faces; the prototype uses
   # Newsreader 300-600 with optical sizing and Hanken Grotesk 400/500/600,
   # so the variable axes are shipped rather than a handful of static cuts.
   # Weight and optical size are applied through TextStyle.fontVariations in

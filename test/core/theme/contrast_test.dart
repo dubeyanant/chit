@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/contrast.dart';
 
-/// README §6.4's contrast floor, as a test rather than as an intention.
+/// DESIGN-SYSTEM.md §6.4's contrast floor, as a test rather than as an intention.
 ///
 /// Every text colour clears 4.5:1 against the surface it actually sits on,
 /// composited. The negative cases are here too, and they matter as much: they
@@ -75,7 +75,11 @@ void main() {
     test('seal falls below the floor on a chit surface', () {
       final double ratio = contrastRatio(colors.seal, colors.slip);
       expect(ratio, lessThan(floor));
-      expect(ratio, closeTo(4.23, 0.01), reason: 'README §6.1 quotes 4.23:1');
+      expect(
+        ratio,
+        closeTo(4.23, 0.01),
+        reason: 'DESIGN-SYSTEM.md §6.1 quotes 4.23:1',
+      );
     });
 
     test('seal-ink clears it on both surfaces, which is the whole point', () {
@@ -90,11 +94,11 @@ void main() {
     });
   });
 
-  group('the figures README §6.1 quotes are still true', () {
+  group('the figures DESIGN-SYSTEM.md §6.1 quotes are still true', () {
     // These lock the prose to the arithmetic in both directions: change a
-    // token and the test fails, so the README gets corrected in the same
+    // token and the test fails, so DESIGN-SYSTEM.md §6.1 gets corrected in the same
     // change rather than drifting. The figures below were measured here and
-    // written back into README §6.1 during M0b, which is why they are exact
+    // written back into DESIGN-SYSTEM.md §6.1 during M0b, which is why they are exact
     // rather than rounded — the file used to say 6.4, 5.0 and 4.24.
     test('ink-muted', () {
       expect(contrastRatio(colors.inkMuted, colors.paper), closeTo(6.49, 0.01));
@@ -108,7 +112,7 @@ void main() {
   });
 
   group('the non-text tokens are still distinguishable', () {
-    // Not a WCAG floor — hairlines are structure, not text, and README §6.3
+    // Not a WCAG floor — hairlines are structure, not text, and DESIGN-SYSTEM.md §6.3
     // says hairlines carry the structure of the whole app. The floor below is
     // a collapse detector: enough headroom over the measured values (hair on
     // paper 1.26, hair-soft on slip 1.05) to catch a token being tuned until

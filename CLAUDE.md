@@ -22,7 +22,10 @@ So, as part of the same change — never as a follow-up:
 | decides something that could reasonably have gone another way | `docs/DECISIONS.md` — a new ADR, never an edit to a settled one |
 | changes how the app is put together | `docs/ARCHITECTURE.md` |
 | changes the schema, an invariant or a query | `docs/DATA-MODEL.md` |
-| changes what the app *does* or how it looks | `README.md` — it is the design authority |
+| changes what the app *does* | `docs/BEHAVIOUR.md` — §3, and §4 if a screen changed |
+| changes how it looks — a token, a face, a pace, a floor | `docs/DESIGN-SYSTEM.md` — §6 |
+| changes what chit *is*, or the shape of a chit | `README.md` — §1, §2, §5 |
+| adds a file, a document or an ADR | `README.md` §10, the map. There is a test for it |
 | changes why the design is what it is | `docs/DESIGN-LOG.md` |
 | changes the order of work or what "done" means | `docs/BUILD-PLAN.md` |
 | changes how to work in this repo | this file |
@@ -54,25 +57,35 @@ including when the session ended mid-milestone, in which case say exactly where 
 A private journal for short entries — "chits" — written or spoken several times a day.
 Flutter, Android and iOS only. Offline-first, no backend, nothing leaves the device.
 
-**`README.md` is the design authority.** It holds the product model, the behaviour spec and
-the design system. Where any other document disagrees with it, the README wins — and the
-disagreement is a bug in the other document, to be fixed rather than worked around.
+**The design authority is three files:** `README.md` (the product model, §1–§2, and the data
+model, §5), `docs/BEHAVIOUR.md` (§3–§4) and `docs/DESIGN-SYSTEM.md` (§6–§7). Where any other
+document disagrees with those three, they win — and the disagreement is a bug in the other
+document, to be fixed rather than worked around.
 
 ## 2. The documents, and what each is for
 
 | File | Answers |
 |---|---|
-| `README.md` | what the app is, how it behaves, what it looks like |
 | `docs/PROGRESS.md` | **where we are right now, and what to do next** — start here |
+| `README.md` | what chit is (§1–§2), what a chit is (§5), and **§10 maps every file in the repository** |
+| `docs/BEHAVIOUR.md` | **§3–§4** — the behaviour specification and the screens |
+| `docs/DESIGN-SYSTEM.md` | **§6–§7** — palette, type, spacing, motion, the accessibility floors, the prototype |
 | `docs/BUILD-PLAN.md` | the order it gets built in and what "done" means per milestone |
 | `docs/ARCHITECTURE.md` | how it is put together — layers, folders, providers, data flow |
-| `docs/DECISIONS.md` | the ADRs — why each choice was made and what it was chosen over |
+| `docs/DECISIONS.md` | the ADRs — why each choice was made and what it was chosen over. Indexed at its head |
 | `docs/DATA-MODEL.md` | schema, invariants, queries |
 | `docs/PACKAGES.md` | every dependency and why it is there |
 | `docs/DESIGN-LOG.md` | why the design is what it is |
+| `docs/OPEN-QUESTIONS.md` | **§8–§9** — what is not settled, and the feature backlog |
 | `design/chit-app-v5.html` | the interactive prototype — the visual target. Open in a browser |
 
 `design/chit-app-v4.html` is superseded and is history, not a second option.
+
+**Section numbers are global and stable.** §1 to §10 are numbered once across `README.md`,
+`BEHAVIOUR.md`, `DESIGN-SYSTEM.md` and `OPEN-QUESTIONS.md`; a section keeps its number wherever
+it lives, so §6.1 means the same thing cited from anywhere. `README.md` §0 has the table of
+which file owns which number. Never renumber — roughly two hundred citations in the docs and
+the source depend on them.
 
 ## 3. Starting a session
 

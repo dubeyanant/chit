@@ -76,7 +76,7 @@ void main() {
     });
   });
 
-  group('the three faces of README §6.2', () {
+  group('the three faces of DESIGN-SYSTEM.md §6.2', () {
     test('are the only families used', () {
       const Set<String> faces = <String>{
         ChitType.serifFamily,
@@ -97,7 +97,7 @@ void main() {
     });
   });
 
-  group('README §6.2, the specifics it commits to', () {
+  group('DESIGN-SYSTEM.md §6.2, the specifics it commits to', () {
     test('anything that counts or keeps time is set in tabular figures', () {
       final List<TextStyle> counters = <TextStyle>[
         type.ambientStamp,
@@ -124,7 +124,7 @@ void main() {
     });
 
     test('the accent carries words only at its text weight', () {
-      // README §6.1: --seal is for marks, --seal-ink for anything read as
+      // DESIGN-SYSTEM.md §6.1: --seal is for marks, --seal-ink for anything read as
       // text. A style coloured in --seal would be a style below the floor.
       for (final TextStyle style in type.styles) {
         expect(style.color, isNot(colors.seal));

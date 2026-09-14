@@ -6,7 +6,8 @@ has read only this file and `CLAUDE.md` should be able to pick up the work.
 Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
-**Last updated:** 14 September 2026, after M0b — README §0 added as the entry point.
+**Last updated:** 14 September 2026, after M0b — the specification was split and README §10
+became the map.
 
 ---
 
@@ -21,10 +22,10 @@ Updated at the end of every working session, per the standing rule in
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
-| M6 — the chit editor | ⬜ | README §8.1 settled 14 Sep 2026 (ADR-017) |
+| M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**43 tests, `flutter analyze` clean, debug APK builds.**
+**49 tests, `flutter analyze` clean, debug APK builds.**
 
 ---
 
@@ -35,7 +36,7 @@ Updated at the end of every working session, per the standing rule in
 - **The scaffold is gone.** `lib/main.dart` is `runApp(ProviderScope(child: ChitApp()))`.
 - **Platforms.** `windows/`, `linux/` and `macos/` deleted; `.metadata` trimmed. `web/` kept
   — ADR-019.
-- **Fonts.** The three families of README §6.2 in `assets/fonts/` as **variable** fonts with
+- **Fonts.** The three families of DESIGN-SYSTEM.md §6.2 in `assets/fonts/` as **variable** fonts with
   their OFL licences — ADR-015, which corrected what PACKAGES.md used to say.
 - **Android.** `minSdk` 24 (`record_android`'s floor). `RECORD_AUDIO`, `ACCESS_FINE_LOCATION`,
   `ACCESS_COARSE_LOCATION`, `INTERNET`, and the `android.speech.RecognitionService` queries
@@ -54,7 +55,7 @@ Updated at the end of every working session, per the standing rule in
 - **The skeleton.** Every file in [ARCHITECTURE.md](ARCHITECTURE.md) §2 exists. The ones a
   milestone has not reached hold a doc comment naming that milestone and nothing else.
 - **The four theme extensions** in `lib/core/theme/`:
-  - `ChitColors` — the ten tokens of README §6.1, plus `sealWash` for flattening the audio
+  - `ChitColors` — the ten tokens of DESIGN-SYSTEM.md §6.1, plus `sealWash` for flattening the audio
     pill's translucent surface so it can actually be checked.
   - `ChitType` — twenty-five styles, the whole scale. Every one sets `fontVariations`.
   - `ChitSpace` — the 4px scale under the prototype's own `s1`…`s8` names, so porting a rule
@@ -62,19 +63,19 @@ Updated at the end of every working session, per the standing rule in
   - `ChitMotion` — the pace table as a `ChitPace` enum with `travel()` and `fade()`.
 - **`context.colors` / `.type` / `.space` / `.motion`** in `lib/core/extensions.dart`. Four
   accessors, not one, so a widget that needs a colour cannot reach motion. `.motion` resolves
-  the reduced-motion flag from `MediaQuery`, which is what makes README §6.4 one decision.
+  the reduced-motion flag from `MediaQuery`, which is what makes DESIGN-SYSTEM.md §6.4 one decision.
 - **`Clock`** in `lib/core/clock.dart` with `clockProvider`, and a test that fails if anything
   else in `lib/` calls `DateTime.now()`.
 - **`analysis_options.yaml`** tightened: strict casts, inference and raw types; exhaustive
   switches and unawaited futures as errors; immutability and documentation rules;
   `riverpod_lint` through `plugins:`.
 - **The masthead.** "chit चित्त" on `--paper`, baseline-aligned, in the page gutter.
-- **Three test suites**, 43 tests: the contrast floor of README §6.4 composited, the
+- **Three test suites**, 43 tests at the time: the contrast floor of DESIGN-SYSTEM.md §6.4 composited, the
   `fontVariations` rule of ADR-015, and the reduced-motion rule of §6.4.
 
 ### Two things M0b changed elsewhere
 
-1. **README §6.1's contrast figures were slightly wrong** and are now measured. `--ink-muted`
+1. **DESIGN-SYSTEM.md §6.1's contrast figures were slightly wrong** and are now measured. `--ink-muted`
    is 6.49:1 on the ground (was quoted as 6.4), `--ink-faint` 5.08:1 (was 5.0), and `--seal`
    is 4.23:1 on a chit (was 4.24). The test asserts the corrected values to ±0.01, so the
    prose and the arithmetic cannot drift apart again.
@@ -87,20 +88,39 @@ Updated at the end of every working session, per the standing rule in
 `dart run build_runner build` clean, `flutter build apk --debug`, and the masthead confirmed
 rendering on a handset.
 
-### After M0b: the README got an entry point
+### After M0b: the README became a map
 
-`README.md` §0 now states the reading order — `PROGRESS.md`, then `CLAUDE.md`, then the
-milestone's section of `BUILD-PLAN.md` — and states the standing rule. It duplicates
-`CLAUDE.md` §3 on purpose: `CLAUDE.md` is loaded automatically by Claude Code and by nothing
-else, so a human, or an agent told only "read the README", previously had to notice a link in
-a status blockquote. Changing the reading order now means changing both files.
+The README was 541 lines and held the whole specification, so "read the README" meant reading
+a wall. It is now 271 lines: **§0** is the reading order and the standing rule, **§10** is the
+map of every file in the repository, and §1, §2 and §5 are what chit is and what a chit is.
+The rest moved out:
 
-The same pass found three places still quoting `--seal` at **4.24:1** after README §6.1 was
-corrected to 4.23 — `ARCHITECTURE.md`, `DESIGN-LOG.md` and `chit_colors.dart`'s own doc
-comment. All three are fixed. It is worth noting how it happened: the figure was corrected
-where the test pointed and nowhere else, and a `grep` for the old value would have caught it
-in seconds. **When a number changes, grep for the old one before committing** — the standing
-rule is only as good as the search that backs it.
+| Section | Now in |
+|---|---|
+| §3 behaviour specification, §4 screens | `docs/BEHAVIOUR.md` |
+| §6 design system, §7 the prototype | `docs/DESIGN-SYSTEM.md` |
+| §8 the three hard questions, §9 backlog | `docs/OPEN-QUESTIONS.md` |
+
+**Section numbers did not change**, and that was the whole trick. Roughly two hundred citations
+in the docs and the source point at §6.1, §3.5, §8.1 and the rest. A section keeps its number
+wherever it lives, so only the filename in front of a citation had to be rewritten — never the
+number. That is why README §0 has a table of which file owns which number, and why the README's
+own numbering has gaps. **Never renumber.**
+
+The design authority is now three files — `README.md`, `BEHAVIOUR.md`, `DESIGN-SYSTEM.md` —
+and `CLAUDE.md` §1 and §0's table say so.
+
+`test/docs/readme_maps_everything_test.dart` keeps the map honest: it fails if a document, a
+prototype, a test suite or a top-level source directory exists without a line in README §10,
+or if an ADR exists without a row in the index now at the head of `DECISIONS.md`. An index
+nobody maintains is worse than none, so this one is maintained by the build.
+
+The same pass found three places still quoting `--seal` at **4.24:1** after §6.1 was corrected
+to 4.23 — `ARCHITECTURE.md`, `DESIGN-LOG.md` and `chit_colors.dart`'s own doc comment. All
+three are fixed. Worth noting how it happened: the figure was corrected where the test pointed
+and nowhere else, and a `grep` for the old value would have caught it in seconds. **When a
+number changes, grep for the old one before committing** — the standing rule is only as good as
+the search that backs it, which is now step 4 of `CLAUDE.md` §0's checklist.
 
 **Not verified:** how the type actually renders on a handset. The masthead is on screen but
 nobody has looked at Newsreader and Noto Serif Devanagari at real size on a real display. Do
@@ -144,10 +164,10 @@ Things a future session needs to know but that are not yet scheduled work.
    spec says a browser does with `font-optical-sizing: auto`. If Newsreader looks heavier or
    lighter than `design/chit-app-v5.html` at the same size, that constant is the first suspect.
    Worth settling in M2, when there is real text to compare.
-2. **README §6.1 has no token for two colours the design uses.** The calendar's near-white
-   numeral on a strong fill (`#FFF6EE`, README §4.2) and the label on a filled Save button
+2. **DESIGN-SYSTEM.md §6.1 has no token for two colours the design uses.** The calendar's near-white
+   numeral on a strong fill (`#FFF6EE`, BEHAVIOUR.md §4.2) and the label on a filled Save button
    (`#1A1310` in the prototype). Neither is in the §6.1 table. M2 hits the second and M4 the
-   first; whichever gets there first should add the token to README §6.1 and to the contrast
+   first; whichever gets there first should add the token to DESIGN-SYSTEM.md §6.1 and to the contrast
    test rather than inlining a hex.
 3. **`sqlite3_flutter_libs` resolves to `0.6.0+eol`,** pulled in by `drift_flutter 0.3.1`. The
    marker is upstream's. Check for a successor at the top of M1, since that is when it starts
@@ -164,5 +184,5 @@ Things a future session needs to know but that are not yet scheduled work.
    is noise on a zero-argument widget constructor. If M2 finds it a real tax, the answer is a
    nested `analysis_options.yaml` under `lib/features/` rather than turning it off everywhere
    — and either way it is a change that gets recorded.
-8. **README §8.2 (re-transcription) and §8.3 (does Today carry enough rhythm) are still open.**
+8. **OPEN-QUESTIONS.md §8.2 (re-transcription) and §8.3 (does Today carry enough rhythm) are still open.**
    Neither blocks anything before M7.

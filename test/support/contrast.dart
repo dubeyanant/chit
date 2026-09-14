@@ -20,7 +20,7 @@ double relativeLuminance(Color color) {
 /// The contrast ratio between [foreground] and [background], 1.0 to 21.0.
 ///
 /// Both must be opaque. Composite a translucent surface with [composite]
-/// first — README §6.4 is explicit that a translucent surface counts as its
+/// first — DESIGN-SYSTEM.md §6.4 is explicit that a translucent surface counts as its
 /// own surface, and checking against the colour underneath it is exactly the
 /// mistake that caught the audio pill out.
 double contrastRatio(Color foreground, Color background) {

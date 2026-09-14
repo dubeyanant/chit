@@ -5,14 +5,14 @@ import 'chit_motion.dart';
 import 'chit_space.dart';
 import 'chit_type.dart';
 
-/// Assembles [ThemeData] from the four extensions of README §6.
+/// Assembles [ThemeData] from the four extensions of DESIGN-SYSTEM.md §6.
 ///
 /// The extensions are the design system; what [ThemeData] itself carries is
 /// only what Flutter's own widgets need in order not to contradict them.
 abstract final class ChitTheme {
   const ChitTheme._();
 
-  /// chit has one theme. README §6: dark, single palette.
+  /// chit has one theme. DESIGN-SYSTEM.md §6: dark, single palette.
   static ThemeData get theme {
     const colors = ChitColors.tokens();
     final type = ChitType.tokens(colors);

@@ -4,7 +4,7 @@ part 'clock.g.dart';
 
 /// The current time, as something that can be replaced.
 ///
-/// ADR-012. Three behaviours in the README are functions of the current time
+/// ADR-012. Three behaviours in the specification are functions of the current
 /// and none of them is testable otherwise: what counts as today, where a mark
 /// falls on the 5am-to-midnight arc, and the five-second prompt. A fake clock
 /// also makes the midnight rollover a thing that gets tested rather than a

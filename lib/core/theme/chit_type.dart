@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'chit_colors.dart';
 
-/// The three faces of README §6.2, and every style in the app.
+/// The three faces of DESIGN-SYSTEM.md §6.2, and every style in the app.
 ///
 /// ## The one rule that matters here
 ///
@@ -49,7 +49,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.monthSummary,
   });
 
-  /// The scale of README §6.2, coloured from [colors].
+  /// The scale of DESIGN-SYSTEM.md §6.2, coloured from [colors].
   ///
   /// Display-to-body runs about 2.3× — [date] at 38px over [chitText] at
   /// 16.5px. Anything that counts or keeps time is set in tabular figures,
@@ -84,7 +84,7 @@ final class ChitType extends ThemeExtension<ChitType> {
 
       // The day arc: its two ends, and the cap over the ring at now. The cap
       // carries a word, so it is the accent's text weight rather than its mark
-      // weight — README §6.1.
+      // weight — DESIGN-SYSTEM.md §6.1.
       arcEnd: _sans(
         size: 11.5,
         weight: 400,
@@ -132,7 +132,7 @@ final class ChitType extends ThemeExtension<ChitType> {
         height: 1.6,
       ),
 
-      // README §3.5's line. Set beside the body, never written into it, which
+      // BEHAVIOUR.md §3.5's line. Set beside the body, never written into it, which
       // is why it is a style of its own rather than [composerGhost].
       failNote: _serif(
         size: 17,
@@ -164,7 +164,7 @@ final class ChitType extends ThemeExtension<ChitType> {
 
       // The audio pill's duration. Set in inkMuted rather than inkFaint
       // because the pill's 7% seal wash lifts the ground under it enough to
-      // drop inkFaint below 4.5:1 — README §6.4, and the contrast test proves
+      // drop inkFaint below 4.5:1 — DESIGN-SYSTEM.md §6.4, and the contrast test proves
       // it both ways.
       audioDuration: _sans(
         size: 11.5,

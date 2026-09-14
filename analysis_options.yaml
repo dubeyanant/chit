@@ -4,7 +4,7 @@
 # The rules below are the engineering principles of CLAUDE.md §4.1 in the form
 # the machine can check. Where a principle cannot be a lint, it is a test
 # instead: ADR-012's ban on `DateTime.now()` is
-# `test/core/clock_is_the_only_now_test.dart`, and README §6.4's contrast floor
+# `test/core/clock_is_the_only_now_test.dart`, and DESIGN-SYSTEM.md §6.4's contrast floor
 # is `test/core/theme/contrast_test.dart`.
 
 include: package:flutter_lints/flutter.yaml

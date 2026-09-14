@@ -24,7 +24,7 @@ resolution, so the two can be compared.
 | `speech_to_text` | ✓ `^7.4.0` | on-device transcription (ADR-005) |
 | `geolocator` | `^14.0.3` | the fix behind the pin — precise, falling back to coarse (ADR-016); also owns the location permission flow |
 | `http` | `^1.2.2` | one call, to Open-Meteo |
-| `intl` | `^0.20.2` | dates and the tabular-figure formats of README §6.2 |
+| `intl` | `^0.20.2` | dates and the tabular-figure formats of DESIGN-SYSTEM.md §6.2 |
 | `path_provider` | `^2.1.5` | the app documents directory for the audio store |
 | `path` | `^1.9.1` | joining those paths without string concatenation |
 | `uuid` | `^4.5.1` | client-generated ids (ADR-004) |
@@ -55,7 +55,7 @@ Failing is the behaviour we want; silently falling back to a server is not. So:
 
 - Pass `onDevice: true` on **every** listen call, with no fallback path that omits it. There
   should be exactly one call site.
-- A failed listen is not a special case — it resolves to README §3.5 along with "heard nothing"
+- A failed listen is not a special case — it resolves to BEHAVIOUR.md §3.5 along with "heard nothing"
   and "no model installed" (ARCHITECTURE §4.4).
 - Check `initialize()` and the available locales at startup, but do not gate the microphone on
   the result. The user should be able to record whatever the engine can do; the audio is kept
@@ -71,7 +71,7 @@ India and the one hardest to reproduce on a developer's phone.
 
 ## Assets
 
-The three faces of README §6.2 ship as files, not through `google_fonts` (ADR-009), and as
+The three faces of DESIGN-SYSTEM.md §6.2 ship as files, not through `google_fonts` (ADR-009), and as
 **variable** fonts rather than static cuts (ADR-015):
 
 ```
@@ -129,7 +129,7 @@ solving fails outright. See ADR-018.
 **`flutter_hooks`** — Riverpod's notifiers cover the state in this app, and mixing two idioms
 for local widget state makes the codebase harder to read than either alone.
 
-**`shared_preferences`** — nothing to store yet. The settings screen in README §4.1's sketch
+**`shared_preferences`** — nothing to store yet. The settings screen in BEHAVIOUR.md §4.1's sketch
 has no defined contents; when it gets some, this is the likely answer.
 
 ---
@@ -153,7 +153,7 @@ the app the design never sees. `IPHONEOS_DEPLOYMENT_TARGET` is 15.0 from the sca
 every plugin's floor (`speech_to_text` 13.0, `just_audio` 12.0, `geolocator_apple` 11.0), so it
 was left alone.
 
-Both location strings should say what the README says the app does with it: it records that a
+Both location strings should say what BEHAVIOUR.md §3.6 says the app does with it: it records that a
 place was there, and never shows which one. The speech string can say something no other app's
 can — that recognition happens on the phone and the recording is not sent anywhere. It is true,
 it is unusual, and it is the sentence most likely to earn the permission.

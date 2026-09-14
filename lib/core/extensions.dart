@@ -16,19 +16,19 @@ import 'theme/chit_type.dart';
 /// [motion] on the [MediaQuery] as well — so a widget that reads one rebuilds
 /// when it changes.
 extension ChitThemeContext on BuildContext {
-  /// The colour tokens of README §6.1.
+  /// The colour tokens of DESIGN-SYSTEM.md §6.1.
   ChitColors get colors => Theme.of(this).extension<ChitColors>()!;
 
-  /// The type scale of README §6.2.
+  /// The type scale of DESIGN-SYSTEM.md §6.2.
   ChitType get type => Theme.of(this).extension<ChitType>()!;
 
-  /// The spacing and shape tokens of README §6.3.
+  /// The spacing and shape tokens of DESIGN-SYSTEM.md §6.3.
   ChitSpace get space => Theme.of(this).extension<ChitSpace>()!;
 
-  /// The motion tokens of README §6.3, already resolved against the
+  /// The motion tokens of DESIGN-SYSTEM.md §6.3, already resolved against the
   /// platform's reduced-motion setting.
   ///
-  /// Resolving here rather than at each call site is what makes README §6.4's
+  /// Resolving here rather than at each call site is what makes DESIGN-SYSTEM.md §6.4's
   /// rule — movement collapses, feedback does not — a single decision. Reading
   /// [ChitMotion] off [Theme] directly bypasses it and is always a mistake.
   ChitMotion get motion =>

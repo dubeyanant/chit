@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// The colour tokens of README §6.1.
+/// The colour tokens of DESIGN-SYSTEM.md §6.1.
 ///
 /// One palette, dark, one accent. The accent exists in two weights and which
 /// one to use is decided by the job, not by taste: [seal] is for marks, fills,
@@ -27,7 +27,7 @@ final class ChitColors extends ThemeExtension<ChitColors> {
     required this.sealInk,
   });
 
-  /// The palette exactly as README §6.1 sets it.
+  /// The palette exactly as DESIGN-SYSTEM.md §6.1 sets it.
   const ChitColors.tokens()
     : paper = const Color(0xFF191714),
       slip = const Color(0xFF211E1A),
@@ -77,7 +77,7 @@ final class ChitColors extends ThemeExtension<ChitColors> {
 
   /// [seal] laid over [surface] at [opacity], flattened to an opaque colour.
   ///
-  /// The audio pill is a 7% wash of the accent, and README §6.4 is explicit
+  /// The audio pill is a 7% wash of the accent, and DESIGN-SYSTEM.md §6.4 is explicit
   /// that a translucent surface counts as its own surface: the wash lifts the
   /// ground under it enough to fail [inkFaint], which is why the pill's
   /// duration is set in [inkMuted]. Flattening here rather than at each call

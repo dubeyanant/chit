@@ -247,7 +247,7 @@ the audio, and that is a privacy decision rather than a technical one.
 
 ## Open threads
 
-See README §8. The one closest to the surface is re-transcription: a chit whose audio was kept
+See OPEN-QUESTIONS.md §8. The one closest to the surface is re-transcription: a chit whose audio was kept
 without text is a natural candidate for a second attempt — on a better model, or once a
 language pack is installed. The data model already allows it, and `textOrigin` is there so that
 an attempt can refuse to overwrite words the user typed themselves.
