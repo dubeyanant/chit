@@ -315,12 +315,163 @@ thing we can test rather than a thing we discover.
 
 ## Deliberately not decided yet
 
-- **Where a saved chit is edited** (README §8.1). *That* it can be is settled by ADR-014;
-  inline in the thread versus a screen of its own is not. The repository method lands with M1;
-  no affordance appears in the thread until the editor is designed.
+- ~~**Where a saved chit is edited** (README §8.1).~~ **Settled 14 September 2026 by ADR-017:**
+  a screen of its own, with a save prompt on leaving. The thread affordance arrives with it,
+  as M6.
 - **Re-transcription** (README §8.2). ADR-005's interface allows it — a recognizer can be handed
   an existing file — but no UI or repository method exists for it, and ADR-013's `textOrigin`
   is the thing that would let it run without clobbering the user's own words.
 - **Export / backup format.** Wanted eventually; not on the v1 path.
 - **Web.** README targets mobile at 390×844 first. No layout work is being spent on breakpoints
   until the phone app is real.
+
+---
+
+## ADR-015 — Variable fonts, and weight through `fontVariations`
+
+**Decision.** The three faces of README §6.2 ship as **variable** fonts — one file per family
+(two for Newsreader, which has a separate italic) — and every `TextStyle` in `chit_type.dart`
+sets `fontVariations` alongside `fontWeight`.
+
+**Over.** Static instances at the handful of weights PACKAGES.md originally listed
+("regular, italic, medium" for Newsreader; "regular, medium" for Hanken Grotesk).
+
+**Why.** That list was wrong, and reading the prototype is what showed it. `chit-app-v5.html`
+loads `Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500` and
+`Hanken Grotesk:wght@400;500;600`. The 38px date is weight **300**; buttons, the ambient stamp
+and the `now` cap are **600**. Neither weight was in the list, so static cuts would have
+silently rendered the design at the wrong weights.
+
+There is a second reason, and it is the better one. Browsers apply optical sizing by default,
+so every glyph in the prototype is drawn at the optical size it is set at — which is precisely
+what a 2.3× display-to-body ratio (README §6.2) needs to look right. Newsreader carries an
+`opsz` axis from 6 to 72. Shipping the variable font is the only way the app matches the
+prototype rather than approximating it.
+
+Google's canonical `google/fonts` repository ships these families **only** as variable fonts,
+so this is also the path with one authoritative source rather than three upstream repositories
+of differing freshness.
+
+**The cost, and it is a real one.** A variable font declared once in `pubspec.yaml` renders at
+weight 400 no matter what `fontWeight` a `TextStyle` asks for — `fontWeight` alone is silently
+ignored. Every style must therefore carry
+`fontVariations: [FontVariation('wght', ...), FontVariation('opsz', ...)]`, and a style that
+forgets is not an error. It is a wrong-looking screen that analysis will not catch.
+
+This is survivable only because ADR-010 already forbids bare `TextStyle`s in widget code: there
+is exactly one file where the mistake can be made. It is written down in CLAUDE.md §4 as a
+house rule for that reason.
+
+**Also costs.** ~1.8 MB of fonts, of which Noto Serif Devanagari is 758 KB to draw one word.
+Subsetting is noted as an open item rather than done now, because the mark may still change.
+
+---
+
+## ADR-016 — Precise location first, coarse as the fallback
+
+**Decision.** Location is requested at high accuracy. If the user grants only approximate
+location — Android 12+ and iOS 14+ both let them — the coarse fix is accepted and used. The
+manifest declares `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`; either outcome is a
+successful capture.
+
+**Over.** Coarse-only at low accuracy, which is what ARCHITECTURE.md and PACKAGES.md specified
+until this ADR. Both have been corrected.
+
+**Why.** The owner's call, and the reason is the backlog rather than the present screen:
+README §9 item 1 wants coarse place labels — "home", "office", "in transit" — inferred from
+the fix. A neighbourhood-level coarse fix cannot separate home from office. Asking for
+precision later, after a year of coarse rows, means a year of chits that can never carry the
+label.
+
+**The tension, stated plainly.** README §3.6 shows location as a pin and nothing else — *"the
+fact of a place, never its name"* — and this decision stores a far sharper fact than that
+display implies. The display promise is unchanged and binding: the UI never surfaces a name, a
+coordinate, or a map. But the row is now precise enough to reconstruct a home address, and that
+is a real difference in what a leaked or backed-up database would give up.
+
+Three things make it acceptable. The database never leaves the device (ADR-004). ADR-007 keeps
+capture best-effort, so a refused permission costs the user nothing. And a user who grants only
+approximate location gets exactly the old behaviour, with no degradation and no nagging.
+
+**Costs.** A precise fix is slower and hungrier than a coarse one — ADR-007's timeout is what
+keeps that off the composer's critical path. And should a sync layer ever arrive (ADR-004),
+this row is more sensitive than it was, which is a constraint on that design rather than a
+reason to refuse this one.
+
+---
+
+## ADR-017 — The chit editor is a screen, and leaving it asks
+
+**Decision.** README §8.1 is settled. A saved chit opens in **its own screen**, not inline in
+the thread.
+
+- Leaving the editor with unsaved changes raises a **clear prompt**: keep the edit, or discard
+  it.
+- Quitting outright — the app is killed, or the prompt is answered *discard* — **cancels the
+  edit** and returns to Today. Nothing is written.
+- The chit's audio is neither editable nor removable, in the editor or anywhere else. Editing
+  changes what the chit says, never what was said (ADR-014).
+
+**Over.** Inline editing in the thread, which was the other candidate in README §8.1.
+
+**Why.** The thread is a reading surface. Today's screen already carries a live writing surface
+at the top of it — the open chit — and a second, differently-behaved editable field in the rows
+below would make it ambiguous which one a tap is about to put the cursor in. A screen has room
+for the ambient stamp, the audio pill and the text without the row having to grow, and it gives
+the save prompt somewhere to belong.
+
+The prompt exists because editing a saved chit is not like writing a new one. Discarding an open
+chit throws away something that was never a record; discarding an edit throws away a change to
+something that is. The first needs no confirmation and gets none (README §3.1). The second gets
+one.
+
+**Consequences for the build.** This unblocks the thread affordance, which BUILD-PLAN has been
+holding back since M2 — *"a chit in the thread carries no affordance, because one that leads
+nowhere is worse than none."* It becomes **M6**, after voice and before polish, so the editor
+handles a chit that already has an audio pill from its first day rather than growing that case
+later. Motion and the accessibility floors move to M7 and stay last. The affordance and the
+editor still arrive in the same change.
+
+**Costs.** A screen is more work than an inline field, and it is one more place the ambient
+stamp and the audio pill have to be drawn correctly.
+
+---
+
+## ADR-018 — `riverpod_lint` through `plugins:`, and no `custom_lint`
+
+**Decision.** `custom_lint` is not a dependency. `riverpod_lint` is enabled through the
+`plugins:` key in `analysis_options.yaml`.
+
+**Over.** PACKAGES.md's original pairing of `riverpod_lint` with a `custom_lint` host.
+
+**Why.** Not a preference — a fact discovered while resolving. `riverpod_lint` 3.x is built on
+`analysis_server_plugin` and no longer uses `custom_lint` at all. The two cannot even coexist
+here: `riverpod_generator` 4.0.9 needs `analyzer >=13`, and the newest `custom_lint` is pinned
+to `analyzer ^8`. Version solving fails outright with both present.
+
+The practical gain is that `dart analyze` and `flutter analyze` now surface the Riverpod lints
+directly, with no separate `dart run custom_lint` step and no second thing for CI to run.
+
+**Costs.** The `DateTime.now()` lint of ADR-012 was going to be a `custom_lint` rule. It now has
+to be either an analyzer `forbidden_identifiers`-style exclusion or a test that reads the
+source. Which of the two, is an M0b decision.
+
+---
+
+## ADR-019 — Android and iOS only; the web folder stays
+
+**Decision.** `windows/`, `linux/` and `macos/` are deleted from the repository and `.metadata`
+is trimmed to root, android, ios and web. `web/` is left in place, untouched.
+
+**Why.** The app is a phone app. README §10 targets Android and iOS first at 390×844, and every
+feature that defines it — a microphone that is an equal to the keyboard, ambient weather and
+location, on-device speech — is a phone capability. Three desktop scaffolds that nobody builds
+are three scaffolds that go stale, break `flutter analyze` after an SDK bump, and invite a
+plugin to be chosen for its desktop support.
+
+`web/` survives because it is the one non-mobile target the README actually plans for —
+*"Responsive web comes later"* — and deleting it now would only mean regenerating it later.
+No layout work is being spent on it before the phone app is real.
+
+**Costs.** Restoring a desktop target means `flutter create --platforms=...` and re-applying any
+platform config. That is cheap, and it will not happen.

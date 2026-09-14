@@ -56,6 +56,13 @@ the next app update.
 stops there. Nothing in the app reverse-geocodes these, and if a future feature wants coarse
 places ("home", "office") that is a new decision, not an existing capability.
 
+They are as precise as the fix was. ADR-016 asks for high accuracy and accepts a coarse fix
+when that is all the user granted, so this column may hold anything from a rooftop-accurate
+position to a neighbourhood. The display promise is unchanged — no name, no coordinate, no map
+— but the *row* is now precise enough to reconstruct an address, which is a fact about this
+database rather than about the UI. It is why ADR-004's "local only" is load-bearing, and it is
+a constraint on any sync design rather than an argument against the accuracy.
+
 **`updatedAt`** — written on every edit (ADR-014). Editing does **not** change `createdAt` or
 `localDay`: a chit belongs to the moment it was written, and correcting a typo the next morning
 must not move it in the thread or relight a calendar tile.

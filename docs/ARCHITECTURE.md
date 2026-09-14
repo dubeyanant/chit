@@ -85,9 +85,12 @@ lib/
 │   ├── composer/
 │   │   ├── application/            composer_controller.dart, recording_controller.dart
 │   │   └── presentation/           open_chit.dart, recording_sheet.dart
-│   └── calendar/
-│       ├── application/            month_provider.dart, archive_provider.dart
-│       └── presentation/           calendar_screen.dart, widgets/
+│   ├── calendar/
+│   │   ├── application/            month_provider.dart, archive_provider.dart
+│   │   └── presentation/           calendar_screen.dart, widgets/
+│   └── editor/                     M6 — a saved chit, on its own screen (ADR-017)
+│       ├── application/            editor_controller.dart — dirty tracking, the save prompt
+│       └── presentation/           editor_screen.dart
 │
 └── shared/widgets/
     ├── slip.dart                   a chit surface
@@ -189,6 +192,13 @@ Nothing here can block, spin, or fail a save (ADR-007).
 Weather comes back from Open-Meteo as a WMO code; `wmo_mapping.dart` turns code + `is_day` +
 wind speed into one of the five words the README allows. That function is pure and lives in
 `domain` — it encodes a product decision, not a network detail.
+
+Location is asked for at **high accuracy, with the coarse fix accepted when that is all the
+user granted** (ADR-016). This corrects what this document used to say — *"`geolocator` at low
+accuracy"* — and the reason is README §9's coarse place labels, which a neighbourhood-level fix
+cannot produce. Both outcomes are a successful capture and neither changes the UI: §3.6 shows a
+pin and never a name. A precise fix is the slower of the two, which is exactly what the timeout
+above is for.
 
 ### 4.3 The five-second prompt
 
@@ -316,8 +326,10 @@ dart run build_runner watch -d      # leave running
 flutter run
 ```
 
-Before a commit: `dart format .`, `flutter analyze` (clean, including `custom_lint`),
-`flutter test`.
+Before a commit: `dart format .`, `flutter analyze` (clean — the Riverpod lints run inside it,
+because `riverpod_lint` is an analysis-server plugin and there is no separate `custom_lint` step,
+ADR-018), `flutter test`, **and the documents that the change made untrue** — the standing rule
+in [CLAUDE.md](../CLAUDE.md) §0.
 
 Generated `*.g.dart` and `*.freezed.dart` files are committed, so a fresh clone runs without
 codegen first.

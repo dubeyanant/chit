@@ -3,8 +3,9 @@
 Every dependency, what it is for, and what it was chosen over. Nothing goes in `pubspec.yaml`
 without a line here.
 
-Versions marked ✓ were checked on pub.dev on **14 September 2026**. The rest are left for
-`flutter pub add` to resolve — pin them here once it does.
+Every version below is the one actually resolved in `pubspec.lock` on **14 September 2026**,
+verified by `flutter pub get`. A ✓ marks a version that was also checked on pub.dev before
+resolution, so the two can be compared.
 
 ---
 
@@ -13,30 +14,29 @@ Versions marked ✓ were checked on pub.dev on **14 September 2026**. The rest a
 | Package | Version | For |
 |---|---|---|
 | `flutter_riverpod` | ✓ `^3.4.3` | state and dependency injection (ADR-001) |
-| `riverpod_annotation` | matches riverpod | the `@riverpod` annotation |
+| `riverpod_annotation` | `^4.0.0` → 4.0.7 | the `@riverpod` annotation |
 | `drift` | ✓ `^2.35.0` | local database (ADR-003) |
 | `drift_flutter` | ✓ `^0.3.1` | opens the database with no async bootstrap; pulls `sqlite3_flutter_libs` |
 | `go_router` | ✓ `^18.0.1` | the tab shell and routing (ADR-011) |
-| `freezed_annotation` | matches freezed | immutable models: value equality, `copyWith`, and a private constructor that can assert its invariant |
+| `freezed_annotation` | `^3.1.0` | immutable models: value equality, `copyWith`, and a private constructor that can assert its invariant |
 | `record` | ✓ `^7.1.1` | recording to a temp file |
 | `just_audio` | ✓ `^0.10.6` | playback behind the audio pill |
 | `speech_to_text` | ✓ `^7.4.0` | on-device transcription (ADR-005) |
-| `geolocator` | ✓ `^14.0.3` | a coarse fix for the pin; also owns the location permission flow |
-| `http` | resolve | one call, to Open-Meteo |
-| `intl` | resolve | dates and the tabular-figure formats of README §6.2 |
-| `path_provider` | resolve | the app documents directory for the audio store |
-| `path` | resolve | joining those paths without string concatenation |
-| `uuid` | resolve | client-generated ids (ADR-004) |
+| `geolocator` | `^14.0.3` | the fix behind the pin — precise, falling back to coarse (ADR-016); also owns the location permission flow |
+| `http` | `^1.2.2` | one call, to Open-Meteo |
+| `intl` | `^0.20.2` | dates and the tabular-figure formats of README §6.2 |
+| `path_provider` | `^2.1.5` | the app documents directory for the audio store |
+| `path` | `^1.9.1` | joining those paths without string concatenation |
+| `uuid` | `^4.5.1` | client-generated ids (ADR-004) |
 
 ## Development
 
 | Package | Version | For |
 |---|---|---|
-| `build_runner` | resolve | runs all codegen |
+| `build_runner` | `^2.4.13` | runs all codegen |
 | `riverpod_generator` | ✓ `^4.0.9` | generates the providers |
-| `riverpod_lint` | matches riverpod | catches the misuse codegen cannot |
-| `custom_lint` | resolve | the host `riverpod_lint` plugs into |
-| `drift_dev` | matches drift | generates the DAOs and the schema |
+| `riverpod_lint` | `^3.0.0` → 3.1.9 | catches the misuse codegen cannot. Enabled through `plugins:` in `analysis_options.yaml`, not through `custom_lint` — ADR-018 |
+| `drift_dev` | `^2.35.0` | generates the DAOs and the schema |
 | `freezed` | ✓ `^4.0.1` | generates the models |
 | `flutter_lints` | already present `^6.0.0` | base lint set |
 
@@ -71,17 +71,30 @@ India and the one hardest to reproduce on a developer's phone.
 
 ## Assets
 
-The three faces of README §6.2 ship as files, not through `google_fonts` (ADR-009). Only the
-weights actually used:
+The three faces of README §6.2 ship as files, not through `google_fonts` (ADR-009), and as
+**variable** fonts rather than static cuts (ADR-015):
 
 ```
 assets/fonts/
-├── Newsreader/            regular, italic, medium
-├── HankenGrotesk/         regular, medium
-└── NotoSerifDevanagari/   regular        ← the चित्त mark only
+├── Newsreader/            Newsreader-VF.ttf         opsz 6–72,  wght 200–800
+│                          Newsreader-Italic-VF.ttf  opsz 6–72,  wght 200–800
+├── HankenGrotesk/         HankenGrotesk-VF.ttf      wght 100–900
+└── NotoSerifDevanagari/   NotoSerifDevanagari-VF.ttf              ← the चित्त mark only
 ```
 
-All three are SIL Open Font License. Subset before shipping if the bundle matters.
+This corrects what this file used to say — *"only the weights actually used: regular, italic,
+medium"*. The prototype loads Newsreader at **300–600** (the 38px date is 300) and Hanken
+Grotesk at **400/500/600**, so that list would have shipped the design at the wrong weights.
+Variable fonts also carry Newsreader's `opsz` axis, which is what makes a 38px date and 16.5px
+body text both look right; ADR-015 has the full argument.
+
+**Consequence for the code:** a variable font renders at weight 400 unless a `TextStyle` sets
+`fontVariations`. `fontWeight` alone does nothing. `chit_type.dart` is the only file that may
+set either.
+
+All three are SIL Open Font License, downloaded from `google/fonts`, with `OFL.txt` beside each.
+The bundle is ~1.8 MB, of which Noto Serif Devanagari is 758 KB to draw one word — subset it
+before shipping.
 
 ---
 
@@ -107,6 +120,12 @@ each with the platform flow their plugin already handles. A third permission lib
 a second source of truth for two permissions. Add it only if a permission appears that neither
 plugin owns.
 
+**`custom_lint`** — this file used to list it as the host `riverpod_lint` plugs into. It no
+longer is: `riverpod_lint` 3.x is built on `analysis_server_plugin` and is enabled through the
+`plugins:` key in `analysis_options.yaml`. The two also cannot coexist — `riverpod_generator`
+needs `analyzer >=13` and the newest `custom_lint` is pinned to `analyzer ^8`, so version
+solving fails outright. See ADR-018.
+
 **`flutter_hooks`** — Riverpod's notifiers cover the state in this app, and mixing two idioms
 for local widget state makes the codebase harder to read than either alone.
 
@@ -117,16 +136,22 @@ has no defined contents; when it gets some, this is the likely answer.
 
 ## Platform configuration this implies
 
-Worth doing in one pass rather than discovering one plugin at a time.
+Done in one pass in M0a rather than discovered one plugin at a time. What is in the tree now:
 
 **Android** (`android/app/src/main/AndroidManifest.xml`)
-`RECORD_AUDIO`, `ACCESS_COARSE_LOCATION`, `INTERNET`. `minSdk` rises to whatever `record` and
-`speech_to_text` require — check both before setting it.
+`RECORD_AUDIO`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (precise first, coarse as the
+fallback — ADR-016), `INTERNET`. Plus a `<queries>` entry for `android.speech.RecognitionService`,
+without which `speech_to_text` cannot see the recognition service at all from targetSdk 30.
+
+`minSdk = 24`, in `android/app/build.gradle.kts`. That is `record_android`'s floor and the
+highest of any plugin here — `speech_to_text` asks 21, `path_provider` 21, `just_audio` 16.
 
 **iOS** (`ios/Runner/Info.plist`)
 `NSMicrophoneUsageDescription`, `NSSpeechRecognitionUsageDescription`,
-`NSLocationWhenInUseUsageDescription`. Write the strings in chit's own voice; they are the only
-copy in the app the design never sees.
+`NSLocationWhenInUseUsageDescription`, written in chit's own voice; they are the only copy in
+the app the design never sees. `IPHONEOS_DEPLOYMENT_TARGET` is 15.0 from the scaffold, above
+every plugin's floor (`speech_to_text` 13.0, `just_audio` 12.0, `geolocator_apple` 11.0), so it
+was left alone.
 
 Both location strings should say what the README says the app does with it: it records that a
 place was there, and never shows which one. The speech string can say something no other app's

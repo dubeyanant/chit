@@ -6,11 +6,16 @@ The name is a wordplay. **चित्त** (*chitta*) is Sanskrit for conscious
 where impressions land. A **chit** is also a small slip of paper you scribble something on
 and keep. The app is both: a place where passing impressions get written down on small slips.
 
-> **Status:** design complete, architecture decided, implementation not started.
-> The Flutter project is still the default scaffold. The interactive design prototype lives
-> at [`design/chit-app-v5.html`](design/chit-app-v5.html) — open it in any browser.
-> How the app will be built is in [`docs/`](docs/) — start with
-> [ARCHITECTURE.md](docs/ARCHITECTURE.md) and [BUILD-PLAN.md](docs/BUILD-PLAN.md).
+> **Status:** in build. M0a is done — the project is no longer a scaffold: dependencies,
+> fonts, platform config and the app entry point are in place. M0b, the design system in
+> code, is next.
+>
+> **[`docs/PROGRESS.md`](docs/PROGRESS.md) is where the build actually stands** and is the
+> first thing to read. [`CLAUDE.md`](CLAUDE.md) is how to work in this repository.
+> The interactive design prototype lives at
+> [`design/chit-app-v5.html`](design/chit-app-v5.html) — open it in any browser.
+> How the app is put together is in [ARCHITECTURE.md](docs/ARCHITECTURE.md); the order it
+> gets built in is [BUILD-PLAN.md](docs/BUILD-PLAN.md).
 
 ---
 
@@ -403,22 +408,43 @@ Sample content is placeholder and deliberately mundane — real chits are four w
 
 ---
 
-## 8. Decisions still open
+## 8. The three hard questions
 
-1. **Where a saved chit is edited.** *That* it can be edited is settled — §3.4 makes the text
-   the user's, and there is no reason that stops at Save. What is not settled is whether the
-   editor is inline in the thread or a screen of its own. Until it is, a chit in the thread
-   carries no affordance, because one that leads nowhere is worse than none.
+Two are still open. The numbering is stable — §8.1, §8.2 and §8.3 are referred to across the
+docs — so a question that gets answered keeps its number.
 
-   Whichever it is: a chit's **audio is never editable and never removable**. Editing changes
-   what the chit says, never what was said.
-2. **Re-transcription.** If a recording produced nothing — no model on the handset, or speech
-   the engine could not read — should the user be able to ask for another attempt later? The
-   data model allows it, and `textOrigin` exists so that an attempt can refuse to overwrite
-   words the user typed themselves.
-3. **Does Today carry enough rhythm?** The day arc is the only rhythm signal on the home
-   screen. It fills in as chits are saved, which is the cheapest version of an answer; whether
-   it is enough is still open.
+### 8.1 Where a saved chit is edited — **settled, 14 September 2026**
+
+A saved chit opens in **an editor of its own**, not inline in the thread. The thread is a
+reading surface, and Today already carries a live writing surface at the top of it; a second,
+differently-behaved editable field in the rows below would make it ambiguous which one a tap
+is about to put the cursor in.
+
+**Leaving with unsaved changes asks.** The prompt offers to keep the edit or to discard it.
+Quitting outright — answering *discard*, or the app being killed — cancels the edit and
+returns to Today, and nothing is written.
+
+The prompt exists because editing a saved chit is not like writing a new one. Discarding an
+open chit throws away something that was never a record, and gets no confirmation (§3.1).
+Discarding an edit throws away a change to something that is, and gets one.
+
+A chit's **audio is never editable and never removable**, here or anywhere. Editing changes
+what the chit says, never what was said.
+
+The affordance in the thread arrives with the editor, in the same change — until then a chit
+in the thread is still not tappable, because a pointer that leads nowhere is worse than none.
+
+### 8.2 Re-transcription — open
+
+If a recording produced nothing — no model on the handset, or speech the engine could not
+read — should the user be able to ask for another attempt later? The data model allows it,
+and `textOrigin` exists so that an attempt can refuse to overwrite words the user typed
+themselves.
+
+### 8.3 Does Today carry enough rhythm? — open
+
+The day arc is the only rhythm signal on the home screen. It fills in as chits are saved,
+which is the cheapest version of an answer; whether it is enough is still open.
 
 ---
 
@@ -445,31 +471,40 @@ Hold **7** until real usage shows people write in chains.
 
 ```
 chit/
-├── lib/                    Flutter source (currently the default scaffold)
+├── CLAUDE.md               how to work in this repository — read it first
+├── lib/                    Flutter source
+├── assets/fonts/           the three faces of §6.2, as variable fonts, with their licences
 ├── design/
 │   ├── chit-app-v5.html    interactive design prototype — open in a browser
 │   └── chit-app-v4.html    superseded; kept for reference
 ├── docs/
+│   ├── PROGRESS.md         where the build stands and what is next — the handover
 │   ├── DESIGN-LOG.md       why the design is what it is
 │   ├── ARCHITECTURE.md     how the app is put together
 │   ├── DECISIONS.md        the architecture decision records
 │   ├── DATA-MODEL.md       schema, invariants, queries
 │   ├── PACKAGES.md         every dependency and why
 │   └── BUILD-PLAN.md       the order it gets built in
-├── android/  ios/  web/  windows/  linux/  macos/
+├── android/  ios/  web/
 └── README.md               this file
 ```
 
+Android and iOS only. The desktop scaffolds were deleted in M0a — ADR-019. `web/` is kept
+because responsive web is planned after v1, and no layout work is being spent on it yet.
+
 This file is the design authority — the product model, the behaviour spec, the design system.
-`docs/DESIGN-LOG.md` says why the design is what it is; the other four say how it becomes
-software. Where any of them disagrees with this file, this file wins.
+`docs/DESIGN-LOG.md` says why the design is what it is; the rest say how it becomes software.
+Where any of them disagrees with this file, this file wins — and the disagreement is a bug in
+the other document, fixed in the same change that found it. `CLAUDE.md` §0 is that rule
+written down.
 
 ### Running the Flutter app
 
 ```bash
 flutter pub get
-flutter run
+dart run build_runner watch      # while working
+flutter run                      # an Android device or emulator
 ```
 
-Targets: Android and iOS first. Responsive web comes later — the current design is mobile
+Targets: Android and iOS. Responsive web comes later — the current design is mobile
 at 390×844.

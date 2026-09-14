@@ -140,11 +140,23 @@ shortcut here; it is not one.
 ## A past chit is not a control — yet
 
 Saved chits **are** editable; §8.1 settled that when the transcript became editable, since
-there is no principled reason the text stops being the user's the moment it is saved. What is
-not settled is where that editing happens — inline in the thread, or a screen of its own.
+there is no principled reason the text stops being the user's the moment it is saved.
 
-So the rule below still holds, for now, and for the same reason it always did: nothing in the
-thread is dressed as pressable — no pointer cursor, no accent on hover, no button semantics, no
+**Where has now been settled too** (14 September 2026, ADR-017): a screen of its own, not
+inline in the thread. The deciding argument is the one this section is about. Today already
+carries a live writing surface at the top of it, and putting a second editable field in the
+rows below would mean the screen has two places a cursor can be and no way to tell which a tap
+is aiming at. The thread is where chits are read. Reading surfaces that quietly become writing
+surfaces are how a calm screen stops being one.
+
+Leaving that editor with unsaved changes asks. That is not a general appetite for
+confirmations — it is the difference between the two things being thrown away. Discarding an
+open chit throws away something that was never a record, and §3.1 gives it no prompt on
+purpose. Discarding an edit throws away a change to something that *is* a record, and the user
+cannot get it back by remembering what they meant.
+
+So the rule below still holds until the editor actually ships in M6, and for the same reason it
+always did: nothing in the thread is dressed as pressable — no pointer cursor, no accent on hover, no button semantics, no
 focus stop. The audio pill is the one control in the row.
 
 An affordance that does nothing is worse than a missing one. It costs a tap to discover, it
@@ -152,7 +164,7 @@ teaches that taps here are ignored, and for anyone on a keyboard or a screen rea
 stop that leads nowhere. The affordance arrives with the editor, in the same change, and not
 before it.
 
-One thing is decided regardless of where the editor lands: **a chit's audio is not editable and
+And wherever the editor lands, one thing does not move: **a chit's audio is not editable and
 not removable.** Editing changes what the chit says, never what was said. A chit that is only a
 recording can gain text; a chit with a recording cannot lose it.
 

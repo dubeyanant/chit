@@ -11,26 +11,43 @@ Note that the composer is one surface (README §3.2), so M2 builds the whole of 
 in the microphone that has been sitting there since M2. The two milestones share a screen, and
 M5 should not need to rearrange it.
 
-Nothing below has been started. `lib/` is still the default Flutter scaffold.
+**Current state is in [PROGRESS.md](PROGRESS.md), not here.** This file says what the order is
+and what "done" means; that file says where we actually are. It is the one to read first.
 
 ---
 
 ## M0 — Foundation
 
-The project stops being a scaffold.
+The project stops being a scaffold. Split in two, because the first half is configuration that
+can be verified by building and the second half is code that can be verified by looking at it.
+
+### M0a — configuration ✅ done, 14 September 2026
 
 - Delete the counter app. `main.dart` becomes `runApp(ProviderScope(child: ChitApp()))`.
-- Dependencies from [PACKAGES.md](PACKAGES.md); `build_runner` running clean.
+- Every dependency from [PACKAGES.md](PACKAGES.md), resolving; `build_runner` running clean.
+- The fonts of README §6.2 downloaded, bundled and declared — as variable fonts (ADR-015).
+- Android and iOS only: the desktop scaffolds deleted (ADR-019).
+- Platform config in one pass — `minSdk`, permissions, the speech queries intent, the iOS
+  usage strings. PACKAGES.md "Platform configuration this implies" is the checklist.
+
+**Done when** `flutter pub get`, `flutter analyze`, `dart run build_runner build` and
+`flutter build apk --debug` are all clean, and the app launches to a blank screen on a handset.
+
+### M0b — the design system in code
+
 - The folder skeleton of [ARCHITECTURE.md](ARCHITECTURE.md) §2, with the empty files in place
   so nothing lands in the wrong layer by default.
-- The four `ThemeExtension`s from README §6 — colours, type, spacing, motion — with the fonts
-  bundled and declared.
+- The four `ThemeExtension`s from README §6 — colours, type, spacing, motion.
 - `Clock`, and the lint that nobody calls `DateTime.now()`.
-- Analysis options tightened; `custom_lint` wired.
+- Analysis options tightened; `riverpod_lint` enabled through `plugins:` (ADR-018).
 
 **Done when** the app launches to an empty screen in `--paper`, with the wordmark set in
 Newsreader and the चित्त mark in Noto Serif Devanagari; `flutter analyze` is clean; and the
 contrast test of README §6.4 passes over every token pair, composited.
+
+Note for M0b: the fonts are variable, so a `TextStyle` that sets only `fontWeight` renders at
+400 and analysis will not say so. Every style in `chit_type.dart` sets `fontVariations` too.
+ADR-015 has the reasoning; CLAUDE.md §4 has the rule.
 
 ---
 
@@ -90,10 +107,12 @@ The fakes come out.
 
 - `OpenMeteoWeatherService` and the WMO mapping, with the mapping unit-tested against a table
   of codes.
-- `GeolocatorLocationService` at low accuracy; the permission flow; the pin.
+- `GeolocatorLocationService` at high accuracy, accepting the coarse fix when that is all the
+  user granted (ADR-016); the permission flow; the pin.
 - Parallel capture under a timeout, on chit open. A signal that does not arrive is null and is
   not drawn.
-- Platform permission strings, written in chit's voice.
+- The platform permission strings themselves landed in M0a. M3 is where the flows that raise
+  them do.
 
 **Done when** the composer opens instantly with no network, and a chit saved offline carries a
 time, no weather word, and no pin — with nothing in the UI noting the absence.
@@ -113,10 +132,10 @@ time, no weather word, and no pin — with nothing in the UI noting the absence.
 **Done when** saving a chit on Today changes the calendar heat and the month total without a
 refresh, because both read the same stream.
 
-Past chits stay non-interactive here. Saved chits **are** editable (ADR-014) and the repository
-method exists from M1, but README §8.1 has not settled where the editor lives — so no pointer
-affordance, no focus stop, no button semantics. The audio pill is still the only control in a
-row. The affordance arrives with the editor, in the same change.
+Past chits stay non-interactive here. Saved chits **are** editable (ADR-014), the repository
+method exists from M1, and README §8.1 is now settled (ADR-017) — but the editor is M6, and
+until it exists there is no pointer affordance, no focus stop and no button semantics. The
+audio pill is still the only control in a row. The affordance and the editor arrive together.
 
 ---
 
@@ -151,9 +170,40 @@ the case most likely to reach a real user in India first.
 
 ---
 
-## M6 — Motion and the floors
+## M6 — The chit editor
 
-Polish, done deliberately and once.
+README §8.1, settled by ADR-017. It sits here rather than earlier because the editor has to
+handle a chit that already carries an audio pill, and after M5 every chit shape exists.
+
+- The affordance in the thread — on Today and in the archive, both, in this change. Pointer,
+  focus stop and button semantics arrive together with the screen they lead to; that is what
+  M2 and M4 have been holding back.
+- The editor screen: the ambient stamp, the audio pill, the text. Same slip treatment as a
+  chit in the thread, because it is the same chit.
+- **The audio is not editable and not removable.** No control offers it — not disabled, not
+  present. Editing changes what the chit says, never what was said.
+- Dirty tracking, and the save prompt on leaving with unsaved changes: keep the edit, or
+  discard it.
+- Discard, and a hard quit, both cancel the edit and land on Today. Nothing is written.
+- `ChitRepository.updateText()` is called at last — it has existed since M1 precisely so this
+  milestone does not have to grow one in a hurry. It touches `text`, `textOrigin` and
+  `updatedAt`, and nothing else.
+- `textOrigin` slides `transcript` → `transcriptEdited` on the first keystroke here too, the
+  same one-way move as in the composer.
+
+**Done when** a saved chit can be opened, corrected and saved; when leaving with changes asks
+and answering *discard* leaves the row exactly as it was; when editing a chit that has audio
+leaves the recording playable and untouched; and when an edit provably moves nothing on the
+day arc and relights no calendar tile.
+
+The prompt is the point of this milestone as much as the editor is. Discarding an open chit
+needs no confirmation and gets none (README §3.1) — discarding an edit to a record does.
+
+---
+
+## M7 — Motion and the floors
+
+Polish, done deliberately and once. Last, so that every surface it touches already exists.
 
 - The staggered entrance: fade plus a 6px rise, 55–60ms apart, capped, playing on first build
   and then shedding itself. A tab regaining visibility costs a 200ms fade and nothing more.
@@ -175,10 +225,8 @@ screen reader, and README §6.4 holds as tests rather than as intentions.
 
 In the order the README's own open questions suggest, not in the order of appetite.
 
-1. **README §8.1 — where a saved chit is edited.** It blocks the most, and it is now purely a
-   design question: the repository method ships in M1 and the behaviour is settled by ADR-014.
-   Inline in the thread, or a screen of its own. Nothing in the thread becomes tappable until
-   this lands, and when it does, the affordance and the editor arrive together.
+1. ~~**README §8.1 — where a saved chit is edited.**~~ Settled by ADR-017 and pulled forward
+   into v1 as **M6**. It used to head this list because it blocked the most.
 2. **README §8.2 — re-transcription.** The data model already allows it, and `textOrigin` is
    what keeps an attempt from overwriting the user's own words. Needs a design, and it gets more
    useful the moment a language model can be installed after the fact.
@@ -198,3 +246,7 @@ answer to what happens to the audio, and that is not a scheduling question.
 One milestone at a time, and each one ends in a state that can be shown to someone. If a
 milestone starts needing a piece from a later one, that is worth noticing — it usually means
 the ordering was wrong somewhere and it is cheaper to say so than to reach forward.
+
+Every milestone ends by updating [PROGRESS.md](PROGRESS.md), and by correcting whatever else
+the work made untrue. That is the standing rule in [CLAUDE.md](../CLAUDE.md) §0, and it is not
+optional: this file is only useful to the next session if it is still true.

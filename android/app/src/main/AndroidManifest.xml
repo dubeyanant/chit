@@ -1,4 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Voice. README 3.4: a chit may be recorded, and the recording is kept
+         whatever happens to the transcript. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <!-- Ambient capture, README 3.6. Fine first, coarse as the fallback when
+         the user grants only approximate location (ADR-016). The UI never shows
+         a place name either way - only the pin. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- One call, to Open-Meteo, for the condition word. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="chit"
         android:name="${applicationName}"
@@ -37,6 +51,11 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
+        <!-- Required from targetSdk 30 so speech_to_text can see the
+             on-device recognition service at all (ADR-005). -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
