@@ -6,7 +6,7 @@ has read only this file and `CLAUDE.md` should be able to pick up the work.
 Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
-**Last updated:** 14 September 2026, end of M0b.
+**Last updated:** 14 September 2026, after M0b — README §0 added as the entry point.
 
 ---
 
@@ -84,7 +84,23 @@ Updated at the end of every working session, per the standing rule in
    rather than a value; worth copying when M7 writes the remaining floors.
 
 **Verified:** `flutter analyze` clean, `flutter test` 43 passing, `dart format` clean,
-`dart run build_runner build` clean, `flutter build apk --debug`.
+`dart run build_runner build` clean, `flutter build apk --debug`, and the masthead confirmed
+rendering on a handset.
+
+### After M0b: the README got an entry point
+
+`README.md` §0 now states the reading order — `PROGRESS.md`, then `CLAUDE.md`, then the
+milestone's section of `BUILD-PLAN.md` — and states the standing rule. It duplicates
+`CLAUDE.md` §3 on purpose: `CLAUDE.md` is loaded automatically by Claude Code and by nothing
+else, so a human, or an agent told only "read the README", previously had to notice a link in
+a status blockquote. Changing the reading order now means changing both files.
+
+The same pass found three places still quoting `--seal` at **4.24:1** after README §6.1 was
+corrected to 4.23 — `ARCHITECTURE.md`, `DESIGN-LOG.md` and `chit_colors.dart`'s own doc
+comment. All three are fixed. It is worth noting how it happened: the figure was corrected
+where the test pointed and nowhere else, and a `grep` for the old value would have caught it
+in seconds. **When a number changes, grep for the old one before committing** — the standing
+rule is only as good as the search that backs it.
 
 **Not verified:** how the type actually renders on a handset. The masthead is on screen but
 nobody has looked at Newsreader and Noto Serif Devanagari at real size on a real display. Do

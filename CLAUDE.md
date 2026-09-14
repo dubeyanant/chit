@@ -40,9 +40,12 @@ including when the session ended mid-milestone, in which case say exactly where 
 1. `flutter analyze` is clean.
 2. `flutter test` passes.
 3. Every table above whose left column matches was acted on.
-4. `docs/PROGRESS.md` reflects reality — the milestone state, what was just finished, what is
+4. **If a number, a name or a path changed, `grep` for the old one.** A figure corrected only
+   where the test pointed is a figure still wrong in three other files — that has happened
+   here once already, with `--seal`'s contrast ratio. The rule is only as good as the search.
+5. `docs/PROGRESS.md` reflects reality — the milestone state, what was just finished, what is
    next, and any new open question.
-5. The change and its doc updates are in the same commit.
+6. The change and its doc updates are in the same commit.
 
 ---
 
@@ -77,6 +80,10 @@ disagreement is a bug in the other document, to be fixed rather than worked arou
 2. Read the milestone's section in `docs/BUILD-PLAN.md` for what "done" means.
 3. Read the parts of `README.md` that section points at.
 4. Do the work. Close the loop per §0.
+
+**`README.md` §0 says the same thing**, for anyone who arrives at the README first — a human,
+or an agent that does not load this file automatically. The two are deliberately redundant, so
+changing the reading order means changing both.
 
 ## 4. How the code is written
 

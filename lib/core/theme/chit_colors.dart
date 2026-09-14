@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 /// One palette, dark, one accent. The accent exists in two weights and which
 /// one to use is decided by the job, not by taste: [seal] is for marks, fills,
 /// borders and icons — anything read as a shape — and [sealInk] is the same
-/// stamp wherever it has to carry words, because [seal] measures 4.24:1 on
+/// stamp wherever it has to carry words, because [seal] measures 4.23:1 on
 /// [slip] and text has to clear 4.5:1.
 ///
 /// Every value here is verified against that floor by

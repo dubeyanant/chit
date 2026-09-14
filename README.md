@@ -6,16 +6,47 @@ The name is a wordplay. **चित्त** (*chitta*) is Sanskrit for conscious
 where impressions land. A **chit** is also a small slip of paper you scribble something on
 and keep. The app is both: a place where passing impressions get written down on small slips.
 
+---
+
+## 0. Start here
+
+**This file is the design authority — what the app is and how it behaves. It deliberately does
+not say where the build has got to.** That lives in one place, and this section exists so that
+arriving at this file leads there rather than stopping here.
+
+Read these three, in this order. It takes about ten minutes and it is the whole context.
+
+| # | Read | For |
+|---|---|---|
+| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, what the last session did, the numbered task list for the current milestone, and every open item. If you read only one thing, read this |
+| 2 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the standing rule below, the engineering principles, the commit format |
+| 3 | **[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md)** | What "done" means for the milestone `PROGRESS.md` just named |
+
+Then read the sections of *this* file that the milestone points at — §3 for behaviour, §5 for
+the data model, §6 for the design system — and open
+[`design/chit-app-v5.html`](design/chit-app-v5.html) in a browser, which is the visual target.
+
+§10 lists every document and what each answers.
+
 > **Status:** in build. M0 is done — the project is configured and the design system of §6 is
 > in code as four theme extensions, with §6.4's contrast floor and reduced-motion rule enforced
-> as tests. M1, the data spine, is next.
+> as tests. **M1, the data spine, is next.**
 >
-> **[`docs/PROGRESS.md`](docs/PROGRESS.md) is where the build actually stands** and is the
-> first thing to read. [`CLAUDE.md`](CLAUDE.md) is how to work in this repository.
-> The interactive design prototype lives at
-> [`design/chit-app-v5.html`](design/chit-app-v5.html) — open it in any browser.
-> How the app is put together is in [ARCHITECTURE.md](docs/ARCHITECTURE.md); the order it
-> gets built in is [BUILD-PLAN.md](docs/BUILD-PLAN.md).
+> This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
+
+### The standing rule
+
+**No change is finished until the documents that describe it are true again** — in the *same*
+change, never as a follow-up. Contradicting a document is a change to that document.
+
+That is why the reading order above works: a session that follows the rule leaves
+`PROGRESS.md` describing reality, so the next session can start from it without being told
+anything. A session that skips it leaves the next one with a lie and no way to tell which half
+to trust.
+
+[`CLAUDE.md`](CLAUDE.md) §0 has the full version — which document to update for which kind of
+change, and the checklist to run before calling anything done. If you are Claude Code, that
+file is already loaded; read `docs/PROGRESS.md` and start.
 
 ---
 

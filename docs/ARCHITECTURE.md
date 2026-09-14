@@ -275,7 +275,7 @@ README §6 becomes four `ThemeExtension`s (ADR-010). Two of them carry rules, no
 
 **`ChitColors`** exposes `seal` and `sealInk` as separate members with doc comments stating the
 split — marks, fills, borders and icons take `seal`; anything read as words takes `sealInk`.
-The design log explains why (`seal` is 4.24:1 on a slip; text needs 4.5:1).
+The design log explains why (`seal` is 4.23:1 on a slip; text needs 4.5:1).
 
 **`ChitMotion`** exposes two resolvers rather than a bag of durations:
 

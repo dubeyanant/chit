@@ -215,7 +215,7 @@ demonstration rather than as a tool, and they set the wrong expectation for what
 
 **One accent, in two weights.** `--seal` earns its force by being the only colour in the app.
 Every new element should reach for ink, hairline, or spacing first. Where the accent has to
-be *read* rather than seen it lifts to `--seal-ink`: `--seal` measures 4.24:1 on a chit
+be *read* rather than seen it lifts to `--seal-ink`: `--seal` measures 4.23:1 on a chit
 surface, which is fine for a mark and short of the floor for a word. Marks, fills, borders
 and icons take `--seal`; text takes `--seal-ink`. Keeping that split is what lets the accent
 stay saturated instead of being compromised into a colour that is neither.
