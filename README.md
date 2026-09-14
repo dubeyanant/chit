@@ -6,9 +6,9 @@ The name is a wordplay. **चित्त** (*chitta*) is Sanskrit for conscious
 where impressions land. A **chit** is also a small slip of paper you scribble something on
 and keep. The app is both: a place where passing impressions get written down on small slips.
 
-> **Status:** in build. M0a is done — the project is no longer a scaffold: dependencies,
-> fonts, platform config and the app entry point are in place. M0b, the design system in
-> code, is next.
+> **Status:** in build. M0 is done — the project is configured and the design system of §6 is
+> in code as four theme extensions, with §6.4's contrast floor and reduced-motion rule enforced
+> as tests. M1, the data spine, is next.
 >
 > **[`docs/PROGRESS.md`](docs/PROGRESS.md) is where the build actually stands** and is the
 > first thing to read. [`CLAUDE.md`](CLAUDE.md) is how to work in this repository.
@@ -280,8 +280,8 @@ Dark, single palette.
 | `--slip` | `#211E1A` | a chit's surface |
 | `--slip-under` | `#141210` | the pad beneath the open chit |
 | `--ink` | `#EDE7DC` | primary text |
-| `--ink-muted` | `#A39B8B` | secondary text — 6.4:1 |
-| `--ink-faint` | `#8F8879` | metadata — 5.0:1 on ground, 4.7:1 on a chit |
+| `--ink-muted` | `#A39B8B` | secondary text — 6.49:1 on the ground, 6.02:1 on a chit |
+| `--ink-faint` | `#8F8879` | metadata — 5.08:1 on the ground, 4.72:1 on a chit |
 | `--hair` | `#2E2A25` | borders, rules |
 | `--hair-soft` | `#252220` | inner dividers |
 | `--seal` | `#C4664E` | the one accent — the stamp pressed onto a surface |
@@ -293,7 +293,7 @@ microphone, and the Save button.
 
 The accent is one colour in two weights, and which one to use is decided by the job, not by
 taste. `--seal` is for marks, fills, borders and icons — anything read as a shape. Wherever
-the accent has to carry *words* it lifts to `--seal-ink`, because `--seal` measures 4.24:1 on
+the accent has to carry *words* it lifts to `--seal-ink`, because `--seal` measures 4.23:1 on
 a chit surface and text has to clear 4.5:1. That covers the **listening** label on the
 recording sheet and the **now** cap on the day arc.
 

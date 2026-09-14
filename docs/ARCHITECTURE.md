@@ -46,7 +46,7 @@ lib/
 │   │   ├── chit_space.dart         4px scale, radii, the 26px gutter
 │   │   ├── chit_motion.dart        durations, curves, travel() vs fade()
 │   │   └── chit_theme.dart         assembles ThemeData from the above
-│   ├── clock.dart                  injected now (ADR-012)
+│   ├── clock.dart                  injected now (ADR-012), and clockProvider
 │   └── extensions.dart             BuildContext sugar for the extensions above
 │
 ├── domain/
@@ -102,6 +102,17 @@ lib/
 
 `shared/widgets` holds the pieces used by more than one feature. A widget used by one screen
 lives in that screen's `presentation/widgets/`, and moves out only when a second screen wants it.
+
+**Every file above exists**, as of M0b. The ones a milestone has not reached yet hold a doc
+comment naming the milestone that fills them and nothing else. An empty named file is a
+stronger statement about where something belongs than an empty directory, and the cost of
+being wrong about a layer is paid at the moment the first line is written, not later.
+
+**`Clock` lives in `core`, not in `domain`.** ADR-012's prose says "a `Clock` from `domain`";
+the tree above has always said `core/clock.dart`, and that is where it is. `core` is imported
+by every layer and depends on none of them, which is exactly what an injected clock needs, and
+`domain` is for the vocabulary of the product rather than for the machinery under it. The ADR's
+decision is unchanged — nothing calls `DateTime.now()` — only its file path was wrong.
 
 ---
 

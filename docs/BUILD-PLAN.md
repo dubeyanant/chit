@@ -38,21 +38,25 @@ can be verified by building and the second half is code that can be verified by 
 `flutter build apk --debug` are all clean, and the app launches to a blank screen on a handset.
 Blank is correct: `ChitApp` fills the screen with `--paper` and draws nothing else until M0b.
 
-### M0b — the design system in code
+### M0b — the design system in code ✅ done, 14 September 2026
 
 - The folder skeleton of [ARCHITECTURE.md](ARCHITECTURE.md) §2, with the empty files in place
   so nothing lands in the wrong layer by default.
 - The four `ThemeExtension`s from README §6 — colours, type, spacing, motion.
 - `Clock`, and the lint that nobody calls `DateTime.now()`.
 - Analysis options tightened; `riverpod_lint` enabled through `plugins:` (ADR-018).
+- The floors that fail silently, as tests: the contrast floor of README §6.4, the
+  `fontVariations` rule of ADR-015, and the reduced-motion rule of §6.4.
 
 **Done when** the app launches to an empty screen in `--paper`, with the wordmark set in
 Newsreader and the चित्त mark in Noto Serif Devanagari; `flutter analyze` is clean; and the
 contrast test of README §6.4 passes over every token pair, composited.
 
-Note for M0b: the fonts are variable, so a `TextStyle` that sets only `fontWeight` renders at
-400 and analysis will not say so. Every style in `chit_type.dart` sets `fontVariations` too.
-ADR-015 has the reasoning; CLAUDE.md §4 has the rule.
+M0b is where the pattern for the accessibility floors was set: **a rule that fails silently
+gets a test that checks a property, not an example.** `chit_motion_test.dart` asserting "no
+fade is slower than it was" is what found ADR-020 — a rule that was self-consistent and wrong,
+and that reading the design would not have caught. M7 has four more floors to enforce and
+should be written the same way.
 
 ---
 

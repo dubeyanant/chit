@@ -78,7 +78,53 @@ disagreement is a bug in the other document, to be fixed rather than worked arou
 3. Read the parts of `README.md` that section points at.
 4. Do the work. Close the loop per §0.
 
-## 4. House rules for the code
+## 4. How the code is written
+
+### 4.1 The engineering principles, and what each one means *here*
+
+These are not decoration. Each line below says what the principle actually forbids in this
+codebase, because a principle nobody can fail is a principle nobody is following.
+
+**SOLID.**
+
+- **Single responsibility.** A class has one reason to change. The four theme extensions are
+  four classes rather than one `ChitTheme` bag precisely because colour, type, spacing and
+  motion change for different reasons. A controller that both formats a date and writes a row
+  is two classes.
+- **Open/closed.** Extend by adding a type, not by adding a branch to a `switch` that already
+  exists. A new `WeatherCondition` should light up as a missing case at compile time — so
+  switches over sealed types and enums are **exhaustive, with no `default:`**. A `default:` is
+  how a new variant ships silently wrong.
+- **Liskov.** A fake used in a test must be honest. `FakeSpeechRecognizer` that "fails" must
+  fail the way the real one does — the §3.5 path is only tested if the substitute cannot lie.
+- **Interface segregation.** `context.colors`, `context.type`, `context.space` and
+  `context.motion` are four accessors, not one `context.theme` returning everything. A widget
+  that needs a colour should not be able to reach motion.
+- **Dependency inversion.** `features` depends on interfaces in `domain`; `data` supplies the
+  implementations; Riverpod wires them at the root. This is the layer rule below, and it is the
+  same principle.
+
+**And the rest, in the same spirit.**
+
+- **Composition over inheritance.** Widgets compose. `extends` a concrete class of ours is
+  almost always the wrong answer; a `Widget` field or a builder callback is the right one.
+- **Immutability by default.** `final class`, `const` constructors, `final` fields. Models are
+  `freezed`. If a thing can be `const`, it is.
+- **Make illegal states unrepresentable.** The `Chit` invariant (text or audio, never neither)
+  is enforced by a private constructor with an assert *and* a database check constraint, not by
+  a comment and good intentions. Prefer a type that cannot be wrong to a validation that runs.
+- **YAGNI, and it outranks the rest.** Do not add an abstraction for a second implementation
+  that does not exist. The interfaces in `domain` earn their place because tests are the second
+  implementation. Nothing else gets an interface on speculation.
+- **DRY, but only for knowledge.** Two lines that look alike but change for different reasons
+  are not duplication. Extract a rule, never a coincidence.
+- **Fail loudly in development, degrade quietly in production.** `assert` for what must never
+  happen; a null and an undrawn element for a signal that did not arrive (ADR-007).
+- **Name things as the README names them.** A chit is a `Chit`. The blank one at the top of
+  Today is the *open chit*, not a draft, not an entry, not a note. The vocabulary in the README
+  is the vocabulary in the code, and a synonym is a bug in the making.
+
+### 4.2 The specific rules
 
 - **The layer rule.** `features` never imports `data`. Widgets watch controllers; controllers
   depend on interfaces in `domain`; Riverpod supplies implementations at the root.
@@ -96,7 +142,36 @@ disagreement is a bug in the other document, to be fixed rather than worked arou
   No mocking framework.
 - The prototype is the visual reference. When in doubt about a pixel, open it.
 
-## 5. Commands
+## 5. Commits
+
+**[Conventional Commits](https://www.conventionalcommits.org).** `type(scope): subject`, the
+subject in the imperative mood and lowercase, no trailing full stop.
+
+| Type | Used here for |
+|---|---|
+| `feat` | behaviour a user of the app can see |
+| `fix` | a defect in behaviour that already shipped |
+| `refactor` | changes shape, not behaviour |
+| `perf` | faster, same behaviour |
+| `test` | tests only |
+| `docs` | documentation only — including a docs-only milestone update |
+| `build` | dependencies, Gradle, Xcode, fonts, platform config, codegen setup |
+| `chore` | anything that fits nowhere above. Rare; prefer a real type |
+| `style` | formatting only. Rarer still — `dart format` runs before every commit |
+
+Scope is the milestone (`m0b`) or the area (`theme`, `composer`, `calendar`, `db`). Omit it
+when the change is genuinely global.
+
+**The body says why, not what** — the diff already says what. Mention the ADR when the change
+turns on one, and record what was verified.
+
+**The docs go in the same commit as the code that made them untrue** (§0). A commit whose body
+says "docs to follow" is a commit that should not have been made.
+
+History before `a367e0a` was rewritten once, on 14 September 2026, to bring the first four
+commits to this format. The originals are tagged `pre-conventional-commits`.
+
+## 6. Commands
 
 ```bash
 flutter pub get

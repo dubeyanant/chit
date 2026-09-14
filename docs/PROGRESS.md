@@ -6,7 +6,7 @@ has read only this file and `CLAUDE.md` should be able to pick up the work.
 Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
-**Last updated:** 14 September 2026, end of M0a — verified on a handset, package name set.
+**Last updated:** 14 September 2026, end of M0b.
 
 ---
 
@@ -15,84 +15,106 @@ Updated at the end of every working session, per the standing rule in
 | Milestone | State | Notes |
 |---|---|---|
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
-| **M0b** — the design system in code | ⬜ next | |
-| M1 — the data spine | ⬜ | |
+| **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
+| **M1** — the data spine | ⬜ next | |
 | M2 — Today, text only | ⬜ | |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
-| M6 — the chit editor | ⬜ | new; README §8.1 was settled 14 Sep 2026 (ADR-017) |
-| M7 — motion and the floors | ⬜ | was M6 |
+| M6 — the chit editor | ⬜ | README §8.1 settled 14 Sep 2026 (ADR-017) |
+| M7 — motion and the floors | ⬜ | |
+
+**43 tests, `flutter analyze` clean, debug APK builds.**
 
 ---
 
-## What M0a actually did
+## What M0a did
 
-- **Dependencies.** `pubspec.yaml` now carries every package in [PACKAGES.md](PACKAGES.md).
-  All resolve at the pinned versions. `custom_lint` was dropped — see ADR-018.
-- **The scaffold is gone.** `lib/main.dart` is `runApp(ProviderScope(child: ChitApp()))`;
-  `lib/app/chit_app.dart` is a bare `--paper` surface that M0b replaces. The counter test
-  was deleted.
-- **Platforms.** `windows/`, `linux/` and `macos/` deleted; `.metadata` trimmed to root,
-  android, ios, web. `web/` is kept — README §10 plans responsive web after v1 (ADR-019).
-- **Fonts.** The three families of README §6.2 are in `assets/fonts/` as **variable** fonts
-  with their OFL licences, and declared in `pubspec.yaml`. See ADR-015 — this changed what
-  PACKAGES.md said, because the prototype uses weights PACKAGES.md had not listed.
-- **Android.** `minSdk` 24 (`record_android`'s floor, the highest of any plugin).
-  `RECORD_AUDIO`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `INTERNET`, plus the
-  `android.speech.RecognitionService` queries intent that `speech_to_text` needs from
-  targetSdk 30.
-- **iOS.** Microphone, speech-recognition and when-in-use location strings in `Info.plist`,
-  written in chit's voice. Deployment target was already 15.0, above every plugin's floor —
-  unchanged.
-- **Package name.** `com.example.chit` → **`com.infiniteants.chit`**, everywhere: the Android
-  `namespace` and `applicationId`, the Kotlin package declaration and the directory holding
-  `MainActivity.kt`, and all six `PRODUCT_BUNDLE_IDENTIFIER` entries in the Xcode project
-  (`RunnerTests` included). Done during M0a rather than left as debt, because it is the app's
-  identity and every day it stays wrong is a day something else is built on top of it.
-- **Gradle.** `kotlin.incremental=false` added to `android/gradle.properties`. Every plugin's
-  `compileDebugKotlin` task failed with *"Could not close incremental caches in
-  …\caches-jvm\jvm\kotlin"* — a Windows file-locking problem, reproducible across a
-  `flutter clean`. Turning incremental Kotlin compilation off fixes it and costs rebuild time
-  and nothing else. Revisit if the build ever moves off Windows.
-- **Docs.** `CLAUDE.md` created (the standing rule); this file created; ADR-015 to ADR-019
-  added; README, ARCHITECTURE, DATA-MODEL, DESIGN-LOG, PACKAGES and BUILD-PLAN all updated to
-  match.
-
-**Verified:** `flutter pub get`, `flutter analyze` (clean), `dart run build_runner build`
-(clean), `flutter build apk --debug`, and **the debug build installed and launched on a real
-Android handset over wireless debugging.** It shows an empty `--paper` screen, which is all
-`ChitApp` draws until M0b step 10. Every M0a criterion is met.
-
-Worth writing down because it will be asked again: **an empty near-black screen is the correct
-output of M0a.** `--paper` is `#191714` and reads as black on a phone. A crash would show a red
-error screen instead. The wordmark is the first thing that makes the screen self-evidently
-alive, and it lands at the end of M0b.
+- **Dependencies.** `pubspec.yaml` carries every package in [PACKAGES.md](PACKAGES.md), all
+  resolving at their pinned versions. `custom_lint` was dropped — ADR-018.
+- **The scaffold is gone.** `lib/main.dart` is `runApp(ProviderScope(child: ChitApp()))`.
+- **Platforms.** `windows/`, `linux/` and `macos/` deleted; `.metadata` trimmed. `web/` kept
+  — ADR-019.
+- **Fonts.** The three families of README §6.2 in `assets/fonts/` as **variable** fonts with
+  their OFL licences — ADR-015, which corrected what PACKAGES.md used to say.
+- **Android.** `minSdk` 24 (`record_android`'s floor). `RECORD_AUDIO`, `ACCESS_FINE_LOCATION`,
+  `ACCESS_COARSE_LOCATION`, `INTERNET`, and the `android.speech.RecognitionService` queries
+  intent `speech_to_text` needs from targetSdk 30.
+- **iOS.** The three usage strings in `Info.plist`, in chit's voice. Deployment target 15.0,
+  already above every plugin's floor.
+- **Package name.** `com.infiniteants.chit` in all five places it lives.
+- **Gradle.** `kotlin.incremental=false` — every plugin's `compileDebugKotlin` failed with
+  *"Could not close incremental caches"* on this Windows setup, reproducibly. Costs rebuild
+  time and nothing else.
 
 ---
 
-## Next: M0b — the design system in code
+## What M0b did
 
-Full statement of done in [BUILD-PLAN.md](BUILD-PLAN.md) M0. In order:
+- **The skeleton.** Every file in [ARCHITECTURE.md](ARCHITECTURE.md) §2 exists. The ones a
+  milestone has not reached hold a doc comment naming that milestone and nothing else.
+- **The four theme extensions** in `lib/core/theme/`:
+  - `ChitColors` — the ten tokens of README §6.1, plus `sealWash` for flattening the audio
+    pill's translucent surface so it can actually be checked.
+  - `ChitType` — twenty-five styles, the whole scale. Every one sets `fontVariations`.
+  - `ChitSpace` — the 4px scale under the prototype's own `s1`…`s8` names, so porting a rule
+    out of the CSS is a rename rather than a translation.
+  - `ChitMotion` — the pace table as a `ChitPace` enum with `travel()` and `fade()`.
+- **`context.colors` / `.type` / `.space` / `.motion`** in `lib/core/extensions.dart`. Four
+  accessors, not one, so a widget that needs a colour cannot reach motion. `.motion` resolves
+  the reduced-motion flag from `MediaQuery`, which is what makes README §6.4 one decision.
+- **`Clock`** in `lib/core/clock.dart` with `clockProvider`, and a test that fails if anything
+  else in `lib/` calls `DateTime.now()`.
+- **`analysis_options.yaml`** tightened: strict casts, inference and raw types; exhaustive
+  switches and unawaited futures as errors; immutability and documentation rules;
+  `riverpod_lint` through `plugins:`.
+- **The masthead.** "chit चित्त" on `--paper`, baseline-aligned, in the page gutter.
+- **Three test suites**, 43 tests: the contrast floor of README §6.4 composited, the
+  `fontVariations` rule of ADR-015, and the reduced-motion rule of §6.4.
 
-1. The folder skeleton of [ARCHITECTURE.md](ARCHITECTURE.md) §2, empty files in place.
-2. `core/theme/chit_colors.dart` — the eleven README §6.1 tokens as a `ThemeExtension`.
-3. `core/theme/chit_type.dart` — the three faces and the scale. **Every style sets
-   `fontVariations`**, not `fontWeight` alone (ADR-015). Tabular figures on anything that
-   counts or keeps time.
-4. `core/theme/chit_space.dart` — the 4px scale, 2px radius (14px for the recording sheet's
-   top corners), the 26px gutter.
-5. `core/theme/chit_motion.dart` — 220ms `cubic-bezier(.2,0,0,1)`, the README §6.3 pace
-   table, and `travel()` vs `fade()` so `prefers-reduced-motion` is one decision made once.
-6. `core/theme/chit_theme.dart` assembling `ThemeData`; `core/extensions.dart` for the
-   `context.colors` / `context.type` sugar.
-7. `core/clock.dart` (ADR-012) and the lint that fails a raw `DateTime.now()`.
-8. `analysis_options.yaml` tightened; `riverpod_lint` enabled through the `plugins:` key
-   (ADR-018), and `flutter analyze` clean with it on.
-9. **The contrast test** — every token pair from README §6.4, composited, ≥4.5:1, as a real
-   test in `test/`.
-10. First real paint: empty `--paper` screen, "chit" set in Newsreader, चित्त in Noto Serif
-    Devanagari.
+### Two things M0b changed elsewhere
+
+1. **README §6.1's contrast figures were slightly wrong** and are now measured. `--ink-muted`
+   is 6.49:1 on the ground (was quoted as 6.4), `--ink-faint` 5.08:1 (was 5.0), and `--seal`
+   is 4.23:1 on a chit (was 4.24). The test asserts the corrected values to ±0.01, so the
+   prose and the arithmetic cannot drift apart again.
+2. **ADR-020.** Under reduced motion the old rule stretched press feedback from 90ms to 140ms
+   — slower, for the users who asked for less animation. The re-timing is now a ceiling, not
+   an assignment. Found by a test asserting a *property* ("no fade is slower than it was")
+   rather than a value; worth copying when M7 writes the remaining floors.
+
+**Verified:** `flutter analyze` clean, `flutter test` 43 passing, `dart format` clean,
+`dart run build_runner build` clean, `flutter build apk --debug`.
+
+**Not verified:** how the type actually renders on a handset. The masthead is on screen but
+nobody has looked at Newsreader and Noto Serif Devanagari at real size on a real display. Do
+that before M2 starts drawing with the scale — see open item 1.
+
+---
+
+## Next: M1 — the data spine
+
+No UI. Full statement of done in [BUILD-PLAN.md](BUILD-PLAN.md) M1; the schema and its
+invariants are in [DATA-MODEL.md](DATA-MODEL.md). In order:
+
+1. `domain/models/` — `Chit` (freezed, private constructor, the one-of assert),
+   `AmbientStamp`, `WeatherCondition`, `TextOrigin`, `DaySummary`.
+2. `data/db/tables/chits_table.dart` — the columns, the check constraints, the indexes.
+3. `data/db/app_database.dart` — the Drift database, and the migration harness with the v1
+   schema snapshot taken *before* there is anything to migrate.
+4. `data/db/daos/chit_dao.dart` — the queries.
+5. `domain/repositories/chit_repository.dart` — the interface. Both `save()` and
+   `updateText()` (ADR-014); the update path exists from the start.
+6. `data/repositories/chit_repository_impl.dart`.
+7. `data/audio/audio_store.dart` — temp → permanent, delete, the orphan sweep. No recorder
+   yet; tests write dummy files.
+8. Repository tests against an in-memory database: every illegal row shape rejected, all four
+   legal ones round-tripping, `localDay` correct across a midnight and across a timezone
+   change (the `Clock` from M0b is what makes this testable), audio moved on save and deleted
+   on discard, and `updateText` provably touching nothing but `text`, `textOrigin` and
+   `updatedAt`.
+
+Check open item 3 before starting — `sqlite3_flutter_libs` resolves to an `+eol` release.
 
 ---
 
@@ -100,19 +122,31 @@ Full statement of done in [BUILD-PLAN.md](BUILD-PLAN.md) M0. In order:
 
 Things a future session needs to know but that are not yet scheduled work.
 
-1. **Developer Mode on Windows.** `flutter pub get` warns that plugin builds need symlink
-   support. The debug APK built anyway, so it is not currently blocking — but if a build fails
-   on Windows in a way the Kotlin fix above does not explain, this is the next thing to check:
-   `start ms-settings:developers`.
-2. **`speech_to_text` applies the Kotlin Gradle Plugin,** and the build warns that *"future
-   versions of Flutter will fail to build if your app uses plugins that apply KGP."* Harmless
-   today on Flutter 3.47.4. It becomes real at some future SDK bump, and the answer will be a
-   `speech_to_text` release that has migrated to Built-in Kotlin — worth checking before any
-   Flutter upgrade, since ADR-005 makes that package hard to swap.
-3. **`sqlite3_flutter_libs` resolves to `0.6.0+eol`,** pulled in by `drift_flutter 0.3.1`.
-   The `+eol` marker is upstream's. It works; check for a successor when M1 starts.
-4. **Font bundle is ~1.8 MB,** of which Noto Serif Devanagari is 758 KB for the single
-   चित्त mark. PACKAGES.md already suggests subsetting before shipping; this is the file
-   that makes it worth doing.
-5. **README §8.2 (re-transcription) and §8.3 (does Today carry enough rhythm) are still
-   open.** Neither blocks anything before M7.
+1. **Nobody has looked at the type on a handset.** The masthead renders, but the optical-size
+   mapping is a judgement call that has never been checked against the prototype side by side:
+   `ChitType._opticalSizeFor` converts logical pixels to points at 0.75, which is what the CSS
+   spec says a browser does with `font-optical-sizing: auto`. If Newsreader looks heavier or
+   lighter than `design/chit-app-v5.html` at the same size, that constant is the first suspect.
+   Worth settling in M2, when there is real text to compare.
+2. **README §6.1 has no token for two colours the design uses.** The calendar's near-white
+   numeral on a strong fill (`#FFF6EE`, README §4.2) and the label on a filled Save button
+   (`#1A1310` in the prototype). Neither is in the §6.1 table. M2 hits the second and M4 the
+   first; whichever gets there first should add the token to README §6.1 and to the contrast
+   test rather than inlining a hex.
+3. **`sqlite3_flutter_libs` resolves to `0.6.0+eol`,** pulled in by `drift_flutter 0.3.1`. The
+   marker is upstream's. Check for a successor at the top of M1, since that is when it starts
+   mattering.
+4. **`speech_to_text` applies the Kotlin Gradle Plugin,** and the build warns that future
+   Flutter versions will fail on plugins that do. Harmless on 3.47.4. Check before any Flutter
+   upgrade, since ADR-005 makes that package hard to swap.
+5. **Developer Mode on Windows.** `flutter pub get` warns that plugin builds need symlink
+   support. Not currently blocking — the APK builds. If a build fails in a way
+   `kotlin.incremental=false` does not explain, check this: `start ms-settings:developers`.
+6. **Font bundle is ~1.8 MB,** of which Noto Serif Devanagari is 758 KB to draw one word.
+   PACKAGES.md suggests subsetting before shipping; this is the file that makes it worth doing.
+7. **`public_member_api_docs` is on.** It is valuable in `domain`, `data` and `core`, and it
+   is noise on a zero-argument widget constructor. If M2 finds it a real tax, the answer is a
+   nested `analysis_options.yaml` under `lib/features/` rather than turning it off everywhere
+   — and either way it is a change that gets recorded.
+8. **README §8.2 (re-transcription) and §8.3 (does Today carry enough rhythm) are still open.**
+   Neither blocks anything before M7.

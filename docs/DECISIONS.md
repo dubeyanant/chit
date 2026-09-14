@@ -272,7 +272,8 @@ typography as load-bearing; a fallback face is a visibly different app.
 **Why.** The accent has two weights with a rule about which to use (`--seal` for marks,
 `--seal-ink` for text), motion has a reduced-motion behaviour that differs per *kind* of
 animation, and both rules are enforceable only if there is one place that knows them.
-`ChitMotion` exposes `travel(...)` and `fade(...)`: under `MediaQuery.disableAnimations`,
+`ChitMotion` exposes `travel(...)` and `fade(...)` (refined by ADR-020, which stops the
+re-timing from ever making a fade slower than it was): under `MediaQuery.disableAnimations`,
 travel collapses to zero and fade re-times to the design log's 140ms on transitions and 220ms
 on arrivals. That is exactly the rule the log argues for, and not the one a global
 duration-to-zero would give.
@@ -475,3 +476,34 @@ No layout work is being spent on it before the phone app is real.
 
 **Costs.** Restoring a desktop target means `flutter create --platforms=...` and re-applying any
 platform config. That is cheap, and it will not happen.
+
+---
+
+## ADR-020 — Reducing motion never makes a fade slower
+
+**Decision.** Under reduced motion, a fade re-times to ADR-010's targets — 220ms for an
+arrival, 140ms for everything else — **unless it was already quicker than that**, in which case
+it keeps its own pace. In practice this affects exactly one pace: press feedback stays at 90ms
+instead of being stretched to 140ms.
+
+**Over.** ADR-010 as originally written, which set every non-arrival fade to 140ms flat.
+
+**Why.** ADR-010 did not consider press. Its rule was written about *transitions* — a tab
+changing, a control arriving — where 140ms is a calm replacement for movement. Press feedback
+is not a transition. It is the acknowledgement a finger gets, and README §6.3 is explicit that
+on a phone it is the *only* one. Stretching it from 90ms to 140ms makes a button feel slower to
+the one group of users who asked for less animation, not less responsiveness.
+
+README §6.4 states the principle this follows from: *"Reducing motion should cost a user
+animation, not confirmation that their action landed."* A slower acknowledgement is a worse
+acknowledgement. So the re-timing is a ceiling rather than an assignment.
+
+**How this was found, which is the part worth keeping.** It was not noticed by reading the
+design. `chit_motion_test.dart` asserts "no fade is slower than it was" — a property, not an
+example — and that assertion failed on the first run. The rule as written was self-consistent
+and wrong, and only a test that checked the *shape* of the answer rather than its values caught
+it. Worth remembering when writing the other floors of README §6.4.
+
+**Costs.** One more clause in a rule that was pleasingly simple. The clause is a `min`, and the
+test states it in one line, so the cost is a sentence rather than a branch anyone has to
+remember.
