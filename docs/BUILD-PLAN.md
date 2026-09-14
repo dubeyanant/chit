@@ -29,9 +29,14 @@ can be verified by building and the second half is code that can be verified by 
 - Android and iOS only: the desktop scaffolds deleted (ADR-019).
 - Platform config in one pass — `minSdk`, permissions, the speech queries intent, the iOS
   usage strings. PACKAGES.md "Platform configuration this implies" is the checklist.
+- The real package name, `com.infiniteants.chit`, in place of the scaffold's `com.example.chit`
+  — Android namespace and `applicationId`, the Kotlin package and its directory, and the Xcode
+  bundle identifiers. It is the app's identity, so it belongs here rather than in a later
+  release-prep pass.
 
 **Done when** `flutter pub get`, `flutter analyze`, `dart run build_runner build` and
 `flutter build apk --debug` are all clean, and the app launches to a blank screen on a handset.
+Blank is correct: `ChitApp` fills the screen with `--paper` and draws nothing else until M0b.
 
 ### M0b — the design system in code
 
