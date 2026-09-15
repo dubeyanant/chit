@@ -1,4 +1,5 @@
 import 'package:chit/app/chit_app.dart';
+import 'package:chit/app/router.dart';
 import 'package:chit/features/calendar/presentation/calendar_screen.dart';
 import 'package:chit/features/shell/presentation/shell_screen.dart';
 import 'package:chit/features/today/presentation/today_screen.dart';
@@ -216,6 +217,24 @@ void main() {
 
       expect(tabSemantics(tester, 'today').properties.selected, isFalse);
       expect(tabSemantics(tester, 'calendar').properties.selected, isTrue);
+    });
+
+    testWidgets('there is a tab for every route, and no others', (
+      WidgetTester tester,
+    ) async {
+      // The bar is built from ChitRoute.values rather than from a list of its
+      // own, so this is what that buys: a destination cannot be added to the
+      // router and quietly miss its tab.
+      await pumpApp(tester);
+
+      for (final ChitRoute route in ChitRoute.values) {
+        expect(
+          find.text(route.label),
+          findsOneWidget,
+          reason: '${route.name} has a tab',
+        );
+      }
+      expect(find.byType(InkWell), findsNWidgets(ChitRoute.values.length));
     });
 
     testWidgets('every tab clears the 44px touch target of §6.4', (

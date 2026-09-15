@@ -6,8 +6,8 @@ has read only this file and `CLAUDE.md` should be able to pick up the work.
 Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
-**Last updated:** 15 September 2026, after M1 — the data spine — and after v6, which moved the
-documents and then the code behind them.
+**Last updated:** 15 September 2026, after M1, after v6 — which moved the documents and then the
+code behind them — and after M2 groups A and B.
 
 ---
 
@@ -18,18 +18,22 @@ documents and then the code behind them.
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
-| M2 — Today, text only | ⬜ next | |
+| **M2** — Today, text only | 🔶 in progress | groups A and B of [TASKS.md](TASKS.md) done; **C is next**. ADR-023, ADR-024 |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**141 tests, `flutter analyze` clean, debug APK builds.**
+**142 tests, `flutter analyze` clean, debug APK builds.**
 
-The app on a handset is still the masthead on `--paper` and nothing else — M1 added no UI, which
-is what it said it would do. That screen was confirmed on a device on 15 September: dark warm
-brown, "chit चित्त" in the gutter, which is `--paper` `#191714` behaving exactly as §6.1 sets it.
+**On a handset:** the masthead on `--paper`, an empty page, and a working two-tab bar. Tapping
+*calendar* cross-fades to a placeholder line that M4 deletes. Today stays empty until groups E,
+G and H put the open chit, the thread and the timeline on it.
+
+*The palette was confirmed on a device on 15 September, before the shell existed: dark warm
+brown, "chit चित्त" in the gutter — `--paper` `#191714` behaving exactly as §6.1 sets it. Nobody
+has looked at the tab bar on a real screen yet.*
 
 ---
 
@@ -329,13 +333,32 @@ empty page and the calendar is a placeholder line that M4 deletes.
 
 - `app/router.dart` — `StatefulShellRoute`, two branches, and `ChitRoutes` so nothing navigates
   by a loose string.
-- `app/chit_app.dart` is now `MaterialApp.router` and nothing else. It is a `StatefulWidget`
-  only so the router is built once: a `GoRouter` made in `build` would be thrown away on every
-  rebuild and take each tab's navigation stack with it, which is what ADR-011 exists to prevent.
+- `app/chit_app.dart` is now `MaterialApp.router` and nothing else — a `ConsumerWidget` that
+  watches `routerProvider` and holds nothing.
 - `features/shell/presentation/shell_screen.dart` — the masthead, the tab bar, and `BranchFade`.
   The wordmark moved here out of `chit_app.dart`, which is where ARCHITECTURE.md §2 puts a
   widget only one screen uses.
-- **Nine tests**, 132 → 141.
+- **Ten tests**, 132 → 142.
+
+### The two packages carry as much as they can
+
+Written down as a house rule in CLAUDE.md §4.2 and ARCHITECTURE.md §3, because the first pass
+at this group did not follow it: the router was built in a `StatefulWidget`.
+
+That was wrong by a rule already on the books rather than by taste. A `GoRouter` holds the
+navigation stack of every branch, which makes it state, and ADR-001 says Riverpod is the only
+state mechanism in the app — so a router in a widget puts the one thing that must survive a
+rebuild in the one place that does not. It is `routerProvider` now, `keepAlive`, disposed with
+the container, and `ChitApp` is a `ConsumerWidget` holding nothing. Every test passed unchanged
+across the move, which is the seam being right rather than the change being small.
+
+`ChitRoute` is now the single list of destinations and the tab bar is built from it, so a route
+cannot be added without its tab — there is a test for that. Route names come from the enum
+constants, so there is nothing to keep in sync.
+
+**One exception stays, and it has a record.** ADR-011 puts the recording sheet in a modal sheet
+rather than a route, because it belongs to the composer's state machine and dismissing it is not
+a back navigation. Reversing that means a new ADR, not a quiet change in M5.
 
 ### Three things this group found
 
@@ -352,7 +375,7 @@ empty page and the calendar is a placeholder line that M4 deletes.
    test of `ExcludeSemantics` needs. The shell test walks the real tree from its root instead.
    Anything later that checks what a screen reader can reach should do the same.
 
-**Verified:** `flutter analyze` clean, `flutter test` 141 passing, `dart format` clean,
+**Verified:** `flutter analyze` clean, `flutter test` 142 passing, `dart format` clean,
 `flutter build apk --debug`.
 
 ---

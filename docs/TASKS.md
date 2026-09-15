@@ -46,7 +46,12 @@ specification referred to — see the ADR.
 - [x] `features/calendar/presentation/calendar_screen.dart` — a placeholder body.
 - [x] Test: switching tabs and returning costs a fade, not a rebuild — ADR-011's actual claim.
 
-Three things worth knowing before the next group touches this:
+**go_router and Riverpod carry as much of this as they can** — ARCHITECTURE.md §3 and CLAUDE.md
+§4.2 now say so as a house rule. The router lives in `routerProvider` rather than in a widget,
+`ChitRoute` is the one list of destinations and the tab bar is built from it, and `BranchFade`
+is written into go_router's own extension point rather than beside it.
+
+Four things worth knowing before the next group touches this:
 
 - **It is a plain `StatefulShellRoute`, not `.indexedStack`.** An `IndexedStack` swaps
   instantly and there is nowhere in it to put §6.3's 220ms, so the branches are stacked by a
@@ -56,6 +61,8 @@ Three things worth knowing before the next group touches this:
   first shown. Anything that expects both branches to exist has to visit both first.
 - **The tab is sized to §6.4's 44px rather than to its contents.** The prototype's tab measures
   43.5px, half a pixel under a floor that says "no exceptions".
+- **`ChitApp` is a `ConsumerWidget` and holds nothing.** Anything that has to survive a rebuild
+  belongs in a provider, which is ADR-001 rather than a preference.
 
 ## C. The chit vocabulary ⬜
 

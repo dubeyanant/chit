@@ -165,6 +165,14 @@ codebase, because a principle nobody can fail is a principle nobody is following
   for fallback and semantics, `fontVariations` for what is actually drawn. This is exactly why
   the rule above exists.
 - **Riverpod is generated.** `@riverpod`, `part 'x.g.dart'`, `dart run build_runner watch`.
+- **go_router and Riverpod take every responsibility they can.** go_router owns all navigation
+  — the shell, the branches, the paths, the names, every stack — and `ChitRoute` is the one list
+  of destinations that the tab bar is built from. Riverpod owns everything that outlives a
+  build, the router included: a `GoRouter` in a `StatefulWidget` is state in the one place that
+  does not survive a rebuild. Before hand-rolling near either of them, check whether the package
+  has the seam already; `BranchFade` is written into go_router's `navigatorContainerBuilder`
+  rather than around it. The single deliberate exception is ADR-011's recording sheet, which is
+  a modal sheet and not a route. See `docs/ARCHITECTURE.md` §3.
 - **Tests override at the root** with an in-memory Drift database and hand-written fakes.
   No mocking framework.
 - The prototype is the visual reference. When in doubt about a pixel, open it.

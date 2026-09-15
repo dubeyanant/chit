@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/router.dart';
 import '../../../core/extensions.dart';
 import '../../../core/theme/chit_motion.dart';
 
@@ -110,15 +111,14 @@ class _TabBar extends StatelessWidget {
         padding: EdgeInsets.only(top: space.s3, bottom: space.s2),
         child: Row(
           children: <Widget>[
-            for (final (int index, String label) in <(int, String)>[
-              (0, 'today'),
-              (1, 'calendar'),
-            ])
+            // Driven off the route list rather than a copy of it, so a third
+            // destination cannot arrive without its tab — `router.dart`.
+            for (final ChitRoute route in ChitRoute.values)
               Expanded(
                 child: _Tab(
-                  label: label,
-                  selected: navigationShell.currentIndex == index,
-                  onTap: () => _goToBranch(index),
+                  label: route.label,
+                  selected: navigationShell.currentIndex == route.index,
+                  onTap: () => _goToBranch(route.index),
                 ),
               ),
           ],

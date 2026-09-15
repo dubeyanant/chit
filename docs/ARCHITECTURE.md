@@ -133,7 +133,7 @@ decision is unchanged — nothing calls `DateTime.now()` — only its file path 
 
 | Kind | Example | Lifetime |
 |---|---|---|
-| Infrastructure | `appDatabaseProvider`, `chitRepositoryProvider`, the services | `@Riverpod(keepAlive: true)` |
+| Infrastructure | `routerProvider`, `appDatabaseProvider`, `chitRepositoryProvider`, the services | `@Riverpod(keepAlive: true)` |
 | Stream of truth | `todayChitsProvider`, `daySummariesProvider` | auto-disposed; Drift re-emits on subscribe |
 | Derived | `timelineMarksProvider`, `monthHeatProvider` | auto-disposed; pure functions of the above |
 | Screen state | `composerControllerProvider`, `selectedDateProvider` | auto-disposed |
@@ -158,6 +158,31 @@ ChitRepository chitRepository(Ref ref) => throw UnimplementedError(
 overrides the same seam with an in-memory database and a fake clock, which is what "tests
 override at the root" means below. `domain` takes a dependency on `riverpod_annotation` for
 this; it is pure Dart and brings nothing from Flutter or `data` with it.
+
+### go_router and Riverpod take every responsibility they can
+
+Neither is here to be a thin wrapper over something hand-rolled beside it. Where one of them
+already solves a problem, it solves it.
+
+**go_router owns navigation, entirely.** The shell and both branches (ADR-011), the paths, the
+route names, which branch is current, and each branch's stack. `ChitRoute` is the one list of
+destinations and the tab bar is built from it, so a destination cannot be added to the router
+and quietly miss its tab. Nothing navigates by assembling a path string. The one thing written
+by hand is `BranchFade`, and that is written *into* go_router's `navigatorContainerBuilder`
+extension point rather than around it — the package has no cross-fading container, and
+`StatefulShellRoute.indexedStack` swaps branches with nowhere to put §6.3's 220ms.
+
+**Riverpod owns everything that outlives a build, including the router.** A `GoRouter` is state
+— it holds the navigation stack of every branch — so it lives in `routerProvider` and not in a
+`StatefulWidget`. ADR-001 says Riverpod is the only state mechanism in the app, and a router
+parked in a widget puts the one thing that must survive a rebuild in the one place that does
+not. It also keeps the router reachable by anything that later needs to redirect on what a
+provider knows. `ChitApp` is a `ConsumerWidget` that watches it and nothing else.
+
+**The one deliberate exception is ADR-011's**, and it stays: the recording sheet is a modal
+sheet rather than a route, because it belongs to the composer's state machine and dismissing it
+is not a back navigation. That is a decision with a record, not an oversight — reversing it
+means a new ADR.
 
 **Startup is synchronous.** `drift_flutter`'s `driftDatabase(name: 'chit')` resolves its own
 path lazily, so there is no async bootstrap and no loading state between launch and the home
