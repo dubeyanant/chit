@@ -65,8 +65,9 @@ lib/
 │   └── services/
 │       ├── speech_recognizer.dart  interface (ADR-005)
 │       ├── audio_recorder.dart     interface
-│       ├── weather_service.dart    interface
-│       └── location_service.dart   interface
+│       ├── weather_service.dart    interface — no position argument (ADR-025)
+│       ├── location_service.dart   interface, and GeoFix
+│       └── ambient_capture.dart    the two in parallel under a timeout (ADR-007)
 │
 ├── data/
 │   ├── db/
@@ -75,7 +76,9 @@ lib/
 │   │   └── daos/chit_dao.dart
 │   ├── audio/audio_store.dart      temp → permanent, delete, orphan sweep
 │   ├── weather/open_meteo_service.dart      calls out; maps via domain/weather
+│   ├── weather/fixed_weather_service.dart   M2 only; M3 deletes it
 │   ├── location/geolocator_location_service.dart
+│   ├── location/fixed_location_service.dart M2 only; M3 deletes it
 │   ├── speech/on_device_speech_recognizer.dart
 │   └── repositories/chit_repository_impl.dart
 │
@@ -261,6 +264,27 @@ Placeholder text has the same problem in a milder form and is the tempting short
 Weather and location run in parallel behind short timeouts (2s is the working figure); the
 `Clock` is instant. Whatever has not arrived is `null`, and a null field simply is not drawn.
 Nothing here can block, spin, or fail a save (ADR-007).
+
+**`AmbientCapture` in `domain/services` is that paragraph, and it is the whole of it** — M2
+group D. Every line is a product rule rather than a network detail, which is why it sits in
+`domain` and why M3 changes only which implementations the two service providers resolve to.
+Two things about it are load-bearing:
+
+- **The clock is read before either signal is asked for.** `capturedAt` becomes the chit's
+  `createdAt` (ADR-021), so a clock read after a slow network came back would file the chit up
+  to a timeout later than the moment it belongs to. The test counts the reads rather than
+  checking the value, because a value assertion cannot catch that.
+- **A signal that throws and a signal that hangs produce the same `null`.** This is the one
+  place the *fail loudly in development* rule of CLAUDE.md §4.1 is deliberately not applied:
+  to a composer that must not stall there is no useful difference between no network, no
+  permission and a service that fell over.
+
+**Weather takes no position — ADR-025.** This document used to say the two signals run in
+parallel without saying how that was possible, given that Open-Meteo is a lookup by
+coordinates: the obvious `conditionAt(lat, lon)` would make weather wait on the fix, and
+ADR-016 made the fix the slow, precise one. `WeatherService.currentCondition()` therefore takes
+nothing, and M3's implementation uses the device's **last known** fix, which is cached and
+instant. The cost is that the condition can be for where you were rather than where you are.
 
 Weather comes back from Open-Meteo as a WMO code; `wmo_mapping.dart` turns code + `is_day` +
 wind speed into one of the five words BEHAVIOUR.md §3.6 allows. That function is pure and lives in

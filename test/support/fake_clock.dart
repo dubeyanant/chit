@@ -10,9 +10,21 @@ final class FakeClock implements Clock {
   FakeClock(this._now);
 
   DateTime _now;
+  int _reads = 0;
+
+  /// How many times [now] has been asked since this clock was made.
+  ///
+  /// ADR-021 turns on *when* the clock is read rather than on what it says: a
+  /// chit is stamped when it is opened, so a capture that reads the clock
+  /// again after a slow signal comes back would file the chit late. A value
+  /// assertion cannot catch that and a count can.
+  int get reads => _reads;
 
   @override
-  DateTime now() => _now;
+  DateTime now() {
+    _reads++;
+    return _now;
+  }
 
   /// Moves the clock to [when].
   void moveTo(DateTime when) => _now = when;

@@ -96,16 +96,32 @@ Four things group E and group G inherit from this, and should not re-litigate:
 - **`AmbientStampRow` has two named constructors and no third.** `.open` carries the pin,
   `.saved` cannot; there is no way to ask for a pinned row in the thread.
 
-## D. Ambient stamp, faked ⬜
+## D. Ambient stamp, faked ✅ done 16 September 2026
 
 *Small, and it unblocks E. Do it before the composer rather than during.*
 
-- [ ] `domain/services/weather_service.dart` and `location_service.dart` — the interfaces. Their
+- [x] `domain/services/weather_service.dart` and `location_service.dart` — the interfaces. Their
       placeholders say M3; the interfaces arrive now so the composer's shape is final.
-- [ ] Fixed-value implementations for M2, supplied at the root the way `ChitRepository` is.
-- [ ] `AmbientStamp` assembled once at open from the clock and the two services, with ADR-007's
+- [x] Fixed-value implementations for M2, supplied at the root the way `ChitRepository` is.
+- [x] `AmbientStamp` assembled once at open from the clock and the two services, with ADR-007's
       timeout shape already in place so M3 only swaps implementations in.
-- [ ] Test: a signal that does not arrive is null, and a null is not drawn.
+- [x] Test: a signal that does not arrive is null, and a null is not drawn.
+
+The second half of that last box was already standing: `ambient_stamp_row_test.dart` from group
+C proves a null is not drawn, and this group proves the stamp produces nulls honestly. They meet
+in group E, which is the first place a real stamp reaches a real row.
+
+What group E inherits:
+
+- **`WeatherService.currentCondition()` takes no position — ADR-025.** The obvious
+  `conditionAt(lat, lon)` would make weather wait on the fix, and ADR-016 made the fix the slow
+  one. Reversing this means a new ADR, not a parameter.
+- **`AmbientCapture.capture()` is the whole of ADR-007** and lives in `domain`. The composer
+  calls it once at open and holds the result (ADR-021); it must not call it again on save.
+- **A `GeoFix` is a record, so half a fix cannot be built** — which is the `AmbientStamp` assert
+  made unreachable rather than merely enforced.
+- **The two fakes are `FixedWeatherService` and `FixedLocationService`, overridden in
+  `main.dart`.** M3 deletes both files and changes those two lines; nothing above them moves.
 
 ## E. The open chit ⬜
 

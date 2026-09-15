@@ -7,7 +7,7 @@ Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
 **Last updated:** 16 September 2026, after M1, after v6 — which moved the documents and then the
-code behind them — and after M2 groups A, B and C.
+code behind them — and after M2 groups A, B, C and D.
 
 ---
 
@@ -18,21 +18,21 @@ code behind them — and after M2 groups A, B and C.
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
-| **M2** — Today, text only | 🔶 in progress | groups A, B and C of [TASKS.md](TASKS.md) done; **D is next**. ADR-023, ADR-024 |
+| **M2** — Today, text only | 🔶 in progress | groups A–D of [TASKS.md](TASKS.md) done; **E is next**. ADR-023, ADR-024, ADR-025 |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**174 tests, `flutter analyze` clean, debug APK builds.**
+**185 tests, `flutter analyze` clean, debug APK builds.**
 
 **On a handset:** the masthead on `--paper`, an empty page, and a working two-tab bar. Tapping
 *calendar* cross-fades to a placeholder line that M4 deletes. Today stays empty until groups E,
 G and H put the open chit, the thread and the timeline on it.
 
-*Group C changed nothing on the screen — it is four shared widgets and a type style, and none
-of them is placed yet. The first time any of them is visible is group E.*
+*Groups C and D changed nothing on the screen — four shared widgets, a type style, and the
+ambient capture behind them. The first time any of it is visible is group E.*
 
 *The palette was confirmed on a device on 15 September, before the shell existed: dark warm
 brown, "chit चित्त" in the gutter — `--paper` `#191714` behaving exactly as §6.1 sets it. Nobody
@@ -449,17 +449,72 @@ nothing in this group is on a screen to look at.
 
 ---
 
-## Next: M2 group D — the ambient stamp, faked
+## M2 group D — the ambient stamp, faked
 
-Small, and it unblocks E. [TASKS.md](TASKS.md) group D has the list: the two service interfaces
-in `domain`, fixed-value implementations supplied at the root the way `ChitRepository` is, and
-`AmbientStamp` assembled once at open with ADR-007's timeout shape already in place so that M3
-swaps implementations and nothing else.
+ADR-007 in code, a milestone before the services behind it are real. The two interfaces, the
+assembly, and two fixed-value implementations wired at the root — so M3 is a swap of two lines
+in `main.dart` and nothing above them moves.
 
-Group C already holds up its end of that: `AmbientStampRow` takes an `AmbientStamp` and draws
-only the signals that arrived. A null weather is absent from the row and a stamp with no fix
-has no pin, both tested — so group D can be judged by whether the stamp it assembles is honest
-about what did not come back, rather than by how the row looks.
+- `domain/services/weather_service.dart` and `location_service.dart` — the interfaces, each with
+  its provider declared beside it and unimplemented, the way `chitRepositoryProvider` is. A
+  `GeoFix` is a **record**, so half a fix cannot be built: that is `AmbientStamp`'s assert made
+  unreachable rather than merely enforced.
+- `domain/services/ambient_capture.dart` — `AmbientCapture.capture()`, which is the whole of
+  ADR-007: both signals at once, each under a 2s timeout, whatever is missing left `null`.
+- `data/weather/fixed_weather_service.dart` and `data/location/fixed_location_service.dart` —
+  **M2 only, and M3 deletes both.** `raining`, and a fix at the Royal Observatory: a landmark
+  rather than a plausible address, so nothing in M2's rows ever looks like a place a person was.
+- **Eleven tests**, 174 → 185.
+
+### ADR-025 — the weather service takes no position
+
+The one thing here that could reasonably have gone another way, and the obvious shape is the
+wrong one. Open-Meteo is a lookup by coordinates, so `conditionAt(lat, lon)` is what a reader
+expects — and it would make weather wait on the location fix, which ADR-016 made the *precise*
+one and therefore the slow one. ADR-007 promises the maximum of the two signals and that shape
+delivers the sum. It would also couple their failures: refusing location would silently cost
+the weather word as well.
+
+So `currentCondition()` takes nothing, and M3's implementation uses the device's **last known**
+fix — cached, instant. The cost is real and is written down rather than discovered in M3: the
+condition can be for where you were rather than where you are. ARCHITECTURE.md §4.2 used to
+claim the two ran in parallel without saying how that was possible; that gap is what the record
+closes.
+
+### Two things worth knowing
+
+1. **The clock is read before either signal is asked for**, and the test counts the reads rather
+   than checking the value. `capturedAt` becomes `createdAt` (ADR-021), so a clock read after a
+   slow network came back would file the chit up to a whole timeout after the moment it belongs
+   to — and the stamp would still *look* right, because it would hold a perfectly plausible
+   time. Only a read count can see that. `FakeClock` gained a `reads` counter for it.
+2. **A signal that throws and a signal that hangs are the same event.** This is the one place
+   *fail loudly in development* is deliberately not applied, and ADR-007 is the reason: to a
+   composer that must not stall there is no useful difference between no network, no permission
+   and a service that fell over. Both paths are tested, with fakes that actually hang and
+   actually throw rather than returning a quick `null` that pretends to — the Liskov rule of
+   CLAUDE.md §4.1 applied to a fake.
+
+**Verified:** `flutter analyze` clean, `flutter test` 185 passing, `dart format` clean,
+`dart run build_runner build` clean. No APK — still nothing new on a screen.
+
+---
+
+## Next: M2 group E — the open chit
+
+The big one, and both the groups it waited on are done. [TASKS.md](TASKS.md) group E has the
+list: `ComposerState` and `canSave`, the controller, and `open_chit.dart` assembling `Slip` +
+the stamp row + the field + the action row.
+
+Four things it inherits and should not re-litigate:
+
+- **`Slip` draws its own tear edge and its own pad.** Do not assemble them again — group C.
+- **The stamp is captured once, at open, and held** (ADR-021). Call `AmbientCapture.capture()`
+  when the chit opens and pass *that object* to `save()`. Re-capturing on save undoes the
+  decision silently, and nothing in the repository's tests would catch it.
+- **No autofocus** (ADR-023). The field is 17.5px with `cursorColor: seal` and no decoration.
+- **The microphone is drawn and inert until M5**, at 54px, with a target that does not shrink
+  when text appears (§6.4).
 
 ---
 
@@ -470,7 +525,7 @@ The first screen a person could use. Full statement of done in
 `design/chit-app-v6.html` is the target. The spine it draws from is all in place.
 
 **[TASKS.md](TASKS.md) is the working list** — M2 in ten groups, A to J, each one buildable and
-committable on its own. A, B and C are done; D is next, and the section above says what it is.
+committable on its own. A, B, C and D are done; E is next, and the section above says what it is.
 
 Worth knowing for the rest of the milestone:
 - **The composer holds the stamp from the moment it opens** (ADR-021). Weather and location are

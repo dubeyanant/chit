@@ -7,8 +7,12 @@ import 'app/chit_app.dart';
 import 'core/clock.dart';
 import 'data/audio/audio_store.dart';
 import 'data/db/app_database.dart';
+import 'data/location/fixed_location_service.dart';
 import 'data/repositories/chit_repository_impl.dart';
+import 'data/weather/fixed_weather_service.dart';
 import 'domain/repositories/chit_repository.dart';
+import 'domain/services/location_service.dart';
+import 'domain/services/weather_service.dart';
 
 /// The root, and the one place `domain` and `data` are allowed to meet.
 ///
@@ -27,6 +31,16 @@ void main() {
           audio: ref.watch(audioStoreProvider),
           clock: ref.watch(clockProvider),
         ),
+      ),
+      // Ambient capture, faked for M2 (TASKS.md group D). The interfaces and
+      // the assembly are real; only these two lines are not, and M3 replaces
+      // them with `OpenMeteoService` and `GeolocatorLocationService` without
+      // anything above this file noticing.
+      weatherServiceProvider.overrideWith(
+        (Ref ref) => const FixedWeatherService(),
+      ),
+      locationServiceProvider.overrideWith(
+        (Ref ref) => const FixedLocationService(),
       ),
     ],
   );

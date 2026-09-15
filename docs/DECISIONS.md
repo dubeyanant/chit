@@ -36,6 +36,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-022 | The seal means now; a record is ink | refines ADR-010. v6 |
 | ADR-023 | The field is live, but it does not take focus | what opening the app costs |
 | ADR-024 | The day arc becomes the timeline | three days, full days, scrollable, proportional |
+| ADR-025 | The weather service takes no position | clarifies ADR-007 against ADR-016 — how the two signals stay parallel |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -751,3 +752,53 @@ spaced dots would turn the one thing the timeline knows into decoration.
   something saying where one day ends, and the old `5 am` / `midnight` end labels do not do that
   job. It wants a sketch against a real screen rather than a paragraph written in advance —
   TASKS.md group H carries it, and the answer goes into BEHAVIOUR.md §4.1 when it exists.
+
+---
+
+## ADR-025 — The weather service takes no position
+
+*16 September 2026. Clarifies ADR-007's "in parallel" against ADR-016's precise fix.*
+
+**Decision.** `WeatherService.currentCondition()` takes **no arguments**. Where an
+implementation gets a position is its own business, on the far side of the `domain` boundary.
+M3's `OpenMeteoService` will use the device's **last known** fix — which is cached and
+instant — and answer `null` when there is not one.
+
+**Over.** `conditionAt({required double lat, required double lon})`, which is the obvious shape
+and the one a reader expects the moment they know Open-Meteo is a lookup by coordinates.
+
+**Why.**
+
+*The obvious shape makes the two signals sequential, and ADR-007 says they are parallel.* If
+weather needs the fix, weather cannot start until the fix arrives. ADR-016 then makes that
+worse rather than better: it asks for the **precise** location, which is the slow one, so the
+faster signal would end up gated on the slower. The composer would wait on the sum of the two
+where ADR-007 promised the maximum.
+
+*It would also couple the two failures.* A user who refuses location would silently lose the
+weather word as well — two blanks from one refusal, and no way for the row to show the one fact
+it could still have had. Keeping weather independent means a refused permission costs exactly
+the pin.
+
+*And `domain` should not know that weather is looked up by place.* The interface says what the
+product wants — *one condition word, now* — and the fact that one HTTP API happens to need
+coordinates is a detail of the implementation that ADR-004's local-first design might replace
+anyway.
+
+**Costs.**
+
+- **The condition can be for where you were, not where you are.** A last known fix may be
+  hours old. At the resolution of five words across a city this is almost always the same
+  answer, and ADR-007 has already decided that an ambient signal is worth less than a composer
+  that opens instantly — but it is a real inaccuracy and it is written down here rather than
+  discovered in M3.
+- **On a device with no fix ever taken, weather is `null`** where the sequential version might
+  eventually have produced a word. That is the ordinary ADR-007 outcome and the row simply has
+  one fact fewer.
+- **The seam is inside `data`.** `OpenMeteoService` will depend on `LocationService`, so the
+  wiring in `main.dart` gains an order that a reader has to notice. That is a smaller cost than
+  the one it avoids.
+
+**Consequences.** `AmbientCapture` fires both calls at once and neither knows about the other.
+ARCHITECTURE.md §4.2 is corrected: it used to say weather and location *run in parallel*
+without saying how that was possible given the API, which is the gap this record fills.

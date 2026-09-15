@@ -22,7 +22,7 @@ resolution, so the two can be compared.
 | `record` | ✓ `^7.1.1` | recording to a temp file |
 | `just_audio` | ✓ `^0.10.6` | playback behind the audio pill |
 | `speech_to_text` | ✓ `^7.4.0` | on-device transcription (ADR-005) |
-| `geolocator` | `^14.0.3` | the fix behind the pin — precise, falling back to coarse (ADR-016); also owns the location permission flow |
+| `geolocator` | `^14.0.3` | the fix behind the pin — precise, falling back to coarse (ADR-016); also owns the location permission flow, and its **last known** fix is what the weather call uses so the two signals stay parallel (ADR-025) |
 | `http` | `^1.2.2` | one call, to Open-Meteo |
 | `intl` | `^0.20.2` | dates and the tabular-figure formats of DESIGN-SYSTEM.md §6.2 |
 | `path_provider` | `^2.1.5` | the app documents directory for the audio store |
