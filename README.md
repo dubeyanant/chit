@@ -27,9 +27,10 @@ Then read what that milestone points at, and open
 [`design/chit-app-v5.html`](design/chit-app-v5.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
-> **Status:** in build. M0 is done — the project is configured and the design system is in code
-> as four theme extensions, with the contrast floor and the reduced-motion rule enforced as
-> tests. **M1, the data spine, is next.**
+> **Status:** in build. M0 and M1 are done — the project is configured, the design system is in
+> code as four theme extensions, and the data spine is in place: one table, the one-of invariant
+> held in three places, and a repository with the update path of ADR-014 from the start.
+> **M2, Today with text only, is next — the first screen a person could use.**
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
@@ -153,11 +154,12 @@ index, so this one is maintained by the build.
 chit/
 ├── README.md               this file — §0 says where to start, §10 is this map
 ├── CLAUDE.md               how to work here: the standing rule, the principles, the commits
-├── docs/                   §10.1 — nine documents, one question each
+├── docs/                   §10.1 — ten documents, one question each
 ├── lib/                    §10.2 — the Flutter source
 ├── test/                   §10.3 — what is enforced rather than intended
 ├── design/                 §10.4 — the prototype, and the visual target
 ├── assets/fonts/           §10.5 — the three faces of §6.2
+├── drift_schemas/          §10.6 — one committed snapshot per schema version
 ├── analysis_options.yaml   §10.6 — CLAUDE.md §4.1 in the form the machine can check
 ├── pubspec.yaml            §10.6 — every dependency, each justified in docs/PACKAGES.md
 └── android/  ios/  web/    §10.6 — platform configuration
@@ -173,7 +175,7 @@ chit/
 | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
 | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | **§6 and §7** — the palette, the three faces, the spacing, the motion, the accessibility floors, and the prototype | Drawing anything |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How it is put together — the three layers, the folder map, the Riverpod conventions, the data flow behaviour by behaviour | Adding a file and unsure where it goes |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | The twenty ADRs — every choice, what it was chosen over, what it costs. Indexed at its head | Before reversing something that looks arbitrary |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | The twenty-one ADRs — every choice, what it was chosen over, what it costs. Indexed at its head | Before reversing something that looks arbitrary |
 | [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) | The schema, the invariants, the queries, and what a migration must preserve. §5 here is the product-level version of the same thing | M1, and any change to a row |
 | [`docs/PACKAGES.md`](docs/PACKAGES.md) | Every dependency, why it is there, what it was chosen over, and the platform configuration each implies | Before adding a package. Nothing enters `pubspec.yaml` without a line there |
 | [`docs/DESIGN-LOG.md`](docs/DESIGN-LOG.md) | Why the design is what it is — including the arguments that were made and lost | Before changing something in §4 or §6 that looks arbitrary. Most of it is load-bearing |
@@ -207,6 +209,10 @@ interfaces in `domain`, Riverpod supplies the implementations at the root — AD
 `ChitSpace` and `ChitMotion` — reached through `context.colors`, `.type`, `.space` and
 `.motion`, four accessors rather than one so a widget that needs a colour cannot reach motion.
 
+`lib/domain/` and `lib/data/` are the data spine of M1: the `Chit` model and its invariant, the
+one table, the DAO, and `ChitRepository` — the interface in `domain`, the implementation in
+`data`, and `main.dart` the one place the two are allowed to meet.
+
 ### 10.3 The tests
 
 What is enforced rather than intended. `flutter test`.
@@ -217,12 +223,25 @@ What is enforced rather than intended. `flutter test`.
 | `test/core/theme/chit_type_test.dart` | ADR-015: every style sets `fontVariations`, not `fontWeight` alone. The three faces of §6.2 are the only families used, the चित्त mark is the only thing set in Devanagari, tabular figures are on everything that counts or keeps time, no functional text is under 11.5px |
 | `test/core/theme/chit_motion_test.dart` | §6.4's reduced-motion rule: movement collapses, feedback does not. The suite that found ADR-020 |
 | `test/core/clock_is_the_only_now_test.dart` | ADR-012: nothing in `lib/` calls `DateTime.now()` except `SystemClock` |
+| `test/domain/chit_test.dart` | The invariant of §5 where it fails first: a chit with neither text nor audio, text without a provenance, half a coordinate and a recording without a length cannot be *built*. Also `localDayOf` across a midnight |
+| `test/data/db/chits_table_test.dart` | The same invariant where it survives a release build — the table's check constraints, every one of them exercised by writing the row by hand, around the repository. Also that the primary key survived being declared beside them |
+| `test/data/chit_repository_test.dart` | **M1's statement of done.** All four legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, and `updateText` provably touching nothing but `text`, `textOrigin` and `updatedAt` |
+| `test/data/audio_store_test.dart` | ADR-008: a recording is moved rather than copied, its stored path is relative and uses forward slashes, discarding twice is not a failure, and the orphan sweep deletes what no chit claims |
+| `test/data/db/migration_test.dart` | DATA-MODEL.md §6: a database created at v1 is the v1 that was committed to `drift_schemas/`, the schema the code expects is the one `createAll()` writes, and bumping `schemaVersion` without dumping a snapshot beside it fails |
 | `test/docs/readme_maps_everything_test.dart` | This section, and `DECISIONS.md`'s ADR index |
 | `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |
+| `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand |
+| `test/data/db/generated/schema.dart`, `test/data/db/generated/schema_v1.dart` | Not suites — written by `drift_dev schema generate` from `drift_schemas/`, and read by the migration test. Generated, so excluded from analysis like any `*.g.dart` |
 
 The pattern, set in M0b and worth keeping: **a rule that fails silently gets a test that checks
 a property, not an example.** `chit_motion_test.dart` asserting "no fade is slower than it was"
 is what caught a motion rule that was self-consistent and wrong.
+
+M1 adds a second pattern: **an invariant worth having is worth holding in more than one place.**
+README §5's one-of rule is an assert, a check constraint and a repository refusal, and each of
+the three is tested where it lives — because an assert is compiled out of a release build, a
+constraint says nothing about *why*, and a repository is one caller among however many a later
+milestone adds.
 
 ### 10.4 The prototype
 
@@ -245,6 +264,7 @@ variable rather than static cuts, and what it costs — weight has to be applied
 
 | File | |
 |---|---|
+| `drift_schemas/` | One JSON snapshot per schema version, taken with `drift_dev schema dump` and committed. `drift_schema_v1.json` is the shape that shipped as v1; **once a version has reached a real handset its snapshot is never edited** — DATA-MODEL.md §6 |
 | [`analysis_options.yaml`](analysis_options.yaml) | The engineering principles of `CLAUDE.md` §4.1 in the form the machine can check: strict casts, inference and raw types; exhaustive switches and unawaited futures as errors; immutability and documentation rules. `riverpod_lint` runs inside `flutter analyze` through the `plugins:` key — ADR-018, no separate command |
 | [`pubspec.yaml`](pubspec.yaml) | Dependencies and the font declarations. Every entry is justified in [`docs/PACKAGES.md`](docs/PACKAGES.md) |
 | `android/app/src/main/AndroidManifest.xml` | `RECORD_AUDIO`, both location permissions (ADR-016), `INTERNET`, and the `android.speech.RecognitionService` queries intent `speech_to_text` needs from targetSdk 30 |

@@ -6,8 +6,7 @@ has read only this file and `CLAUDE.md` should be able to pick up the work.
 Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
-**Last updated:** 14 September 2026, after M0b — the specification was split and README §10
-became the map.
+**Last updated:** 15 September 2026, after M1 — the data spine.
 
 ---
 
@@ -17,15 +16,19 @@ became the map.
 |---|---|---|
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
-| **M1** — the data spine | ⬜ next | |
-| M2 — Today, text only | ⬜ | |
+| **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
+| M2 — Today, text only | ⬜ next | |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**49 tests, `flutter analyze` clean, debug APK builds.**
+**120 tests, `flutter analyze` clean, debug APK builds.**
+
+The app on a handset is still the masthead on `--paper` and nothing else — M1 added no UI, which
+is what it said it would do. That screen was confirmed on a device on 15 September: dark warm
+brown, "chit चित्त" in the gutter, which is `--paper` `#191714` behaving exactly as §6.1 sets it.
 
 ---
 
@@ -128,29 +131,82 @@ that before M2 starts drawing with the scale — see open item 1.
 
 ---
 
-## Next: M1 — the data spine
+## What M1 did
 
-No UI. Full statement of done in [BUILD-PLAN.md](BUILD-PLAN.md) M1; the schema and its
-invariants are in [DATA-MODEL.md](DATA-MODEL.md). In order:
+Everything BUILD-PLAN.md M1 asked for. No UI, which is the milestone that is tempting to skip
+and expensive to retrofit.
 
-1. `domain/models/` — `Chit` (freezed, private constructor, the one-of assert),
-   `AmbientStamp`, `WeatherCondition`, `TextOrigin`, `DaySummary`.
-2. `data/db/tables/chits_table.dart` — the columns, the check constraints, the indexes.
-3. `data/db/app_database.dart` — the Drift database, and the migration harness with the v1
-   schema snapshot taken *before* there is anything to migrate.
-4. `data/db/daos/chit_dao.dart` — the queries.
-5. `domain/repositories/chit_repository.dart` — the interface. Both `save()` and
-   `updateText()` (ADR-014); the update path exists from the start.
-6. `data/repositories/chit_repository_impl.dart`.
-7. `data/audio/audio_store.dart` — temp → permanent, delete, the orphan sweep. No recorder
-   yet; tests write dummy files.
-8. Repository tests against an in-memory database: every illegal row shape rejected, all four
-   legal ones round-tripping, `localDay` correct across a midnight and across a timezone
-   change (the `Clock` from M0b is what makes this testable), audio moved on save and deleted
-   on discard, and `updateText` provably touching nothing but `text`, `textOrigin` and
-   `updatedAt`.
+- **The models.** `Chit` (freezed, private constructor, five asserts), `AmbientStamp`,
+  `DaySummary`, `WeatherCondition`, and `TextOrigin` — the last of these lives inside
+  `chit.dart` rather than in a file of its own, because it is half of the `text` / `textOrigin`
+  pairing the invariant is about.
+- **The table.** One table, three indexes, five check constraints. `Chit.localDayOf` is the one
+  place a wall clock becomes a `yyyymmdd`.
+- **The database and the DAO.** The three queries of DATA-MODEL.md §4 — `watchDay`,
+  `watchDaySummaries`, `watchArchive` — plus `byId`, the insert, the narrow update, and the
+  audio paths the sweep needs.
+- **The repository.** Interface in `domain`, implementation in `data`, and `main.dart` the one
+  place they meet. Both `save()` and `updateText()` (ADR-014): the update path exists from the
+  start so M6 does not have to grow one in a hurry.
+- **The audio store.** Temp → permanent, discard, the orphan sweep, and `resolve` for playback.
+  The sweep is wired at startup in `main.dart` and nothing waits for it.
+- **The migration harness**, and `drift_schemas/drift_schema_v1.json` committed before there is
+  anything to migrate.
+- **Seventy-one tests**, taking the suite from 49 to 120.
 
-Check open item 3 before starting — `sqlite3_flutter_libs` resolves to an `+eol` release.
+### The three things M1 changed elsewhere
+
+1. **ADR-021 — a chit is stamped when it is opened, not when it is saved.** There is one time
+   column and README §2 already said what it holds. `save()` takes the `AmbientStamp` and stores
+   its `capturedAt` as `createdAt`; the clock is read at save time for `updatedAt` alone.
+   **M2 has to honour this**: hold the stamp in `ComposerState` from the moment the chit opens
+   and pass that same object to `save()`. Re-capturing it on save undoes the decision silently.
+
+2. **The text column is `body`, and the row class is `ChitRow`.** DATA-MODEL.md §1 used to show
+   `TextColumn get text => text().nullable()();`, which does not compile — `text` is the name of
+   Drift's own column builder. The rename was forced twice over: the versioned-schema classes
+   that `drift_dev schema generate` writes derive their Dart names from the SQL, so a column
+   called `text` also breaks the migration harness. Found by building the harness at v1 rather
+   than at v2, which is the whole argument for building it early. **The rename stops at the data
+   layer** — README §5, the domain model and every screen still say `text`.
+
+3. **Open item 3 is closed.** `sqlite3_flutter_libs 0.6.0+eol` is the latest release and the
+   package is now empty: `package:sqlite3` 3.x ships the native library itself and our tree
+   already resolves it at 3.5.2. Nothing to do, and it falls away when `drift_flutter` drops it.
+   The happy consequence is that `NativeDatabase.memory()` opens in `flutter test` on Windows
+   with no setup at all, which is what every repository test runs against.
+
+**The pattern worth copying**, and the M1 counterpart to M0b's *test a property, not an
+example*: **an invariant worth having is worth holding in more than one place, and each place is
+tested where it lives.** README §5's one-of rule is an assert, a check constraint and a
+repository refusal — because an assert is compiled out of a release build, a constraint cannot
+say *why*, and a repository is one caller among however many a later milestone adds. The three
+suites that hold it are `test/domain/chit_test.dart`, `test/data/db/chits_table_test.dart` and
+`test/data/chit_repository_test.dart`.
+
+**Verified:** `flutter analyze` clean, `flutter test` 120 passing, `dart format` clean,
+`dart run build_runner build` clean.
+
+---
+
+## Next: M2 — Today, text only
+
+The first screen a person could use. Full statement of done in
+[BUILD-PLAN.md](BUILD-PLAN.md) M2; what it looks like is BEHAVIOUR.md §4.1, and
+`design/chit-app-v5.html` is the target. The spine it draws from is all in place.
+
+Worth knowing before starting:
+
+- **The composer holds the stamp from the moment it opens** (ADR-021). Weather and location are
+  fakes returning fixed values until M3, but the *time* is real and comes from `clockProvider`.
+- **`ChitRepository` is already what M2 needs**: `watchDay(int localDay)` for the thread and the
+  arc — one stream, so they cannot disagree — and `save()` taking the stamp, the text and the
+  origin. Today's `localDay` is `Chit.localDayOf(clock.now())`.
+- **The microphone is drawn in M2 and inert until M5.** BEHAVIOUR.md §3.2 makes it an equal and
+  the design log warns exactly how it stops being one.
+- Open item 1 — the type on a handset — is worth settling here, when there is real text to
+  compare against the prototype.
+- Open item 2 — the two colours with no token — M2 hits the filled Save button's label.
 
 ---
 
@@ -169,9 +225,10 @@ Things a future session needs to know but that are not yet scheduled work.
    (`#1A1310` in the prototype). Neither is in the §6.1 table. M2 hits the second and M4 the
    first; whichever gets there first should add the token to DESIGN-SYSTEM.md §6.1 and to the contrast
    test rather than inlining a hex.
-3. **`sqlite3_flutter_libs` resolves to `0.6.0+eol`,** pulled in by `drift_flutter 0.3.1`. The
-   marker is upstream's. Check for a successor at the top of M1, since that is when it starts
-   mattering.
+3. ~~**`sqlite3_flutter_libs` resolves to `0.6.0+eol`.**~~ **Closed 15 September 2026.** It is
+   the latest release and the package is now empty — `package:sqlite3` 3.x ships the native
+   library itself and our tree resolves it at 3.5.2. Nothing to do; the shim falls away when
+   `drift_flutter` drops it. PACKAGES.md has the detail.
 4. **`speech_to_text` applies the Kotlin Gradle Plugin,** and the build warns that future
    Flutter versions will fail on plugins that do. Harmless on 3.47.4. Check before any Flutter
    upgrade, since ADR-005 makes that package hard to swap.
@@ -186,3 +243,13 @@ Things a future session needs to know but that are not yet scheduled work.
    — and either way it is a change that gets recorded.
 8. **OPEN-QUESTIONS.md §8.2 (re-transcription) and §8.3 (does Today carry enough rhythm) are still open.**
    Neither blocks anything before M7.
+9. **Nothing deletes a chit yet, so the orphan sweep has little to collect.** `ChitRepository`
+   has no `delete`, because no screen offers one and BEHAVIOUR.md does not describe one —
+   ADR-014 mentions deleting a chit as the way to remove a recording, which is the closest the
+   specification comes. The sweep still earns its place: a save that moves the file and then
+   fails to write the row leaves exactly the orphan it collects. When a delete arrives it goes
+   in the repository, deletes the row and the file together, and gets its own test.
+10. **The debug seeder of DATA-MODEL.md §7 does not exist.** It becomes worth writing the moment
+    the calendar has something to shade — M4, or M2 if the archive feels empty while building
+    it. A seeded day must cover all four shapes of §2, especially the recording with `NULL`
+    text.

@@ -1,0 +1,158 @@
+import 'package:chit/data/db/app_database.dart';
+import 'package:chit/domain/models/chit.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+/// The second of the three places the invariant of README §5 is held
+/// (DATA-MODEL.md §2), and the only one that is still there in a release
+/// build.
+///
+/// The asserts on [Chit] are compiled out of a release build and the
+/// repository is one caller among however many a later milestone adds. This
+/// one holds for every write the app will ever make, including the ones
+/// written by somebody who did not read DATA-MODEL.md §2 first — so every
+/// test here goes around the repository and writes the row by hand.
+void main() {
+  late AppDatabase db;
+
+  setUp(() => db = AppDatabase(NativeDatabase.memory()));
+  tearDown(() => db.close());
+
+  Matcher refusedByACheck() => throwsA(
+    predicate(
+      (Object e) => e.toString().contains('CHECK constraint failed'),
+      'a CHECK constraint refusing the row',
+    ),
+  );
+
+  Future<void> insert({
+    Value<String?> body = const Value<String?>.absent(),
+    Value<TextOrigin?> textOrigin = const Value<TextOrigin?>.absent(),
+    Value<String?> audioPath = const Value<String?>.absent(),
+    Value<int?> audioMs = const Value<int?>.absent(),
+    Value<double?> lat = const Value<double?>.absent(),
+    Value<double?> lon = const Value<double?>.absent(),
+  }) => db
+      .into(db.chits)
+      .insert(
+        ChitsCompanion.insert(
+          id: 'a',
+          createdAt: 0,
+          localDay: 20260915,
+          updatedAt: 0,
+          body: body,
+          textOrigin: textOrigin,
+          audioPath: audioPath,
+          audioMs: audioMs,
+          lat: lat,
+          lon: lon,
+        ),
+      );
+
+  group('the invariant of README §5', () {
+    test('a row with neither text nor audio is refused', () {
+      expect(insert, refusedByACheck());
+    });
+
+    test('text without an origin is refused', () {
+      expect(
+        () => insert(body: const Value<String?>('Train 20 late.')),
+        refusedByACheck(),
+      );
+    });
+
+    test('an origin without text is refused', () {
+      expect(
+        () => insert(
+          audioPath: const Value<String?>('audio/a.m4a'),
+          audioMs: const Value<int?>(9000),
+          textOrigin: const Value<TextOrigin?>(TextOrigin.typed),
+        ),
+        refusedByACheck(),
+      );
+    });
+
+    test('text of nothing but spaces is refused', () {
+      expect(
+        () => insert(
+          body: const Value<String?>('   '),
+          textOrigin: const Value<TextOrigin?>(TextOrigin.typed),
+        ),
+        refusedByACheck(),
+      );
+    });
+
+    test('a recording without a length is refused', () {
+      expect(
+        () => insert(audioPath: const Value<String?>('audio/a.m4a')),
+        refusedByACheck(),
+      );
+    });
+
+    test('half a coordinate is refused', () {
+      expect(
+        () => insert(
+          body: const Value<String?>('Train 20 late.'),
+          textOrigin: const Value<TextOrigin?>(TextOrigin.typed),
+          lat: const Value<double?>(19.07),
+        ),
+        refusedByACheck(),
+      );
+    });
+
+    test('all four legal shapes are accepted', () async {
+      await insert(
+        body: const Value<String?>('Train 20 late.'),
+        textOrigin: const Value<TextOrigin?>(TextOrigin.typed),
+      );
+      await db.delete(db.chits).go();
+
+      for (final TextOrigin origin in <TextOrigin>[
+        TextOrigin.transcript,
+        TextOrigin.transcriptEdited,
+      ]) {
+        await insert(
+          body: const Value<String?>('Train 20 late.'),
+          textOrigin: Value<TextOrigin?>(origin),
+          audioPath: const Value<String?>('audio/a.m4a'),
+          audioMs: const Value<int?>(9000),
+        );
+        await db.delete(db.chits).go();
+      }
+
+      await insert(
+        audioPath: const Value<String?>('audio/a.m4a'),
+        audioMs: const Value<int?>(9000),
+      );
+
+      expect(await db.select(db.chits).get(), hasLength(1));
+    });
+  });
+
+  group('the shape of the table', () {
+    Future<String> schemaOf(String name) async {
+      final QueryRow row = await db
+          .customSelect(
+            'SELECT sql FROM sqlite_master WHERE name = ?',
+            variables: <Variable<Object>>[Variable<String>(name)],
+          )
+          .getSingle();
+      return row.read<String>('sql');
+    }
+
+    test('the primary key survives the custom constraints beside it', () async {
+      // Overriding `customConstraints` is what puts the CHECKs on the table.
+      // It would be a quiet disaster if it replaced the primary key rather
+      // than adding to it, and nothing else would notice until two chits
+      // shared an id.
+      expect(await schemaOf('chits'), contains('PRIMARY KEY'));
+    });
+
+    test('the three indexes of DATA-MODEL.md §1 exist', () async {
+      expect(await schemaOf('chits_local_day'), contains('local_day'));
+      expect(await schemaOf('chits_created_at'), contains('created_at'));
+      expect(await schemaOf('chits_weather'), contains('weather'));
+    });
+  });
+}

@@ -16,7 +16,7 @@ resolution, so the two can be compared.
 | `flutter_riverpod` | ✓ `^3.4.3` | state and dependency injection (ADR-001) |
 | `riverpod_annotation` | `^4.0.0` → 4.0.7 | the `@riverpod` annotation |
 | `drift` | ✓ `^2.35.0` | local database (ADR-003) |
-| `drift_flutter` | ✓ `^0.3.1` | opens the database with no async bootstrap; pulls `sqlite3_flutter_libs` |
+| `drift_flutter` | ✓ `^0.3.1` | opens the database with no async bootstrap; pulls `sqlite3_flutter_libs`, which is now inert — see below |
 | `go_router` | ✓ `^18.0.1` | the tab shell and routing (ADR-011) |
 | `freezed_annotation` | `^3.1.0` | immutable models: value equality, `copyWith`, and a private constructor that can assert its invariant |
 | `record` | ✓ `^7.1.1` | recording to a temp file |
@@ -43,6 +43,20 @@ resolution, so the two can be compared.
 `json_serializable` is not listed. The only JSON in the app is one Open-Meteo response, decoded
 by hand in one file; a codegen dependency for that is not worth the build time. Add it if a
 second endpoint appears.
+
+### On `sqlite3_flutter_libs` and its `+eol` marker
+
+`drift_flutter` pulls `sqlite3_flutter_libs 0.6.0+eol` transitively, and the marker is upstream's
+rather than a warning about our version constraint. Checked at the top of M1, which is when it
+started mattering: **0.6.0+eol is the latest release, and the package is now empty.** Its own
+page says so — *"This package relates to version 2.x of `package:sqlite3`, and is obsolete after
+upgrading."* Version 3.x of `package:sqlite3` ships the native library itself, our tree already
+resolves it at 3.5.2, and the shim will fall away whenever `drift_flutter` drops it from its own
+dependencies.
+
+The practical consequence is a good one: `NativeDatabase.memory()` opens in `flutter test` on
+the host with no setup and no downloaded binary, which is what lets every repository test run
+against a real SQLite.
 
 ### On `speech_to_text` and offline recognition
 

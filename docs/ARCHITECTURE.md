@@ -105,6 +105,12 @@ lib/
 `shared/widgets` holds the pieces used by more than one feature. A widget used by one screen
 lives in that screen's `presentation/widgets/`, and moves out only when a second screen wants it.
 
+As of M1, every file in `domain/models`, `domain/repositories`, `data/db` and `data/audio` above
+holds real code, along with `data/repositories/chit_repository_impl.dart`. `TextOrigin` lives in
+`models/chit.dart` rather than in a file of its own: it is half of the `text` / `textOrigin`
+pairing the chit's invariant is about, and splitting it from the assert that enforces it would
+gain a file and lose the connection.
+
 **Every file above exists**, as of M0b. The ones a milestone has not reached yet hold a doc
 comment naming the milestone that fills them and nothing else. An empty named file is a
 stronger statement about where something belongs than an empty directory, and the cost of
@@ -134,6 +140,24 @@ decision is unchanged — nothing calls `DateTime.now()` — only its file path 
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** That is
 the layer rule of §1, expressed as a lint you should notice yourself breaking.
+
+**Where an infrastructure provider is declared follows from that rule.** `appDatabaseProvider`
+and `audioStoreProvider` are declared beside the things they build, in `data`, because only
+`data` and the root ever read them. `chitRepositoryProvider` cannot be: a controller in
+`features` has to watch it, and `features` may not import `data`. So it is declared beside its
+*interface* in `domain`, unimplemented —
+
+```dart
+@Riverpod(keepAlive: true)
+ChitRepository chitRepository(Ref ref) => throw UnimplementedError(
+  'chitRepositoryProvider is overridden at the root — see main.dart',
+);
+```
+
+— and supplied in `main.dart`, which is the one place the two layers are allowed to meet. A test
+overrides the same seam with an in-memory database and a fake clock, which is what "tests
+override at the root" means below. `domain` takes a dependency on `riverpod_annotation` for
+this; it is pure Dart and brings nothing from Flutter or `data` with it.
 
 **Startup is synchronous.** `drift_flutter`'s `driftDatabase(name: 'chit')` resolves its own
 path lazily, so there is no async bootstrap and no loading state between launch and the home

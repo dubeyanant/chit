@@ -60,7 +60,7 @@ should be written the same way.
 
 ---
 
-## M1 — The data spine
+## M1 — The data spine ✅ done, 15 September 2026
 
 No UI. This is the milestone that is tempting to skip and expensive to retrofit.
 
@@ -77,6 +77,17 @@ No UI. This is the milestone that is tempting to skip and expensive to retrofit.
 is rejected and all four legal ones round-trip, `localDay` is right across a midnight and across
 a timezone change, audio moves on save and is deleted on discard, and `updateText` provably
 touches nothing but `text`, `textOrigin` and `updatedAt`.
+
+M1 is where the invariant pattern was set, and it is worth copying: **an invariant worth having
+is worth holding in more than one place, and each place is tested where it lives.** README §5's
+one-of rule is an assert, a check constraint and a repository refusal, because an assert is
+compiled out of a release build, a constraint cannot say *why*, and a repository is one caller
+among however many a later milestone adds.
+
+It also settled ADR-021 — a chit is stamped when it is opened, not when it is saved — and that
+one has a consequence M2 has to honour: hold the `AmbientStamp` in `ComposerState` from the
+moment the chit opens and pass that same object to `save()`. Re-capturing it on save would undo
+the decision quietly.
 
 ---
 

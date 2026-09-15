@@ -4,7 +4,8 @@ One record per decision that would be expensive to reverse. Each says what was c
 it was chosen over, and what it costs. Superseding a record means adding a new one, not
 editing the old one.
 
-Status of every record below: **accepted, 14 September 2026**.
+Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021 on
+15 September 2026.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -31,6 +32,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-018 | `riverpod_lint` through `plugins:`, and no `custom_lint` | the two cannot coexist |
 | ADR-019 | Android and iOS only; the web folder stays | |
 | ADR-020 | Reducing motion never makes a fade slower | refines ADR-010 |
+| ADR-021 | A chit is stamped when it is opened, not when it is saved | what `createdAt` means, and which day a chit lands on |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -535,3 +537,40 @@ it. Worth remembering when writing the other floors of DESIGN-SYSTEM.md §6.4.
 **Costs.** One more clause in a rule that was pleasingly simple. The clause is a `min`, and the
 test states it in one line, so the cost is a sentence rather than a branch anyone has to
 remember.
+
+---
+
+## ADR-021 — A chit is stamped when it is opened, not when it is saved
+
+**Decision.** `createdAt` is the moment the open chit was created — the same instant the ambient
+stamp was captured. `ChitRepository.save()` takes an `AmbientStamp` and stores its `capturedAt`;
+`localDay` is computed from that. The clock is read at save time for one thing only, `updatedAt`.
+
+**Over.** Timestamping the row when **Save chit** is pressed, and treating the stamp's time as a
+separate display value.
+
+**Why.** There is one time column, and README §2 has already said what it holds: *"the ambient
+stamp — time, weather condition and a location marker, captured automatically when a chit is
+opened."* The weather and the place are from the moment the chit was opened, so a time from a
+different moment would make the stamp row three facts about two instants — and BEHAVIOUR.md §3.6
+draws them as one row because they *are* one observation.
+
+It also follows from what a chit is (README §1): *you write when something hits you.* The moment
+worth recording is the one that hit, not the one where the user finished typing it. A chit
+opened at 11:58pm and saved at 12:03am belongs to the day it was opened, and that is the answer
+most people would expect if asked.
+
+**Costs.** A chit written over a long pause carries a time slightly before the words existed,
+and there is no record at all of when Save was pressed — except `updatedAt`, which is the row's
+write time and is not displayed. If a future feature needs "when did you finish", it is a new
+column, not a reinterpretation of this one.
+
+**Consequences.**
+
+- The repository never reads the clock to decide a chit's day, so the midnight rollover and the
+  timezone case are testable with a value rather than a stopped clock (ADR-012 is about the
+  other three behaviours, not this one).
+- `updatedAt` is the one column set from the clock at save. It is therefore the row's write
+  time at insert and the edit time afterwards, which is what the name says.
+- M2 must hold the stamp in `ComposerState` from the moment the chit opens and pass that same
+  object to `save()`. Re-capturing it on save would quietly undo this decision.
