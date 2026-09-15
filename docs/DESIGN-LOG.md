@@ -31,8 +31,12 @@ one that says nothing about tearing. It is a two-character difference in the CSS
 whole metaphor rests on it.
 
 The Devanagari mark appears twice: beside the wordmark, and as a closing mark at the foot of
-each scroll. Both are toggleable in the prototype — whether it reads as grounding or as
-decoration is a judgement worth revisiting.
+Today. Both are toggleable in the prototype — whether it reads as grounding or as decoration is
+a judgement worth revisiting.
+
+*v5 put the closing mark at the foot of both scrolls.* Twice on one screen and again on the
+next is not a closing mark, it is a page decoration; it now closes the day, once, where the
+thread ends.
 
 ## The pieces that carry the most weight
 
@@ -47,12 +51,21 @@ reads as one continuous thing, which is what makes several-chits-a-day legible a
 this came from.
 
 **The calendar as a shape.** A date carries a number when something was written that day, and
-the tile's warmth scales with how much. What the month shows is the shape of what was
+the tile's density scales with how much. What the month shows is the shape of what was
 written — a sparse field in a quiet month, a dense one in a full month — rather than a grid
 of thirty numbers to be read one at a time.
 
+*The steps were `--seal` until v6 and are ink now.* Ink is the better metaphor as well as the
+better contrast: density is how much ink went down that day. The month stops at today for the
+same reason it is a shape at all — tiles for days that have not happened read as days with
+nothing written in them, which is a lie about the future.
+
 **The pin without a place name.** Knowing a location was captured is context. Naming it is
 noise, and a privacy surface with nothing to show for it.
+
+*And it is drawn once, on the open chit.* Every chit carries a location, so a pin under all of
+them distinguishes nothing — a mark that can never be absent carries no information. On the
+chit being written it has a tense: *this is being noted, now.*
 
 ## Write and Speak as equals — and then as one surface
 
@@ -199,6 +212,41 @@ So under `prefers-reduced-motion` the travel goes: no rise, no slide, no depress
 every ambient loop stops. The fades stay — 140ms on transitions, 220ms on arrivals, which
 still announce themselves while going nowhere.
 
+## The v6 pass, and what it was for
+
+*15 September 2026. `design/chit-app-v6.html` replaced v5 as the visual target. Nothing about
+what the app does changed — §3 is untouched.*
+
+Every individual decision in v5 was defensible and the screen was still too loud. That is the
+failure mode a visual revision exists to catch, and it is worth recording how it looked,
+because it will happen again.
+
+**The accent was the whole of it**, and ADR-022 has that argument. The other three threads:
+
+**Emphasis was pointed at the wrong thing.** A 38px date over a 16px weekday made what-day-it-is
+the largest object on a screen whose subject is the blank slip underneath — and it pushed the
+slip down the page, so the first thing the eye landed on was a label and the thing you came to
+use was below it. One 26px line fixes both. The rule underneath: *the biggest thing on a screen
+should be the thing it is for.*
+
+**The open chit spoke a second dialect.** Its ambient stamp was uppercase, letter-spaced and
+tracked wide; the identical three facts under every saved chit were lowercase and quiet. Two
+typographic registers for one kind of information, on one screen, six inches apart. The open
+chit should be distinguished by being *brighter* — it is the live one — not by being set in a
+different language. Middle dots went with it: three items at 11px with separators between them
+is five things to read where there are three.
+
+**Details were being drawn that nobody could see.** The perforation was 1.2px holes in a colour
+four points off the slip: invisible at arm's length, and the whole tear-off metaphor rests on
+it (see above). The live waveform was 32 flexed bars, which is an equaliser — the most
+conventional thing a recording screen can do — where 20 thin strokes say *it is hearing you*
+and nothing more. A detail nobody sees is a detail not worth drawing; a detail everybody has
+seen a hundred times is worse, because it is seen and says nothing.
+
+And one deletion worth keeping in view: **the calendar legend**. Four swatches captioned *quiet
+… full* explaining that more ink means more writing, competing with the grid it explained.
+Nobody misreads a density ramp. The month summary underneath already says it in words.
+
 ## Constraints to preserve
 
 **`--ink-faint` sits on two surfaces.** It appears on both `--paper` and `--slip` and has to
@@ -213,18 +261,34 @@ handset in real light.
 mundane — *"Train 20 late."* Literary sample entries make the whole screen read as a
 demonstration rather than as a tool, and they set the wrong expectation for what a chit is.
 
-**One accent, in two weights.** `--seal` earns its force by being the only colour in the app.
-Every new element should reach for ink, hairline, or spacing first. Where the accent has to
-be *read* rather than seen it lifts to `--seal-ink`: `--seal` measures 4.23:1 on a chit
-surface, which is fine for a mark and short of the floor for a word. Marks, fills, borders
-and icons take `--seal`; text takes `--seal-ink`. Keeping that split is what lets the accent
-stay saturated instead of being compromised into a colour that is neither.
+**One accent, in two weights, and it means one thing.** `--seal` earns its force by being the
+only colour in the app. Every new element should reach for ink, hairline, or spacing first.
+Where the accent has to be *read* rather than seen it lifts to `--seal-ink`: `--seal` measures
+4.09:1 on a chit surface, which is fine for a mark and short of the floor for a word. Marks,
+fills, borders and icons take `--seal`; text takes `--seal-ink`. Keeping that split is what
+lets the accent stay saturated instead of being compromised into a colour that is neither.
 
-**Translucent surfaces are their own surface.** The audio pill washes 7% `--seal` over the
-slip, which lifts the ground under it enough to drop `--ink-faint` from 4.71:1 to 4.36:1 —
-a failure produced by a background that is barely visible. Contrast has to be measured
-against the *composited* result, not against the token the element nominally sits on. Any new
-tinted surface needs rechecking rather than an inherited assumption.
+*This entry used to stop there, and it was not enough.* "Used sparingly" is advice nobody can
+fail, and v5 obeyed it item by item while ending up with an orange thread and an orange
+calendar — every single use was defensible and the sum was not. v6 replaces the advice with a
+rule that can actually be broken: **the seal marks what is live, and a record is ink.** ADR-022
+is the argument and DESIGN-SYSTEM.md §6.1 is the list. The test of a new element is no longer
+"is this important enough for the accent" — everything is — but "is this happening right now".
+
+**Translucent surfaces are their own surface.** The audio pill washes 3.5% `--ink` over the
+slip, which lifts the ground under it enough to drop `--ink-faint` to 4.17:1 — a failure
+produced by a background that is barely visible. *In v5 the same pill washed 7% `--seal` and
+the figure was 4.36:1; the wash changed colour and strength and the verdict did not.* Contrast
+has to be measured against the *composited* result, not against the token the element nominally
+sits on. Any new tinted surface needs rechecking rather than an inherited assumption — which is
+why §6.1 now lists every wash in the app beside what it measures.
+
+**A brighter slip costs contrast everywhere at once.** v6 lifted `--slip` from `#211E1A` to
+`#24211C` so a chit reads as a surface rather than as a border, and that one change moved every
+ratio measured against a chit: `--ink-faint` from 4.71:1 to 4.56:1, `--ink-muted` from 6.02:1
+to 5.82:1, `--seal` from 4.23:1 to 4.09:1. Nothing fell through a floor, but `--ink-faint` on a
+slip is now the tightest pair in the app, and the entry above about `--ink-faint` sitting on
+two surfaces is the reason it survived. **A surface token is never a local change.**
 
 ## Speech stays on the device
 

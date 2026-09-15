@@ -276,7 +276,7 @@ place — one call, ordered so a failed file move does not leave a row pointing 
 parameters, so an edit cannot move a chit in the thread, relight a calendar tile, or lose a
 recording.
 
-Everything downstream is a Drift stream. The thread, the day arc, the calendar heat and the
+Everything downstream is a Drift stream. The thread, the day arc, the calendar density and the
 month total are four providers reading three queries, so a save updates them together by
 construction. DESIGN-SYSTEM.md §7 requires that the two tabs never disagree; the prototype held them in
 step by hand, and here it is the only thing the architecture allows.
@@ -286,7 +286,7 @@ step by hand, and here it is the only thing the architecture allows.
 Two, both grouped on `localDay` (ADR-006):
 
 - `daySummaries(monthStart, monthEnd)` → `(localDay, count)` rows. The count maps to the four
-  warmth steps of BEHAVIOUR.md §4.2; the mapping is in the presentation layer, since it is a design
+  density steps of BEHAVIOUR.md §4.2; the mapping is in the presentation layer, since it is a design
   scale and not a fact about the data.
 - `chitsGroupedByDay(limit, offset)` → the archive, newest day first, paged.
 
@@ -301,7 +301,8 @@ DESIGN-SYSTEM.md §6 becomes four `ThemeExtension`s (ADR-010). Two of them carry
 
 **`ChitColors`** exposes `seal` and `sealInk` as separate members with doc comments stating the
 split — marks, fills, borders and icons take `seal`; anything read as words takes `sealInk`.
-The design log explains why (`seal` is 4.23:1 on a slip; text needs 4.5:1).
+The design log explains why (`seal` is 4.09:1 on a slip; text needs 4.5:1). *That figure was
+4.23:1 until v6 brightened `--slip`; the rule it justifies did not move.*
 
 **`ChitMotion`** exposes two resolvers rather than a bag of durations:
 
@@ -345,13 +346,14 @@ The general shape: **ambient signals fail silently, the user's content never fai
   five-second timer; `canSave`; and the transcript rules of §4.1 — append rather than replace,
   the one-way slide from `transcript` to `transcriptEdited`, and all three routes to
   `sttFailed`.
-- **Pure functions** — the WMO mapping, the count-to-warmth scale, the arc position for a time.
+- **Pure functions** — the WMO mapping, the count-to-density scale, the arc position for a time.
 - **Widgets** — goldens for the slip, the perforated edge, the thread, a calendar month at each
-  warmth step, and the open chit in each of its meaningful configurations: empty; typed; a
+  density step, and the open chit in each of its meaningful configurations: empty; typed; a
   transcript just landed; a transcript with the pill; audio with no text and the §3.5 note.
 - **The accessibility floors of DESIGN-SYSTEM.md §6.4 as tests, not as intentions.** A test that computes
   the contrast of every text token against every surface it is used on — including composited
-  translucent surfaces, which is where the audio pill's 7% wash caught the design out.
+  translucent surfaces, which is where the audio pill's wash caught the design out — 7% seal in
+  v5, 3.5% ink in v6, and a failure either way.
 
 ---
 

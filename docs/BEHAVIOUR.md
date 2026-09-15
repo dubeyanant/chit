@@ -107,13 +107,25 @@ the engine could not read is still a record the user can play back.
 |---|---|
 | Time | `3:42 pm` |
 | Weather condition | a word — `raining`, `clear`, `overcast`, `windy`, `clear night` |
-| Location | a pin symbol — the fact of a place, never its name |
+| Location | a pin symbol on the open chit — the fact of a place, never its name |
+
+The three sit on one line, lowercase, spaced apart with no separators between them, and in the
+same words and the same case wherever they appear. On the open chit the line is set in
+`--ink-muted` and under a saved chit in `--ink-faint`: the chit being written is brighter than
+the ones already written, which is the only difference between them.
 
 Conditions are recorded as words because "raining" is a feeling and a temperature reading is
 not. The chit carries the feel of the moment.
 
 For location, knowing *that* a place was recorded is enough context for the reader. The pin
 says so and stops there.
+
+**The pin is drawn on the open chit only.** *v5 repeated it under every chit in the thread.*
+Every chit carries a location, so a pin on all of them distinguishes nothing — it is ten
+identical marks down a screen, each carrying no information because none of them could ever be
+absent. On the open chit it means something present tense: *this is being noted, now.* The
+location is still captured and still stored for every chit (README §5); what changed is that
+the thread stopped drawing a constant.
 
 ---
 
@@ -125,14 +137,13 @@ Shows today.
 
 ```
   chit  चित्त                                    ⚙
-  Sunday
-  13 September
+  Sunday 13 September                               ← one line, 26px
 
   ●────────●───────◎─────────────────────────
   5 am              now                midnight      ← the day arc
 
   ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← perforated tear edge
-  │ 3:42 PM · RAINING · ⌖                   │
+  │ 3:42 pm   raining   ⌖                   │
   │ |                                       │        ← live field; prompt after 5s
   │                                         │
   │ ┌────┐                                  │
@@ -142,17 +153,19 @@ Shows today.
 
   with something written:
 
-  │ ┌────┐ ┌─────────┐ ┌──────────────────┐ │
-  │ │ ⏺  │ │ Discard │ │    Save chit     │ │
-  │ └────┘ └─────────┘ └──────────────────┘ │
+  │ ┌────┐  Discard   ┌──────────────────┐  │
+  │ │ ⏺  │            │    Save chit     │  │
+  │ └────┘            └──────────────────┘  │
 
   earlier ─────────────────────────── 2 chits
 
-  ▪ 11:20 am · overcast · ⌖
+  ▪ 11:20 am   overcast
   │ Reorg meeting pushed again. Third time.
-  ▪ 8:05 am · clear · ⌖
+  ▪ 8:05 am   clear
   │ Didn't sleep. Room too cold, again.
   │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]
+
+  चित्त                                             ← the closing mark
 ```
 
 The microphone leads the action row at the foot of the slip, at the full 54px, and **Discard**
@@ -160,14 +173,32 @@ and **Save chit** arrive to its right as soon as the chit holds anything — a c
 a recording kept. An untouched chit shows neither, because there is nothing to save and nothing
 to discard. The row reads left to right: the way in, then what to do with it.
 
+The three are ranked by weight, not by colour: the microphone and Save share a border, Save
+carries the brighter one and a faint ink wash, and Discard has no outline at all. *v5 made Save
+a solid `--seal` bar*, which became the loudest thing on the screen the instant a word was
+typed — and next to it the outlined microphone read as a control from a different app.
+DESIGN-SYSTEM.md §6.1 has the washes; ADR-022 has the argument.
+
 Once a recording is kept the microphone **leaves the row** rather than greying out (§3.2). A
 control that retires reads as finished; a disabled one reads as broken, and the audio pill
 above is where the recording now lives.
 
 The date sits directly above the day arc — the arc's own line divides the header from the
-content, so no separate rule is needed.
+content, so no separate rule is needed. Weekday and date share **one line** at 26px, the
+weekday italic and faint, the date in full ink. *v5 stacked an italic weekday over a 38px
+date.* That made what-day-it-is the largest thing on a screen whose subject is the blank slip
+underneath, and it pushed the slip down the page. The date is a label here, not a masthead —
+DESIGN-SYSTEM.md §6.2.
 
-The open chit rests on a visible second slip, offset behind it: a pad you tear from.
+The day arc's marks are **ink**, not accent; only the ring at `now` is `--seal`. A row of
+orange marks made every past moment look as live as the present one (ADR-022).
+
+The open chit rests on a visible second slip, offset behind it: a pad you tear from. The slip
+itself is bright enough to read as a surface rather than as a bordered rectangle.
+
+The चित्त mark closes the day at the foot of the thread. It appears there and beside the
+wordmark, and nowhere else — *v5 also repeated it at the foot of the calendar*, which made a
+closing mark into a page decoration.
 
 Saving puts the chit's mark on the day arc straight away, so the arc is a running account of
 the day rather than a snapshot of how it started. A chit saved at the current time places its
@@ -182,14 +213,36 @@ empty.
 Reached from the bottom tab bar.
 
 - **Month grid.** A date carries a number when something was written that day, and the tile's
-  warmth scales with how much — four steps, from a faint wash at one chit to a strong fill at
-  four or more. At the top two levels the numeral flips to near-white to hold contrast. The
-  month reads as the shape of what was written rather than as a full grid to be scanned.
-  Today always keeps its number so it stays findable, and is ringed.
-- **Legend** — `quiet ▪▪▪▪ full`.
+  density scales with how much — four steps of **ink**, from a 6% wash at one chit to 30% at
+  four or more. The month reads as the shape of what was written rather than as a full grid to
+  be scanned. Today always keeps its number so it stays findable, and is ringed in `--seal`.
+
+  *v5 tinted these steps in `--seal`, and flipped the numeral to near-white (`#FFF6EE`) at the
+  top two so it would hold contrast against them.* Both are gone. Density is how much ink went
+  down on a day, which is what writing actually leaves behind — and in ink the numeral never
+  has to change colour to stay legible, so one less colour exists (the four steps run 12.66:1
+  down to 5.99:1, all clear of the floor). It also leaves `--seal` meaning exactly one thing on
+  this screen: today. ADR-022.
+
+  **The current month is drawn up to today and stops.** A month drawn to its end is a fortnight
+  of empty tiles standing for days that have not happened, which reads as a fortnight of days
+  with nothing written in them. A past month draws in full.
+
 - **Month summary** — e.g. *22 chits over eleven days*.
 - **The archive** — every day grouped newest-first, using the same thread treatment as Today.
 - Tapping a date filters the archive to that day; tapping again, or "Show every day", clears it.
+
+**There is no legend.** *v5 carried one — `quiet ▪▪▪▪ full`.* Four swatches in a row explaining
+that more ink means more writing is a caption on something nobody misreads, and it competed
+with the grid it was explaining. The month summary underneath says the same thing in words a
+person would use.
+
+**The word is _density_, not _warmth_ or _heat_.** Those were the right words for a `--seal`
+fill and they are the wrong ones for ink — nothing about the grid is warm any more. The
+vocabulary rule of CLAUDE.md §4.1 applies to this as much as to `Chit`: the code should read
+`density`, not `warmth`. ADR-001 and ADR-003 still say "heat" and "warmth"; they are settled
+records written before v6 and their argument is about aggregate queries, not colour, so they
+are left as they were written.
 
 ### 4.3 Recording sheet
 

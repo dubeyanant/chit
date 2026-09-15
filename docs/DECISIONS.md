@@ -4,8 +4,8 @@ One record per decision that would be expensive to reverse. Each says what was c
 it was chosen over, and what it costs. Superseding a record means adding a new one, not
 editing the old one.
 
-Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021 on
-15 September 2026.
+Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
+and ADR-022 on 15 September 2026.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -33,6 +33,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-019 | Android and iOS only; the web folder stays | |
 | ADR-020 | Reducing motion never makes a fade slower | refines ADR-010 |
 | ADR-021 | A chit is stamped when it is opened, not when it is saved | what `createdAt` means, and which day a chit lands on |
+| ADR-022 | The seal means now; a record is ink | refines ADR-010. v6 |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -396,6 +397,14 @@ house rule for that reason.
 **Also costs.** ~1.8 MB of fonts, of which Noto Serif Devanagari is 758 KB to draw one word.
 Subsetting is noted as an open item rather than done now, because the mark may still change.
 
+*Note, 15 September 2026 — the decision is unchanged, two figures in the evidence are not.* The
+prototype this record reads is now `chit-app-v6.html`, and the date it cites as the 300-weight
+example is 26px there rather than 38px, so the display-to-body ratio the `opsz` argument rests
+on is 1.6× rather than 2.3× (DESIGN-SYSTEM.md §6.2). The weights loaded are the same, a
+narrower optical range still spans two thirds of an octave, and `fontVariations` is still the
+only way to get any of it. Left in place rather than rewritten: the record says what was known
+when the choice was made.
+
 ---
 
 ## ADR-016 — Precise location first, coarse as the fallback
@@ -574,3 +583,61 @@ column, not a reinterpretation of this one.
   time at insert and the edit time afterwards, which is what the name says.
 - M2 must hold the stamp in `ComposerState` from the moment the chit opens and pass that same
   object to `save()`. Re-capturing it on save would quietly undo this decision.
+
+---
+
+## ADR-022 — The seal means now; a record is ink
+
+*Refines ADR-010. Adopted with `design/chit-app-v6.html`, 15 September 2026.*
+
+**Decision.** `--seal` marks what is **live**, and nothing else: the ring at `now` on the day
+arc, the caret in the field, the record dot on the recording sheet, the ring around today on
+the calendar, and the audio pill *while it is playing*. Everything that is a record rather than
+a happening is ink — the arc's marks, the calendar's density steps, the active tab pip, the
+audio pill at rest, the microphone, and Save. Surfaces that need to sit above their ground are
+tinted with `--ink` at a stated alpha (DESIGN-SYSTEM.md §6.1).
+
+**Over.** v5's rule, which gave the accent to *"the caret, the day-arc marks, the calendar heat
+field, the active tab dot, audio waveforms, the microphone, and the Save button"* — roughly,
+anything that mattered.
+
+**Why.** An accent used for everything that matters marks nothing, because on a working screen
+everything matters. Three concrete failures, all visible in v5 rather than argued from
+principle:
+
+- A thread with three recordings in it ran orange down its whole left side. The pill is a
+  record like any other until it is the one making a sound.
+- A calendar of a busy month was a field of orange, and today's ring — the one thing on that
+  screen a person is actually looking for — was more orange inside it.
+- Save became the loudest thing on the screen the instant a word was typed, and next to a solid
+  accent bar the outlined microphone read as a control borrowed from another app, even though
+  BEHAVIOUR.md §3.2 makes the two equals.
+
+Reserving the colour for *now* gives it one meaning that holds on every screen, and it makes
+the day arc say something it could not say before: the marks are what happened, the ring is
+where you are.
+
+There is a second gain, and it is the one that removes a token rather than adding one. The
+calendar's density in ink means a numeral never has to flip to near-white to stay legible over
+a strong fill — the four steps run 12.66:1 down to 5.99:1 against `--ink`. `#FFF6EE` was a
+colour that existed only to survive the accent, and it is gone with it. So is `#1A1310`, the
+dark label that only a solid `--seal` button needed.
+
+**Costs.** Ink washes carry less force than a saturated fill, so density on the calendar is a
+quieter signal than heat was — a busy month and a very busy month look more alike. That is
+accepted: the month summary states the number in words underneath, and BEHAVIOUR.md §4.2 has
+always said the grid is a shape rather than a readout.
+
+The app is also, plainly, less colourful. The register of the design log — *a ground, ink,
+hairlines, and one accent* — is unchanged; v5 simply was not keeping to it.
+
+**Consequences.**
+
+- `ChitColors.seal` and `sealInk` keep their split and their meaning; only the surfaces they
+  land on changed, so `--seal` measures 4.09:1 on the new `--slip` rather than 4.23:1 and
+  `--seal-ink` stays the token for anything read as words.
+- **A new floor failure came with it, and is open**: today's `--seal` ring against a dense day
+  tile measures 2.61:1 at three chits and 1.88:1 at four or more, under the 3:1 a non-text UI
+  component needs. It wants a design answer — PROGRESS.md open item 12.
+- DESIGN-SYSTEM.md §6.1 now carries a table of every tinted surface and what it measures,
+  because "reach for ink" only stays safe if each wash is checked rather than assumed.

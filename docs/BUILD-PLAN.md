@@ -95,13 +95,18 @@ the decision quietly.
 
 The first screen a person could use.
 
+- **Re-point the four theme extensions at v6 first.** M0b built them against v5 and the
+  prototype moved on 15 September 2026; every token, size and radius M2 reaches for has to be
+  the v6 one before a widget uses it, or the first screen ships in the old palette and the
+  correction becomes a second pass over finished code. PROGRESS.md open item 11 is the list.
 - The shell and the two-tab bar; the Calendar tab is a placeholder.
-- Header, date, and the day arc from 5am to midnight with a mark per chit and the ring at now.
+- Header, date on **one 26px line**, and the day arc from 5am to midnight with a mark per chit
+  — marks in ink, the ring at now in `--seal` (ADR-022).
 - The thread: the rail, the chit rows, the ambient stamp row, the `earlier` label and count,
   and the empty state — *"Nothing written yet today."*, no rail, no placeholder row.
 - The open chit: the slip, the perforated edge, the pad behind it, the **live field**, and the
   **microphone** in its final position and at its final size — present and inert until M5.
-  `design/chit-app-v5.html` is the reference; the composer there is the target.
+  `design/chit-app-v6.html` is the reference; the composer there is the target.
 - The five-second prompt; `canSave`; Discard and Save appearing only once the chit holds
   something.
 - The ambient stamp reads a real clock; weather and location are fakes returning fixed values.
@@ -117,7 +122,8 @@ weight.
 
 The perforated edge is worth getting right here rather than later — the design log notes it is
 drawn as holes in the colour of the surface *beneath* the slip, not as a dotted border, and the
-metaphor rests on that.
+metaphor rests on that. v6 sizes them at 1.55px on an 8px pitch; at v5's 1.2px they were
+invisible at arm's length, which is the same as not drawing them.
 
 ---
 
@@ -141,15 +147,17 @@ time, no weather word, and no pin — with nothing in the UI noting the absence.
 
 ## M4 — Calendar
 
-- The month grid: a date carries a number only when something was written, warmth in four
-  steps, the numeral flipping near-white at the top two, today ringed and always numbered.
-- Legend and month summary.
+- The month grid: a date carries a number only when something was written, density in four
+  steps of ink, today ringed and always numbered, and the current month drawn up to today and
+  no further. *This used to read "warmth in four steps, the numeral flipping near-white at the
+  top two" — v6 tints in ink instead of seal, so the numeral never flips (ADR-022).*
+- The month summary. **No legend** — v6 removed it (BEHAVIOUR.md §4.2).
 - The archive, grouped newest-first, using the same thread treatment as Today.
 - Date filtering, and clearing it.
 - Month navigation — the prototype's chevrons were disabled because it held one month; the real
   app has no such excuse.
 
-**Done when** saving a chit on Today changes the calendar heat and the month total without a
+**Done when** saving a chit on Today changes the calendar density and the month total without a
 refresh, because both read the same stream.
 
 Past chits stay non-interactive here. Saved chits **are** editable (ADR-014), the repository
@@ -176,7 +184,8 @@ is pressed.
   the note sits beside it. Build this at the same time as the success path, not after it. All
   three routes into it — heard nothing, on-device refused, no model — take the same branch.
 - The audio pill and `just_audio` playback; the pill's duration in `--ink-muted`, because its
-  7% wash drops `--ink-faint` below the floor.
+  3.5% ink wash drops `--ink-faint` to 4.17:1, below the floor. The pill is ink at rest and
+  takes the seal only while it is playing (ADR-022).
 - The microphone becomes unavailable once a recording is kept, and reads as settled rather than
   broken. One row, one recording.
 
@@ -234,7 +243,7 @@ Polish, done deliberately and once. Last, so that every surface it touches alrea
 - The reduced-motion pass: travel and ambient loops stop, fades and colour survive.
 - Touch targets ≥44px with no exceptions — including the microphone's, which does not shrink
   when the field has text in it; `:focus-visible` rings; a semantics audit; goldens for each
-  composer configuration and each calendar warmth step.
+  composer configuration and each calendar density step.
 
 **Done when** the whole app is walked through once with reduced motion on and once with a
 screen reader, and DESIGN-SYSTEM.md §6.4 holds as tests rather than as intentions.

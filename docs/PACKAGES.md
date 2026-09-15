@@ -97,10 +97,11 @@ assets/fonts/
 ```
 
 This corrects what this file used to say — *"only the weights actually used: regular, italic,
-medium"*. The prototype loads Newsreader at **300–600** (the 38px date is 300) and Hanken
+medium"*. The prototype loads Newsreader at **300–600** (the date is 300) and Hanken
 Grotesk at **400/500/600**, so that list would have shipped the design at the wrong weights.
-Variable fonts also carry Newsreader's `opsz` axis, which is what makes a 38px date and 16.5px
-body text both look right; ADR-015 has the full argument.
+Variable fonts also carry Newsreader's `opsz` axis, which is what makes a 26px date and 16.5px
+body text both look right; ADR-015 has the full argument. *The date was 38px in v5 and is 26px
+in v6 (DESIGN-SYSTEM.md §6.2) — a narrower optical range, and the axis still earns its place.*
 
 **Consequence for the code:** a variable font renders at weight 400 unless a `TextStyle` sets
 `fontVariations`. `fontWeight` alone does nothing. `chit_type.dart` is the only file that may

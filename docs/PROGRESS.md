@@ -6,7 +6,8 @@ has read only this file and `CLAUDE.md` should be able to pick up the work.
 Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
-**Last updated:** 15 September 2026, after M1 — the data spine.
+**Last updated:** 15 September 2026, after M1 — the data spine — and after the v6 design pass,
+which changed documents only.
 
 ---
 
@@ -29,6 +30,32 @@ Updated at the end of every working session, per the standing rule in
 The app on a handset is still the masthead on `--paper` and nothing else — M1 added no UI, which
 is what it said it would do. That screen was confirmed on a device on 15 September: dark warm
 brown, "chit चित्त" in the gutter, which is `--paper` `#191714` behaving exactly as §6.1 sets it.
+
+---
+
+## ⚠ Read this before touching the theme
+
+**The prototype moved to v6 and the code did not.**
+
+`design/chit-app-v6.html` replaced v5 as the visual target on 15 September 2026. Every document
+in this repository now describes v6. **`lib/core/theme/` still holds v5's values**, because the
+v6 pass was deliberately documentation-only.
+
+So, right now:
+
+| | |
+|---|---|
+| The documents | describe **v6**. They are the target and they are right |
+| `lib/core/theme/`, and `test/core/theme/` | describe **v5**. They are the past and they are wrong |
+
+**Do not "correct" a document to match a constant in the code.** The gap is intentional,
+temporary, and listed constant by constant in **open item 11** below. Close it before or with
+M2 — M2 is the first milestone that draws anything, and a screen built on v5 tokens is a
+correction pass over finished code rather than a value changed once.
+
+Nothing is broken in the meantime: `flutter test` passes, because the tests assert the code's
+v5 values and the code still holds them. **That is exactly why this note exists** — the build
+will not tell you.
 
 ---
 
@@ -189,14 +216,64 @@ suites that hold it are `test/domain/chit_test.dart`, `test/data/db/chits_table_
 
 ---
 
+## What the v6 pass did — documents only, 15 September 2026
+
+`design/chit-app-v6.html` arrived and became the visual target. **No code was changed**, by
+instruction: this pass moved the documents so that the target is written down, and left the
+work of moving the code as open item 11.
+
+v6 changes nothing about what the app *does*. §3 is untouched. It is a visual revision, and the
+through-line is one decision:
+
+**ADR-022 — the seal means now; a record is ink.** The accent had spread to the caret, the
+arc's marks, the calendar heat, the tab pip, the audio pill, the microphone and Save — which is
+to say, to everything that mattered, which is to say, to nothing. It now marks only what is
+live: the ring at now, the caret, the record dot, today's ring, and a pill *while it is
+playing*. Everything else is ink.
+
+The rest, and where each is written down:
+
+| Change | Recorded in |
+|---|---|
+| `--slip` `#211E1A` → `#24211C`, and every ratio measured against a chit moved with it | DESIGN-SYSTEM.md §6.1 |
+| The accent rule, and the table of ink washes that replaces it | §6.1, ADR-022 |
+| The date: stacked weekday over 38px → one 26px line. The field: 19px → 17.5px | §6.2 |
+| No uppercase anywhere; the ambient stamp and the chit meta line are the same words in the same case | §6.2, BEHAVIOUR.md §3.6 |
+| The pin is drawn on the open chit only | BEHAVIOUR.md §3.6 |
+| The calendar: density in ink, no near-white numeral, no legend, the month drawn up to today | BEHAVIOUR.md §4.2 |
+| The चित्त closing mark appears at the foot of Today only | BEHAVIOUR.md §4.1, DESIGN-LOG.md |
+| Sheet radius 14px → 8px; calendar tiles 4px at a 5px gap; perforation 1.55px at 8px | §6.3 |
+| Grain on by default at 5%; live waveform 32 bars → 20 thin strokes | §6.3, §7 |
+| Four vertical gaps tightened so the slip sits higher | §6.3 |
+
+**Two open items closed, one opened.**
+
+- **Open item 2 is closed by v6** and needs no token after all. `#FFF6EE` existed only so a
+  numeral could survive a strong `--seal` fill, and `#1A1310` existed only as the label on a
+  solid `--seal` button. Both fills are gone, so both colours are gone. Worth noticing: the
+  fix for "we have two colours with no token" turned out to be removing the thing that needed
+  them, not naming them.
+- **Open item 12 is new, and it is a real floor failure**: today's `--seal` ring measures
+  1.88:1 against a four-chit tile. It came in with ADR-022 and is written down rather than
+  waved through.
+
+**Verified:** every figure quoted in the documents above was recomputed from the v6 CSS rather
+than carried over — the same WCAG arithmetic `test/support/contrast.dart` uses, checked against
+the one v5 figure the design log already recorded (4.36:1) before any new number was written
+down. `flutter test` still passes at 120, unchanged, because no code moved.
+
+---
+
 ## Next: M2 — Today, text only
 
 The first screen a person could use. Full statement of done in
 [BUILD-PLAN.md](BUILD-PLAN.md) M2; what it looks like is BEHAVIOUR.md §4.1, and
-`design/chit-app-v5.html` is the target. The spine it draws from is all in place.
+`design/chit-app-v6.html` is the target. The spine it draws from is all in place.
 
 Worth knowing before starting:
 
+- **Do open item 11 first.** M2 is the first milestone that draws anything, and every token it
+  reaches for should be the v6 one before a widget uses it.
 - **The composer holds the stamp from the moment it opens** (ADR-021). Weather and location are
   fakes returning fixed values until M3, but the *time* is real and comes from `clockProvider`.
 - **`ChitRepository` is already what M2 needs**: `watchDay(int localDay)` for the thread and the
@@ -218,13 +295,15 @@ Things a future session needs to know but that are not yet scheduled work.
    mapping is a judgement call that has never been checked against the prototype side by side:
    `ChitType._opticalSizeFor` converts logical pixels to points at 0.75, which is what the CSS
    spec says a browser does with `font-optical-sizing: auto`. If Newsreader looks heavier or
-   lighter than `design/chit-app-v5.html` at the same size, that constant is the first suspect.
-   Worth settling in M2, when there is real text to compare.
-2. **DESIGN-SYSTEM.md §6.1 has no token for two colours the design uses.** The calendar's near-white
-   numeral on a strong fill (`#FFF6EE`, BEHAVIOUR.md §4.2) and the label on a filled Save button
-   (`#1A1310` in the prototype). Neither is in the §6.1 table. M2 hits the second and M4 the
-   first; whichever gets there first should add the token to DESIGN-SYSTEM.md §6.1 and to the contrast
-   test rather than inlining a hex.
+   lighter than `design/chit-app-v6.html` at the same size, that constant is the first suspect.
+   Worth settling in M2, when there is real text to compare — and note that v6 narrowed the
+   optical range it has to cover, from 38px/16.5px to 26px/16.5px, so the constant matters a
+   little less than it did.
+2. ~~**DESIGN-SYSTEM.md §6.1 has no token for two colours the design uses.**~~ **Closed
+   15 September 2026 by v6**, which removed both rather than naming either. `#FFF6EE` was a
+   numeral lifted to survive a strong `--seal` calendar fill, and `#1A1310` was the label on a
+   solid `--seal` Save button. ADR-022 replaced both fills with ink washes that `--ink` reads
+   cleanly on (5.99:1 at the densest tile, 10.85:1 on Save), so neither colour exists any more.
 3. ~~**`sqlite3_flutter_libs` resolves to `0.6.0+eol`.**~~ **Closed 15 September 2026.** It is
    the latest release and the package is now empty — `package:sqlite3` 3.x ships the native
    library itself and our tree resolves it at 3.5.2. Nothing to do; the shim falls away when
@@ -253,3 +332,82 @@ Things a future session needs to know but that are not yet scheduled work.
     the calendar has something to shade — M4, or M2 if the archive feels empty while building
     it. A seeded day must cover all four shapes of §2, especially the recording with `NULL`
     text.
+
+11. ### ⬜ **Re-point `lib/core/theme/` at v6. Scheduled: before or with M2.**
+
+    **This is the open item.** The documents describe v6; the theme extensions were written
+    against v5 in M0b and still hold v5's values. Nothing fails today — the tests assert the
+    code's own v5 numbers — so nothing will remind you. This list is the reminder.
+
+    **`chit_colors.dart`**
+    - `slip` `0xFF211E1A` → **`0xFF24211C`**.
+    - Add the ink washes of DESIGN-SYSTEM.md §6.1 as named members, the way `sealWash` already
+      exists: the pill at 3.5%, Save at 7% and 13%, the microphone hover at 5%, and the four
+      calendar steps at 6 / 12 / 20 / 30%. They are `--ink` at an alpha over a stated ground,
+      and §6.4 requires each composite to be checked rather than assumed.
+    - `sealWash` was the 7% *accent* wash behind the pill. v6's pill is an ink wash, so that
+      member is either renamed or joined by an ink one — do not leave a member called
+      `sealWash` describing a surface that has no seal in it.
+    - Its doc comment quotes `4.23:1`. The figure is **4.09:1** on the new slip.
+
+    **`chit_type.dart`**
+    - `date` 38px → **26px**, and the weekday is no longer a separate stacked style — one line,
+      the weekday italic in `--ink-faint` and the date in `--ink`.
+    - The composer field 19px → **17.5px**, line-height 1.6 → 1.62.
+    - The `--ink-faint` italic failure note 17px → **16.5px**.
+    - Every 16px style → **16.5px**: section labels, day headings, tab labels, calendar
+      numerals, the wordmark (16 → 16.5).
+    - **The ambient stamp is no longer uppercase.** Drop the `.1em` tracking and the
+      `TextTransform`; it is 11.5px, weight 500, `.02em`, sentence case — the same style the
+      chit meta line uses, differing only in colour.
+    - Its doc comment quotes a 2.3× display-to-body ratio. It is **1.6×** now.
+    - `legend` is a style for an element v6 deleted. Remove it, and the `copyWith` / `lerp` /
+      props entries that go with it.
+
+    **`chit_space.dart`**
+    - `sheetRadius` 14px → **8px**; add the calendar tile's **4px** and its 5px grid gap.
+    - The four tightened gaps of §6.3 (arc, composer, `earlier` heading, month summary).
+    - Its doc comment cites `chit-app-v5.html`. It is v6.
+
+    **`test/core/theme/contrast_test.dart`**
+    - Every asserted ratio against `slip` moves: `--ink-muted` 6.02 → **5.82**, `--ink-faint`
+      4.72 → **4.56**, `--seal` 4.23 → **4.09**, `--seal-ink` 4.98 → **4.81**. `--ink` on slip
+      is 13.03.
+    - The pill composite is 3.5% **ink**, not 7% seal: `--ink-faint` **4.17:1** (still fails,
+      still the reason the duration is `--ink-muted` at 5.33:1).
+    - Add the new washes: Save's label at 10.85:1, and the four calendar numerals at 12.66 /
+      10.69 / 8.31 / **5.99**.
+    - The comment at the head of the negative cases explains the near-white numeral. That case
+      is gone with `#FFF6EE`.
+
+    **`chit_type_test.dart`** asserts that nothing functional is under 11.5px — unchanged — but
+    it may also pin sizes that moved. **`chit_app.dart`**'s masthead uses `type.wordmark`, which
+    goes 16 → 16.5.
+
+    **When it is done:** `flutter analyze` clean, `flutter test` green with the *new* figures,
+    and the masthead checked on a handset against v6 — which also settles open item 1. Then
+    delete the ⚠ banner at the head of this file, the note in README §10.4, the one in
+    CLAUDE.md §2 and the one at the head of DESIGN-SYSTEM.md, because all four exist only to
+    describe this gap.
+
+12. ### ⬜ **Today's ring fails its contrast floor on a busy day.** Wants a design answer.
+
+    New with ADR-022. Today is ringed in `--seal` on the calendar; the tile under it is an ink
+    wash whose strength depends on how much was written that day. As a non-text UI component
+    the ring needs 3:1, and it gets:
+
+    | Tile | Ratio | |
+    |---|---|---|
+    | empty | 4.56:1 | passes |
+    | one chit | 3.97:1 | passes |
+    | two | 3.36:1 | passes |
+    | three | **2.61:1** | fails |
+    | four or more | **1.88:1** | fails |
+
+    A day with three chits is an ordinary day in an app whose premise is several a day, so this
+    is not a corner case — on a busy today the one mark a person is looking for is the hardest
+    to see. Do not fix it by nudging a token: the ring and the fill are the same lightness
+    family by design now. It probably wants a different *shape* for today — a ring drawn
+    outside the tile, a gap between ring and fill, or a mark rather than a border. It is M4's
+    problem and M4 should not invent the answer under time pressure; DESIGN-SYSTEM.md §6.4
+    carries it too.

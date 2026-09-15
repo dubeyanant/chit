@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>chit — Today &amp; Calendar · v6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Hanken+Grotesk:wght@400;500;600&family=Noto+Serif+Devanagari:wght@400&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════════
+   chit — v6 · dark · one surface: write and speak
+   ══════════════════════════════════════════════
+   v6 is a visual pass only — no behaviour changed from v5.
+     · the date steps back so the slip is the first thing the eye lands on
+     · the slip lifts off the paper, so the sheet reads by its surface, not its border
+     · the seal is reserved for now and live: the arc ring, the caret, the record
+       dot, today's date. Everything it used to also carry is ink again.
+     · one meta line instead of two dialects, no middle dots, no repeated pin
+     · the month is tinted in ink, so density reads as writing rather than heat
+   ══════════════════════════════════════════════ */
+:root{
+  --paper:#191714;
+  --slip:#24211C;
+  --slip-under:#141210;
+  --ink:#EDE7DC;
+  --ink-rgb:237,231,220;
+  --ink-muted:#A39B8B;
+  --ink-faint:#8F8879;
+  --hair:#2E2A25;
+  --hair-soft:#252220;
+
+  /* the stamp. --seal presses onto a surface; --seal-ink is the same stamp
+     read as text, lifted until it clears 4.5:1 on --slip as well as --paper. */
+  --seal:#C4664E;
+  --seal-ink:#D2725A;
+  --seal-rgb:196,102,78;
+
+  --s1:4px;  --s2:8px;  --s3:12px; --s4:16px;
+  --s5:24px; --s6:32px; --s7:48px; --s8:72px;
+  --gutter:26px;
+  --r:2px;
+
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"Hanken Grotesk","Helvetica Neue",Arial,sans-serif;
+  --deva:"Noto Serif Devanagari","Newsreader",serif;
+
+  --ease:cubic-bezier(.2,0,0,1);
+  --dur:220ms;
+  color-scheme:dark;
+}
+
+html{background:#0C0B0A}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;min-height:100vh;background:#0C0B0A;
+  font-family:var(--sans);color:#8F8879;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;padding:32px 16px 96px;-webkit-font-smoothing:antialiased;
+}
+
+/* the parts we did not draw still belong to the design */
+::selection{background:rgba(var(--seal-rgb),.34);color:var(--ink)}
+
+.caption{
+  font-size:12px;letter-spacing:.04em;font-weight:500;text-align:center;
+  color:#C6BEB0;background:#0C0B0A;padding:8px 14px;border-radius:2px;
+}
+.caption b{font-weight:600}
+
+/* ── device ───────────────────────────────── */
+.device{
+  width:390px;height:844px;max-width:100%;
+  border-radius:44px;background:var(--paper);position:relative;overflow:hidden;
+  box-shadow:0 0 0 10px #232019,0 0 0 11px #443E33,0 28px 60px -20px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;
+}
+@media (max-width:430px){
+  .device{height:min(844px,84vh);border-radius:32px;box-shadow:0 0 0 6px #232019,0 18px 40px -18px rgba(0,0,0,.6)}
+  body{padding:16px 8px 88px}
+}
+.device::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:40;
+  opacity:0;transition:opacity var(--dur) var(--ease);mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+[data-grain="on"] .device::after{opacity:.05}
+
+/* ── status bar ───────────────────────────── */
+.status{
+  flex:none;height:50px;padding:0 30px 6px 34px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  font-size:13px;font-weight:600;color:var(--ink);letter-spacing:.01em;z-index:12;
+  font-variant-numeric:tabular-nums;
+}
+.status .icons{display:flex;align-items:center;gap:6px}
+.status svg{display:block}
+
+/* ── slim top row ─────────────────────────── */
+.toprow{
+  flex:none;height:42px;padding:0 var(--gutter);
+  display:flex;align-items:center;justify-content:space-between;z-index:12;
+}
+.mark-brand{display:flex;align-items:baseline;gap:7px}
+.mark-brand .w{font-family:var(--serif);font-size:16.5px;color:var(--ink-muted);line-height:1}
+.mark-brand .d{font-family:var(--deva);font-size:11.5px;color:var(--ink-faint);line-height:1;transition:opacity var(--dur) var(--ease)}
+[data-deva="off"] .mark-brand .d{opacity:0}
+.iconbtn{
+  width:44px;height:44px;margin-right:-12px;display:grid;place-items:center;
+  background:none;border:0;padding:0;cursor:pointer;color:var(--ink-faint);
+  border-radius:var(--r);transition:color 160ms var(--ease),opacity 100ms var(--ease);
+}
+.iconbtn:hover{color:var(--ink)}
+.iconbtn:active{opacity:.6}
+.iconbtn:focus-visible{outline:1.5px solid var(--seal);outline-offset:2px}
+
+/* ── views ────────────────────────────────── */
+.stage{flex:1;position:relative;min-height:0}
+.view{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.view::-webkit-scrollbar{display:none}
+.view[hidden]{display:none}
+.view:focus{outline:none}
+/* two tabs, one plane — a short lift, not a page load */
+.view.entering{animation:viewIn 200ms var(--ease) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.pad{padding:var(--s4) var(--gutter) var(--s8)}
+
+/* ══ TODAY ═════════════════════════════════ */
+/* The date is a label, not a masthead: same scale and weight as the month name
+   on the other tab, set on one line so the slip starts higher up the screen. */
+.datehead{padding-top:var(--s4)}
+.date{
+  font-family:var(--serif);font-size:26px;font-weight:300;line-height:1.15;
+  color:var(--ink);margin:0;letter-spacing:-.015em;
+}
+.date .wd{font-style:italic;color:var(--ink-faint)}
+
+/* ── the day arc ──────────────────────────── */
+.arc{margin-top:var(--s5);position:relative;height:46px}
+.arc-line{position:absolute;left:0;right:0;top:19px;height:1px;background:var(--hair)}
+.arc-pt{position:absolute;top:13px;width:13px;height:13px;margin-left:-6.5px;display:grid;place-items:center}
+.arc-pt i{display:block;width:7px;height:7px;background:var(--ink-faint);border-radius:1px}
+.arc-pt.now i{width:11px;height:11px;background:none;border:1.5px solid var(--seal);border-radius:50%}
+.arc-pt.now::after{
+  content:"";position:absolute;width:11px;height:11px;border-radius:50%;
+  border:1.5px solid var(--seal);animation:pulse 5.2s var(--ease) infinite;
+}
+/* a breath, not a beacon — this sits on screen for as long as the app is open */
+@keyframes pulse{0%{transform:scale(1);opacity:.30}60%,100%{transform:scale(1.85);opacity:0}}
+.arc-ends{position:absolute;left:0;right:0;top:34px;display:flex;justify-content:space-between}
+.arc-ends span{font-size:11.5px;color:var(--ink-faint);letter-spacing:.02em}
+.arc-cap{
+  position:absolute;top:0;font-size:11.5px;font-weight:500;color:var(--seal-ink);
+  letter-spacing:.02em;transform:translateX(-50%);white-space:nowrap;
+}
+
+/* ── the open chit ────────────────────────── */
+.composer-wrap{margin-top:var(--s5);position:relative}
+.composer-wrap::before{
+  content:"";position:absolute;left:5px;right:-5px;top:6px;bottom:-6px;
+  background:var(--slip-under);border:1px solid var(--hair);border-radius:var(--r);z-index:0;
+}
+.composer{
+  position:relative;z-index:1;display:block;width:100%;
+  background:var(--slip);border:1px solid var(--hair);border-radius:var(--r);
+  box-shadow:0 1px 3px rgba(0,0,0,.35);padding:var(--s4);
+  transition:border-color 180ms var(--ease);
+}
+/* holes punched through the edge, not a line drawn along it */
+/* at 1.2px in a colour four points off the slip these were invisible at arm's
+   length — a detail nobody sees is a detail not worth drawing */
+.perf{
+  position:absolute;top:-1px;left:8px;right:8px;height:4px;
+  background-image:radial-gradient(circle at 50% 50%,var(--slip-under) 0 1.55px,transparent 1.8px);
+  background-size:8px 4px;background-repeat:repeat-x;
+}
+/* Same line as a saved chit's, in the same words and the same case. The open
+   chit is distinguished by being brighter, not by speaking a second dialect —
+   and the facts are spaced apart rather than strung on middle dots. */
+.stamp{
+  display:flex;align-items:center;gap:11px;
+  font-size:11.5px;font-weight:500;letter-spacing:.02em;
+  color:var(--ink-muted);font-variant-numeric:tabular-nums;
+}
+.pin{display:flex;align-items:center;color:var(--ink-faint);flex:none}
+.pin svg{display:block}
+[data-weather="off"] .w-word{display:none}
+
+/* The page itself — live from the moment the chit opens, always the user's.
+   v4 rested at 92px because the bottom of the slip carried two full-width
+   buttons; against a single 54px control that much blank reads as a void with
+   something stranded under it. Two and a half lines is still a blank page. */
+.writearea{position:relative;margin-top:var(--s4);min-height:72px;cursor:text}
+/* 19px held about 34 characters to the line inside the slip; 17.5 lands near 40,
+   which is where a serif starts reading as a page instead of a column. */
+.composer-body{
+  font-family:var(--serif);font-size:17.5px;line-height:1.62;color:var(--ink);
+  text-wrap:pretty;outline:none;min-height:72px;caret-color:var(--seal);
+}
+.ghost{
+  position:absolute;inset:0;pointer-events:none;
+  font-family:var(--serif);font-size:17.5px;line-height:1.62;color:var(--ink-faint);
+}
+.has-text .ghost{display:none}
+/* §3.5's line already occupies this space and says more than the prompt would.
+   The caret stays: with the note above it, it is the only thing telling the
+   user that the empty page below is still theirs to write on. */
+.composer[data-stt="failed"] .prompt-text{display:none}
+.caret{
+  display:inline-block;width:1.5px;height:1.05em;background:var(--seal);
+  vertical-align:-.18em;animation:blink 1.15s step-end infinite;
+}
+/* the drawn caret says "ready" before the field is touched; once it is focused
+   the browser draws the real one and two carets would be one too many */
+.writearea:focus-within .caret{display:none}
+@keyframes blink{0%,45%{opacity:1}50%,95%{opacity:0}100%{opacity:1}}
+.prompt-text{
+  margin-left:5px;opacity:0;transform:translateY(2px);
+  transition:opacity 700ms var(--ease),transform 700ms var(--ease);
+}
+.prompt-text.show{opacity:1;transform:none}
+
+/* The sheet is below the slip, so the recording it hands over rises into place:
+   the pill first, then the words it produced landing in the field. Same idea as
+   a chit dropping into the thread from the composer above it — everything
+   arrives from where it came from, and settles. */
+@keyframes settle{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#composer-audio .audio{animation:settle 380ms var(--ease) both}
+.composer[data-stt="ok"] .composer-body{animation:settle 380ms var(--ease) 70ms both}
+.composer[data-stt="failed"] .failnote{animation:settle 380ms var(--ease) 70ms both}
+
+/* §3.5 — no transcript came through. The audio is kept and nothing is written
+   into the field automatically; the field keeps its height because it is still
+   the user's to type into, and the failure is stated beside it, never in it. */
+.failnote{
+  font-family:var(--serif);font-style:italic;font-size:16.5px;line-height:1.5;
+  color:var(--ink-faint);margin:var(--s4) 0 calc(var(--s3) * -1);
+}
+.failnote[hidden]{display:none}
+
+/* ── the action row ───────────────────────── */
+/* The microphone is not a twin to be symmetrical with any more, so its equality
+   has to come from size and placement: it leads the row at the full 54px the
+   two ways in used to be, and its target never shrinks as text arrives. */
+.actions{display:flex;align-items:center;gap:var(--s2);margin-top:var(--s4)}
+.mic{
+  flex:none;width:54px;height:54px;display:grid;place-items:center;overflow:hidden;
+  background:none;border:1px solid var(--hair);border-radius:var(--r);cursor:pointer;
+  color:var(--ink-muted);padding:0;
+  transition:border-color 160ms var(--ease),color 160ms var(--ease),background 160ms var(--ease),
+             transform 90ms var(--ease),width 200ms var(--ease),opacity 160ms var(--ease),
+             margin 200ms var(--ease),border-width 200ms var(--ease);
+}
+.mic svg{flex:none}
+.mic:hover{border-color:var(--ink-faint);color:var(--ink);background:rgba(var(--ink-rgb),.05)}
+/* a finger gets no hover — pressure is the only feedback touch has */
+.mic:active{background:rgba(var(--ink-rgb),.10);transform:scale(.985)}
+.mic:focus-visible{outline:1.5px solid var(--seal);outline-offset:2px}
+/* One chit holds one recording. Once it is kept the microphone has done its job
+   and leaves — a control that retires reads as finished, where a greyed-out one
+   reads as broken. The pill that arrived above is where the recording now lives. */
+.composer[data-audio="kept"] .mic{
+  width:0;opacity:0;border-width:0;margin-right:calc(var(--s2) * -1);pointer-events:none;
+}
+.commit{flex:1;display:none;gap:var(--s2);min-width:0}
+/* nothing to save and nothing to discard until the chit holds something */
+.composer[data-can-save="yes"] .commit{display:flex;animation:settle 300ms var(--ease) both}
+.btn{
+  border-radius:var(--r);cursor:pointer;font-family:var(--sans);
+  font-size:13px;font-weight:600;letter-spacing:.04em;padding:14px;
+  transition:background 160ms var(--ease),border-color 160ms var(--ease),color 160ms var(--ease),opacity 160ms var(--ease),transform 90ms var(--ease);
+}
+/* Three controls, one system. A solid seal bar was the loudest thing on the
+   screen the moment a word was typed, and it made the outlined microphone beside
+   it look like a control from somewhere else. Now the microphone and Save share
+   a border, Save carries the brighter one and a wash, and Discard drops its
+   outline altogether — hierarchy by weight rather than by colour. */
+.btn-ghost{flex:none;background:none;border:1px solid transparent;color:var(--ink-faint);padding:14px 16px;white-space:nowrap}
+.btn-ghost:hover{color:var(--ink)}
+.btn-ghost:active{background:var(--hair-soft);transform:scale(.985)}
+.btn-solid{flex:1;background:rgba(var(--ink-rgb),.07);border:1px solid var(--ink-muted);color:var(--ink)}
+.btn-solid:hover{background:rgba(var(--ink-rgb),.13);border-color:var(--ink)}
+.btn-solid:active{background:rgba(var(--ink-rgb),.07);border-color:var(--ink-muted);transform:scale(.985)}
+.btn-solid:disabled{opacity:.40;cursor:default;background:rgba(var(--ink-rgb),.07)}
+.btn:focus-visible{outline:1.5px solid var(--ink);outline-offset:2px}
+
+/* ── audio pill ───────────────────────────── */
+.audio{
+  display:flex;align-items:center;gap:10px;margin-top:var(--s4);
+  padding:13px 12px;border:1px solid var(--hair);border-radius:var(--r);
+  background:rgba(var(--ink-rgb),.035);width:100%;cursor:pointer;font:inherit;
+  transition:border-color 160ms var(--ease),background 160ms var(--ease),transform 90ms var(--ease);
+}
+/* A thread with three recordings in it ran orange down its whole left side.
+   The pill is a record like any other until it is the one making a sound. */
+.audio:hover{border-color:var(--ink-faint)}
+.audio:active{background:rgba(var(--ink-rgb),.08);transform:scale(.99)}
+.audio.playing{border-color:var(--seal)}
+.audio:focus-visible{outline:1.5px solid var(--seal);outline-offset:2px}
+.audio .play{flex:none;color:var(--ink-muted);display:flex}
+.audio.playing .play{color:var(--seal)}
+.audio .play .ic-pause,.audio.playing .play .ic-play{display:none}
+.audio.playing .play .ic-pause{display:block}
+.audio .wave{flex:1;display:flex;align-items:center;gap:2px;height:18px}
+.audio .wave i{
+  flex:1;background:var(--ink-muted);opacity:.45;border-radius:1px;min-width:2px;
+  transition:opacity 90ms linear;
+}
+.audio.playing .wave i{background:var(--seal);opacity:.22}
+.audio.playing .wave i.on{background:var(--seal)}
+.audio.playing .wave i.on{opacity:1}
+/* the seal wash lifts this surface, so the label lifts with it to hold 4.5:1 */
+.audio .len{
+  flex:none;font-size:11.5px;font-weight:600;letter-spacing:.05em;color:var(--ink-muted);
+  font-variant-numeric:tabular-nums;
+}
+.audio.playing .len{color:var(--seal-ink)}
+.chit .audio{margin-top:var(--s2)}
+
+/* ── section head ─────────────────────────── */
+.shead{display:flex;align-items:center;gap:var(--s3);margin:var(--s6) 0 var(--s2)}
+.shead h2{
+  font-family:var(--serif);font-size:16.5px;font-weight:400;font-style:italic;
+  color:var(--ink-muted);margin:0;flex:none;letter-spacing:.01em;
+}
+.shead .fill{flex:1;height:1px;background:var(--hair)}
+.shead .n{font-size:11.5px;color:var(--ink-faint);letter-spacing:.03em;flex:none}
+.shead .n:empty{display:none}
+
+/* ── thread ───────────────────────────────── */
+/* A past chit is a record, not a control. Nothing opens yet (README §8.1),
+   so nothing here claims it does. */
+.thread{position:relative;padding-left:var(--s5)}
+.thread::before{content:"";position:absolute;left:3px;top:12px;bottom:14px;width:1px;background:var(--hair)}
+.thread.is-empty{padding-left:0}
+.thread.is-empty::before{display:none}
+.chit{position:relative;display:block;width:100%;padding:var(--s3) var(--s2) var(--s4) 0}
+.chit::before{
+  content:"";position:absolute;left:-26px;top:19px;width:7px;height:7px;
+  background:var(--ink-faint);border-radius:1px;box-shadow:0 0 0 4px var(--paper);
+}
+.chit-meta{
+  display:flex;align-items:center;gap:11px;margin-bottom:5px;
+  font-size:11.5px;font-weight:500;letter-spacing:.02em;color:var(--ink-faint);
+  font-variant-numeric:tabular-nums;
+}
+/* The pin belongs to the chit being written — it says "this is being noted now".
+   Repeated down every past entry it is ten identical marks carrying nothing. */
+[data-weather="off"] .chit-meta .wx{display:none}
+.chit-text{
+  font-family:var(--serif);font-size:16.5px;line-height:1.5;color:var(--ink);
+  margin:0;text-wrap:pretty;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+/* §3.5 — a chit with audio and no text shows its pill and nothing else. A
+   "Spoken" label would be describing the pill sitting directly beneath it. */
+.chit .audio:first-child{margin-top:2px}
+/* the one authored moment: a chit joining the thread */
+.chit.landed{animation:land 460ms var(--ease) both}
+.chit.landed::before{animation:landmark 620ms var(--ease) both}
+@keyframes land{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}
+@keyframes landmark{0%{background:var(--seal);transform:scale(1.5)}60%{background:var(--seal)}100%{background:var(--ink-faint);transform:none}}
+
+.empty-note{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-faint);margin:var(--s4) 0 0}
+
+/* ══ CALENDAR ══════════════════════════════ */
+.monthbar{display:flex;align-items:center;justify-content:space-between;padding:var(--s5) 0 var(--s4)}
+.monthname{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--ink);letter-spacing:-.015em}
+.monthname span{color:var(--ink-faint)}
+.navpair{display:flex;gap:2px}
+.navbtn{
+  width:36px;height:36px;display:grid;place-items:center;background:none;border:0;
+  cursor:pointer;color:var(--ink-faint);border-radius:var(--r);
+  transition:color 160ms var(--ease),background 160ms var(--ease);
+}
+.navbtn:hover{color:var(--ink);background:var(--hair-soft)}
+.navbtn:disabled{opacity:.3;cursor:default}
+.navbtn:disabled:hover{background:none;color:var(--ink-faint)}
+.navbtn:focus-visible{outline:1.5px solid var(--seal);outline-offset:2px}
+
+.dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:var(--s2)}
+.dow span{text-align:center;font-size:11.5px;font-weight:500;color:var(--ink-faint);letter-spacing:.04em}
+
+/* Only days that hold something carry a number. The month reads as what was written. */
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cell{
+  aspect-ratio:1;border:1px solid transparent;border-radius:4px;
+  display:grid;place-items:center;padding:0;font:inherit;background:transparent;
+  transition:background 180ms var(--ease),border-color 180ms var(--ease),transform 140ms var(--ease);
+}
+.cell span{font-family:var(--serif);font-size:16.5px;color:var(--ink);line-height:1}
+.cell.written{cursor:pointer}
+/* Density in ink, not in seal: how much was written reads as how much ink went
+   down, the number never has to flip colour to stay legible, and the seal is
+   left to mean one thing on this screen — today. */
+.cell.l1{background:rgba(var(--ink-rgb),.06)}
+.cell.l2{background:rgba(var(--ink-rgb),.12)}
+.cell.l3{background:rgba(var(--ink-rgb),.20)}
+.cell.l4{background:rgba(var(--ink-rgb),.30)}
+.cell.today{border-color:var(--seal)}
+.cell.today.bare span{color:var(--ink-faint)}
+.cell.written:hover{transform:scale(1.06)}
+.cell.written:active{transform:scale(.98)}
+.cell.sel{border-color:var(--ink);transform:scale(1.06)}
+.cell:focus-visible{outline:1.5px solid var(--seal);outline-offset:2px}
+
+.monthsum{
+  margin-top:var(--s5);padding-top:var(--s3);border-top:1px solid var(--hair);
+  font-family:var(--serif);font-size:15px;font-style:italic;color:var(--ink-muted);
+}
+.monthsum b{font-style:normal;font-weight:500;color:var(--ink)}
+
+/* The archive is a list, and a tapped date rebuilds it — the stagger says
+   "this changed because of you". Capped at four so it never becomes a wait,
+   and carried on a class the render adds, so merely revisiting the tab
+   does not replay it. */
+.daygroup{margin-top:var(--s6)}
+.daygroup.staggered{animation:rise 340ms var(--ease) both;animation-delay:calc(min(var(--i,0),3) * 55ms)}
+.dayhead{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s1)}
+.dayhead h2{font-family:var(--serif);font-size:16.5px;font-weight:400;color:var(--ink);margin:0;flex:none}
+.dayhead .fill{flex:1;height:1px;background:var(--hair-soft)}
+.dayhead .n{font-size:11.5px;color:var(--ink-faint);letter-spacing:.03em;flex:none}
+
+.clearsel{
+  margin-top:var(--s4);width:100%;padding:11px;background:none;
+  border:1px solid var(--hair);border-radius:var(--r);cursor:pointer;
+  font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.03em;
+  color:var(--ink-muted);transition:border-color 160ms var(--ease),color 160ms var(--ease);
+}
+.clearsel:hover{border-color:var(--ink-faint);color:var(--ink)}
+.clearsel:active{background:var(--hair-soft)}
+.clearsel:focus-visible{outline:1.5px solid var(--seal);outline-offset:2px}
+
+.footmark{
+  margin-top:var(--s7);text-align:center;font-family:var(--deva);font-size:13px;
+  color:var(--ink-faint);opacity:.5;transition:opacity var(--dur) var(--ease);
+}
+[data-deva="off"] .footmark{opacity:0}
+
+/* ── recording sheet ──────────────────────── */
+.scrim{
+  position:absolute;inset:0;z-index:30;background:rgba(8,7,6,.72);
+  opacity:0;pointer-events:none;transition:opacity 240ms var(--ease);
+}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:31;
+  background:var(--slip);border-top:1px solid var(--hair);
+  border-radius:8px 8px 0 0;padding:var(--s6) var(--gutter) var(--s5);
+  transform:translateY(101%);transition:transform 300ms var(--ease);
+  max-height:88%;overflow-y:auto;scrollbar-width:none;
+}
+.sheet::-webkit-scrollbar{display:none}
+.sheet.open{transform:none}
+/* leaving is always quicker than arriving; a slow exit reads as lag */
+.sheet:not(.open){transition-duration:240ms}
+.sheet:focus{outline:none}
+.sheet .perf{top:7px;left:14px;right:14px}
+.sheet-state{
+  font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--seal-ink);display:flex;align-items:center;gap:8px;
+}
+.sheet-state .rec{width:7px;height:7px;border-radius:50%;background:var(--seal);animation:breathe 1.6s var(--ease) infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.25}}
+.sheet-time{
+  font-family:var(--serif);font-size:30px;font-weight:300;color:var(--ink);
+  margin:var(--s2) 0 var(--s4);font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+}
+/* fewer, thinner strokes — an equaliser is the most conventional thing a
+   recording screen can do, and this only has to say "it is hearing you" */
+.live-wave{display:flex;align-items:flex-end;justify-content:space-between;height:38px;margin-bottom:var(--s5)}
+.live-wave i{flex:none;width:2px;background:var(--seal);border-radius:1px;opacity:.8}
+.recording .live-wave i{animation:bob 900ms var(--ease) infinite alternate}
+@keyframes bob{from{height:12%}to{height:100%}}
+.transcript{
+  font-family:var(--serif);font-size:18px;line-height:1.55;color:var(--ink);
+  min-height:84px;max-height:34vh;overflow-y:auto;scrollbar-width:none;
+  margin:0 0 var(--s5);text-wrap:pretty;
+}
+.transcript::-webkit-scrollbar{display:none}
+.transcript .pending{color:var(--ink-faint)}
+.transcript .placeholder{color:var(--ink-faint);font-style:italic}
+.sheet-actions{display:flex;gap:var(--s2)}
+.engine{
+  margin:var(--s4) 0 0;text-align:center;font-size:13px;color:var(--ink-faint);
+  letter-spacing:.01em;line-height:1.45;
+}
+
+/* ── tab bar ──────────────────────────────── */
+.tabbar{
+  flex:none;border-top:1px solid var(--hair);background:var(--paper);
+  display:flex;padding:var(--s3) 0 var(--s2);z-index:12;
+}
+.tab{
+  flex:1;background:none;border:0;cursor:pointer;padding:9px 0 8px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-family:var(--serif);font-size:16.5px;color:var(--ink-faint);
+  transition:color 180ms var(--ease);
+}
+.tab .pip{
+  width:4px;height:4px;border-radius:50%;background:transparent;transform:scale(0);
+  transition:background 180ms var(--ease),transform 220ms var(--ease);
+}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab[aria-selected="true"] .pip{background:var(--ink);transform:none}
+.tab:hover{color:var(--ink-muted)}
+.tab:active{color:var(--ink)}
+.tab:focus-visible{outline:1.5px solid var(--seal);outline-offset:-2px;border-radius:var(--r)}
+.homebar{flex:none;height:20px;display:grid;place-items:center;background:var(--paper)}
+.homebar i{width:128px;height:4px;border-radius:2px;background:var(--ink);opacity:.26}
+
+/* ── toast ────────────────────────────────── */
+.toast{
+  position:absolute;left:var(--gutter);right:var(--gutter);bottom:96px;z-index:35;
+  /* §6.3 — hairlines carry the structure; a shadow is only ever a whisper here,
+     the same one the open chit uses to lift off its pad */
+  background:var(--slip);color:var(--ink);border:1px solid var(--hair);
+  box-shadow:0 2px 6px rgba(0,0,0,.5);border-radius:var(--r);padding:12px 14px;
+  font-size:13px;font-weight:500;letter-spacing:.02em;text-align:center;
+  opacity:0;transform:translateY(8px);pointer-events:none;
+  transition:opacity 220ms var(--ease),transform 220ms var(--ease);
+}
+.toast.show{opacity:1;transform:none}
+.toast:not(.show){transition-duration:140ms}
+
+.rise{animation:rise 400ms var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── Tweaks ───────────────────────────────── */
+.tweaks-toggle{
+  position:fixed;right:20px;bottom:20px;z-index:60;width:44px;height:44px;
+  border-radius:50%;border:1px solid #3A342B;background:#211E1A;color:#EDE7DC;
+  cursor:pointer;display:grid;place-items:center;
+  box-shadow:0 3px 10px -3px rgba(0,0,0,.7);transition:transform 180ms var(--ease);
+}
+.tweaks-toggle:hover{transform:scale(1.06)}
+.tweaks-toggle:focus-visible{outline:1.5px solid var(--seal);outline-offset:2px}
+.tweaks{
+  position:fixed;right:20px;bottom:74px;z-index:60;width:232px;display:none;
+  background:#211E1A;color:#EDE7DC;border:1px solid #3A342B;border-radius:8px;
+  box-shadow:0 6px 14px -6px rgba(0,0,0,.8);padding:14px;font-family:var(--sans);
+}
+.tweaks.open{display:block;animation:rise 200ms var(--ease) both}
+/* a label on a dev panel, not a section of the document — kept out of the outline */
+.tweaks .panel-label{margin:0 0 12px;font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#A39B8B}
+.tw{margin-bottom:11px}
+.tw:last-child{margin-bottom:0}
+.tw label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.05em;color:#A39B8B;margin-bottom:5px}
+.seg{display:flex;border:1px solid #3A342B;border-radius:5px;overflow:hidden}
+.seg button{
+  flex:1;padding:6px 4px;background:#1B1916;border:0;border-right:1px solid #3A342B;
+  font-family:var(--sans);font-size:11.5px;font-weight:500;color:#A39B8B;cursor:pointer;
+  transition:background 140ms var(--ease),color 140ms var(--ease);
+}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:#2A2620;color:#EDE7DC}
+.seg button[aria-pressed="true"]{background:#EDE7DC;color:#1B1916}
+.seg button:focus-visible{outline:1.5px solid var(--seal);outline-offset:-2px}
+.readout{
+  margin:0;padding:6px 8px;border:1px solid #3A342B;border-radius:5px;background:#1B1916;
+  font-size:11.5px;font-weight:500;letter-spacing:.03em;color:#C6BEB0;
+}
+
+/* Reduced motion means fewer and gentler, not silent. Travel, zoom and every
+   ambient loop go; the fades and colour changes that tell you an action landed
+   stay, because removing those removes feedback, not movement. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-property:opacity,color,background-color,border-color,box-shadow!important;
+    transition-duration:140ms!important;
+  }
+  /* nothing depresses, lifts or zooms under finger or pointer */
+  .mic:active,.btn:active,.audio:active,.cell.written:hover,.cell.written:active,
+  .cell.sel,.tweaks-toggle:hover,.tab .pip{transform:none!important}
+  /* the microphone still has to leave when it retires — it just goes without travelling */
+  .mic{transition-property:opacity,color,background-color,border-color,width,margin,border-width!important}
+  /* the ambient loops carry no state, so they stop outright */
+  .caret{animation:none;opacity:1}
+  .sheet-state .rec{animation:none}
+  /* a spent pulse would leave a second static ring stacked on the first */
+  .arc-pt.now::after{display:none}
+  /* without the bob, every bar would settle at one height and read as broken */
+  .recording .live-wave i{height:var(--h)!important}
+  .chit.landed::before{animation:none}
+  /* arrivals still announce themselves — as a plain fade, going nowhere */
+  @keyframes fadeonly{from{opacity:0}to{opacity:1}}
+  .rise,.chit.landed,.daygroup.staggered,.view.entering,
+  .composer[data-can-save="yes"] .commit,
+  #composer-audio .audio,
+  .composer[data-stt="ok"] .composer-body,
+  .composer[data-stt="failed"] .failnote{
+    animation:fadeonly 220ms var(--ease) both!important;
+  }
+}
+</style>
+</head>
+<body>
+
+<p class="caption">chit &nbsp;·&nbsp; today &amp; calendar &nbsp;·&nbsp; <b>v6</b></p>
+
+<div class="device" id="device">
+
+  <div class="status" id="statusbar">
+    <span>3:42</span>
+    <span class="icons" aria-hidden="true">
+      <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect y="7.5" width="3" height="3.5" rx=".7"/><rect x="4.6" y="5" width="3" height="6" rx=".7"/><rect x="9.2" y="2.5" width="3" height="8.5" rx=".7"/><rect x="13.8" width="3" height="11" rx=".7"/></svg>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 4.1a9.6 9.6 0 0 1 13 0M3.6 6.7a6 6 0 0 1 7.8 0"/><circle cx="7.5" cy="9.4" r=".9" fill="currentColor" stroke="none"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".7" y=".7" width="21" height="10.6" rx="3" stroke="currentColor" stroke-width="1" opacity=".4"/><rect x="2.4" y="2.4" width="15" height="7.2" rx="1.6" fill="currentColor"/><path d="M23.2 4.3v3.4a2 2 0 0 0 0-3.4Z" fill="currentColor" opacity=".4"/></svg>
+    </span>
+  </div>
+
+  <div class="toprow" id="toprow">
+    <div class="mark-brand"><span class="w">chit</span><span class="d" lang="sa">चित्त</span></div>
+    <button class="iconbtn" aria-label="Settings">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"><path d="M3 6.5h6M13 6.5h4M3 13.5h4M11 13.5h6"/><circle cx="11" cy="6.5" r="1.9"/><circle cx="9" cy="13.5" r="1.9"/></svg>
+    </button>
+  </div>
+
+  <div class="stage" id="stage">
+
+    <!-- ══ TODAY ══════════════════════════════ -->
+    <div class="view" id="view-today" role="tabpanel" tabindex="0" aria-labelledby="tab-today">
+      <div class="pad">
+
+        <header class="datehead rise">
+          <h1 class="date"><span class="wd">Sunday</span> 13 September</h1>
+        </header>
+
+        <section class="arc rise" style="animation-delay:60ms" aria-label="When today's chits were written">
+          <div class="arc-line"></div>
+          <span class="arc-cap" style="left:56.3%">now</span>
+          <div id="arcMarks" aria-hidden="true"></div>
+          <div class="arc-ends"><span>5 am</span><span>midnight</span></div>
+        </section>
+
+        <section class="composer-wrap rise" style="animation-delay:120ms">
+          <div class="composer" id="composer">
+            <span class="perf"></span>
+            <span class="stamp">
+              <span>3:42 pm</span>
+              <span class="w-word">raining</span>
+              <span class="pin" aria-label="Location noted">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.42" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12.6s4.4-4 4.4-7A4.4 4.4 0 0 0 2.6 5.6c0 3 4.4 7 4.4 7Z"/><circle cx="7" cy="5.5" r="1.5"/></svg>
+              </span>
+            </span>
+
+            <div id="composer-audio"></div>
+
+            <!-- §3.5 — beside the chit's body, never inside it. It sits under the
+                 pill it explains and above the page, which stays blank and live. -->
+            <p class="failnote" id="failnote" hidden>Speech wasn't recognised. Your recording is kept.</p>
+
+            <div class="writearea" id="writearea">
+              <div class="composer-body" id="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Today's chit"></div>
+              <div class="ghost"><span class="caret"></span><span class="prompt-text" id="promptText">What just happened?</span></div>
+            </div>
+
+            <div class="actions">
+              <!-- stroke normalised to the ~1.22px the icon set holds: 1.22 × (20 ÷ 20) -->
+              <button class="mic" id="micBtn" aria-label="Record">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.22" stroke-linecap="round"><rect x="7.2" y="2.2" width="5.6" height="9.4" rx="2.8"/><path d="M4.4 9.2a5.6 5.6 0 0 0 11.2 0M10 14.8v3"/></svg>
+              </button>
+              <div class="commit" id="commit">
+                <button class="btn btn-ghost" id="discardChit">Discard</button>
+                <button class="btn btn-solid" id="saveChit">Save chit</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="shead rise" style="animation-delay:180ms">
+          <h2>earlier</h2>
+          <span class="fill"></span>
+          <span class="n" id="todayCount"></span>
+        </div>
+
+        <div class="thread rise" id="today-thread" style="animation-delay:200ms"></div>
+        <div id="today-empty"></div>
+
+        <p class="footmark" lang="sa" aria-hidden="true">चित्त</p>
+      </div>
+    </div>
+
+    <!-- ══ CALENDAR ═══════════════════════════ -->
+    <div class="view" id="view-calendar" role="tabpanel" tabindex="0" aria-labelledby="tab-calendar" hidden>
+      <div class="pad">
+
+        <div class="monthbar">
+          <h1 class="monthname">September <span>2026</span></h1>
+          <div class="navpair">
+            <!-- the prototype holds one month; both are shown disabled rather than
+                 offering a move that goes nowhere -->
+            <button class="navbtn" aria-label="Previous month" disabled>
+              <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4 6 9l5 5"/></svg>
+            </button>
+            <button class="navbtn" aria-label="Next month" disabled>
+              <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="m7 4 5 5-5 5"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="dow" aria-hidden="true"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+        <div class="grid" id="grid" role="group" aria-label="September 2026 — days with chits"></div>
+
+        <p class="monthsum" id="monthsum"></p>
+
+        <div id="alldays"></div>
+        <button class="clearsel" id="clearsel" hidden>Show every day</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── recording sheet ─────────────────── -->
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Record" tabindex="-1" inert>
+    <span class="perf"></span>
+    <div class="sheet-state"><span class="rec" aria-hidden="true"></span><span id="stateWord">Listening</span></div>
+    <p class="sheet-time" id="sheetTime">0:00</p>
+    <div class="live-wave" id="liveWave" aria-hidden="true"></div>
+    <p class="transcript" id="transcript"><span class="placeholder">Words appear as you speak.</span></p>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" id="discardBtn">Discard</button>
+      <button class="btn btn-solid" id="keepBtn">Stop &amp; keep</button>
+    </div>
+    <p class="engine">Recognised on this device. The recording is kept either way.</p>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <nav class="tabbar" role="tablist" aria-label="Sections">
+    <button class="tab" id="tab-today" role="tab" aria-selected="true" aria-controls="view-today" data-view="today"><span class="pip" aria-hidden="true"></span>today</button>
+    <button class="tab" id="tab-calendar" role="tab" aria-selected="false" aria-controls="view-calendar" tabindex="-1" data-view="calendar"><span class="pip" aria-hidden="true"></span>calendar</button>
+  </nav>
+  <div class="homebar" aria-hidden="true"><i></i></div>
+</div>
+
+<p class="caption" style="opacity:.6">Type, record, or both · the transcript is yours to edit · Tweaks bottom-right</p>
+
+<button class="tweaks-toggle" id="twToggle" aria-label="Tweaks" aria-expanded="false" aria-controls="tweaks">
+  <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h9M15.5 6H17M3 14h3M9.5 14H17"/><circle cx="13.7" cy="6" r="1.8"/><circle cx="7.7" cy="14" r="1.8"/></svg>
+</button>
+
+<div class="tweaks" id="tweaks">
+  <p class="panel-label">Tweaks</p>
+  <div class="tw"><label id="lb-stt">Transcription</label>
+    <div class="seg" role="group" aria-labelledby="lb-stt" data-key="stt"><button data-v="ok" aria-pressed="true">Succeeds</button><button data-v="fail" aria-pressed="false">Fails</button></div></div>
+  <!-- provenance is invisible in the app by design; this reads it out so the
+       one-way transcript → transcriptEdited slide can actually be watched -->
+  <div class="tw"><label id="lb-origin">Text origin</label>
+    <p class="readout" id="originOut" aria-labelledby="lb-origin">—</p></div>
+  <div class="tw"><label id="lb-today">Today</label>
+    <div class="seg" role="group" aria-labelledby="lb-today" data-key="today"><button data-v="has" aria-pressed="true">Has chits</button><button data-v="empty" aria-pressed="false">Empty</button></div></div>
+  <div class="tw"><label id="lb-weather">Weather word</label>
+    <div class="seg" role="group" aria-labelledby="lb-weather" data-key="weather"><button data-v="on" aria-pressed="true">On</button><button data-v="off" aria-pressed="false">Off</button></div></div>
+  <div class="tw"><label id="lb-prompt">Idle prompt (5s)</label>
+    <div class="seg" role="group" aria-labelledby="lb-prompt" data-key="prompt"><button data-v="on" aria-pressed="true">On</button><button data-v="off" aria-pressed="false">Off</button></div></div>
+  <div class="tw"><label id="lb-deva">चित्त mark</label>
+    <div class="seg" role="group" aria-labelledby="lb-deva" data-key="deva"><button data-v="on" aria-pressed="true">On</button><button data-v="off" aria-pressed="false">Off</button></div></div>
+  <div class="tw"><label id="lb-grain">Paper grain</label>
+    <div class="seg" role="group" aria-labelledby="lb-grain" data-key="grain"><button data-v="off" aria-pressed="false">Off</button><button data-v="on" aria-pressed="true">On</button></div></div>
+</div>
+
+<script>
+const root = document.documentElement;
+
+/* text the user typed reaches the thread as text, never as markup */
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* The staggered arrival is a first-impression moment, not a tab transition.
+   Once it has played, shed the classes so returning to a tab costs the 200ms
+   view fade and nothing more — this screen gets opened many times a day. */
+function shedStagger() {
+  setTimeout(() => document.querySelectorAll(".rise,.daygroup.staggered")
+    .forEach(el => el.classList.remove("rise", "staggered")), 800);
+}
+
+const WAVE = [3,6,4,9,14,8,5,11,16,12,7,4,9,13,6,3,8,15,10,5,7,12,6,4,9,5,3];
+function audioPill(len) {
+  const bars = WAVE.map(h => `<i style="height:${Math.max(12, h * 6)}%"></i>`).join("");
+  return `<button class="audio" data-len="${esc(len)}" aria-label="Play recording, ${esc(len)}">
+    <span class="play" aria-hidden="true">
+      <svg class="ic-play" width="16" height="16" viewBox="0 0 18 18" fill="currentColor"><path d="M5.5 3.4v11.2L15 9 5.5 3.4Z"/></svg>
+      <svg class="ic-pause" width="16" height="16" viewBox="0 0 18 18" fill="currentColor"><rect x="4.6" y="3.4" width="3.1" height="11.2" rx=".6"/><rect x="10.3" y="3.4" width="3.1" height="11.2" rx=".6"/></svg>
+    </span>
+    <span class="wave" aria-hidden="true">${bars}</span>
+    <span class="len">${esc(len)}</span>
+  </button>`;
+}
+
+/* A chit carries text, or audio, or both. The 8:05 chit below is a recording
+   whose transcript was corrected; the 11:55 pm one on Thursday is a recording
+   the engine could not read, and shows its pill alone. */
+const ARCHIVE = [
+  {date:13, label:"Today", chits:[
+    {t:"11:20 am", w:"overcast", x:"Reorg meeting pushed again. Third time."},
+    {t:"8:05 am",  w:"clear",    x:"Didn't sleep. Room too cold, again.", audio:"0:22"}]},
+  {date:12, label:"Yesterday", chits:[
+    {t:"9:48 pm", w:"clear night", x:"Called Ma. Told her about the flat."},
+    {t:"4:15 pm", w:"windy",       x:"Market. Forgot the dal again.", audio:"0:14"},
+    {t:"7:40 am", w:"clear",       x:"Ran 4k. Knee held up."}]},
+  {date:11, label:"Friday", chits:[
+    {t:"10:02 pm", w:"raining", x:"Nothing today."}]},
+  {date:10, label:"Thursday", chits:[
+    {t:"11:55 pm", w:"clear night", x:null, audio:"0:47"},
+    {t:"6:30 pm",  w:"overcast",    x:"Tea with S. Good one."},
+    {t:"1:15 pm",  w:"overcast",    x:"Lunch at the desk. Fourth day."},
+    {t:"9:10 am",  w:"raining",     x:"Train 20 late."}]}
+];
+const COUNTS = {1:2,3:1,5:2,6:1,7:3,8:1,9:2,10:4,11:1,12:3,13:2};
+const TODAY = 13, FIRST_DOW = 2, DAYS_IN_MONTH = 30;
+/* the current month is drawn up to today; a past month would draw in full */
+const GRID_LAST = TODAY;
+const NUM_WORD = ["no","one","two","three","four","five","six","seven","eight","nine","ten",
+  "eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen",
+  "twenty","twenty-one","twenty-two","twenty-three","twenty-four","twenty-five","twenty-six",
+  "twenty-seven","twenty-eight","twenty-nine","thirty","thirty-one"];
+const plural = n => `${n} ${n === 1 ? "chit" : "chits"}`;
+
+const chitHTML = c => `
+  <div class="chit">
+    <div class="chit-meta">
+      <span>${esc(c.t)}</span><span class="wx">${esc(c.w)}</span>
+    </div>
+    ${c.x ? `<p class="chit-text">${esc(c.x)}</p>` : ""}
+    ${c.audio ? audioPill(c.audio) : ""}
+  </div>`;
+
+/* ── today ────────────────────────────────── */
+const todayThread = document.getElementById("today-thread");
+const todayEmpty  = document.getElementById("today-empty");
+const todayCount  = document.getElementById("todayCount");
+const viewToday   = document.getElementById("view-today");
+const stillness   = matchMedia("(prefers-reduced-motion:reduce)");
+
+function renderToday(landNewest) {
+  const chits = ARCHIVE[0].chits;
+  todayThread.innerHTML = chits.map(chitHTML).join("");
+  todayThread.classList.toggle("is-empty", chits.length === 0);
+  todayEmpty.innerHTML = chits.length ? "" :
+    '<p class="empty-note">Nothing written yet today.</p>';
+  todayCount.textContent = chits.length ? plural(chits.length) : "";
+  if (landNewest && chits.length) todayThread.firstElementChild.classList.add("landed");
+}
+
+/* ── the day arc ──────────────────────────── */
+/* 5 am to midnight. A mark for each chit; the ring is now. */
+const arcMarks = document.getElementById("arcMarks");
+const ARC_START = 5 * 60, ARC_END = 24 * 60;
+const NOW_PCT = 56.3;
+
+function arcPct(t) {
+  const m = /^(\d{1,2}):(\d{2})\s*(am|pm)$/i.exec(t.trim());
+  if (!m) return null;
+  let h = Number(m[1]) % 12;
+  if (/pm/i.test(m[3])) h += 12;
+  const mins = h * 60 + Number(m[2]);
+  return Math.max(0, Math.min(100, ((mins - ARC_START) / (ARC_END - ARC_START)) * 100));
+}
+function renderArc() {
+  const marks = [`<div class="arc-pt now" style="left:${NOW_PCT}%"><i></i></div>`];
+  ARCHIVE[0].chits.forEach(c => {
+    const p = arcPct(c.t);
+    if (p !== null) marks.push(`<div class="arc-pt" style="left:${p}%"><i></i></div>`);
+  });
+  arcMarks.innerHTML = marks.join("");
+}
+
+/* ── calendar ─────────────────────────────── */
+const grid = document.getElementById("grid");
+const monthsum = document.getElementById("monthsum");
+const level = n => n === 1 ? "l1" : n === 2 ? "l2" : n === 3 ? "l3" : "l4";
+let selDay = null;
+
+function renderGrid() {
+  COUNTS[TODAY] = ARCHIVE[0].chits.length;
+  grid.innerHTML = "";
+  for (let i = 0; i < FIRST_DOW; i++) grid.appendChild(document.createElement("div"));
+
+  for (let d = 1; d <= GRID_LAST; d++) {
+    const n = COUNTS[d] || 0;
+    const isToday = d === TODAY;
+    const cell = document.createElement(n ? "button" : "div");
+    cell.className = "cell" + (n ? " written " + level(n) : " bare") + (isToday ? " today" : "");
+    if (n) {
+      cell.type = "button";
+      cell.dataset.day = d;
+      cell.setAttribute("aria-label", `${d} September — ${plural(n)}`);
+      if (d === selDay) cell.classList.add("sel");
+    }
+    /* a day with nothing in it carries no number; today keeps its number so it stays findable */
+    if (n || isToday) {
+      const num = document.createElement("span");
+      num.textContent = d;
+      cell.appendChild(num);
+    }
+    grid.appendChild(cell);
+  }
+
+  const days = Object.keys(COUNTS).filter(d => COUNTS[d] > 0).length;
+  const total = Object.values(COUNTS).reduce((a, b) => a + b, 0);
+  monthsum.innerHTML = total
+    ? `<b>${plural(total)}</b> over ${NUM_WORD[days] || days} day${days === 1 ? "" : "s"}`
+    : `<b>Nothing written</b> this month`;
+}
+
+const alldays = document.getElementById("alldays");
+const clearsel = document.getElementById("clearsel");
+function renderArchive() {
+  const set = (selDay ? ARCHIVE.filter(d => d.date === selDay) : ARCHIVE)
+    .filter(d => d.chits.length);
+  alldays.innerHTML = "";
+  if (!set.length) { alldays.innerHTML = '<p class="empty-note">Nothing written that day.</p>'; return; }
+  set.forEach((day, i) => {
+    const wrap = document.createElement("section");
+    wrap.className = "daygroup staggered";
+    wrap.style.setProperty("--i", i);
+    wrap.innerHTML = `
+      <div class="dayhead">
+        <h2>${esc(day.label)}</h2><span class="fill"></span>
+        <span class="n">${plural(day.chits.length)}</span>
+      </div>
+      <div class="thread">${day.chits.map(chitHTML).join("")}</div>`;
+    alldays.appendChild(wrap);
+  });
+  shedStagger();
+}
+
+/* one save must not leave the two tabs telling different stories */
+function syncAll(landNewest) {
+  renderToday(landNewest);
+  renderArc();
+  renderGrid();
+  renderArchive();
+}
+syncAll(false);
+
+/* ── the open chit ────────────────────────── */
+/* One surface. The field is live on open and stays the user's throughout; the
+   microphone is a peer, not a mode. What the chit holds is state, not a branch:
+   text, audio, or both, in any order. */
+const IDLE_MS = 5000;
+const composer   = document.getElementById("composer");
+const editor     = document.getElementById("editor");
+const writearea  = document.getElementById("writearea");
+const promptText = document.getElementById("promptText");
+const saveChit   = document.getElementById("saveChit");
+const failnote   = document.getElementById("failnote");
+const composerAudio = document.getElementById("composer-audio");
+const micBtn     = document.getElementById("micBtn");
+const originOut  = document.getElementById("originOut");
+let idleTimer, pendingAudio = null;
+
+/* typed | transcript | transcriptEdited — provenance only. Nothing in the app
+   renders differently because of it; it is here so a future re-transcription
+   can tell the machine's words from the user's. The Tweaks panel reads it out
+   so the rule is inspectable, which is a dev affordance and not part of the UI. */
+let textOrigin = null;
+
+const isBlank = () => editor.textContent.trim() === "";
+const canSave = () => !isBlank() || !!pendingAudio;
+
+function armPrompt() {
+  clearTimeout(idleTimer);
+  promptText.classList.remove("show");
+  if (root.getAttribute("data-prompt") === "off") return;
+  /* the §3.5 note already occupies this space and says more than the prompt would */
+  if (composer.dataset.stt === "failed") return;
+  idleTimer = setTimeout(() => { if (isBlank()) promptText.classList.add("show"); }, IDLE_MS);
+}
+
+function syncComposer() {
+  writearea.classList.toggle("has-text", !isBlank());
+  composer.dataset.canSave = canSave() ? "yes" : "no";
+  if (originOut) originOut.textContent = textOrigin || "—";
+  armPrompt();
+}
+
+editor.addEventListener("input", () => {
+  /* a transcript the user has touched is partly theirs, and never goes back */
+  if (textOrigin === "transcript") textOrigin = "transcriptEdited";
+  else if (!textOrigin && !isBlank()) textOrigin = "typed";
+  else if (textOrigin === "typed" && isBlank()) textOrigin = null;
+  syncComposer();
+});
+
+/* tapping the page puts the caret in it — typing should never cost a step */
+writearea.addEventListener("click", () => editor.focus());
+
+function resetComposer() {
+  delete composer.dataset.stt;
+  delete composer.dataset.audio;
+  editor.textContent = "";
+  failnote.hidden = true;
+  composerAudio.innerHTML = "";
+  pendingAudio = null;
+  textOrigin = null;
+  syncComposer();
+}
+document.getElementById("discardChit").addEventListener("click", () => {
+  resetComposer();
+  editor.focus();
+});
+
+const toast = document.getElementById("toast");
+let toastTimer;
+function say(msg) {
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
+}
+
+saveChit.addEventListener("click", () => {
+  if (!canSave()) return;
+  ARCHIVE[0].chits.unshift({
+    t: "3:42 pm", w: "raining",
+    /* §3.5 — a recording the engine could not read, that the user did not type
+       into either, is saved with no text at all. Never a partial or a stand-in. */
+    x: isBlank() ? null : editor.textContent.trim(),
+    audio: pendingAudio
+  });
+  resetComposer();
+  syncAll(true);
+
+  /* the composer is tall enough that a new chit would land below the fold —
+     bring the head of the thread up so the chit is seen joining it */
+  const top = todayThread.getBoundingClientRect().top
+    - viewToday.getBoundingClientRect().top + viewToday.scrollTop - 150;
+  viewToday.scrollTo({ top: Math.max(0, top), behavior: stillness.matches ? "auto" : "smooth" });
+
+  say("Chit saved");
+  editor.focus({ preventScroll: true });
+});
+
+/* ── recording ────────────────────────────── */
+const scrim = document.getElementById("scrim");
+const sheet = document.getElementById("sheet");
+const liveWave = document.getElementById("liveWave");
+const sheetTime = document.getElementById("sheetTime");
+const transcript = document.getElementById("transcript");
+const keepBtn = document.getElementById("keepBtn");
+const BEHIND = ["statusbar", "toprow", "stage", "tabbar"].map(id =>
+  document.getElementById(id) || document.querySelector("." + id));
+
+for (let i = 0; i < 20; i++) {
+  const bar = document.createElement("i");
+  const h = 18 + ((i * 37) % 62);
+  bar.style.setProperty("--h", h + "%");
+  bar.style.height = h + "%";
+  bar.style.animationDuration = (620 + (i * 53) % 420) + "ms";
+  bar.style.animationDelay = ((i * 37) % 300) + "ms";
+  liveWave.appendChild(bar);
+}
+
+const DEMO_WORDS = "Missed the last train. Walking home from the station.".split(" ");
+let tick, wordTimer, seconds = 0, shown = 0, returnFocus = null;
+const sttFails = () => root.getAttribute("data-stt") === "fail";
+
+function openSheet() {
+  returnFocus = document.activeElement;
+  seconds = 0; shown = 0;
+  sheetTime.textContent = "0:00";
+  transcript.innerHTML = '<span class="placeholder">Words appear as you speak.</span>';
+  sheet.removeAttribute("inert");
+  BEHIND.forEach(el => el && el.setAttribute("inert", ""));
+  sheet.classList.add("open", "recording");
+  scrim.classList.add("open");
+  sheet.focus();
+
+  tick = setInterval(() => {
+    seconds++;
+    sheetTime.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  }, 1000);
+
+  if (!sttFails()) {
+    wordTimer = setInterval(() => {
+      if (shown >= DEMO_WORDS.length) return;
+      shown++;
+      const settled = DEMO_WORDS.slice(0, shown - 1).join(" ");
+      transcript.innerHTML = `${esc(settled)} <span class="pending">${esc(DEMO_WORDS[shown - 1])}</span>`;
+    }, 620);
+  }
+}
+function closeSheet() {
+  clearInterval(tick); clearInterval(wordTimer);
+  sheet.classList.remove("open", "recording");
+  scrim.classList.remove("open");
+  sheet.setAttribute("inert", "");
+  BEHIND.forEach(el => el && el.removeAttribute("inert"));
+  const back = returnFocus && returnFocus.isConnected ? returnFocus : micBtn;
+  /* the microphone may have retired while the sheet was open */
+  (back.offsetParent === null ? editor : back).focus();
+}
+micBtn.addEventListener("click", openSheet);
+document.getElementById("discardBtn").addEventListener("click", closeSheet);
+
+keepBtn.addEventListener("click", () => {
+  const len = `0:${String(Math.max(1, seconds)).padStart(2, "0")}`;
+  pendingAudio = len;
+  /* one chit, one recording — the microphone retires rather than overwrite it */
+  composer.dataset.audio = "kept";
+  composerAudio.innerHTML = audioPill(len);
+
+  if (sttFails()) {
+    /* The audio stands on its own. Nothing partial is written into the field —
+       but the field is still live, and the user may type whatever they like. */
+    composer.dataset.stt = "failed";
+    failnote.hidden = false;
+  } else {
+    composer.dataset.stt = "ok";
+    const heard = DEMO_WORDS.slice(0, Math.max(1, shown)).join(" ");
+    const had = editor.textContent.trim();
+    /* the transcript is appended — recording never discards what was written */
+    editor.textContent = had ? `${had} ${heard}` : heard;
+    textOrigin = had ? "transcriptEdited" : "transcript";
+  }
+  syncComposer();
+  closeSheet();
+  /* the words landed in an editable field; put the caret at the end of them */
+  if (!sttFails()) {
+    editor.focus();
+    const r = document.createRange();
+    r.selectNodeContents(editor);
+    r.collapse(false);
+    const sel = getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+});
+scrim.addEventListener("click", closeSheet);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && sheet.classList.contains("open")) closeSheet();
+});
+
+/* ── playing back a recording ─────────────── */
+/* The prototype has no audio; this shows what the playing state looks like. */
+let playing = null, playTimer;
+function stopPlay() {
+  if (!playing) return;
+  clearInterval(playTimer);
+  playing.classList.remove("playing");
+  playing.querySelector(".len").textContent = playing.dataset.len;
+  playing.setAttribute("aria-label", `Play recording, ${playing.dataset.len}`);
+  playing.querySelectorAll(".wave i").forEach(b => b.classList.remove("on"));
+  playing = null;
+}
+document.addEventListener("click", e => {
+  const pill = e.target.closest(".audio");
+  if (!pill) return;
+  const wasPlaying = pill === playing;
+  stopPlay();
+  if (wasPlaying) return;
+
+  const [m, s] = pill.dataset.len.split(":").map(Number);
+  const total = m * 60 + s;
+  const bars = [...pill.querySelectorAll(".wave i")];
+  const lenEl = pill.querySelector(".len");
+  let at = 0;
+  playing = pill;
+  pill.classList.add("playing");
+  pill.setAttribute("aria-label", `Pause recording, ${pill.dataset.len}`);
+
+  playTimer = setInterval(() => {
+    at += 0.1;
+    if (at >= total) { stopPlay(); return; }
+    const idx = Math.floor((at / total) * bars.length);
+    bars.forEach((b, i) => b.classList.toggle("on", i <= idx));
+    lenEl.textContent = `0:${String(Math.floor(at)).padStart(2, "0")}`;
+  }, 100);
+});
+
+/* ── calendar interaction ─────────────────── */
+grid.addEventListener("click", e => {
+  const cell = e.target.closest(".cell.written");
+  if (!cell) return;
+  const day = Number(cell.dataset.day);
+  selDay = (selDay === day) ? null : day;
+  grid.querySelectorAll(".cell.sel").forEach(c => c.classList.remove("sel"));
+  if (selDay) cell.classList.add("sel");
+  renderArchive();
+  clearsel.hidden = !selDay;
+});
+clearsel.addEventListener("click", () => {
+  selDay = null;
+  grid.querySelectorAll(".cell.sel").forEach(c => c.classList.remove("sel"));
+  renderArchive();
+  clearsel.hidden = true;
+  grid.focus?.();
+});
+
+/* ── tabs ─────────────────────────────────── */
+const tabs = [...document.querySelectorAll(".tab")];
+const views = {today: document.getElementById("view-today"), calendar: document.getElementById("view-calendar")};
+function selectTab(tab) {
+  stopPlay();
+  tabs.forEach(t => {
+    const on = t === tab;
+    t.setAttribute("aria-selected", String(on));
+    t.tabIndex = on ? 0 : -1;
+  });
+  Object.entries(views).forEach(([k, v]) => { v.hidden = (k !== tab.dataset.view); });
+  const shown = views[tab.dataset.view];
+  shown.scrollTop = 0;
+  shown.classList.remove("entering");
+  void shown.offsetWidth;          /* restart the entrance on every switch */
+  shown.classList.add("entering");
+}
+tabs.forEach(tab => tab.addEventListener("click", () => selectTab(tab)));
+document.querySelector(".tabbar").addEventListener("keydown", e => {
+  const i = tabs.indexOf(document.activeElement);
+  if (i < 0) return;
+  let next = null;
+  if (e.key === "ArrowRight") next = tabs[(i + 1) % tabs.length];
+  if (e.key === "ArrowLeft")  next = tabs[(i - 1 + tabs.length) % tabs.length];
+  if (e.key === "Home") next = tabs[0];
+  if (e.key === "End")  next = tabs[tabs.length - 1];
+  if (!next) return;
+  e.preventDefault();
+  selectTab(next);
+  next.focus();
+});
+
+/* ── Tweaks ───────────────────────────────── */
+let stash = null;
+function setTodayEmpty(on) {
+  if (on && stash === null) { stash = ARCHIVE[0].chits; ARCHIVE[0].chits = []; }
+  else if (!on && stash !== null) { ARCHIVE[0].chits = ARCHIVE[0].chits.concat(stash); stash = null; }
+  else return;
+  selDay = null; clearsel.hidden = true;
+  syncAll(false);
+}
+
+Object.entries({stt:"ok", today:"has", weather:"on", prompt:"on", deva:"on", grain:"on"})
+  .forEach(([k, v]) => root.setAttribute("data-" + k, v));
+document.querySelectorAll(".seg").forEach(seg => {
+  seg.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+    root.setAttribute("data-" + seg.dataset.key, btn.dataset.v);
+    if (seg.dataset.key === "prompt") armPrompt();
+    if (seg.dataset.key === "stt" && composer.dataset.audio === "kept") say("Discard the chit to try the other outcome");
+    if (seg.dataset.key === "today") setTodayEmpty(btn.dataset.v === "empty");
+  });
+});
+const tweaks = document.getElementById("tweaks");
+const twToggle = document.getElementById("twToggle");
+function setTweaks(open) {
+  tweaks.classList.toggle("open", open);
+  twToggle.setAttribute("aria-expanded", String(open));
+}
+twToggle.addEventListener("click", () => setTweaks(!tweaks.classList.contains("open")));
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && tweaks.classList.contains("open")) { setTweaks(false); twToggle.focus(); }
+});
+document.addEventListener("click", e => {
+  if (!tweaks.classList.contains("open")) return;
+  if (tweaks.contains(e.target) || twToggle.contains(e.target)) return;
+  setTweaks(false);
+});
+
+syncComposer();
+</script>
+</body>
+</html>

@@ -211,7 +211,7 @@ As of M1 the DAO holds the three: `watchDay`, `watchDaySummaries` and `watchArch
 the archive by date and searching on weather arrive with the screens that ask for them (M4, and
 the backlog) — a query with no caller is a query nobody has run.
 
-Count-to-warmth (four steps, BEHAVIOUR.md §4.2) is *not* in the query. It is a design scale and lives
+Count-to-density (four steps, BEHAVIOUR.md §4.2) is *not* in the query. It is a design scale and lives
 in the presentation layer, where it can be re-tuned without a migration.
 
 ---
