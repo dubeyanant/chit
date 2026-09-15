@@ -200,8 +200,16 @@ scrolls smoothly to it.
 window left out the five hours ADR-006 works hardest to protect — a chit written at 00:20
 belongs to that morning, and the arc had nowhere to put it but the left edge, on top of 5am.
 Three full days also makes it a rhythm rather than a snapshot, which is what README §1 asks the
-signal to be. **ADR-024** has the argument, the costs, and the one thing it deliberately leaves
-open: how the boundary between one day and the next is drawn.
+signal to be. **ADR-024** has the argument and the costs.
+
+**A day ends with a small upward mark below the line.** No label, no date, no weekday — the mark
+and nothing else. It is there to be *noticed*, not read: someone who sees two of them is looking
+at three days and will know it without being told, and someone who never looks at them has lost
+nothing. Naming each day would turn a rhythm signal into a second calendar, and §4.2 is already
+that.
+
+This is the question ADR-024 left open and it is answered here, which is where that record said
+the answer would go.
 
 The timeline's marks are **ink**, not accent; only the ring at `now` is `--seal`. A row of
 orange marks made every past moment look as live as the present one (ADR-022).

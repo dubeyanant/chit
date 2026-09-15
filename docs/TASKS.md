@@ -34,17 +34,28 @@ specification referred to — see the ADR.
 
 ---
 
-## B. The shell and the frame ⬜
+## B. The shell and the frame ✅ done 15 September 2026
 
 *Nothing works until the app routes. One commit.*
 
-- [ ] `app/router.dart` — `StatefulShellRoute` with two branches (ADR-011).
-- [ ] `app/chit_app.dart` — `MaterialApp.router`; retire the temporary `_Masthead`.
-- [ ] `features/shell/presentation/shell_screen.dart` — the persistent top row (wordmark +
+- [x] `app/router.dart` — `StatefulShellRoute` with two branches (ADR-011).
+- [x] `app/chit_app.dart` — `MaterialApp.router`; retire the temporary `_Masthead`.
+- [x] `features/shell/presentation/shell_screen.dart` — the persistent top row (wordmark +
       चित्त, **no settings control** — decision 3) and the bottom tab bar. Pip in `--ink`, not
       seal (ADR-022); labels 16.5px serif.
-- [ ] `features/calendar/presentation/calendar_screen.dart` — a placeholder body.
-- [ ] Test: switching tabs and returning costs a fade, not a rebuild — ADR-011's actual claim.
+- [x] `features/calendar/presentation/calendar_screen.dart` — a placeholder body.
+- [x] Test: switching tabs and returning costs a fade, not a rebuild — ADR-011's actual claim.
+
+Three things worth knowing before the next group touches this:
+
+- **It is a plain `StatefulShellRoute`, not `.indexedStack`.** An `IndexedStack` swaps
+  instantly and there is nowhere in it to put §6.3's 220ms, so the branches are stacked by a
+  `navigatorContainerBuilder` and cross-faded. State is preserved either way; the fade is what
+  `.indexedStack` cannot give.
+- **A branch is built lazily** — the calendar is not in the widget tree at all until it is
+  first shown. Anything that expects both branches to exist has to visit both first.
+- **The tab is sized to §6.4's 44px rather than to its contents.** The prototype's tab measures
+  43.5px, half a pixel under a floor that says "no exceptions".
 
 ## C. The chit vocabulary ⬜
 
@@ -136,12 +147,12 @@ needs a query the repository does not have yet.*
 - [ ] Tests: the position function across a day and at both bounds; three days of marks from a
       range query; the ring's position from a fake clock; the window sliding at midnight.
 
-**Open inside this group** — decide it here, with the screen in front of you, not in advance:
+- [ ] **A day ends with a small upward mark below the line** — unlabelled, `--ink-faint`, two of
+      them in a three-day window. Answered 15 September 2026 and written into BEHAVIOUR.md §4.1;
+      it is meant to be noticed rather than read, so resist adding the weekday to it.
 
-- **How days are delineated.** A proportional strip covering three days is unreadable without
-  something saying where one day ends. The old arc had `5 am` and `midnight` as end labels; the
-  timeline needs a per-day marker instead. Sketch it against `design/chit-app-v6.html` before
-  building it, and write the answer into BEHAVIOUR.md §4.1.
+**Still open inside this group** — decide it with the screen in front of you, not in advance:
+
 - **Crowding.** Several chits a day over three days is fifteen to twenty marks in one strip.
   If it reads as a smear, that is a finding worth recording rather than tuning away quietly.
 

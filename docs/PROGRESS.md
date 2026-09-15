@@ -25,7 +25,7 @@ documents and then the code behind them.
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**130 tests, `flutter analyze` clean, debug APK builds.**
+**141 tests, `flutter analyze` clean, debug APK builds.**
 
 The app on a handset is still the masthead on `--paper` and nothing else — M1 added no UI, which
 is what it said it would do. That screen was confirmed on a device on 15 September: dark warm
@@ -315,6 +315,45 @@ The timeline covers three days and the thread covers one, so M2 adds
 
 **Verified:** `flutter analyze` clean, `flutter test` 132 passing, `dart format` clean,
 `flutter build apk --debug`. Group A moved no widgets — the app still opens to the masthead.
+
+The day boundary ADR-024 left open is now answered, in BEHAVIOUR.md §4.1 where that record said
+the answer would go: **a small upward mark below the line, unlabelled.** Noticed rather than
+read — naming each day would make the timeline a second calendar, and §4.2 is already that.
+
+---
+
+## M2 group B — the shell and the frame
+
+The app routes. Two tabs, a masthead that belongs to neither of them, and a tab bar; Today is an
+empty page and the calendar is a placeholder line that M4 deletes.
+
+- `app/router.dart` — `StatefulShellRoute`, two branches, and `ChitRoutes` so nothing navigates
+  by a loose string.
+- `app/chit_app.dart` is now `MaterialApp.router` and nothing else. It is a `StatefulWidget`
+  only so the router is built once: a `GoRouter` made in `build` would be thrown away on every
+  rebuild and take each tab's navigation stack with it, which is what ADR-011 exists to prevent.
+- `features/shell/presentation/shell_screen.dart` — the masthead, the tab bar, and `BranchFade`.
+  The wordmark moved here out of `chit_app.dart`, which is where ARCHITECTURE.md §2 puts a
+  widget only one screen uses.
+- **Nine tests**, 132 → 141.
+
+### Three things this group found
+
+1. **`StatefulShellRoute.indexedStack` cannot do the one thing ADR-011 asked for.** An
+   `IndexedStack` swaps branches instantly and there is nowhere in it to put §6.3's 220ms. The
+   route is therefore a plain `StatefulShellRoute` with a `navigatorContainerBuilder` that
+   stacks the branches and cross-fades them — state preserved, and a fade as well. Worth
+   knowing because `.indexedStack` is the form every example uses.
+2. **A branch is built lazily.** The calendar is not in the widget tree until the tab is first
+   tapped, so "both branches stay alive" is true of *returning* to a tab and not of launching.
+   The test says so rather than asserting at launch and quietly passing for the wrong reason.
+3. **`find.bySemanticsLabel` does not read the semantics tree.** It matches each widget's own
+   configuration, so it still finds text that an ancestor has excluded — the opposite of what a
+   test of `ExcludeSemantics` needs. The shell test walks the real tree from its root instead.
+   Anything later that checks what a screen reader can reach should do the same.
+
+**Verified:** `flutter analyze` clean, `flutter test` 141 passing, `dart format` clean,
+`flutter build apk --debug`.
 
 ---
 

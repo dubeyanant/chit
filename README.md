@@ -233,6 +233,7 @@ What is enforced rather than intended. `flutter test`.
 | `test/data/chit_repository_test.dart` | **M1's statement of done.** All four legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, and `updateText` provably touching nothing but `text`, `textOrigin` and `updatedAt` |
 | `test/data/audio_store_test.dart` | ADR-008: a recording is moved rather than copied, its stored path is relative and uses forward slashes, discarding twice is not a failure, and the orphan sweep deletes what no chit claims |
 | `test/data/db/migration_test.dart` | DATA-MODEL.md §6: a database created at v1 is the v1 that was committed to `drift_schemas/`, the schema the code expects is the one `createAll()` writes, and bumping `schemaVersion` without dumping a snapshot beside it fails |
+| `test/features/shell/shell_test.dart` | ADR-011's actual claim: returning to a tab costs a fade and **not a rebuild** — the same element, both branches alive, the hidden one out of the semantics tree and taking no taps. Also that the masthead belongs to the shell rather than to Today, that there is no settings control, and that a tab clears §6.4's 44px |
 | `test/docs/readme_maps_everything_test.dart` | This section, and `DECISIONS.md`'s ADR index |
 | `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |
 | `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand |
