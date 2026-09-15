@@ -20,7 +20,10 @@ lives here. [README §10](../README.md#10-the-map) maps every section to its fil
 Opening the app presents a new chit for today. It becomes a record when the user presses
 **Save chit**. Opening the app six times leaves nothing behind.
 
-**Discard** returns the open chit to its empty state.
+**Discard** returns the open chit to its empty state — and *empty* means **new**, not blanked:
+the stamp is taken again, so the chit left behind was opened at the moment of the discard
+(**ADR-026**). Discarding at 3:42 and writing at 4:10 must not file the chit at 3:42, and at
+23:58 it must not file it on the wrong day.
 
 ### 3.2 One surface, two ways in
 

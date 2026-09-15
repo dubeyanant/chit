@@ -1,12 +1,12 @@
-import 'package:chit/app/chit_app.dart';
 import 'package:chit/app/router.dart';
 import 'package:chit/features/calendar/presentation/calendar_screen.dart';
 import 'package:chit/features/shell/presentation/shell_screen.dart';
 import 'package:chit/features/today/presentation/today_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/app.dart';
 
 /// The shell of ADR-011, and the claim it was chosen for.
 ///
@@ -38,10 +38,12 @@ Set<String> _labelsIn(WidgetTester tester) {
 }
 
 void main() {
-  Future<void> pumpApp(WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: ChitApp()));
-    await tester.pumpAndSettle();
-  }
+  // Through the shared helper rather than a bare `ProviderScope`: Today
+  // builds the open chit now, and the open chit asks for an ambient stamp
+  // from two services that `domain` declares and deliberately leaves
+  // unimplemented (ARCHITECTURE.md §3). Nothing in this file is about them —
+  // they are simply what the app needs to boot.
+  Future<void> pumpApp(WidgetTester tester) => pumpChitApp(tester);
 
   /// The `Semantics` the tab bar puts round a tab, rather than one of the
   /// several the framework wraps a `Text` in on the way down.

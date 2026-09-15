@@ -5,7 +5,7 @@ it was chosen over, and what it costs. Superseding a record means adding a new o
 editing the old one.
 
 Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-to ADR-024 on 15 September 2026.
+to ADR-024 on 15 September 2026, ADR-025 and ADR-026 on 16 September 2026.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -37,6 +37,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-023 | The field is live, but it does not take focus | what opening the app costs |
 | ADR-024 | The day arc becomes the timeline | three days, full days, scrollable, proportional |
 | ADR-025 | The weather service takes no position | clarifies ADR-007 against ADR-016 — how the two signals stay parallel |
+| ADR-026 | Discard opens a new chit, and that means a new stamp | what §3.1's "empty state" means for `createdAt` |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -802,3 +803,44 @@ anyway.
 **Consequences.** `AmbientCapture` fires both calls at once and neither knows about the other.
 ARCHITECTURE.md §4.2 is corrected: it used to say weather and location *run in parallel*
 without saying how that was possible given the API, which is the gap this record fills.
+
+---
+
+## ADR-026 — Discard opens a new chit, and that means a new stamp
+
+*16 September 2026. Settles what BEHAVIOUR.md §3.1's "empty state" means for the stamp.*
+
+**Decision.** **Discard** opens a fresh chit: the field empties *and* the ambient stamp is
+taken again, from the clock and the two services. The chit in front of the user after a discard
+was opened at the moment they discarded.
+
+**Over.** Emptying the text and keeping the stamp, which is the literal reading of §3.1 —
+*"Discard returns the open chit to its empty state"* — and the cheaper implementation.
+
+**Why.** ADR-021 makes the stamp the chit's `createdAt`, which decides where it lands in the
+thread, where its mark falls on the timeline, and which day it belongs to (ADR-006). Keeping
+the old stamp means a chit discarded at 3:42 and written at 4:10 is filed at 3:42 — and, at
+the edge, a chit discarded at 23:58 and written at 00:05 is filed **on the wrong day**, which
+is the exact failure ADR-006 exists to prevent.
+
+It also reads wrong on the screen with nothing hidden: the stamp at the top of a blank slip
+would say a time that has passed, while the user sits looking at an empty page.
+
+And the alternative reading holds up: §3.1's sentence is about what the *user* sees — a blank
+chit, nothing kept — and a blank chit that was just opened is exactly what the app is for.
+Nothing is lost by treating it as new, because nothing was saved.
+
+**Costs.**
+
+- **A discard costs a capture.** Every Discard asks the weather service and the location
+  service again. ADR-007 already makes that free of consequence — it cannot block, and it fails
+  to `null` — but it is a network call a user can trigger repeatedly by tapping Discard, and
+  M3's implementation should be as unbothered by that as the fakes are.
+- **It is one more thing that is invisible when it is wrong.** A stale stamp looks exactly like
+  a fresh one. `test/features/composer/open_chit_test.dart` moves a fake clock across the
+  discard and checks the time on the slip, which is the only way to see it.
+
+**Consequences.** `ComposerController.discard()` is `state = _openChit()` rather than a
+`copyWith` that blanks the text — the same path the controller takes when it is first built, so
+there is one way for a chit to come into existence. BEHAVIOUR.md §3.1 now says which reading of
+"empty state" is meant.

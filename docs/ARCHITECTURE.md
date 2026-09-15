@@ -217,6 +217,13 @@ BEHAVIOUR.md §3.1: opening the app six times leaves nothing behind. So the open
 in `ComposerController`, never in the database, and there is no draft persistence. **Save chit**
 is the only thing that inserts.
 
+**The controller is synchronous, and that is ADR-007 rather than a shortcut.** `build()` returns
+a `ComposerState`, never a `Future` of one: it takes the instant half of the stamp from
+`AmbientCapture.open()` and hands the slow half to `settle()`, which lands into the state
+whenever it lands, or never. A `FutureOr<ComposerState> build()` would give the open chit a
+loading state, and a loading state is a spinner whether or not one is drawn — *nothing about
+capture can delay the composer*.
+
 **There is no mode.** BEHAVIOUR.md §3.2 makes the composer one surface — a live field with a
 microphone beside it — so `ComposerState` is a record of what the chit currently holds, not a
 union of which way in the user picked:
@@ -270,10 +277,16 @@ group D. Every line is a product rule rather than a network detail, which is why
 `domain` and why M3 changes only which implementations the two service providers resolve to.
 Two things about it are load-bearing:
 
-- **The clock is read before either signal is asked for.** `capturedAt` becomes the chit's
-  `createdAt` (ADR-021), so a clock read after a slow network came back would file the chit up
-  to a timeout later than the moment it belongs to. The test counts the reads rather than
-  checking the value, because a value assertion cannot catch that.
+- **It is two methods rather than one.** `open()` is synchronous and gives the chit its time at
+  once; `settle()` fills in what arrives. That split is what keeps §4.1's controller
+  synchronous, and it is the whole reason there is no `Future<AmbientStamp> capture()`.
+- **The clock is read before either signal is asked for**, exactly once, in `open()`.
+  `capturedAt` becomes the chit's `createdAt` (ADR-021), so a clock read after a slow network
+  came back would file the chit up to a timeout later than the moment it belongs to. The test
+  counts the reads rather than checking the value, because a value assertion cannot catch that.
+- **A stale answer is dropped.** `settle()` may come back to a chit that has been discarded
+  (ADR-026) or saved, in which case its weather belongs to a moment that is gone. The
+  controller compares `capturedAt` before taking it.
 - **A signal that throws and a signal that hangs produce the same `null`.** This is the one
   place the *fail loudly in development* rule of CLAUDE.md §4.1 is deliberately not applied:
   to a composer that must not stall there is no useful difference between no network, no

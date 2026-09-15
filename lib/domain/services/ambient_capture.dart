@@ -10,16 +10,23 @@ part 'ambient_capture.g.dart';
 
 /// Assembles the [AmbientStamp] a chit is opened with — ADR-007.
 ///
-/// One method, and the whole of that record is in it: the two signals go out
-/// **in parallel**, each under a short timeout, and **whatever has not come
-/// back is `null`**. Nothing here can block the composer, show a spinner or
-/// fail a save. README §1 is the reason — *opening the app costs nothing* —
-/// and a journal has to work on a train.
+/// The whole of that record is here: the two signals go out **in parallel**,
+/// each under a short timeout, and **whatever has not come back is `null`**.
+/// Nothing here can block the composer, show a spinner or fail a save.
+/// README §1 is the reason — *opening the app costs nothing* — and a journal
+/// has to work on a train.
 ///
-/// **The time is read before either signal is asked for.** ADR-021 says a chit
-/// is stamped when it is *opened*, and [AmbientStamp.capturedAt] becomes its
-/// `createdAt`; a clock read after the network came back would put the chit
-/// two seconds later in the thread than the moment it belongs to.
+/// **It is two methods rather than one, and that is what keeps the promise.**
+/// [open] is synchronous and gives the chit its time at once; [settle] fills
+/// in what arrives. A single `Future<AmbientStamp> capture()` would make the
+/// composer itself asynchronous, and a composer with a loading state has
+/// already broken ADR-007 whether or not a spinner is drawn.
+///
+/// **The time is read before either signal is asked for**, exactly once, in
+/// [open]. ADR-021 says a chit is stamped when it is *opened*, and
+/// [AmbientStamp.capturedAt] becomes its `createdAt`; a clock read after the
+/// network came back would put the chit two seconds later in the thread than
+/// the moment it belongs to.
 ///
 /// It lives in `domain` because every line of it is a product rule rather than
 /// a network detail. What M3 changes is which implementations
@@ -58,25 +65,35 @@ final class AmbientCapture {
   final WeatherService _weather;
   final LocationService _location;
 
-  /// The stamp for a chit opened now.
+  /// The stamp a chit opens with: **its time, and nothing else yet.**
   ///
-  /// Never throws and never returns a partial failure: a stamp always has its
-  /// time, and the other two fields are present or they are not.
-  Future<AmbientStamp> capture() async {
-    // Before the awaits, not after. See ADR-021 above.
-    final DateTime capturedAt = _clock.now();
+  /// Synchronous, because ADR-007 does not allow the composer to wait for
+  /// anything — *nothing about capture can delay the composer, show a spinner,
+  /// or fail a save.* A composer built on a `Future` has a loading state, and
+  /// a loading state is a spinner whether or not one is drawn.
+  ///
+  /// This is the only clock read in the whole capture. [settle] carries
+  /// [AmbientStamp.capturedAt] through untouched, so the chit's `createdAt` is
+  /// the moment it opened however long the two signals take (ADR-021).
+  AmbientStamp open() => AmbientStamp(capturedAt: _clock.now());
 
+  /// [opened] again, with whatever the two signals returned.
+  ///
+  /// They go out **together**, each under [timeout], and whatever has not come
+  /// back is left `null`. Never throws: a stamp always has its time, and the
+  /// other two fields are present or they are not.
+  ///
+  /// The caller shows [open]'s stamp immediately and replaces it with this one
+  /// when it lands, which is how ADR-007's *best-effort, never blocks* reads
+  /// on a screen: the time is there at once, and the weather word appears a
+  /// moment later or not at all.
+  Future<AmbientStamp> settle(AmbientStamp opened) async {
     final (WeatherCondition? weather, GeoFix? fix) = await (
       _bestEffort(_weather.currentCondition()),
       _bestEffort(_location.currentFix()),
     ).wait;
 
-    return AmbientStamp(
-      capturedAt: capturedAt,
-      weather: weather,
-      lat: fix?.lat,
-      lon: fix?.lon,
-    );
+    return opened.copyWith(weather: weather, lat: fix?.lat, lon: fix?.lon);
   }
 
   /// [signal], or `null` if it was slow or it threw.

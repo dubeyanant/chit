@@ -123,20 +123,39 @@ What group E inherits:
 - **The two fakes are `FixedWeatherService` and `FixedLocationService`, overridden in
   `main.dart`.** M3 deletes both files and changes those two lines; nothing above them moves.
 
-## E. The open chit ⬜
+## E. The open chit ✅ done 16 September 2026
 
 *The big one. Needs C and D.*
 
-- [ ] `domain/models/composer_state.dart` — the record in ARCHITECTURE.md §4.1, plus `canSave`.
-- [ ] `features/composer/application/composer_controller.dart` — the stamp held from open and
+- [x] `domain/models/composer_state.dart` — the record in ARCHITECTURE.md §4.1, plus `canSave`.
+- [x] `features/composer/application/composer_controller.dart` — the stamp held from open and
       **never re-read** (ADR-021); text edits; `textOrigin: typed`.
-- [ ] `features/composer/presentation/open_chit.dart` — `Slip` + stamp row + field + action row.
+- [x] `features/composer/presentation/open_chit.dart` — `Slip` + stamp row + field + action row.
       The tear edge and the pad come with the slip; do not assemble them again.
-- [ ] The field at 17.5px, `cursorColor: seal`, no decoration, **and no autofocus** (ADR-023).
-- [ ] The microphone in its final position and size, ≥44px target that does not shrink when
+- [x] The field at 17.5px, `cursorColor: seal`, no decoration, **and no autofocus** (ADR-023).
+- [x] The microphone in its final position and size, ≥44px target that does not shrink when
       text appears, inert until M5.
-- [ ] Discard and Save appear only when `canSave`; Discard carries decision 4's pressed wash.
-- [ ] Tests: `canSave`; an untouched chit shows neither control; the stamp is captured once.
+- [x] Discard and Save appear only when `canSave`; Discard carries decision 4's pressed wash.
+- [x] Tests: `canSave`; an untouched chit shows neither control; the stamp is captured once.
+
+**Discard moved here from group G; Save stayed there.** Discard needs no repository — it is
+`state = _openChit()` — and a pressed wash is only worth testing on a control that does
+something. Save's line is still G's, below, because the thing that proves it worked is the
+thread. **Until then Save is drawn and does nothing**, which is a state this milestone plans;
+`open_chit.dart` says so where somebody would otherwise file a bug.
+
+- **ADR-026**: Discard opens a *new* chit, so it takes a new stamp. Discarding at 3:42 and
+  writing at 4:10 must not file the chit at 3:42, and at 23:58 must not file it on the wrong
+  day. BEHAVIOUR.md §3.1 now says which reading of "empty state" is meant.
+- **The controller is synchronous** and must stay that way — ARCHITECTURE.md §4.1. ADR-007 does
+  not allow the composer a loading state, so `AmbientCapture` is `open()` + `settle()` rather
+  than one `Future`.
+- **The microphone is drawn and carries no semantics**, because §6.4 does not allow a control
+  that does nothing. M5 gives it an action, a label and a pressed wash together, at
+  `OpenChit.microphone`.
+- **Every test that boots `ChitApp` goes through `test/support/app.dart`.** A bare
+  `ProviderScope` no longer starts the app: Today builds the open chit, which needs the two
+  services that `domain` leaves unimplemented on purpose.
 
 ## F. The five-second prompt ⬜
 
@@ -161,7 +180,9 @@ What group E inherits:
 - [ ] The chit row: rail node, stamp row, text.
 - [ ] The empty state — *"Nothing written yet today."*, no rail, no placeholder row, and the
       count beside **earlier** omitted.
-- [ ] Save → `ChitRepository.save()` with the held stamp. Discard returns the chit to empty.
+- [ ] Save → `ChitRepository.save()` with the **held** stamp — `state.stamp`, never a fresh
+      capture (ADR-021). Saving also opens a new chit, the way Discard does (ADR-026).
+      *Discard itself landed in group E, which is where the control it belongs to was drawn.*
 - [ ] Tests: type → save → it is in the thread; restart → it is still there; an empty day
       looks empty.
 

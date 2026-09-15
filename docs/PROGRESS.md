@@ -7,7 +7,7 @@ Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
 **Last updated:** 16 September 2026, after M1, after v6 — which moved the documents and then the
-code behind them — and after M2 groups A, B, C and D.
+code behind them — and after M2 groups A, B, C, D and E.
 
 ---
 
@@ -18,21 +18,24 @@ code behind them — and after M2 groups A, B, C and D.
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
-| **M2** — Today, text only | 🔶 in progress | groups A–D of [TASKS.md](TASKS.md) done; **E is next**. ADR-023, ADR-024, ADR-025 |
+| **M2** — Today, text only | 🔶 in progress | groups A–E of [TASKS.md](TASKS.md) done; **F and G are next**. ADR-023 to ADR-026 |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**185 tests, `flutter analyze` clean, debug APK builds.**
+**206 tests, `flutter analyze` clean, debug APK builds.**
 
-**On a handset:** the masthead on `--paper`, an empty page, and a working two-tab bar. Tapping
-*calendar* cross-fades to a placeholder line that M4 deletes. Today stays empty until groups E,
-G and H put the open chit, the thread and the timeline on it.
+**On a handset:** the masthead on `--paper`, a two-tab bar, and **the open chit** — a slip with
+its tear edge and the pad behind it, its stamp reading `3:42 pm   raining   ⌖` spaced and never
+separated, a page to write on, and a microphone leading the action row. Typing brings
+**Discard** and **Save chit**; Discard works, and Save is drawn and does nothing until group G.
+Tapping *calendar* cross-fades to a placeholder line that M4 deletes. Below the slip there is
+nothing yet: the date line and the thread arrive with G, the timeline with H.
 
-*Groups C and D changed nothing on the screen — four shared widgets, a type style, and the
-ambient capture behind them. The first time any of it is visible is group E.*
+*Nobody has looked at any of it on a device. Group E is the first milestone work with real
+type on a real surface, which is what open item 1 has been waiting for.*
 
 *The palette was confirmed on a device on 15 September, before the shell existed: dark warm
 brown, "chit चित्त" in the gutter — `--paper` `#191714` behaving exactly as §6.1 sets it. Nobody
@@ -500,21 +503,93 @@ closes.
 
 ---
 
-## Next: M2 group E — the open chit
+## M2 group E — the open chit
 
-The big one, and both the groups it waited on are done. [TASKS.md](TASKS.md) group E has the
-list: `ComposerState` and `canSave`, the controller, and `open_chit.dart` assembling `Slip` +
-the stamp row + the field + the action row.
+The first thing in the app a person can touch. `ComposerState` and its `canSave`, the
+controller, and the slip itself — stamp row, field, action row — placed on Today.
 
-Four things it inherits and should not re-litigate:
+- `domain/models/composer_state.dart` — ARCHITECTURE.md §4.1's record, freezed. The audio and
+  recording fields are here and unset: M5 fills them, and `canSave` is already defined in terms
+  of one of them.
+- `features/composer/application/composer_controller.dart` — the stamp held from open, text
+  edits, `textOrigin: typed` the moment there are words and `null` again when there are not.
+- `features/composer/presentation/open_chit.dart` — the slip, the field, the microphone, and
+  the two controls.
+- **Twenty-one tests**, 185 → 206.
 
-- **`Slip` draws its own tear edge and its own pad.** Do not assemble them again — group C.
-- **The stamp is captured once, at open, and held** (ADR-021). Call `AmbientCapture.capture()`
-  when the chit opens and pass *that object* to `save()`. Re-capturing on save undoes the
-  decision silently, and nothing in the repository's tests would catch it.
-- **No autofocus** (ADR-023). The field is 17.5px with `cursorColor: seal` and no decoration.
-- **The microphone is drawn and inert until M5**, at 54px, with a target that does not shrink
-  when text appears (§6.4).
+### The controller is synchronous, and that is the whole of ADR-007
+
+`build()` returns a `ComposerState`, never a `Future` of one. A `FutureOr<ComposerState>
+build()` is the obvious shape — the stamp comes from two services, so of course it is async —
+and it would hand the open chit a loading state, which is a spinner whether or not one is
+drawn. ADR-007 does not allow that.
+
+So `AmbientCapture` became **two methods rather than one**: `open()` is synchronous and gives
+the chit its time at once, and `settle()` lands the weather and the fix whenever they arrive.
+*Group D's `capture()` is gone; it was one commit old and had no other caller.* The clock is
+still read exactly once, in `open()`, and `settle()` carries `capturedAt` through untouched.
+
+A settled stamp can also come back to a chit that no longer exists — discarded, or saved — so
+the controller checks `capturedAt` before taking it. That is a race the fakes never lose and a
+real network will.
+
+### ADR-026 — Discard opens a new chit, so it takes a new stamp
+
+BEHAVIOUR.md §3.1 says Discard *"returns the open chit to its empty state"*, and the cheap
+reading is to blank the text and keep the stamp. That files a chit discarded at 3:42 and
+written at 4:10 under 3:42 — and at 23:58, under **the wrong day**, which is the exact failure
+ADR-006 exists to prevent. `discard()` is `state = _openChit()`: the same path the controller
+takes when it is first built, so there is one way for a chit to come into existence.
+
+**Discard moved into this group from G**, because it needs no repository and a pressed wash is
+only worth testing on a control that does something. **Save is drawn and does nothing until
+G**, which is where the thread that would prove it worked gets built; `open_chit.dart` says so
+where somebody would otherwise file a bug.
+
+### Three smaller things
+
+1. **The microphone carries no semantics at all** — not `ExcludeSemantics`, just nothing. A box
+   and a painter have none of their own, so doing nothing is what leaves it unmarked, and
+   §6.4's rule about controls that do nothing is satisfied the way the settings gear satisfied
+   it. It is at `OpenChit.microphone`, which is where M5 attaches its behaviour.
+2. **Discard and Save fade in without a rise.** The prototype reuses its `settle` keyframe here
+   — opacity plus 8px — but §6.3's own table files *"Discard and Save arriving once the chit
+   holds something"* under **routine state change**, not under authored arrival. An 8px rise
+   would make a routine change look like one of the three moments in the app with any
+   authorship.
+3. **A bare `ProviderScope` no longer boots the app.** Today builds the open chit, which needs
+   the two services `domain` leaves unimplemented, so the shell test stopped compiling the
+   moment E landed — correctly. `test/support/app.dart` is now the one place a test states the
+   other half of that seam, and every test that pumps `ChitApp` goes through it.
+
+**One tripwire worth remembering:** a `GestureDetector` inside a scroll view does not call
+`onTapDown` until the tap has won the arena against the vertical drag, so a test that presses
+and then `pump()`s sees nothing at all. Pressing and pumping ~150ms is what makes Discard's
+wash visible to a test.
+
+**Verified:** `flutter analyze` clean, `flutter test` 206 passing, `dart format` clean,
+`dart run build_runner build` clean.
+
+---
+
+## Next: M2 groups F and G
+
+**F — the five-second prompt.** All timing, and separable: the timer lives in the controller
+rather than the widget (ARCHITECTURE.md §4.3), 700ms, and it **survives reduced motion** at
+140ms because it is the whole event rather than decoration. Not `hintText` — an overlay, which
+is also where M5's failure note lands. The caret blink stops under reduced motion. The field
+and the controller it needs are both in place.
+
+**G — the thread, and Save end to end.** Where M2 becomes an app somebody could use: the date
+line, `earlier` and its count, the thread off `watchDay`, the empty state, and Save wired to
+`ChitRepository.save()`.
+
+Two things G must get right, and both fail silently:
+
+- **Pass `state.stamp` to `save()`** — the held one, never a fresh capture (ADR-021). Nothing
+  in the repository's own tests can catch a re-capture, because a re-captured stamp is a
+  perfectly plausible time.
+- **Saving opens a new chit**, the way Discard does (ADR-026). The same `_openChit()`.
 
 ---
 
@@ -525,7 +600,7 @@ The first screen a person could use. Full statement of done in
 `design/chit-app-v6.html` is the target. The spine it draws from is all in place.
 
 **[TASKS.md](TASKS.md) is the working list** — M2 in ten groups, A to J, each one buildable and
-committable on its own. A, B, C and D are done; E is next, and the section above says what it is.
+committable on its own. A to E are done; F and G are next, and the section above says what they are.
 
 Worth knowing for the rest of the milestone:
 - **The composer holds the stamp from the moment it opens** (ADR-021). Weather and location are

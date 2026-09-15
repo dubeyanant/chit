@@ -140,6 +140,37 @@ void main() {
   });
 
   group('nothing here can block the composer', () {
+    test('opening a chit is synchronous, and gives it its time at once', () {
+      // ADR-007: nothing about capture may delay the composer. A single
+      // `Future<AmbientStamp> capture()` would make the composer itself
+      // asynchronous, and a composer with a loading state has broken that
+      // promise whether or not a spinner is ever drawn. So `open()` returns a
+      // stamp rather than a future, and it is the only clock read.
+      final AmbientStamp opened = capture(
+        weather: _SlowWeather(),
+        location: _SlowLocation(),
+      ).open();
+
+      expect(opened.capturedAt, openedAt);
+      expect(opened.weather, isNull);
+      expect(opened.hasLocation, isFalse);
+    });
+
+    test('settling never moves the time it was opened at', () async {
+      // The signals may take up to a timeout to land. `capturedAt` becomes the
+      // chit's createdAt (ADR-021), so it has to survive that untouched.
+      final AmbientCapture ambient = capture(
+        weather: const _Weather(WeatherCondition.overcast),
+        location: const _Location((lat: 1.0, lon: 2.0)),
+      );
+      final AmbientStamp opened = ambient.open();
+
+      final AmbientStamp settled = await ambient.settle(opened);
+
+      expect(settled.capturedAt, opened.capturedAt);
+      expect(settled.weather, WeatherCondition.overcast);
+    });
+
     test('the two go out in parallel, not one after the other', () async {
       // The claim is worth a test because the sequential version passes every
       // other test in this file: two 20ms timeouts in a row still produce the
@@ -196,6 +227,17 @@ void main() {
       expect(clock.reads, 1, reason: 'read once, at the top, and never again');
     });
   });
+}
+
+/// The two halves as the composer drives them: the instant stamp, and then the
+/// settled one.
+///
+/// Spelled once here so that every case above reads as a single capture. The
+/// split itself — that [AmbientCapture.open] answers without waiting for
+/// anything — is what the *nothing here can block the composer* group tests
+/// directly.
+extension on AmbientCapture {
+  Future<AmbientStamp> capture() => settle(open());
 }
 
 /// A service that answers [condition], which may be `null`.

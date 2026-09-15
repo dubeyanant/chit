@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/extensions.dart';
+import '../../composer/presentation/open_chit.dart';
 
 /// The home screen: the date, the timeline, the open chit, the thread.
 ///
-/// **Group B built the page and nothing on it.** The date line and the thread
-/// arrive with group G, the open chit with E, and the timeline with H —
+/// **Group B built the page and group E put the first thing on it.** The date
+/// line and the thread arrive with group G and the timeline with H —
 /// TASKS.md. What is here is the scroll view they all go into, so that each of
 /// those groups adds a widget rather than also rearranging the page.
+///
+/// The open chit carries no top margin of its own. The prototype gives it
+/// `s5` below the timeline, and the timeline is what group H will put above
+/// it; until then the sliver's own padding is the whole of the space above the
+/// slip, and adding a margin now would have to be taken out again.
 ///
 /// The masthead is not here: it belongs to the shell, above both tabs, so that
 /// it does not move when somebody switches between them.
@@ -28,7 +34,7 @@ class TodayScreen extends StatelessWidget {
             space.gutter,
             space.s8,
           ),
-          sliver: const SliverToBoxAdapter(child: SizedBox.shrink()),
+          sliver: const SliverToBoxAdapter(child: OpenChit()),
         ),
       ],
     );
