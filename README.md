@@ -28,14 +28,10 @@ Then read what that milestone points at, and open
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
 > **Status:** in build. M0 and M1 are done — the project is configured, the design system is in
-> code as four theme extensions, and the data spine is in place: one table, the one-of invariant
-> held in three places, and a repository with the update path of ADR-014 from the start.
+> code as four theme extensions against the v6 prototype, and the data spine is in place: one
+> table, the one-of invariant held in three places, and a repository with the update path of
+> ADR-014 from the start.
 > **M2, Today with text only, is next — the first screen a person could use.**
->
-> **One thing is deliberately out of step:** the prototype moved to **v6** on 15 September 2026
-> and every document here describes v6, but `lib/core/theme/` still holds v5's tokens. That is
-> written down, not hidden — `docs/PROGRESS.md` open item 11 lists exactly what has to move,
-> and it has to be done before or with M2.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
@@ -258,10 +254,6 @@ milestone adds.
 
 When in doubt about a pixel, open v6. The type scale, the spacing steps and the motion pace
 table were all read from the prototype.
-
-**The code has not caught up yet.** `lib/core/theme/` was written against v5 in M0b and still
-carries v5's values. `docs/DESIGN-SYSTEM.md` §6 describes v6 and is the target;
-`docs/PROGRESS.md` open item 11 is the work that closes the gap.
 
 ### 10.5 Assets
 

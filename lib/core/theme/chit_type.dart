@@ -45,13 +45,12 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.engineNote,
     required this.calendarDay,
     required this.calendarWeekday,
-    required this.legend,
     required this.monthSummary,
   });
 
   /// The scale of DESIGN-SYSTEM.md §6.2, coloured from [colors].
   ///
-  /// Display-to-body runs about 2.3× — [date] at 38px over [chitText] at
+  /// Display-to-body runs about 1.6× — [date] at 26px over [chitText] at
   /// 16.5px. Anything that counts or keeps time is set in tabular figures,
   /// because a running timer whose digits change width reads as unstable and a
   /// column of times that does not align reads as careless.
@@ -59,27 +58,31 @@ final class ChitType extends ThemeExtension<ChitType> {
     return ChitType(
       // The masthead. Serif for the word, Devanagari for the mark beside it.
       wordmark: _serif(
-        size: 16,
+        size: 16.5,
         weight: 400,
         color: colors.inkMuted,
         height: 1,
       ),
       devanagariMark: _deva(size: 11.5, color: colors.inkFaint, height: 1),
 
-      // The date, above the day arc.
+      // The date, above the day arc — one line, not a stacked masthead. The
+      // weekday is the same size and weight as the date beside it and differs
+      // only in being italic and faint, so the two set as one phrase.
+      // DESIGN-SYSTEM.md §6.2: the date is a label, not the subject.
       weekday: _serif(
-        size: 16,
-        weight: 400,
+        size: 26,
+        weight: 300,
         color: colors.inkFaint,
+        height: 1.15,
         italic: true,
-        letterSpacingEm: 0.01,
+        letterSpacingEm: -0.015,
       ),
       date: _serif(
-        size: 38,
+        size: 26,
         weight: 300,
         color: colors.ink,
-        height: 1,
-        letterSpacingEm: -0.02,
+        height: 1.15,
+        letterSpacingEm: -0.015,
       ),
 
       // The day arc: its two ends, and the cap over the ring at now. The cap
@@ -98,13 +101,16 @@ final class ChitType extends ThemeExtension<ChitType> {
         letterSpacingEm: 0.02,
       ),
 
-      // The ambient stamp on the open chit. The one uppercase in the app,
-      // because a stamp should look stamped.
+      // The ambient stamp on the open chit. The same words, size and case as
+      // [chitMeta] under a saved chit — the open chit is distinguished by
+      // being brighter, not by speaking a second dialect (DESIGN-SYSTEM.md
+      // §6.2). It was 600-weight uppercase at .1em in v5, which shouted the
+      // same three facts the thread below murmured.
       ambientStamp: _sans(
         size: 11.5,
-        weight: 600,
-        color: colors.inkFaint,
-        letterSpacingEm: 0.1,
+        weight: 500,
+        color: colors.inkMuted,
+        letterSpacingEm: 0.02,
         tabularFigures: true,
       ),
 
@@ -119,23 +125,26 @@ final class ChitType extends ThemeExtension<ChitType> {
       chitText: _serif(size: 16.5, weight: 400, color: colors.ink, height: 1.5),
 
       // The open chit's field, and the prompt that waits five seconds over it.
+      // 17.5px rather than v5's 19px: a line inside the slip held about 34
+      // characters at 19 and lands near 40 here, which is where a serif starts
+      // reading as a page instead of a column.
       composerBody: _serif(
-        size: 19,
+        size: 17.5,
         weight: 400,
         color: colors.ink,
-        height: 1.6,
+        height: 1.62,
       ),
       composerGhost: _serif(
-        size: 19,
+        size: 17.5,
         weight: 400,
         color: colors.inkFaint,
-        height: 1.6,
+        height: 1.62,
       ),
 
       // BEHAVIOUR.md §3.5's line. Set beside the body, never written into it, which
       // is why it is a style of its own rather than [composerGhost].
       failNote: _serif(
-        size: 17,
+        size: 16.5,
         weight: 400,
         color: colors.inkFaint,
         height: 1.5,
@@ -145,7 +154,7 @@ final class ChitType extends ThemeExtension<ChitType> {
       // "earlier ——————— 2 chits". Lowercase serif italic with a hairline
       // running off to the right.
       sectionLabel: _serif(
-        size: 16,
+        size: 16.5,
         weight: 400,
         color: colors.inkMuted,
         italic: true,
@@ -163,9 +172,9 @@ final class ChitType extends ThemeExtension<ChitType> {
       button: _sans(size: 13, weight: 600, letterSpacingEm: 0.04),
 
       // The audio pill's duration. Set in inkMuted rather than inkFaint
-      // because the pill's 7% seal wash lifts the ground under it enough to
-      // drop inkFaint below 4.5:1 — DESIGN-SYSTEM.md §6.4, and the contrast test proves
-      // it both ways.
+      // because even ChitColors.pillWash — 3.5% of ink — lifts the ground
+      // under it enough to drop inkFaint to 4.17:1, below the floor.
+      // DESIGN-SYSTEM.md §6.4, and the contrast test proves it both ways.
       audioDuration: _sans(
         size: 11.5,
         weight: 600,
@@ -174,7 +183,7 @@ final class ChitType extends ThemeExtension<ChitType> {
         tabularFigures: true,
       ),
 
-      tabLabel: _serif(size: 16, weight: 400, color: colors.inkFaint),
+      tabLabel: _serif(size: 16.5, weight: 400, color: colors.inkFaint),
 
       // The recording sheet.
       sheetState: _sans(
@@ -204,19 +213,19 @@ final class ChitType extends ThemeExtension<ChitType> {
         letterSpacingEm: 0.01,
       ),
 
-      // The calendar.
-      calendarDay: _serif(size: 16, weight: 400, color: colors.ink, height: 1),
+      // The calendar. The numeral is [ink] on every density step and never
+      // flips to a lighter colour — ADR-022 is what made that possible.
+      calendarDay: _serif(
+        size: 16.5,
+        weight: 400,
+        color: colors.ink,
+        height: 1,
+      ),
       calendarWeekday: _sans(
         size: 11.5,
         weight: 500,
         color: colors.inkFaint,
         letterSpacingEm: 0.04,
-      ),
-      legend: _sans(
-        size: 11.5,
-        weight: 400,
-        color: colors.inkFaint,
-        letterSpacingEm: 0.02,
       ),
       monthSummary: _serif(
         size: 15,
@@ -349,10 +358,11 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// "चित्त", beside it.
   final TextStyle devanagariMark;
 
-  /// "Sunday".
+  /// "Sunday", the italic half of the one date line. Same size and weight as
+  /// [date]; only the slant and the colour differ.
   final TextStyle weekday;
 
-  /// "13 September".
+  /// "13 September", the other half. A label, not a masthead — §6.2.
   final TextStyle date;
 
   /// "5 am" and "midnight", at the ends of the day arc.
@@ -361,10 +371,12 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// "now", capping the ring on the day arc.
   final TextStyle arcNow;
 
-  /// "3:42 PM · RAINING · ⌖" on the open chit.
+  /// "3:42 pm   raining   ⌖" on the open chit. Lowercase, spaced apart, no
+  /// separators — and the only place the pin is drawn (BEHAVIOUR.md §3.6).
   final TextStyle ambientStamp;
 
-  /// "11:20 am · overcast · ⌖" on a chit in the thread.
+  /// "11:20 am   overcast" under a chit in the thread. The same line as
+  /// [ambientStamp] in a quieter ink, and without the pin.
   final TextStyle chitMeta;
 
   /// What a saved chit says.
@@ -412,9 +424,6 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// "M T W T F S S" over the month grid.
   final TextStyle calendarWeekday;
 
-  /// "quiet ▪▪▪▪ full".
-  final TextStyle legend;
-
   /// "22 chits over eleven days".
   final TextStyle monthSummary;
 
@@ -451,7 +460,6 @@ final class ChitType extends ThemeExtension<ChitType> {
     engineNote,
     calendarDay,
     calendarWeekday,
-    legend,
     monthSummary,
   ];
 
@@ -480,7 +488,6 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? engineNote,
     TextStyle? calendarDay,
     TextStyle? calendarWeekday,
-    TextStyle? legend,
     TextStyle? monthSummary,
   }) {
     return ChitType(
@@ -507,7 +514,6 @@ final class ChitType extends ThemeExtension<ChitType> {
       engineNote: engineNote ?? this.engineNote,
       calendarDay: calendarDay ?? this.calendarDay,
       calendarWeekday: calendarWeekday ?? this.calendarWeekday,
-      legend: legend ?? this.legend,
       monthSummary: monthSummary ?? this.monthSummary,
     );
   }
@@ -543,7 +549,6 @@ final class ChitType extends ThemeExtension<ChitType> {
         other.calendarWeekday,
         t,
       )!,
-      legend: TextStyle.lerp(legend, other.legend, t)!,
       monthSummary: TextStyle.lerp(monthSummary, other.monthSummary, t)!,
     );
   }

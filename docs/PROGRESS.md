@@ -6,8 +6,8 @@ has read only this file and `CLAUDE.md` should be able to pick up the work.
 Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
-**Last updated:** 15 September 2026, after M1 — the data spine — and after the v6 design pass,
-which changed documents only.
+**Last updated:** 15 September 2026, after M1 — the data spine — and after v6, which moved the
+documents and then the code behind them.
 
 ---
 
@@ -25,37 +25,11 @@ which changed documents only.
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**120 tests, `flutter analyze` clean, debug APK builds.**
+**130 tests, `flutter analyze` clean, debug APK builds.**
 
 The app on a handset is still the masthead on `--paper` and nothing else — M1 added no UI, which
 is what it said it would do. That screen was confirmed on a device on 15 September: dark warm
 brown, "chit चित्त" in the gutter, which is `--paper` `#191714` behaving exactly as §6.1 sets it.
-
----
-
-## ⚠ Read this before touching the theme
-
-**The prototype moved to v6 and the code did not.**
-
-`design/chit-app-v6.html` replaced v5 as the visual target on 15 September 2026. Every document
-in this repository now describes v6. **`lib/core/theme/` still holds v5's values**, because the
-v6 pass was deliberately documentation-only.
-
-So, right now:
-
-| | |
-|---|---|
-| The documents | describe **v6**. They are the target and they are right |
-| `lib/core/theme/`, and `test/core/theme/` | describe **v5**. They are the past and they are wrong |
-
-**Do not "correct" a document to match a constant in the code.** The gap is intentional,
-temporary, and listed constant by constant in **open item 11** below. Close it before or with
-M2 — M2 is the first milestone that draws anything, and a screen built on v5 tokens is a
-correction pass over finished code rather than a value changed once.
-
-Nothing is broken in the meantime: `flutter test` passes, because the tests assert the code's
-v5 values and the code still holds them. **That is exactly why this note exists** — the build
-will not tell you.
 
 ---
 
@@ -85,7 +59,7 @@ will not tell you.
 - **The skeleton.** Every file in [ARCHITECTURE.md](ARCHITECTURE.md) §2 exists. The ones a
   milestone has not reached hold a doc comment naming that milestone and nothing else.
 - **The four theme extensions** in `lib/core/theme/`:
-  - `ChitColors` — the ten tokens of DESIGN-SYSTEM.md §6.1, plus `sealWash` for flattening the audio
+  - `ChitColors` — the ten tokens of DESIGN-SYSTEM.md §6.1, plus `sealWash` (replaced by `inkWash` in v6) for flattening the audio
     pill's translucent surface so it can actually be checked.
   - `ChitType` — twenty-five styles, the whole scale. Every one sets `fontVariations`.
   - `ChitSpace` — the 4px scale under the prototype's own `s1`…`s8` names, so porting a rule
@@ -262,6 +236,41 @@ than carried over — the same WCAG arithmetic `test/support/contrast.dart` uses
 the one v5 figure the design log already recorded (4.36:1) before any new number was written
 down. `flutter test` still passes at 120, unchanged, because no code moved.
 
+### And then the code, the same day
+
+Open item 11 is **done**, so the documents and `lib/core/theme/` describe v6 together again.
+What moved:
+
+- **`ChitColors`** — `slip` to `#24211C`; `sealWash` replaced by `inkWash`, since v6 has no
+  accent wash left anywhere in the app; the wash alphas named (`pillWash`, `saveWash`,
+  `pillPressedWash`, `micPressedWash`, `densitySteps`) so that neither a widget nor a test
+  spells a design value twice. No hover alphas — a finger has no hover, and web is after v1.
+- **`ChitType`** — the date to 26px on one line with the weekday beside it at the same size and
+  weight; the field to 17.5px; every 16px style to 16.5px; the ambient stamp down from
+  600-weight `.1em` to 500-weight `.02em` in `--ink-muted`; `legend` deleted.
+- **`ChitSpace`** — `sheetRadius` 14 → 8, and `tileRadius` 4 added.
+- **The vocabulary** — `heat` and `warmth` are `density` in `lib/` now, per BEHAVIOUR.md §4.2.
+
+**Ten new assertions, 120 → 130**, and the theme tests now pin the v6 figures the same way M0b
+pinned v5's. Three of them are new in kind: the weekday and date must set as one phrase, the
+open chit and the thread must speak one dialect, and a chit must separate from the ground by
+more than v5 managed — properties of the v6 decisions rather than of its numbers.
+
+**Two things this pass found that reading could not.**
+
+1. **The uppercase claim in §6.2 was wrong** and is corrected. It read *"there is no
+   uppercase"*; `LISTENING` on the recording sheet still is, and always was — v6 removed the
+   uppercase from the ambient stamp, not from the app. Written from the diff without checking
+   the sheet.
+2. **`--hair-soft` collapsed on a chit.** M0b's hairline test has a "collapse detector" floor of
+   1.03:1, and brightening `--slip` pushed the pair from 1.0498:1 to 1.0145:1 — the test failed
+   on the first run after the token changed. It is open item 13. The detector was written in
+   M0b as a guard against a token being *tuned* until it vanished; what actually happened is
+   that a different token moved underneath it, which is the better argument for having it.
+
+**Verified:** `flutter analyze` clean, `flutter test` 130 passing, `dart format` clean,
+`flutter build apk --debug`.
+
 ---
 
 ## Next: M2 — Today, text only
@@ -333,62 +342,14 @@ Things a future session needs to know but that are not yet scheduled work.
     it. A seeded day must cover all four shapes of §2, especially the recording with `NULL`
     text.
 
-11. ### ⬜ **Re-point `lib/core/theme/` at v6. Scheduled: before or with M2.**
-
-    **This is the open item.** The documents describe v6; the theme extensions were written
-    against v5 in M0b and still hold v5's values. Nothing fails today — the tests assert the
-    code's own v5 numbers — so nothing will remind you. This list is the reminder.
-
-    **`chit_colors.dart`**
-    - `slip` `0xFF211E1A` → **`0xFF24211C`**.
-    - Add the ink washes of DESIGN-SYSTEM.md §6.1 as named members, the way `sealWash` already
-      exists: the pill at 3.5%, Save at 7% and 13%, the microphone hover at 5%, and the four
-      calendar steps at 6 / 12 / 20 / 30%. They are `--ink` at an alpha over a stated ground,
-      and §6.4 requires each composite to be checked rather than assumed.
-    - `sealWash` was the 7% *accent* wash behind the pill. v6's pill is an ink wash, so that
-      member is either renamed or joined by an ink one — do not leave a member called
-      `sealWash` describing a surface that has no seal in it.
-    - Its doc comment quotes `4.23:1`. The figure is **4.09:1** on the new slip.
-
-    **`chit_type.dart`**
-    - `date` 38px → **26px**, and the weekday is no longer a separate stacked style — one line,
-      the weekday italic in `--ink-faint` and the date in `--ink`.
-    - The composer field 19px → **17.5px**, line-height 1.6 → 1.62.
-    - The `--ink-faint` italic failure note 17px → **16.5px**.
-    - Every 16px style → **16.5px**: section labels, day headings, tab labels, calendar
-      numerals, the wordmark (16 → 16.5).
-    - **The ambient stamp is no longer uppercase.** Drop the `.1em` tracking and the
-      `TextTransform`; it is 11.5px, weight 500, `.02em`, sentence case — the same style the
-      chit meta line uses, differing only in colour.
-    - Its doc comment quotes a 2.3× display-to-body ratio. It is **1.6×** now.
-    - `legend` is a style for an element v6 deleted. Remove it, and the `copyWith` / `lerp` /
-      props entries that go with it.
-
-    **`chit_space.dart`**
-    - `sheetRadius` 14px → **8px**; add the calendar tile's **4px** and its 5px grid gap.
-    - The four tightened gaps of §6.3 (arc, composer, `earlier` heading, month summary).
-    - Its doc comment cites `chit-app-v5.html`. It is v6.
-
-    **`test/core/theme/contrast_test.dart`**
-    - Every asserted ratio against `slip` moves: `--ink-muted` 6.02 → **5.82**, `--ink-faint`
-      4.72 → **4.56**, `--seal` 4.23 → **4.09**, `--seal-ink` 4.98 → **4.81**. `--ink` on slip
-      is 13.03.
-    - The pill composite is 3.5% **ink**, not 7% seal: `--ink-faint` **4.17:1** (still fails,
-      still the reason the duration is `--ink-muted` at 5.33:1).
-    - Add the new washes: Save's label at 10.85:1, and the four calendar numerals at 12.66 /
-      10.69 / 8.31 / **5.99**.
-    - The comment at the head of the negative cases explains the near-white numeral. That case
-      is gone with `#FFF6EE`.
-
-    **`chit_type_test.dart`** asserts that nothing functional is under 11.5px — unchanged — but
-    it may also pin sizes that moved. **`chit_app.dart`**'s masthead uses `type.wordmark`, which
-    goes 16 → 16.5.
-
-    **When it is done:** `flutter analyze` clean, `flutter test` green with the *new* figures,
-    and the masthead checked on a handset against v6 — which also settles open item 1. Then
-    delete the ⚠ banner at the head of this file, the note in README §10.4, the one in
-    CLAUDE.md §2 and the one at the head of DESIGN-SYSTEM.md, because all four exist only to
-    describe this gap.
+11. ~~**Re-point `lib/core/theme/` at v6.**~~ **Closed 15 September 2026**, in the session after
+    the one that opened it. The four extensions, their tests and `lib/`'s vocabulary all
+    describe v6 now, and the four ⚠ banners that pointed here are gone with it. What moved is
+    listed under *"And then the code, the same day"* above. Two things the checklist got wrong,
+    recorded because the next checklist will make the same kind of mistake: the tightened gaps
+    of §6.3 are not tokens at all — they are which step a widget takes, and they land in M2 and
+    M4 — and `sealWash` was not renamed but replaced, because v6 leaves no accent wash anywhere
+    in the app.
 
 12. ### ⬜ **Today's ring fails its contrast floor on a busy day.** Wants a design answer.
 
@@ -411,3 +372,29 @@ Things a future session needs to know but that are not yet scheduled work.
     outside the tile, a gap between ring and fill, or a mark rather than a border. It is M4's
     problem and M4 should not invent the answer under time pressure; DESIGN-SYSTEM.md §6.4
     carries it too.
+
+    The figures above are asserted in `test/core/theme/contrast_test.dart` — including the two
+    that fail. **Fixing this breaks that test**, which is deliberate: whoever fixes it is told
+    to come back and rewrite the record rather than leaving a stale one behind.
+
+13. ### ⬜ **`--hair-soft` has collapsed on a chit.** Small, and a two-minute fix once decided.
+
+    v6 brightened `--slip` by four points and `--hair-soft` is `#252220`, so the pair now
+    measures **1.0145:1** — it measured 1.0498:1 in v5, which was already marginal. On a chit
+    surface the token is, in practice, not drawn.
+
+    It is used on a chit in exactly one place: the pressed background of **Discard**. That
+    matters more than the count suggests, because press also carries a 0.985 depress — and
+    under `prefers-reduced-motion` the depress is gone (DESIGN-SYSTEM.md §6.4), so this invisible
+    wash becomes the *only* feedback that pressing Discard produces. A control that
+    acknowledges nothing reads as broken.
+
+    Three ways out, none of them chosen: lift `--hair-soft` a few points (it still has to stay
+    quiet as a divider on `--paper`, where it measures 1.13:1 and is fine); give Discard a
+    pressed state in `ChitColors.inkWash` like the other two controls already have; or accept
+    it and make sure §6.4's reduced-motion pass in M7 gives press feedback that does not depend
+    on this token. **M2 draws Discard**, so M2 is where it stops being hypothetical.
+
+    Found by the hairline "collapse detector" in `contrast_test.dart` failing the first time the
+    token moved — a floor written in M0b against a token being *tuned* into invisibility, which
+    instead caught a different token moving underneath it.

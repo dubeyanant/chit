@@ -10,7 +10,7 @@ part 'chit_dao.g.dart';
 /// Every query the screens run. DATA-MODEL.md §4.
 ///
 /// Three queries behind six readings: the thread and the day arc are one
-/// query, the calendar's heat and its month summary are one more, and the
+/// query, the calendar's density and its month summary are one more, and the
 /// archive is the third. That is the mechanism behind DESIGN-SYSTEM.md §7's
 /// requirement that the two tabs never disagree — they are not kept in step,
 /// they are the same data.

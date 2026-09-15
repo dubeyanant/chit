@@ -400,7 +400,7 @@ Subsetting is noted as an open item rather than done now, because the mark may s
 *Note, 15 September 2026 — the decision is unchanged, two figures in the evidence are not.* The
 prototype this record reads is now `chit-app-v6.html`, and the date it cites as the 300-weight
 example is 26px there rather than 38px, so the display-to-body ratio the `opsz` argument rests
-on is 1.6× rather than 2.3× (DESIGN-SYSTEM.md §6.2). The weights loaded are the same, a
+on is 1.58× rather than 2.30× (DESIGN-SYSTEM.md §6.2). The weights loaded are the same, a
 narrower optical range still spans two thirds of an octave, and `fontVariations` is still the
 only way to get any of it. Left in place rather than rewritten: the record says what was known
 when the choice was made.

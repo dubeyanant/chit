@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// The spacing and shape tokens of DESIGN-SYSTEM.md §6.3.
 ///
 /// The step names match the prototype's `--s1` … `--s8` deliberately. Porting a
-/// rule out of `design/chit-app-v5.html` should be a rename and nothing more;
+/// rule out of `design/chit-app-v6.html` should be a rename and nothing more;
 /// a second vocabulary here would mean translating every measurement twice and
 /// getting one of them wrong.
 @immutable
@@ -21,6 +21,7 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
     required this.gutter,
     required this.radius,
     required this.sheetRadius,
+    required this.tileRadius,
     required this.minTouchTarget,
   });
 
@@ -36,7 +37,8 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
       s8 = 72,
       gutter = 26,
       radius = 2,
-      sheetRadius = 14,
+      sheetRadius = 8,
+      tileRadius = 4,
       minTouchTarget = 44;
 
   /// 4px.
@@ -69,8 +71,17 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
   /// 2px, almost everywhere. Paper has cut edges.
   final double radius;
 
-  /// 14px — the recording sheet's top corners, the one exception to [radius].
+  /// 8px — the recording sheet's top corners.
+  ///
+  /// One of two exceptions to [radius], and it was 14px in v5: a phone-OS
+  /// sheet radius on a surface that is meant to be torn paper.
   final double sheetRadius;
+
+  /// 4px — a day tile in the month grid, the other exception to [radius].
+  ///
+  /// With the grid's 5px gap this reads as tiles rather than as a mosaic. A
+  /// tile is a field of ink rather than a cut edge, so it is not [radius].
+  final double tileRadius;
 
   /// 44px. DESIGN-SYSTEM.md §6.4: touch targets clear this with no exceptions, and the
   /// microphone's does not shrink when the field has text in it.
@@ -93,6 +104,7 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
     double? gutter,
     double? radius,
     double? sheetRadius,
+    double? tileRadius,
     double? minTouchTarget,
   }) {
     return ChitSpace(
@@ -107,6 +119,7 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
       gutter: gutter ?? this.gutter,
       radius: radius ?? this.radius,
       sheetRadius: sheetRadius ?? this.sheetRadius,
+      tileRadius: tileRadius ?? this.tileRadius,
       minTouchTarget: minTouchTarget ?? this.minTouchTarget,
     );
   }
@@ -126,6 +139,7 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
       gutter: _lerpDouble(gutter, other.gutter, t),
       radius: _lerpDouble(radius, other.radius, t),
       sheetRadius: _lerpDouble(sheetRadius, other.sheetRadius, t),
+      tileRadius: _lerpDouble(tileRadius, other.tileRadius, t),
       minTouchTarget: _lerpDouble(minTouchTarget, other.minTouchTarget, t),
     );
   }

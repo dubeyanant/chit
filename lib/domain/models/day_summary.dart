@@ -4,7 +4,7 @@ part 'day_summary.freezed.dart';
 
 /// How many chits a day holds. One row of the calendar's grouped query.
 ///
-/// The count is a fact about the data. Turning it into one of the four warmth
+/// The count is a fact about the data. Turning it into one of the four density
 /// steps of BEHAVIOUR.md §4.2 is a design scale and happens in the
 /// presentation layer, where it can be re-tuned without a migration
 /// (DATA-MODEL.md §4).

@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 
 /// The colour tokens of DESIGN-SYSTEM.md §6.1.
 ///
-/// One palette, dark, one accent. The accent exists in two weights and which
-/// one to use is decided by the job, not by taste: [seal] is for marks, fills,
-/// borders and icons — anything read as a shape — and [sealInk] is the same
-/// stamp wherever it has to carry words, because [seal] measures 4.23:1 on
-/// [slip] and text has to clear 4.5:1.
+/// One palette, dark, one accent.
+///
+/// **The accent marks what is live, and nothing else** (ADR-022): the ring at
+/// now, the caret, the record dot, today on the calendar, and an audio pill
+/// while it is playing. Everything that is a record rather than a happening is
+/// ink. Hierarchy that a more liberal palette would take from colour comes
+/// from weight instead — see [inkWash].
+///
+/// The accent exists in two weights and which one to use is decided by the
+/// job, not by taste: [seal] is for marks, fills, borders and icons — anything
+/// read as a shape — and [sealInk] is the same stamp wherever it has to carry
+/// words, because [seal] measures 4.09:1 on [slip] and text has to clear
+/// 4.5:1.
 ///
 /// Every value here is verified against that floor by
 /// `test/core/theme/contrast_test.dart`, composited. A new colour without a
@@ -30,7 +38,7 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   /// The palette exactly as DESIGN-SYSTEM.md §6.1 sets it.
   const ChitColors.tokens()
     : paper = const Color(0xFF191714),
-      slip = const Color(0xFF211E1A),
+      slip = const Color(0xFF24211C),
       slipUnder = const Color(0xFF141210),
       ink = const Color(0xFFEDE7DC),
       inkMuted = const Color(0xFFA39B8B),
@@ -44,6 +52,11 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   final Color paper;
 
   /// A chit's surface.
+  ///
+  /// Four points brighter than [paper], which is what lets a chit read as a
+  /// surface rather than as a rectangle described by its border. Every ratio
+  /// measured against a chit moved when it did, so changing this means
+  /// rechecking all of them — the contrast test is what does that.
   final Color slip;
 
   /// The pad beneath the open chit.
@@ -64,8 +77,14 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   /// Inner dividers.
   final Color hairSoft;
 
-  /// The one accent, as a mark: fills, borders, icons, the caret, the day-arc
-  /// marks, the calendar heat, the microphone, the Save button.
+  /// The one accent, as a mark — and only on what is live (ADR-022): the ring
+  /// at now on the day arc, the caret in the field, the record dot on the
+  /// recording sheet, the ring around today, and an audio pill while it is
+  /// playing.
+  ///
+  /// It is **not** the day-arc marks, the calendar's density, the tab pip, a
+  /// pill at rest, the microphone or Save. Those were all accent in v5, and
+  /// spread that wide the colour stopped meaning anything.
   ///
   /// Never used for text. See [sealInk].
   final Color seal;
@@ -75,15 +94,50 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   /// the day arc.
   final Color sealInk;
 
-  /// [seal] laid over [surface] at [opacity], flattened to an opaque colour.
+  /// [ink] laid over [surface] at [opacity], flattened to an opaque colour.
   ///
-  /// The audio pill is a 7% wash of the accent, and DESIGN-SYSTEM.md §6.4 is explicit
-  /// that a translucent surface counts as its own surface: the wash lifts the
-  /// ground under it enough to fail [inkFaint], which is why the pill's
-  /// duration is set in [inkMuted]. Flattening here rather than at each call
-  /// site means the contrast test can check the colour that is actually drawn.
-  Color sealWash(Color surface, {required double opacity}) =>
-      Color.alphaBlend(seal.withValues(alpha: opacity), surface);
+  /// Every raised surface in the app is this: ink at a stated alpha over the
+  /// ground it sits on. It is how v6 gets hierarchy out of weight rather than
+  /// colour (ADR-022), and it replaced a wash of [seal] that made the audio
+  /// pill the loudest thing in a thread.
+  ///
+  /// DESIGN-SYSTEM.md §6.4 is explicit that a translucent surface counts as
+  /// its own surface: even at [pillWash] the lift is enough to fail
+  /// [inkFaint], which is why an audio pill's duration is set in [inkMuted].
+  /// Flattening here rather than at each call site is what lets the contrast
+  /// test check the colour that is actually drawn.
+  Color inkWash(Color surface, {required double opacity}) =>
+      Color.alphaBlend(ink.withValues(alpha: opacity), surface);
+
+  /// An audio pill at rest — 3.5%.
+  static const double pillWash = 0.035;
+
+  /// An audio pill under a finger — 8%.
+  static const double pillPressedWash = 0.08;
+
+  /// **Save chit** — 7%, over a border in [inkMuted]. The brightest of the
+  /// three controls at the foot of the open chit, and still not a fill.
+  static const double saveWash = 0.07;
+
+  /// The microphone under a finger — 10%.
+  static const double micPressedWash = 0.10;
+
+  /// The calendar's four density steps, faintest first — 6, 12, 20 and 30%.
+  ///
+  /// How much ink went down on a day. The *mapping* from a chit count to one
+  /// of these lives in the presentation layer, because it is a design scale
+  /// rather than a fact about the data (ARCHITECTURE.md §4.6); the values are
+  /// design tokens and live here.
+  ///
+  /// A numeral over any of them is [ink], which clears the floor on all four —
+  /// 12.66:1 down to 5.99:1. That is why v6 has no near-white numeral and no
+  /// token for one.
+  static const List<double> densitySteps = <double>[0.06, 0.12, 0.20, 0.30];
+
+  // There are no hover washes here on purpose. The prototype is a browser and
+  // carries them for Save and the microphone; a finger gets no hover, and
+  // pressure is the only feedback touch has — the design log is explicit.
+  // Web comes after v1 (ADR-019), and that is when they get added and measured.
 
   @override
   ChitColors copyWith({

@@ -82,11 +82,6 @@ document, to be fixed rather than worked around.
 `design/chit-app-v5.html` and `design/chit-app-v4.html` are superseded and are history, not
 second options. v5 is worth opening beside v6 exactly once, to see what ADR-022 changed.
 
-**`lib/core/theme/` is still v5.** The documents describe v6 and are the target; the theme
-extensions were written against v5 in M0b and have not been re-pointed. `docs/PROGRESS.md`
-open item 11 is the work. Until it is done, do not "fix" a document to match a constant in the
-code — the document is right and the constant is old.
-
 **Section numbers are global and stable.** §1 to §10 are numbered once across `README.md`,
 `BEHAVIOUR.md`, `DESIGN-SYSTEM.md` and `OPEN-QUESTIONS.md`; a section keeps its number wherever
 it lives, so §6.1 means the same thing cited from anywhere. `README.md` §0 has the table of

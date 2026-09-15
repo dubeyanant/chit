@@ -113,8 +113,34 @@ void main() {
       }
     });
 
-    test('display-to-body is about 2.3x', () {
-      expect(type.date.fontSize! / type.chitText.fontSize!, closeTo(2.3, 0.02));
+    test('display-to-body is 1.58x', () {
+      // v5 ran 2.30x on a 38px date. §6.2: the date is a label, not a
+      // masthead, and the biggest thing on a screen should be the thing the
+      // screen is for. Measured, not rounded — 26 over 16.5.
+      expect(
+        type.date.fontSize! / type.chitText.fontSize!,
+        closeTo(1.58, 0.01),
+      );
+    });
+
+    test('the weekday sets as one phrase with the date beside it', () {
+      // Not a stacked masthead: same face, same size, same weight. Only the
+      // slant and the colour separate them.
+      expect(type.weekday.fontSize, type.date.fontSize);
+      expect(type.weekday.fontWeight, type.date.fontWeight);
+      expect(type.weekday.fontStyle, FontStyle.italic);
+      expect(type.date.fontStyle, FontStyle.normal);
+    });
+
+    test('the open chit and the thread speak one dialect', () {
+      // The stamp on the open chit was 600-weight uppercase at .1em in v5 and
+      // the identical facts under a saved chit were not. §6.2: the open chit
+      // is distinguished by being brighter, not by being set differently.
+      expect(type.ambientStamp.fontSize, type.chitMeta.fontSize);
+      expect(type.ambientStamp.fontWeight, type.chitMeta.fontWeight);
+      expect(type.ambientStamp.letterSpacing, type.chitMeta.letterSpacing);
+      expect(type.ambientStamp.color, colors.inkMuted);
+      expect(type.chitMeta.color, colors.inkFaint);
     });
 
     test('functional text starts at 11.5px', () {

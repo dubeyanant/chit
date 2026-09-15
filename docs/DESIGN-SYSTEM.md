@@ -8,19 +8,6 @@ the floors of §6.4 exist as tests. A colour, a `TextStyle`, a duration or a pad
 literally in a widget is a design-system leak — ADR-010 says why, and [CLAUDE.md](../CLAUDE.md)
 §4.2 forbids it.
 
-> ⚠ **This document describes v6. The code still carries v5.**
->
-> `design/chit-app-v6.html` replaced v5 as the visual target on 15 September 2026, and this
-> document was rewritten to match it the same day. The four theme extensions in
-> `lib/core/theme/` were written against v5 in M0b and **have not been re-pointed yet** — so
-> `ChitColors.slip` is still `#211E1A`, `ChitType.date` is still 38px, and
-> `test/core/theme/contrast_test.dart` still asserts the v5 ratios.
->
-> This is the one divergence between a document and the code that is deliberate, and it is
-> written down rather than hidden. **[PROGRESS.md](PROGRESS.md) open item 11 is the work**: it
-> lists every constant that has to move, and until it is done, this document is the target and
-> the code is the past. Nothing else in the repository may be changed to match the code.
-
 This document and [BEHAVIOUR.md](BEHAVIOUR.md) are the design authority alongside the
 [README](../README.md). Section numbers are stable across the split: §6.1 is §6.1 wherever it
 is cited from, and it lives here. [README §10](../README.md#10-the-map) maps every section to
@@ -42,8 +29,8 @@ Dark, single palette.
 | `--ink` | `#EDE7DC` | primary text — 14.54:1 on the ground, 13.03:1 on a chit |
 | `--ink-muted` | `#A39B8B` | secondary text — 6.49:1 on the ground, 5.82:1 on a chit |
 | `--ink-faint` | `#8F8879` | metadata — 5.08:1 on the ground, 4.56:1 on a chit |
-| `--hair` | `#2E2A25` | borders, rules |
-| `--hair-soft` | `#252220` | inner dividers |
+| `--hair` | `#2E2A25` | borders, rules — 1.26:1 on the ground, 1.13:1 on a chit |
+| `--hair-soft` | `#252220` | inner dividers — 1.13:1 on the ground, and **1.01:1 on a chit**, which is a collapse (open item 13) |
 | `--seal` | `#C4664E` | the one accent — the stamp pressed onto a surface |
 | `--seal-ink` | `#D2725A` | the same stamp when it has to be *read* as text |
 
@@ -54,9 +41,14 @@ composite to be measured rather than assumed.
 
 ***`--slip` moved from `#211E1A` to `#24211C` in v6*** — four points brighter, so a chit reads
 as a surface lifted off the ground rather than as a rectangle described by its border. The
-hairline and the shadow are unchanged; they no longer have to do the work alone. Every ratio
-measured against a chit surface moved with it, which is why the figures above are not the ones
-this table carried in M0b.
+hairline and the shadow are unchanged; they no longer have to do the work alone. A chit now
+separates from the ground at 1.12:1 where it managed 1.08:1 before.
+
+**Every ratio measured against a chit moved with it**, which is why the figures above are not
+the ones this table carried in M0b — and one of them moved through the floor. `--hair-soft` and
+`--slip` are four points apart and the divider has effectively disappeared on a chit surface.
+That is open item 13, and it is exactly what the design log means by *a surface token is never
+a local change*.
 
 #### The seal means now
 
@@ -99,6 +91,11 @@ one and a wash, and **Discard** drops its outline altogether. A solid `--seal` b
 loudest thing on the screen the moment a word was typed, and it made the outlined microphone
 beside it look like a control borrowed from another app.
 
+**The hover rows are the prototype's, not the app's.** `ChitColors` carries the resting and
+pressed washes and no hover ones: a finger gets no hover, and pressure is the only feedback
+touch has (the design log). The prototype runs in a browser and needs them; the phone app does
+not, and web is after v1 (ADR-019). That is when they get added — and measured.
+
 ### 6.2 Typography
 
 - **Newsreader** — the writing voice. Dates, entry text, section labels, tab labels.
@@ -107,13 +104,20 @@ beside it look like a control borrowed from another app.
 
 Section labels are lowercase serif italic with a hairline running off to the right.
 
-**There is no uppercase.** *v5 set the ambient stamp in 11.5px uppercase at `.1em`, on the
-argument that a stamp should look stamped.* It gave the open chit a second dialect: the same
+**Uppercase appears in one place: `LISTENING` on the recording sheet.** It is a state, it is
+shown while a thing is happening, and it is the one label in the app that should read as a
+signal rather than as words.
+
+*It used to appear in two. v5 also set the ambient stamp in 11.5px uppercase at `.1em`, on the
+argument that a stamp should look stamped.* That gave the open chit a second dialect: the same
 three facts were shouted at the top of the slip and murmured under every chit below it, in
 different cases and different letter-spacing. v6 sets both in the same words, the same case
 and the same size — the open chit is distinguished by being *brighter* (`--ink-muted` against
 the thread's `--ink-faint`), not by speaking differently. The weather word is lowercase in both
 places: `raining`, not `RAINING`.
+
+*This paragraph read "there is no uppercase" when §6 was first rewritten for v6, which was
+wrong — the claim was checked against the ambient stamp and not against the sheet.*
 
 The facts in that line are **spaced apart, not strung on middle dots.** Three items at 11px
 with a separator between each is five things to read where there are three.
@@ -127,7 +131,7 @@ display-to-body ratio of roughly 2.3×.* It was the largest thing on the home sc
 first thing the eye landed on, which put the emphasis on what day it is rather than on the
 blank slip waiting to be written in. v6 sets weekday and date on **one 26px line** — the
 weekday italic in `--ink-faint`, the date in `--ink` — at the same scale and weight as the
-month name on the other tab. Display-to-body is now roughly **1.6×** (26px date over 16.5px
+month name on the other tab. Display-to-body is now **1.58×** (26px date over 16.5px
 entry text), and the slip starts higher up the screen.
 
 Body sizes moved with it. The open chit's field is **17.5px**, down from 19px: at 19px a line
@@ -144,10 +148,11 @@ are 16.5px too, so that one size covers everything that is not the date or the f
   the open chit each start one step closer to what precedes them (32 → 24), and the **earlier**
   heading closes up by one (48 → 32). Nothing about the scale changed; four gaps changed which
   step they take.
-- **Radius** — 2px almost everywhere; paper has cut edges. Two exceptions, both v6: the
-  recording sheet's top corners at **8px** (14px in v5 — a phone-OS sheet radius on a surface
-  that is meant to be torn paper), and the calendar's day tiles at **4px**, which with a 5px
-  gap (3px in v5) read as tiles rather than as a mosaic.
+- **Radius** — 2px almost everywhere; paper has cut edges. Two exceptions, both v6 and both
+  tokens (`ChitSpace.sheetRadius`, `ChitSpace.tileRadius`): the recording sheet's top corners at
+  **8px** (14px in v5 — a phone-OS sheet radius on a surface that is meant to be torn paper),
+  and the calendar's day tiles at **4px**, which with a 5px gap (3px in v5) read as tiles
+  rather than as a mosaic.
 - **Elevation** — hairlines carry the structure. The open chit keeps its one faint shadow, but
   it is no longer doing the separating: `--slip` is bright enough in v6 that the slip reads as
   a surface on its own, and the shadow only seats it against the pad behind.
@@ -156,6 +161,10 @@ are 16.5px too, so that one size covers everything that is not the date or the f
   detail nobody sees is a detail not worth drawing. They are still holes in the colour of the
   surface *beneath* the slip, never a dotted border — the design log is emphatic and the
   metaphor rests on it.
+
+  These two figures are not tokens yet. They are one widget's geometry and they become
+  constants in `shared/widgets/perforated_edge.dart` when M2 writes it — not before, because a
+  token nothing reads is a token nobody checks.
 - **Paper grain** — on by default in v6, at 5% (it was off by default at 9%). Loud enough to
   be seen and quiet enough not to be looked at.
 - **Motion** — 220ms `cubic-bezier(.2,0,0,1)` is the house pace. One rule governs the rest:

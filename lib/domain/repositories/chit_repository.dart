@@ -68,7 +68,7 @@ abstract interface class ChitRepository {
   Stream<List<Chit>> watchDay(int localDay);
 
   /// How many chits each day between [fromDay] and [toDay] holds, inclusive.
-  /// The calendar's heat and its month summary, from one query.
+  /// The calendar's density and its month summary, from one query.
   Stream<List<DaySummary>> watchDaySummaries({
     required int fromDay,
     required int toDay,
