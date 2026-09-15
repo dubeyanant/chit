@@ -156,6 +156,13 @@ reading as a page rather than as a column. Saved chit text stays at 16.5px, and 
 places that were set at 16px — section labels, day headings, tab labels, calendar numerals —
 are 16.5px too, so that one size covers everything that is not the date or the field.
 
+**15px is the exception, and it is one voice rather than a size.** The month summary and the
+empty note — *"Nothing written yet today."*, *"Nothing written that day."* — are the app
+speaking about a day rather than reporting one, and they are set a step below chit text in
+serif italic so they read as an aside. M2 group C added `emptyNote` to the scale for the
+second of them; it is `--ink-faint` where the month summary is `--ink-muted`, because an empty
+day should look empty (BEHAVIOUR.md §4.1).
+
 ### 6.3 Spacing, shape, motion
 
 - **Spacing** — 4px base: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 72. Page gutter 26px.
@@ -171,6 +178,17 @@ are 16.5px too, so that one size covers everything that is not the date or the f
   the minimum touch target (44px), the microphone (54px), and the 7px marks on the timeline and
   the thread rail. A dimension is a property of one component; a gap is a relationship between
   two, and relationships are what a scale exists to keep consistent.
+
+  M2 group C put three more of the prototype's odd numbers back on the scale, on that reading:
+  the ambient stamp's 11px gaps are `s3`, the pad behind the open chit is offset by `s1` rather
+  than 5px across and 6px down, and the perforation's inset from each end of the slip is `s2`.
+  **The list of four dimensions did not grow**, and that was the test each of them had to pass.
+
+  The thread rail's own position is derived rather than declared: it runs down the centre of
+  the 7px mark, so the mark's left edge is flush with the thread's. *The prototype puts the
+  rail there and the node 2px to the left of it — a leftover from when the node was offset by
+  the page gutter rather than by the thread's own inset. A node the rail does not come out of
+  the middle of is a mark beside a line, which is not what "hanging off a rail" means.*
 
   v6 tightened the vertical rhythm above the slip so the composer sits higher: the timeline and
   the open chit each start one step closer to what precedes them (32 → 24), and the **earlier**
@@ -190,9 +208,14 @@ are 16.5px too, so that one size covers everything that is not the date or the f
   surface *beneath* the slip, never a dotted border — the design log is emphatic and the
   metaphor rests on it.
 
-  These two figures are not tokens yet. They are one widget's geometry and they become
-  constants in `shared/widgets/perforated_edge.dart` when M2 writes it — not before, because a
-  token nothing reads is a token nobody checks.
+  These two figures are not tokens. They are one widget's geometry and they are constants in
+  `shared/widgets/perforated_edge.dart`, written there by M2 group C — not in `ChitSpace`,
+  because a token nothing reads is a token nobody checks. **The 1.55px is a radius**, which is
+  what the CSS gradient stop it was read from measures.
+
+  *The prototype tiles the holes from the left edge and lets the right-hand end clip, which
+  leaves a nick at some widths. The widget centres the run instead and draws whole holes only:
+  a torn edge is symmetric or it is not a torn edge.*
 - **Paper grain** — on by default in v6, at 5% (it was off by default at 9%). Loud enough to
   be seen and quiet enough not to be looked at.
 - **Motion** — 220ms `cubic-bezier(.2,0,0,1)` is the house pace. One rule governs the rest:

@@ -64,23 +64,37 @@ Four things worth knowing before the next group touches this:
 - **`ChitApp` is a `ConsumerWidget` and holds nothing.** Anything that has to survive a rebuild
   belongs in a provider, which is ADR-001 rather than a preference.
 
-## C. The chit vocabulary ⬜
+## C. The chit vocabulary ✅ done 16 September 2026
 
 *Shared widgets, no data. The composer and the thread both need these.*
 
-- [ ] `shared/widgets/slip.dart` — surface, hairline, radius, the one faint shadow, and the
+- [x] `shared/widgets/slip.dart` — surface, hairline, radius, the one faint shadow, and the
       offset pad behind it.
-- [ ] `shared/widgets/perforated_edge.dart` — a painter; holes in `slipUnder`, never a dotted
+- [x] `shared/widgets/perforated_edge.dart` — a painter; holes in `slipUnder`, never a dotted
       border. **DESIGN-SYSTEM.md §6.3's 1.55px-at-8px figures become constants here**, which is
       what that section says is meant to happen.
-- [ ] `shared/widgets/ambient_stamp_row.dart` — one line, spaced not separated, two colour
+- [x] `shared/widgets/ambient_stamp_row.dart` — one line, spaced not separated, two colour
       weights (open chit `--ink-muted`, thread `--ink-faint`), pin on the open chit only (§3.6).
-- [ ] `shared/widgets/thread_rail.dart` — the 1px rail and the 7px node with its `--paper` halo.
-- [ ] **Add `emptyNote` to `ChitType`** — 15px serif italic, `--ink-faint`. The scale has no
+- [x] `shared/widgets/thread_rail.dart` — the 1px rail and the 7px node with its `--paper` halo.
+- [x] **Add `emptyNote` to `ChitType`** — 15px serif italic, `--ink-faint`. The scale has no
       style for it, and `chit_type.dart` says a new style must join `styles`, `copyWith` and
       `lerp` or nothing checks it.
-- [ ] Tests: the edge draws holes rather than a border; a null signal is not drawn (ADR-007);
+- [x] Tests: the edge draws holes rather than a border; a null signal is not drawn (ADR-007);
       the pin appears only where §3.6 allows.
+
+Four things group E and group G inherit from this, and should not re-litigate:
+
+- **`Slip` draws its own tear edge, and `ThreadRail` does not draw its nodes.** A slip and the
+  tear that made it are one object; where a node falls depends on what the row says, which is
+  the screen's business. ARCHITECTURE.md §2 now records both.
+- **The rail comes out of the middle of the mark.** The prototype has the node 2px to its left;
+  `ThreadRail.centre` is derived from `ThreadNode.markSize` so the two cannot drift apart, and
+  §6.3 carries the departure.
+- **Three more of the prototype's odd numbers went back on the scale** — the stamp's 11px gaps
+  to `s3`, the pad's 5/6px offset to `s1`, the perforation's inset to `s2` — and the list of
+  four permitted dimensions did not grow. That was the test each had to pass.
+- **`AmbientStampRow` has two named constructors and no third.** `.open` carries the pin,
+  `.saved` cannot; there is no way to ask for a pinned row in the thread.
 
 ## D. Ambient stamp, faked ⬜
 
@@ -100,8 +114,8 @@ Four things worth knowing before the next group touches this:
 - [ ] `domain/models/composer_state.dart` — the record in ARCHITECTURE.md §4.1, plus `canSave`.
 - [ ] `features/composer/application/composer_controller.dart` — the stamp held from open and
       **never re-read** (ADR-021); text edits; `textOrigin: typed`.
-- [ ] `features/composer/presentation/open_chit.dart` — slip + perforated edge + stamp row +
-      field + action row.
+- [ ] `features/composer/presentation/open_chit.dart` — `Slip` + stamp row + field + action row.
+      The tear edge and the pad come with the slip; do not assemble them again.
 - [ ] The field at 17.5px, `cursorColor: seal`, no decoration, **and no autofocus** (ADR-023).
 - [ ] The microphone in its final position and size, ≥44px target that does not shrink when
       text appears, inert until M5.

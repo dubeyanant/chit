@@ -30,6 +30,12 @@ would be lighter than the slip, which is a dotted border — a different object 
 one that says nothing about tearing. It is a two-character difference in the CSS and the
 whole metaphor rests on it.
 
+*In the app it is no longer a difference anybody can make by accident.* M2 group C wrote it as
+a painter that draws circles and nothing else, and
+`test/shared/widgets/perforated_edge_test.dart` asserts the negative half directly: no line, no
+rect, no path. A claim this load-bearing, and this easy to undo while tidying, is worth a test
+that fails rather than a paragraph that is read.
+
 The Devanagari mark appears twice: beside the wordmark, and as a closing mark at the foot of
 Today. Both are toggleable in the prototype — whether it reads as grounding or as decoration is
 a judgement worth revisiting.

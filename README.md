@@ -218,6 +218,10 @@ interfaces in `domain`, Riverpod supplies the implementations at the root — AD
 one table, the DAO, and `ChitRepository` — the interface in `domain`, the implementation in
 `data`, and `main.dart` the one place the two are allowed to meet.
 
+`lib/shared/widgets/` is the chit vocabulary: the slip and its tear edge, the ambient stamp
+row, the rail a day hangs off. They hold no state and read no provider — each takes what it
+draws and nothing else, which is what lets a screen compose them freely.
+
 ### 10.3 The tests
 
 What is enforced rather than intended. `flutter test`.
@@ -233,10 +237,15 @@ What is enforced rather than intended. `flutter test`.
 | `test/data/chit_repository_test.dart` | **M1's statement of done.** All four legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, and `updateText` provably touching nothing but `text`, `textOrigin` and `updatedAt` |
 | `test/data/audio_store_test.dart` | ADR-008: a recording is moved rather than copied, its stored path is relative and uses forward slashes, discarding twice is not a failure, and the orphan sweep deletes what no chit claims |
 | `test/data/db/migration_test.dart` | DATA-MODEL.md §6: a database created at v1 is the v1 that was committed to `drift_schemas/`, the schema the code expects is the one `createAll()` writes, and bumping `schemaVersion` without dumping a snapshot beside it fails |
+| `test/shared/widgets/slip_test.dart` | That a chit surface is one object: the slip carries its own tear edge, rests on a pad in the colour a hole reveals, reserves the `s1` that pad shows in rather than overflowing into what follows it, and keeps §6.3's single faint shadow |
+| `test/shared/widgets/perforated_edge_test.dart` | The design log's one claim about the tear edge — **holes in the surface beneath, never a dotted border** — checked against what the painter actually calls: circles in the pad's colour, and *no line, rect or path at all*. That second half is the half that matters, since a border would pass every check that only looked for the holes. Also §6.3's 1.55px-at-8px figures, which live here as constants rather than as tokens |
+| `test/shared/widgets/ambient_stamp_row_test.dart` | §3.6: the three facts spaced apart with no separators, lowercase, **the pin on the open chit only**, and ADR-007's rule that a signal which did not arrive is simply not drawn. Also that the open chit and the thread differ in brightness and in nothing else — §6.2 |
+| `test/shared/widgets/thread_rail_test.dart` | That a day reads as one continuous thing: one hairline rather than one per chit, stopping inside the thread rather than at its edges, and the 7px mark drawn over it with a halo of paper. Also that the rail's position stays derived from the mark rather than becoming a dimension of its own |
 | `test/features/shell/shell_test.dart` | ADR-011's actual claim: returning to a tab costs a fade and **not a rebuild** — the same element, both branches alive, the hidden one out of the semantics tree and taking no taps. Also that the masthead belongs to the shell rather than to Today, that there is no settings control, and that a tab clears §6.4's 44px |
 | `test/docs/readme_maps_everything_test.dart` | This section, and `DECISIONS.md`'s ADR index |
 | `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |
 | `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand |
+| `test/support/pump.dart` | Not a suite — pumps a widget on paper in the app's real theme. A widget test that supplied its own colours and spacing would be testing the test |
 | `test/data/db/generated/schema.dart`, `test/data/db/generated/schema_v1.dart` | Not suites — written by `drift_dev schema generate` from `drift_schemas/`, and read by the migration test. Generated, so excluded from analysis like any `*.g.dart` |
 
 The pattern, set in M0b and worth keeping: **a rule that fails silently gets a test that checks

@@ -36,6 +36,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.failNote,
     required this.sectionLabel,
     required this.sectionCount,
+    required this.emptyNote,
     required this.button,
     required this.audioDuration,
     required this.tabLabel,
@@ -165,6 +166,19 @@ final class ChitType extends ThemeExtension<ChitType> {
         weight: 400,
         color: colors.inkFaint,
         letterSpacingEm: 0.03,
+      ),
+
+      // "Nothing written yet today." — where the thread would be. Quieter
+      // than the section label above it and smaller than the chit text it
+      // stands in for, because an empty day should look empty
+      // (BEHAVIOUR.md §4.1). 15px is the one size in the scale below 16.5
+      // that is not metadata, and it is deliberate: the note is prose, and
+      // prose that is not a chit should not be set at a chit's size.
+      emptyNote: _serif(
+        size: 15,
+        weight: 400,
+        color: colors.inkFaint,
+        italic: true,
       ),
 
       // Discard and Save. Colour belongs to the button, not to the label, so
@@ -400,6 +414,14 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// "2 chits", beside a section label.
   final TextStyle sectionCount;
 
+  /// "Nothing written yet today.", standing where the thread would be.
+  ///
+  /// The calendar's "Nothing written that day." is the same line in the same
+  /// voice, which is why this is a style of its own rather than
+  /// [monthSummary] borrowed at a different colour: they are the same
+  /// situation and they change together.
+  final TextStyle emptyNote;
+
   /// Discard, Save chit, Stop & keep. Carries no colour.
   final TextStyle button;
 
@@ -454,6 +476,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     failNote,
     sectionLabel,
     sectionCount,
+    emptyNote,
     button,
     audioDuration,
     tabLabel,
@@ -482,6 +505,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? failNote,
     TextStyle? sectionLabel,
     TextStyle? sectionCount,
+    TextStyle? emptyNote,
     TextStyle? button,
     TextStyle? audioDuration,
     TextStyle? tabLabel,
@@ -508,6 +532,7 @@ final class ChitType extends ThemeExtension<ChitType> {
       failNote: failNote ?? this.failNote,
       sectionLabel: sectionLabel ?? this.sectionLabel,
       sectionCount: sectionCount ?? this.sectionCount,
+      emptyNote: emptyNote ?? this.emptyNote,
       button: button ?? this.button,
       audioDuration: audioDuration ?? this.audioDuration,
       tabLabel: tabLabel ?? this.tabLabel,
@@ -539,6 +564,7 @@ final class ChitType extends ThemeExtension<ChitType> {
       failNote: TextStyle.lerp(failNote, other.failNote, t)!,
       sectionLabel: TextStyle.lerp(sectionLabel, other.sectionLabel, t)!,
       sectionCount: TextStyle.lerp(sectionCount, other.sectionCount, t)!,
+      emptyNote: TextStyle.lerp(emptyNote, other.emptyNote, t)!,
       button: TextStyle.lerp(button, other.button, t)!,
       audioDuration: TextStyle.lerp(audioDuration, other.audioDuration, t)!,
       tabLabel: TextStyle.lerp(tabLabel, other.tabLabel, t)!,

@@ -95,15 +95,26 @@ lib/
 │       └── presentation/           editor_screen.dart
 │
 └── shared/widgets/
-    ├── slip.dart                   a chit surface
+    ├── slip.dart                   a chit surface, its tear edge and the pad behind it
     ├── perforated_edge.dart        holes in the surface beneath — see the design log
-    ├── thread_rail.dart
-    ├── ambient_stamp_row.dart
+    ├── thread_rail.dart            the rail (ThreadRail) and the mark on it (ThreadNode)
+    ├── ambient_stamp_row.dart      .open and .saved — §3.6's two weights, and the pin
     └── audio_pill.dart
 ```
 
 `shared/widgets` holds the pieces used by more than one feature. A widget used by one screen
 lives in that screen's `presentation/widgets/`, and moves out only when a second screen wants it.
+
+**These five are the chit vocabulary, and they hold no state and read no provider.** They take
+what they draw and nothing else — `AmbientStampRow` takes an `AmbientStamp`, `Slip` takes a
+child — which is what lets a screen compose them without either of them knowing about the
+other. M2 group C wrote the first four.
+
+`Slip` draws its own `PerforatedEdge`, because a slip and the tear that made it are one object
+rather than two a caller has to remember to assemble. `ThreadRail` is the opposite case and
+deliberately so: it draws the line and nothing else, and the thread's rows place their own
+`ThreadNode` over it — where a node falls depends on what the row says, which is the screen's
+business and not the rail's.
 
 As of M1, every file in `domain/models`, `domain/repositories`, `data/db` and `data/audio` above
 holds real code, along with `data/repositories/chit_repository_impl.dart`. `TextOrigin` lives in

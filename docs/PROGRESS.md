@@ -6,8 +6,8 @@ has read only this file and `CLAUDE.md` should be able to pick up the work.
 Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
-**Last updated:** 15 September 2026, after M1, after v6 — which moved the documents and then the
-code behind them — and after M2 groups A and B.
+**Last updated:** 16 September 2026, after M1, after v6 — which moved the documents and then the
+code behind them — and after M2 groups A, B and C.
 
 ---
 
@@ -18,18 +18,21 @@ code behind them — and after M2 groups A and B.
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
-| **M2** — Today, text only | 🔶 in progress | groups A and B of [TASKS.md](TASKS.md) done; **C is next**. ADR-023, ADR-024 |
+| **M2** — Today, text only | 🔶 in progress | groups A, B and C of [TASKS.md](TASKS.md) done; **D is next**. ADR-023, ADR-024 |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**142 tests, `flutter analyze` clean, debug APK builds.**
+**174 tests, `flutter analyze` clean, debug APK builds.**
 
 **On a handset:** the masthead on `--paper`, an empty page, and a working two-tab bar. Tapping
 *calendar* cross-fades to a placeholder line that M4 deletes. Today stays empty until groups E,
 G and H put the open chit, the thread and the timeline on it.
+
+*Group C changed nothing on the screen — it is four shared widgets and a type style, and none
+of them is placed yet. The first time any of them is visible is group E.*
 
 *The palette was confirmed on a device on 15 September, before the shell existed: dark warm
 brown, "chit चित्त" in the gutter — `--paper` `#191714` behaving exactly as §6.1 sets it. Nobody
@@ -380,17 +383,96 @@ a back navigation. Reversing that means a new ADR, not a quiet change in M5.
 
 ---
 
-## Next: M2 — Today, text only
+## M2 group C — the chit vocabulary
+
+Four shared widgets and one type style. No data, no provider, nothing on the screen yet: each
+of these takes what it draws and nothing else, which is what lets groups E and G compose them
+without either knowing about the other.
+
+- `shared/widgets/slip.dart` — the surface, its hairline, the 2px cut edge, §6.3's one faint
+  shadow, and the pad behind it. **It draws its own `PerforatedEdge`**, because a slip and the
+  tear that made it are one object rather than two a caller has to remember to assemble.
+- `shared/widgets/perforated_edge.dart` — a painter. §6.3's 1.55px-at-8px figures are constants
+  here, exactly as that section said they would be, and **the 1.55 is a radius** — the CSS
+  gradient stop it was read from measures from the centre.
+- `shared/widgets/ambient_stamp_row.dart` — `.open` and `.saved`, two named constructors and no
+  third. The pin belongs to `.open` and `.saved` cannot ask for one (§3.6). The weather word is
+  an exhaustive switch in the presentation layer, so a sixth condition is a compile error
+  rather than a blank on a chit.
+- `shared/widgets/thread_rail.dart` — `ThreadRail` draws the line and **nothing else**;
+  `ThreadNode` is the 7px mark with its halo of paper. Where a node falls depends on what the
+  row says, which is group G's business and not the rail's.
+- `emptyNote` in `ChitType` — 15px serif italic in `--ink-faint`, joined to `styles`,
+  `copyWith` and `lerp`. The scale is back at twenty-five: v6 retired `legend` and this
+  replaces the count.
+- `test/support/pump.dart` — pumps a widget on paper in the real theme. It gives a **maximum**
+  width rather than a size, so `tester.getSize` reports what the widget asked for.
+- **Thirty-two tests**, 142 → 174.
+
+### Three prototype numbers went back on the scale, and the list of dimensions did not grow
+
+The stamp's 11px gaps are `s3`, the pad behind the slip is offset by `s1` rather than 5px across
+and 6px down, and the perforation's inset from each end is `s2`. §6.3 permits exactly four
+off-scale dimensions and every one of these had to fail that test to be allowed through —
+none did. Group A's decision 1, applied three more times.
+
+The rail is the interesting one, because it *looks* like a fifth dimension and is not.
+`ThreadRail.centre` is `ThreadNode.markSize / 2`, so the rail runs down the middle of a mark
+whose left edge is flush with the thread's. *The prototype puts the node 2px to the left of the
+rail — a leftover from when it was offset by the page gutter rather than by the thread's own
+inset. A node the rail does not come out of the middle of is a mark beside a line.* Derived
+rather than declared means the two cannot drift apart; DESIGN-SYSTEM.md §6.3 carries the
+departure.
+
+### Two things this group found
+
+1. **`RenderRepaintBoundary.toImage()` hangs in a widget test.** The first version of the
+   perforated-edge test rendered the strip and read its pixels, which is the obvious way to
+   prove *holes rather than a border* — and the future never completes, because the test
+   binding runs no rasterizer. There is no error and no timeout from `flutter test`; the run
+   simply never ends, which cost most of an hour to recognise. **Use `flutter_test`'s paint
+   matchers instead**: `paints..circle(...)` for what is drawn and
+   `paintsExactlyCountTimes(#drawLine, 0)` for what is not. The second half is the half that
+   matters — a dotted border would pass every check that only looked for the holes.
+2. **A `Container` with a decoration is a `DecoratedBox` in the tree**, so a test looking for
+   "the node's decoration" found two and failed on *Bad state: Too many elements*. `ThreadNode`
+   is written as an explicit `SizedBox` → `DecoratedBox` → `Center` → `DecoratedBox` now, and
+   the test asserts the two layers **in order** — paper, then ink — which says more than either
+   layer alone did.
+
+**No ADR.** Nothing here could reasonably have gone another way at the level an ADR records:
+the three snapped numbers are group A's decision applied, and the rail's centring is a
+prototype leftover corrected. Where the code departs from v6, §6.3 says so.
+
+**Verified:** `flutter analyze` clean, `flutter test` 174 passing, `dart format` clean. No APK —
+nothing in this group is on a screen to look at.
+
+---
+
+## Next: M2 group D — the ambient stamp, faked
+
+Small, and it unblocks E. [TASKS.md](TASKS.md) group D has the list: the two service interfaces
+in `domain`, fixed-value implementations supplied at the root the way `ChitRepository` is, and
+`AmbientStamp` assembled once at open with ADR-007's timeout shape already in place so that M3
+swaps implementations and nothing else.
+
+Group C already holds up its end of that: `AmbientStampRow` takes an `AmbientStamp` and draws
+only the signals that arrived. A null weather is absent from the row and a stamp with no fix
+has no pin, both tested — so group D can be judged by whether the stamp it assembles is honest
+about what did not come back, rather than by how the row looks.
+
+---
+
+## Earlier: M2 — Today, text only
 
 The first screen a person could use. Full statement of done in
 [BUILD-PLAN.md](BUILD-PLAN.md) M2; what it looks like is BEHAVIOUR.md §4.1, and
 `design/chit-app-v6.html` is the target. The spine it draws from is all in place.
 
 **[TASKS.md](TASKS.md) is the working list** — M2 in ten groups, A to J, each one buildable and
-committable on its own. Group A is done: the five decisions M2 turns on are settled, two of
-them as ADR-023 and ADR-024. Start at B.
+committable on its own. A, B and C are done; D is next, and the section above says what it is.
 
-Worth knowing before starting:
+Worth knowing for the rest of the milestone:
 - **The composer holds the stamp from the moment it opens** (ADR-021). Weather and location are
   fakes returning fixed values until M3, but the *time* is real and comes from `clockProvider`.
 - **`ChitRepository` is already what M2 needs**: `watchDay(int localDay)` for the thread and the
