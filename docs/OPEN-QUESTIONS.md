@@ -48,7 +48,7 @@ themselves.
 
 ### 8.3 Does Today carry enough rhythm? — open
 
-The day arc is the only rhythm signal on the home screen. It fills in as chits are saved,
+The timeline is the only rhythm signal on the home screen. It fills in as chits are saved,
 which is the cheapest version of an answer; whether it is enough is still open.
 
 ---

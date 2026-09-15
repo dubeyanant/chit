@@ -40,9 +40,25 @@ thread ends.
 
 ## The pieces that carry the most weight
 
-**The day arc.** The home screen is about today, so its rhythm signal is about today: a line
-from 5am to midnight with a mark where each chit landed, and a pulsing ring at now. It also
-does double duty as the rule under the date, which is why the header carries no separate line.
+**The timeline.** A line with a mark where each chit landed and a pulsing ring at now, carrying
+today and the two days before it. It also does double duty as the rule under the date, which is
+why the header carries no separate line.
+
+*This entry used to read: "the home screen is about today, so its rhythm signal is about
+today", and the line ran 5am to midnight over one day.* Half of that is overturned and half of
+it survives, and the half that survives is the reason the window is three days and not thirty.
+
+What was wrong: 5am to midnight is not a day. It leaves out the five hours ADR-006 works
+hardest to protect — a chit written at 00:20 belongs to that morning and the arc had nowhere to
+draw it but the left edge, stacked on top of 5am. The design never noticed because nothing was
+drawing it yet, which is the argument for building a thing before trusting the sentence that
+described it.
+
+What survives: **the home screen is still about today.** Yesterday and the day before are
+context for where now sits, not content — they carry no thread, no count, and nothing to tap.
+A month's worth of marks would be a second calendar, and §4.2 is already that. Three days is
+the smallest window in which "yesterday was quiet and today is not" is visible at a glance, and
+the largest that still reads as one glance.
 
 **The thread.** Chits hang off a vertical rail rather than sitting in a list of cards. A day
 reads as one continuous thing, which is what makes several-chits-a-day legible at a glance.

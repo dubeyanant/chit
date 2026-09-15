@@ -259,16 +259,52 @@ void main() {
       );
     });
 
-    test('hair-soft has collapsed on a chit — PROGRESS.md item 13', () {
-      // The collapse detector firing, kept as a record rather than deleted.
-      // Brightening --slip moved it onto hair-soft: 1.0498:1 in v5 and
-      // 1.0145:1 now. The pair is drawn in exactly one place — the pressed
-      // background of Discard — and under reduced motion, where the 0.985
-      // depress is gone, it is the *only* feedback that press produces.
-      //
-      // **When it is fixed, this test fails**, which is how the next session
-      // learns to come back and rewrite this comment.
+    test('hair-soft is a paper token, because it collapsed on a chit', () {
+      // The collapse detector fired here when v6 brightened --slip: the pair
+      // went 1.0498:1 to 1.0145:1 and the divider stopped being drawn. It was
+      // open item 13 and is closed — hair-soft divides on paper now, and the
+      // one place that put it on a chit takes an ink wash instead.
       expect(contrastRatio(colors.hairSoft, colors.slip), lessThan(visible));
+      expect(
+        contrastRatio(colors.hairSoft, colors.paper),
+        greaterThan(visible),
+      );
+    });
+  });
+
+  group('a press shows, even when the movement does not', () {
+    // Under reduced motion the 0.985 depress is gone (§6.4), so a pressed
+    // wash is the whole acknowledgement. Each of these has to be visible
+    // against the surface it lands on.
+    const double visible = 1.03;
+
+    test('Discard is pressed in ink, not in the hairline that collapsed', () {
+      final Color pressed = colors.inkWash(
+        colors.slip,
+        opacity: ChitColors.discardPressedWash,
+      );
+      expect(contrastRatio(pressed, colors.slip), greaterThan(visible));
+      expect(contrastRatio(pressed, colors.slip), closeTo(1.17, 0.01));
+      // and it is the quietest of the three, as Discard is the quietest
+      // control — DESIGN-SYSTEM.md §6.1.
+      expect(
+        ChitColors.discardPressedWash,
+        lessThan(ChitColors.pillPressedWash),
+      );
+      expect(ChitColors.pillPressedWash, lessThan(ChitColors.micPressedWash));
+    });
+
+    test("Discard's label lifts while it is held, because it has to", () {
+      // ink-faint clears the floor on a bare chit and fails on any wash at
+      // all — 4.12:1 at 4%, and this wash is 6%. The label goes to ink while
+      // pressed; the prototype already does that on hover.
+      final Color pressed = colors.inkWash(
+        colors.slip,
+        opacity: ChitColors.discardPressedWash,
+      );
+      expect(contrastRatio(colors.inkFaint, colors.slip), greaterThan(floor));
+      expect(contrastRatio(colors.inkFaint, pressed), lessThan(floor));
+      expect(contrastRatio(colors.ink, pressed), greaterThan(floor));
     });
   });
 }

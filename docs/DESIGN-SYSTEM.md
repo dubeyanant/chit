@@ -30,7 +30,7 @@ Dark, single palette.
 | `--ink-muted` | `#A39B8B` | secondary text — 6.49:1 on the ground, 5.82:1 on a chit |
 | `--ink-faint` | `#8F8879` | metadata — 5.08:1 on the ground, 4.56:1 on a chit |
 | `--hair` | `#2E2A25` | borders, rules — 1.26:1 on the ground, 1.13:1 on a chit |
-| `--hair-soft` | `#252220` | inner dividers — 1.13:1 on the ground, and **1.01:1 on a chit**, which is a collapse (open item 13) |
+| `--hair-soft` | `#252220` | inner dividers, **on the ground only** — 1.13:1 there, and 1.01:1 on a chit, where it is not drawn |
 | `--seal` | `#C4664E` | the one accent — the stamp pressed onto a surface |
 | `--seal-ink` | `#D2725A` | the same stamp when it has to be *read* as text |
 
@@ -46,13 +46,15 @@ separates from the ground at 1.12:1 where it managed 1.08:1 before.
 
 **Every ratio measured against a chit moved with it**, which is why the figures above are not
 the ones this table carried in M0b — and one of them moved through the floor. `--hair-soft` and
-`--slip` are four points apart and the divider has effectively disappeared on a chit surface.
-That is open item 13, and it is exactly what the design log means by *a surface token is never
-a local change*.
+`--slip` ended up four points apart, so the divider disappeared on a chit surface. The answer
+was not to nudge the token: `--hair-soft` divides on the ground, where it always did and where
+it still measures 1.13:1, and the one thing that put it on a chit — Discard's pressed
+background — takes an ink wash instead. It is exactly what the design log means by *a surface
+token is never a local change*.
 
 #### The seal means now
 
-**One accent, and it has one job: it marks what is live.** The ring at `now` on the day arc,
+**One accent, and it has one job: it marks what is live.** The ring at `now` on the timeline,
 the caret in the field, the record dot on the recording sheet, the ring around today on the
 calendar, and the audio pill *while it is playing*. Nothing else.
 
@@ -61,14 +63,14 @@ the active tab dot, audio waveforms, the microphone, and the Save button."* Spre
 the accent stopped meaning anything — a thread with three recordings in it ran orange down its
 whole left side, and a calendar of a busy month was a field of orange in which today's ring was
 just more orange. Everything on that list that is a record rather than a happening is now ink:
-the arc's marks, the calendar's density, the tab pip, the pill at rest, the microphone, and
+the timeline's marks, the calendar's density, the tab pip, the pill at rest, the microphone, and
 Save. ADR-022 has the argument.
 
 The accent is still one colour in two weights, and which one to use is decided by the job, not
 by taste. `--seal` is for marks, fills, borders and icons — anything read as a shape. Wherever
 the accent has to carry *words* it lifts to `--seal-ink`, because `--seal` measures **4.09:1**
 on a chit surface and text has to clear 4.5:1. That covers the **listening** label on the
-recording sheet and the **now** cap on the day arc. The split survives v6 intact; only the
+recording sheet and the **now** cap on the timeline. The split survives v6 intact; only the
 figure behind it moved, because the surface under it did.
 
 #### The ink washes
@@ -79,8 +81,11 @@ Hierarchy that used to come from colour now comes from weight, and the weights a
 |---|---|---|---|
 | Audio pill, at rest | `--ink` 3.5% | a chit, or the ground | duration in `--ink-muted` — §6.4 |
 | Save | `--ink` 7%, border `--ink-muted` | the open chit | label in `--ink`, 10.85:1 |
-| Save, hover | `--ink` 13%, border `--ink` | the open chit | |
-| Microphone, hover | `--ink` 5% | the open chit | |
+| Save, hover | `--ink` 13%, border `--ink` | the open chit | prototype only |
+| Microphone, hover | `--ink` 5% | the open chit | prototype only |
+| Microphone, pressed | `--ink` 10% | the open chit | |
+| Audio pill, pressed | `--ink` 8% | a chit, or the ground | |
+| **Discard**, pressed | `--ink` 6% | the open chit | **label lifts to `--ink`** — see below |
 | Calendar, one chit | `--ink` 6% | the ground | numeral in `--ink`, 12.66:1 |
 | Calendar, two | `--ink` 12% | the ground | 10.69:1 |
 | Calendar, three | `--ink` 20% | the ground | 8.31:1 |
@@ -95,6 +100,17 @@ beside it look like a control borrowed from another app.
 pressed washes and no hover ones: a finger gets no hover, and pressure is the only feedback
 touch has (the design log). The prototype runs in a browser and needs them; the phone app does
 not, and web is after v1 (ADR-019). That is when they get added — and measured.
+
+**A pressed wash is not decoration.** Under `prefers-reduced-motion` the 0.985 depress is gone
+(§6.4), so the wash is the *entire* acknowledgement a press produces, and one that cannot be
+seen makes a working control read as a dead one. That is why Discard has a wash at all: v6
+pressed it in `--hair-soft`, which measures 1.0145:1 on a chit and is not drawn.
+
+**And why Discard's label lifts.** Its label is `--ink-faint`, which clears the floor on a bare
+chit at 4.56:1 and fails on *any* wash — 4.12:1 at even 4%, and the wash is 6%. So while it is
+held, the label goes to `--ink`. The prototype already brightens it on hover for the same
+reason; this is that rule applied to the state a phone actually has. A pressed state is a
+surface text sits on, and §6.4 does not make exceptions for surfaces that are brief.
 
 ### 6.2 Typography
 
@@ -144,7 +160,19 @@ are 16.5px too, so that one size covers everything that is not the date or the f
 
 - **Spacing** — 4px base: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 72. Page gutter 26px.
 
-  v6 tightened the vertical rhythm above the slip so the composer sits higher: the day arc and
+  **Every gap and every padding comes off that scale — there are no one-off spacings.** A
+  measurement that is not a step is a measurement nobody can reason about later, and the second
+  one is always easier to justify than the first. The wordmark's gap is `s2` where the
+  prototype sets 7px, because a 1px departure on a baseline-aligned pair is not a departure
+  anybody can see and a ninth step would be.
+
+  What may sit off the scale is a **dimension** — how big a thing is, rather than how far it is
+  from its neighbour. There are four, each named and each with a reason: the page gutter (26px),
+  the minimum touch target (44px), the microphone (54px), and the 7px marks on the timeline and
+  the thread rail. A dimension is a property of one component; a gap is a relationship between
+  two, and relationships are what a scale exists to keep consistent.
+
+  v6 tightened the vertical rhythm above the slip so the composer sits higher: the timeline and
   the open chit each start one step closer to what precedes them (32 → 24), and the **earlier**
   heading closes up by one (48 → 32). Nothing about the scale changed; four gaps changed which
   step they take.
@@ -172,8 +200,14 @@ are 16.5px too, so that one size covers everything that is not the date or the f
 
   A saved chit falls *down* into the thread, because the composer sits above it. A kept
   recording rises *up* into the open chit — the pill first, then the words it produced landing
-  in the field — because the recording sheet sits below. Those are the two moments in the app
-  with any authorship; everything else is feedback.
+  in the field — because the recording sheet sits below. A saved chit's mark also brings the
+  **timeline** to it: the strip scrolls to now rather than jumping there, because a mark that
+  appears where you were not looking is a mark you have to find (ADR-024).
+
+  Those are the three moments in the app with any authorship; everything else is feedback. All
+  three are travel, so all three collapse under reduced motion — the timeline jumps to now, and
+  the jump is not a lesser version of the behaviour, it is the same behaviour without the
+  movement.
 
   | Kind | Pace |
   |---|---|
@@ -249,13 +283,24 @@ rather than behaviour changes, all recorded in BEHAVIOUR.md §4: the calendar le
 the month grid draws only up to today, the pin appears on the open chit alone, and the चित्त
 closing mark appears at the foot of Today alone.
 
+> ⚠ **Two places where the specification now leads the prototype.** "When in doubt about a
+> pixel, open v6" is otherwise a trap, so they are named here:
+>
+> - **The timeline.** v6 draws the old day arc — one day, 5am to midnight, fixed width, no
+>   scroll. ADR-024 replaced it, and nothing has been drawn of the replacement yet. BEHAVIOUR.md
+>   §4.1 is the description; the screen is M2's to invent, and how one day is separated from the
+>   next is deliberately still open.
+> - **The settings control.** v6 draws a gear and gives it nothing to do. v1 has none.
+>
+> Everything else in v6 is still the target.
+
 Live in it:
 
 - The field is a real editor from the moment the page loads; the 5-second prompt is genuine.
 - The microphone opens the recording sheet and accrues a transcript. **Stop & keep** appends it
   to whatever is already in the field and leaves it editable, and the microphone retires.
 - Recording into a chit that already has typed text works, and shows the append rule.
-- Save adds the chit to today's thread and updates the count, the day arc, the calendar density
+- Save adds the chit to today's thread and updates the count, the timeline, the calendar density
   and the month total together, so the two tabs never disagree.
 - Both tabs work; calendar dates filter the archive.
 - Audio pills play — simulated, since there is no audio, but the playing state is real: the

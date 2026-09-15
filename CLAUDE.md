@@ -67,6 +67,7 @@ document, to be fixed rather than worked around.
 | File | Answers |
 |---|---|
 | `docs/PROGRESS.md` | **where we are right now, and what to do next** — start here |
+| `docs/TASKS.md` | **the current milestone, cut into buildable groups** — read it before writing code. One milestone at a time, replaced when the next starts |
 | `README.md` | what chit is (§1–§2), what a chit is (§5), and **§10 maps every file in the repository** |
 | `docs/BEHAVIOUR.md` | **§3–§4** — the behaviour specification and the screens |
 | `docs/DESIGN-SYSTEM.md` | **§6–§7** — palette, type, spacing, motion, the accessibility floors, the prototype |
@@ -92,8 +93,9 @@ the source depend on them.
 
 1. Read `docs/PROGRESS.md`. It names the current milestone and the next task.
 2. Read the milestone's section in `docs/BUILD-PLAN.md` for what "done" means.
-3. Read the parts of `README.md` that section points at.
-4. Do the work. Close the loop per §0.
+3. Read `docs/TASKS.md` for that milestone cut into groups, and the decisions it turns on.
+4. Read the parts of `README.md` that section points at.
+5. Do the work. Close the loop per §0.
 
 **`README.md` §0 says the same thing**, for anyone who arrives at the README first — a human,
 or an agent that does not load this file automatically. The two are deliberately redundant, so
@@ -153,6 +155,10 @@ codebase, because a principle nobody can fail is a principle nobody is following
 - **Never call `DateTime.now()`.** Inject `Clock` (ADR-012). There is a lint for it.
 - **Never write a bare `TextStyle`, colour, duration or padding.** They come from the four
   theme extensions in `lib/core/theme/`. A literal in a widget is a design-system leak.
+- **Every gap and padding comes off the 4px scale** — `s1`…`s8`, no one-off spacings, even when
+  the prototype's CSS says otherwise (DESIGN-SYSTEM.md §6.3). A *dimension* may sit off the
+  scale when it is a property of one component and it is named in `ChitSpace`; a *gap* may not,
+  because a gap is a relationship and the scale exists to keep relationships consistent.
 - **Fonts are variable fonts** (see ADR-015). Weight and optical size are applied through
   `TextStyle.fontVariations`, *not* `fontWeight` alone — a variable font declared once renders
   at 400 whatever `fontWeight` says. Every style in `chit_type.dart` sets both: `fontWeight`

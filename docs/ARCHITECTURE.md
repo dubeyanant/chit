@@ -82,7 +82,7 @@ lib/
 ├── features/
 │   ├── shell/                      bottom tab bar, the two tabs
 │   ├── today/
-│   │   ├── application/            today_controller.dart, day_arc_provider.dart
+│   │   ├── application/            today_controller.dart, timeline_provider.dart
 │   │   └── presentation/           today_screen.dart, widgets/
 │   ├── composer/
 │   │   ├── application/            composer_controller.dart, recording_controller.dart
@@ -135,7 +135,7 @@ decision is unchanged — nothing calls `DateTime.now()` — only its file path 
 |---|---|---|
 | Infrastructure | `appDatabaseProvider`, `chitRepositoryProvider`, the services | `@Riverpod(keepAlive: true)` |
 | Stream of truth | `todayChitsProvider`, `daySummariesProvider` | auto-disposed; Drift re-emits on subscribe |
-| Derived | `dayArcMarksProvider`, `monthHeatProvider` | auto-disposed; pure functions of the above |
+| Derived | `timelineMarksProvider`, `monthHeatProvider` | auto-disposed; pure functions of the above |
 | Screen state | `composerControllerProvider`, `selectedDateProvider` | auto-disposed |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** That is
@@ -276,9 +276,10 @@ place — one call, ordered so a failed file move does not leave a row pointing 
 parameters, so an edit cannot move a chit in the thread, relight a calendar tile, or lose a
 recording.
 
-Everything downstream is a Drift stream. The thread, the day arc, the calendar density and the
-month total are four providers reading three queries, so a save updates them together by
-construction. DESIGN-SYSTEM.md §7 requires that the two tabs never disagree; the prototype held them in
+Everything downstream is a Drift stream. The thread, the timeline, the calendar density and the
+month total are four providers reading four queries, so a save updates them together by
+construction. *The thread and the timeline read the same query until ADR-024; the timeline
+covers three days now and the thread one, so they are `watchDay` and `watchDayRange`.* DESIGN-SYSTEM.md §7 requires that the two tabs never disagree; the prototype held them in
 step by hand, and here it is the only thing the architecture allows.
 
 ### 4.6 Calendar queries
@@ -346,7 +347,7 @@ The general shape: **ambient signals fail silently, the user's content never fai
   five-second timer; `canSave`; and the transcript rules of §4.1 — append rather than replace,
   the one-way slide from `transcript` to `transcriptEdited`, and all three routes to
   `sttFailed`.
-- **Pure functions** — the WMO mapping, the count-to-density scale, the arc position for a time.
+- **Pure functions** — the WMO mapping, the count-to-density scale, the timeline position for a time.
 - **Widgets** — goldens for the slip, the perforated edge, the thread, a calendar month at each
   density step, and the open chit in each of its meaningful configurations: empty; typed; a
   transcript just landed; a transcript with the pill; audio with no text and the §3.5 note.

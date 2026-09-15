@@ -49,9 +49,12 @@ class _Masthead extends StatelessWidget {
 
 /// The masthead: "chit" in Newsreader, चित्त in Noto Serif Devanagari.
 ///
-/// Baseline-aligned with a 7px gap, as the prototype sets it. The two are one
-/// mark — the Sanskrit is not a subtitle — so they share a baseline rather
-/// than a centre line.
+/// Baseline-aligned. The two are one mark — the Sanskrit is not a subtitle —
+/// so they share a baseline rather than a centre line.
+///
+/// The gap is `s2`. The prototype sets 7px; every gap in this app comes off
+/// the 4px scale (DESIGN-SYSTEM.md §6.3), and a 1px departure on a
+/// baseline-aligned pair is not a departure anybody can see.
 class ChitWordmark extends StatelessWidget {
   /// Creates the masthead.
   const ChitWordmark({super.key});
@@ -69,7 +72,7 @@ class ChitWordmark extends StatelessWidget {
         textBaseline: TextBaseline.alphabetic,
         children: <Widget>[
           Text('chit', style: type.wordmark),
-          const SizedBox(width: 7),
+          SizedBox(width: context.space.s2),
           Text('चित्त', style: type.devanagariMark),
         ],
       ),

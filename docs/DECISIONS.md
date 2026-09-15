@@ -5,7 +5,7 @@ it was chosen over, and what it costs. Superseding a record means adding a new o
 editing the old one.
 
 Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-and ADR-022 on 15 September 2026.
+to ADR-024 on 15 September 2026.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -34,6 +34,8 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-020 | Reducing motion never makes a fade slower | refines ADR-010 |
 | ADR-021 | A chit is stamped when it is opened, not when it is saved | what `createdAt` means, and which day a chit lands on |
 | ADR-022 | The seal means now; a record is ink | refines ADR-010. v6 |
+| ADR-023 | The field is live, but it does not take focus | what opening the app costs |
+| ADR-024 | The day arc becomes the timeline | three days, full days, scrollable, proportional |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -641,3 +643,111 @@ hairlines, and one accent* — is unchanged; v5 simply was not keeping to it.
   component needs. It wants a design answer — PROGRESS.md open item 12.
 - DESIGN-SYSTEM.md §6.1 now carries a table of every tinted surface and what it measures,
   because "reach for ink" only stays safe if each wash is checked rather than assumed.
+
+---
+
+## ADR-023 — The field is live, but it does not take focus
+
+*Settles a question M2 could not have built around. 15 September 2026.*
+
+**Decision.** Today opens with the field ready and **unfocused**. The keyboard does not appear
+until the user taps. The caret, the five-second prompt and everything else about §3.2's "one
+surface" are unchanged.
+
+**Over.** `autofocus: true`, which is the literal reading of BEHAVIOUR.md §3.2 — *"the field is
+live the moment the chit opens — typing costs nothing, not even a tap."*
+
+**Why.** Taken literally, that sentence costs the user the screen. A keyboard raised on every
+launch covers the thread, the timeline and roughly half the open chit, so the app that opens to
+"a blank page, ready" would in fact open to a blank page and a keyboard, with the day it is
+supposed to show hidden behind it. README §1 asks for two things at once here — *opening the app
+costs nothing* and *a day holds many chits* — and only one of them survives an unprompted
+keyboard.
+
+It is also the wrong default for what people actually do with a journal. Opening it to read
+back what you wrote this morning is at least as common as opening it to write, and the reading
+case pays the whole cost of the writing case's saved tap.
+
+**What §3.2 still gets.** The sentence is about there being no *mode* to choose — no Write
+button, no step between opening the app and writing in it. That is intact: the field is a real
+editor, it is the first thing under the stamp, and one tap puts the caret in it. What is gone
+is one tap, not a decision.
+
+**Costs.** Writing a chit costs a tap it did not have to. That is the whole cost and it is
+accepted.
+
+**Consequences.**
+
+- §3.3's five-second prompt starts when the chit opens, not when the field is focused —
+  otherwise an unfocused chit would never prompt, and the prompt is an offer to someone looking
+  at the screen rather than to someone already typing.
+- M2's composer sets no `autofocus`, and there is a widget test for it: a launched app has no
+  focused editable.
+- If this turns out to be wrong it is one line, which is the other reason to decide it now
+  rather than to design around it.
+
+---
+
+## ADR-024 — The day arc becomes the timeline: three days, full days, scrollable
+
+*Supersedes the day arc as README §2 and BEHAVIOUR.md §4.1 described it. 15 September 2026.*
+
+**Decision.** The horizontal strip under the date is **the timeline**. It runs midnight to
+midnight rather than 5am to midnight, it spans **today and the two days before it**, it scrolls
+horizontally and rests at now, and a chit's mark sits where its time actually falls rather than
+in a row of evenly spaced dots. Saving places a mark at the current time and the timeline
+**scrolls smoothly to it**.
+
+**Over.** The v5/v6 arc: one day, 5am to midnight, fixed width, no scroll.
+
+**Why.**
+
+*The old window dropped chits on the floor.* 5am to midnight is nineteen of twenty-four hours,
+and the five it leaves out are exactly the ones ADR-006 goes out of its way to protect — a chit
+written at 00:20 belongs to that morning, permanently. The prototype clamps such a chit to
+position 0, so a 00:20 chit and a 5:00 chit land on the same pixel. That is not a design
+simplification, it is a chit the arc lies about, and it took until M2 to notice because nothing
+was drawing it. A full day cannot have that bug.
+
+*One day is a snapshot, not a rhythm.* README §1 says the habit survives on rhythm, and a strip
+that resets every midnight can only ever say "today, so far". Three days is the smallest window
+in which yesterday-versus-today means anything, and it is small enough to stay a glance rather
+than becoming a second calendar — which is what §4.2 is already for.
+
+*Proportional spacing is what makes the shape mean something.* This part is not new — the
+prototype already maps minutes to a percentage — and it is stated here because it is now
+load-bearing across a wider window. Four chits in an hour should look like a burst; evenly
+spaced dots would turn the one thing the timeline knows into decoration.
+
+**Costs, and they are real.**
+
+- **The home screen stops being purely about today.** The design log's argument for the arc was
+  that *"the home screen is about today, so its rhythm signal is about today"*. That reasoning
+  is now partly overturned and the log says so rather than being quietly edited around it.
+- **The thread and the timeline no longer read the same query**, which was a small, pleasing
+  property. The thread is one day; the timeline is three. DATA-MODEL.md §4 gains a range query
+  and the repository gains `watchDayRange`.
+- **A horizontal scroller inside a vertically scrolling page** is a gesture conflict that has to
+  be got right rather than assumed.
+- **Crowding.** Several chits a day across three days is fifteen to twenty marks in one strip.
+  If that reads as a smear it is a finding to record, not to tune away.
+- **The prototype no longer shows the target here.** v6 draws the old arc, and for the first
+  time the specification leads the prototype rather than following it. DESIGN-SYSTEM.md §7 says
+  so explicitly, because "when in doubt about a pixel, open v6" is otherwise a trap.
+
+**Consequences.**
+
+- **The name changes, everywhere.** "The day arc" describes a thing that no longer exists, and
+  CLAUDE.md §4.1 is explicit that a synonym is a bug in the making — a name that is simply
+  wrong is worse. It is **the timeline** in README §2, in BEHAVIOUR.md, in the design system, and
+  in the code: `ChitType.arcEnd` and `arcNow` become `timelineLabel` and `timelineNow`, and
+  `features/today/application/day_arc_provider.dart` becomes `timeline_provider.dart`.
+- The window is a function of the clock, so it slides when the local day does. A chit already
+  saved never moves (ADR-006); the window moves under it.
+- The scroll-to-now on save is a third **authored arrival** alongside the two in
+  DESIGN-SYSTEM.md §6.3, and like them it is travel: under reduced motion it becomes a jump
+  rather than a slower slide (§6.4).
+- **How days are delineated is not decided here.** A three-day proportional strip needs
+  something saying where one day ends, and the old `5 am` / `midnight` end labels do not do that
+  job. It wants a sketch against a real screen rather than a paragraph written in advance —
+  TASKS.md group H carries it, and the answer goes into BEHAVIOUR.md §4.1 when it exists.

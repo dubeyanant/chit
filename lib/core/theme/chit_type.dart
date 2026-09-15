@@ -26,8 +26,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.devanagariMark,
     required this.weekday,
     required this.date,
-    required this.arcEnd,
-    required this.arcNow,
+    required this.timelineLabel,
+    required this.timelineNow,
     required this.ambientStamp,
     required this.chitMeta,
     required this.chitText,
@@ -85,16 +85,16 @@ final class ChitType extends ThemeExtension<ChitType> {
         letterSpacingEm: -0.015,
       ),
 
-      // The day arc: its two ends, and the cap over the ring at now. The cap
+      // The timeline: its labels, and the cap over the ring at now. The cap
       // carries a word, so it is the accent's text weight rather than its mark
       // weight — DESIGN-SYSTEM.md §6.1.
-      arcEnd: _sans(
+      timelineLabel: _sans(
         size: 11.5,
         weight: 400,
         color: colors.inkFaint,
         letterSpacingEm: 0.02,
       ),
-      arcNow: _sans(
+      timelineNow: _sans(
         size: 11.5,
         weight: 500,
         color: colors.sealInk,
@@ -365,11 +365,14 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// "13 September", the other half. A label, not a masthead — §6.2.
   final TextStyle date;
 
-  /// "5 am" and "midnight", at the ends of the day arc.
-  final TextStyle arcEnd;
+  /// The timeline's labels — whatever ends up marking where one day stops and
+  /// the next begins (ADR-024 leaves that to the screen; TASKS.md group H).
+  ///
+  /// It carried "5 am" and "midnight" when the timeline was a one-day arc.
+  final TextStyle timelineLabel;
 
-  /// "now", capping the ring on the day arc.
-  final TextStyle arcNow;
+  /// "now", capping the ring on the timeline.
+  final TextStyle timelineNow;
 
   /// "3:42 pm   raining   ⌖" on the open chit. Lowercase, spaced apart, no
   /// separators — and the only place the pin is drawn (BEHAVIOUR.md §3.6).
@@ -441,8 +444,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     devanagariMark,
     weekday,
     date,
-    arcEnd,
-    arcNow,
+    timelineLabel,
+    timelineNow,
     ambientStamp,
     chitMeta,
     chitText,
@@ -469,8 +472,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? devanagariMark,
     TextStyle? weekday,
     TextStyle? date,
-    TextStyle? arcEnd,
-    TextStyle? arcNow,
+    TextStyle? timelineLabel,
+    TextStyle? timelineNow,
     TextStyle? ambientStamp,
     TextStyle? chitMeta,
     TextStyle? chitText,
@@ -495,8 +498,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       devanagariMark: devanagariMark ?? this.devanagariMark,
       weekday: weekday ?? this.weekday,
       date: date ?? this.date,
-      arcEnd: arcEnd ?? this.arcEnd,
-      arcNow: arcNow ?? this.arcNow,
+      timelineLabel: timelineLabel ?? this.timelineLabel,
+      timelineNow: timelineNow ?? this.timelineNow,
       ambientStamp: ambientStamp ?? this.ambientStamp,
       chitMeta: chitMeta ?? this.chitMeta,
       chitText: chitText ?? this.chitText,
@@ -526,8 +529,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       devanagariMark: TextStyle.lerp(devanagariMark, other.devanagariMark, t)!,
       weekday: TextStyle.lerp(weekday, other.weekday, t)!,
       date: TextStyle.lerp(date, other.date, t)!,
-      arcEnd: TextStyle.lerp(arcEnd, other.arcEnd, t)!,
-      arcNow: TextStyle.lerp(arcNow, other.arcNow, t)!,
+      timelineLabel: TextStyle.lerp(timelineLabel, other.timelineLabel, t)!,
+      timelineNow: TextStyle.lerp(timelineNow, other.timelineNow, t)!,
       ambientStamp: TextStyle.lerp(ambientStamp, other.ambientStamp, t)!,
       chitMeta: TextStyle.lerp(chitMeta, other.chitMeta, t)!,
       chitText: TextStyle.lerp(chitText, other.chitText, t)!,

@@ -26,7 +26,7 @@ class Chits extends Table {
 }
 ```
 
-Indexes: `localDay` (every calendar and archive query groups on it), `createdAt` (the arc and
+Indexes: `localDay` (every calendar and archive query groups on it), `createdAt` (the timeline and
 ordering within a day), `weather` (backlog item 2, and it costs nothing now).
 
 **Two names here changed in M1, and both were forced.**
@@ -48,7 +48,7 @@ it `text`, and every screen will call it `text`. Only the column and the row get
 **`id`** — a UUID rather than an autoincrement integer, so the row keeps its identity if a sync
 layer ever arrives (ADR-004).
 
-**`createdAt` and `localDay` together** — `createdAt` places the mark on the day arc;
+**`createdAt` and `localDay` together** — `createdAt` places the mark on the timeline;
 `localDay` decides which day the chit belongs to. Computed once, at write time, in the
 repository. A chit written at 00:20 IST belongs to that morning permanently, and nothing
 recomputes it when the device changes timezone (ADR-006).
@@ -193,23 +193,28 @@ Every one of these lives in the DAO and returns a stream.
 | Screen | Query |
 |---|---|
 | Today, the thread | `WHERE localDay = ? ORDER BY createdAt DESC` |
-| Today, the day arc | same rows; positions derived in Dart from `createdAt` |
+| Today, the timeline | `WHERE localDay BETWEEN ? AND ?` over three days; positions derived in Dart from `createdAt` |
 | Calendar, the heat | `SELECT localDay, COUNT(*) WHERE localDay BETWEEN ? AND ? GROUP BY localDay` |
 | Calendar, the summary | the same rows: the total is their sum, the distinct-day count is how many there are |
 | Archive | `ORDER BY localDay DESC, createdAt DESC`, paged |
 | Archive, filtered | the same with `WHERE localDay = ?` |
 | Backlog: weather search | `WHERE weather = ?` — the index is already there |
 
-The thread and the arc read **one** query; the calendar's heat and its month summary read one
-more between them. *This used to say the summary was a second query of its own; it is not —
-`COUNT(*)` and `COUNT(DISTINCT localDay)` over a month are the sum and the length of the rows
-the heat already has, and a second round trip to learn them would be a second thing to keep in
-step.* Three queries behind six readings. That is the mechanism behind DESIGN-SYSTEM.md §7's
-requirement that the two tabs never disagree: they are not kept in step, they are the same data.
+The calendar's density and its month summary read one query between them. *This used to say the
+summary was a second query of its own; it is not — `COUNT(*)` and `COUNT(DISTINCT localDay)`
+over a month are the sum and the length of the rows the density already has, and a second round
+trip to learn them would be a second thing to keep in step.* Four queries behind six readings,
+and that is the mechanism behind DESIGN-SYSTEM.md §7's requirement that the two tabs never
+disagree: they are not kept in step, they are the same data.
 
-As of M1 the DAO holds the three: `watchDay`, `watchDaySummaries` and `watchArchive`. Filtering
-the archive by date and searching on weather arrive with the screens that ask for them (M4, and
-the backlog) — a query with no caller is a query nobody has run.
+*It was three until ADR-024.* The thread and the arc used to read the same rows, which was a
+small and pleasing property; the timeline covers three days and the thread covers one, so they
+cannot any more. That is a real cost of the decision and it is written in the ADR as one.
+
+As of M1 the DAO holds three: `watchDay`, `watchDaySummaries` and `watchArchive`. **M2 adds
+`watchDayRange(fromDay, toDay)`** for the timeline. Filtering the archive by date and searching
+on weather arrive with the screens that ask for them (M4, and the backlog) — a query with no
+caller is a query nobody has run.
 
 Count-to-density (four steps, BEHAVIOUR.md §4.2) is *not* in the query. It is a design scale and lives
 in the presentation layer, where it can be re-tuned without a migration.

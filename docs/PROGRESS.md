@@ -273,16 +273,62 @@ more than v5 managed — properties of the v6 decisions rather than of its numbe
 
 ---
 
+## M2 group A — the five decisions, settled
+
+[TASKS.md](TASKS.md) is M2 in ten groups; group A was the decisions the rest of it turns on, and
+it is done. Three are small and two reach a long way.
+
+1. **Gaps come off the scale, always.** The wordmark's 7px gap is `s2` and no token was added
+   for it. The rule is now written down in DESIGN-SYSTEM.md §6.3 and CLAUDE.md §4.2, along with
+   the line it draws: a *dimension* may sit off the scale when it belongs to one component and
+   is named (the gutter, the touch target, the microphone, the 7px marks); a *gap* may not,
+   because a gap is a relationship and the scale exists to keep relationships consistent.
+2. **ADR-023 — the field does not take focus at launch.** BEHAVIOUR.md §3.2 says typing costs
+   "not even a tap", and taken literally that costs the user the screen instead: a keyboard on
+   every launch hides the thread, the timeline and half the open chit. §3.2's point is that
+   there is no *mode* to choose, and that survives intact.
+3. **No settings control.** The prototype draws a gear with nothing behind it and v1 has no
+   settings anywhere in §3 or §4.
+4. **Discard gets a pressed ink wash** — closes open item 13, above, and turned up the
+   label-contrast problem recorded there.
+5. **ADR-024 — the day arc becomes the timeline.** Full days rather than 5am–midnight, three
+   days rather than one, scrolling and resting at now, proportional, and scrolling smoothly to
+   a chit as it is saved.
+
+**ADR-024 is the one with reach**, and two things about it are worth carrying forward.
+
+It fixed a bug nobody had seen because nothing was drawing it yet: 5am–midnight leaves out the
+five hours ADR-006 works hardest to protect, so a chit written at 00:20 — which ADR-006 insists
+belongs to that morning — had nowhere to go but the left edge, stacked on top of 5am. **A
+specification can hold a contradiction for two milestones if no code has had to honour it.**
+
+And it renamed a thing the whole repository referred to. "The day arc" describes something that
+no longer exists, and CLAUDE.md §4.1 is explicit that a synonym is a bug in the making — a name
+that is plainly wrong is worse. It is **the timeline** now, in the README, in the specification,
+in the design system and in the code: `ChitType.arcEnd` and `arcNow` are `timelineLabel` and
+`timelineNow`, and `day_arc_provider.dart` is `timeline_provider.dart`. About forty references.
+
+**It also cost the architecture a property**, which is stated rather than glossed: the thread
+and the arc used to read the same query and the two tabs could not disagree by construction.
+The timeline covers three days and the thread covers one, so M2 adds
+`ChitRepository.watchDayRange` and there are four queries behind six readings rather than three.
+
+**Verified:** `flutter analyze` clean, `flutter test` 132 passing, `dart format` clean,
+`flutter build apk --debug`. Group A moved no widgets — the app still opens to the masthead.
+
+---
+
 ## Next: M2 — Today, text only
 
 The first screen a person could use. Full statement of done in
 [BUILD-PLAN.md](BUILD-PLAN.md) M2; what it looks like is BEHAVIOUR.md §4.1, and
 `design/chit-app-v6.html` is the target. The spine it draws from is all in place.
 
-Worth knowing before starting:
+**[TASKS.md](TASKS.md) is the working list** — M2 in ten groups, A to J, each one buildable and
+committable on its own. Group A is done: the five decisions M2 turns on are settled, two of
+them as ADR-023 and ADR-024. Start at B.
 
-- **Do open item 11 first.** M2 is the first milestone that draws anything, and every token it
-  reaches for should be the v6 one before a widget uses it.
+Worth knowing before starting:
 - **The composer holds the stamp from the moment it opens** (ADR-021). Weather and location are
   fakes returning fixed values until M3, but the *time* is real and comes from `clockProvider`.
 - **`ChitRepository` is already what M2 needs**: `watchDay(int localDay)` for the thread and the
@@ -377,7 +423,19 @@ Things a future session needs to know but that are not yet scheduled work.
     that fail. **Fixing this breaks that test**, which is deliberate: whoever fixes it is told
     to come back and rewrite the record rather than leaving a stale one behind.
 
-13. ### ⬜ **`--hair-soft` has collapsed on a chit.** Small, and a two-minute fix once decided.
+13. ~~**`--hair-soft` has collapsed on a chit.**~~ **Closed 15 September 2026** by M2's decision
+    A4. The token was not nudged: `--hair-soft` divides on the ground, where it always did and
+    still measures 1.13:1, and the one place that put it on a chit — Discard's pressed
+    background — takes `ChitColors.discardPressedWash` (6% ink, 1.17:1) instead.
+
+    It turned up a second thing on the way, which is the part worth keeping. **Discard's label
+    is `--ink-faint`, and `--ink-faint` fails on any wash at all** — 4.12:1 at 4%, and the wash
+    is 6%. So the label lifts to `--ink` while the control is held. A pressed state is a surface
+    that text sits on, and §6.4 makes no exception for surfaces that are brief. The prototype
+    already brightens the label on hover for exactly this reason; nobody had noticed that the
+    hover rule was solving a contrast problem rather than a decoration one.
+
+    *The original entry, for the record:*
 
     v6 brightened `--slip` by four points and `--hair-soft` is `#252220`, so the pair now
     measures **1.0145:1** — it measured 1.0498:1 in v5, which was already marginal. On a chit

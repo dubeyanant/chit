@@ -136,11 +136,11 @@ the thread stopped drawing a constant.
 Shows today.
 
 ```
-  chit  चित्त                                    ⚙
+  chit  चित्त
   Sunday 13 September                               ← one line, 26px
 
-  ●────────●───────◎─────────────────────────
-  5 am              now                midnight      ← the day arc
+  ──●──●─────────────●──●●──◎───────────── ▸
+    Fri        Sat          today                   ← the timeline; scrolls, rests at now
 
   ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← perforated tear edge
   │ 3:42 pm   raining   ⌖                   │
@@ -183,15 +183,33 @@ Once a recording is kept the microphone **leaves the row** rather than greying o
 control that retires reads as finished; a disabled one reads as broken, and the audio pill
 above is where the recording now lives.
 
-The date sits directly above the day arc — the arc's own line divides the header from the
+The date sits directly above the timeline — the timeline's own line divides the header from the
 content, so no separate rule is needed. Weekday and date share **one line** at 26px, the
 weekday italic and faint, the date in full ink. *v5 stacked an italic weekday over a 38px
 date.* That made what-day-it-is the largest thing on a screen whose subject is the blank slip
 underneath, and it pushed the slip down the page. The date is a label here, not a masthead —
 DESIGN-SYSTEM.md §6.2.
 
-The day arc's marks are **ink**, not accent; only the ring at `now` is `--seal`. A row of
+**The timeline.** A horizontal line carrying a mark for every chit, each one where its time
+actually falls — four chits in an hour look like a burst, because they are one. It runs
+**midnight to midnight** and covers **today and the two days before it**, it **scrolls**
+horizontally, and it rests at now. Saving puts a mark at the current time and the timeline
+scrolls smoothly to it.
+
+*It was the **day arc** until 15 September 2026: one day, 5am to midnight, fixed width.* That
+window left out the five hours ADR-006 works hardest to protect — a chit written at 00:20
+belongs to that morning, and the arc had nowhere to put it but the left edge, on top of 5am.
+Three full days also makes it a rhythm rather than a snapshot, which is what README §1 asks the
+signal to be. **ADR-024** has the argument, the costs, and the one thing it deliberately leaves
+open: how the boundary between one day and the next is drawn.
+
+The timeline's marks are **ink**, not accent; only the ring at `now` is `--seal`. A row of
 orange marks made every past moment look as live as the present one (ADR-022).
+
+**There is no settings control.** The prototype draws a gear in the top row and gives it
+nothing to do; v1 has no settings screen anywhere in §3 or §4. §6.4 says a control that does
+nothing is not marked up as a control, and the design log is blunter — an affordance that leads
+nowhere is worse than a missing one. It arrives when there is something behind it.
 
 The open chit rests on a visible second slip, offset behind it: a pad you tear from. The slip
 itself is bright enough to read as a surface rather than as a bordered rectangle.
@@ -200,7 +218,7 @@ The चित्त mark closes the day at the foot of the thread. It appears th
 wordmark, and nowhere else — *v5 also repeated it at the foot of the calendar*, which made a
 closing mark into a page decoration.
 
-Saving puts the chit's mark on the day arc straight away, so the arc is a running account of
+Saving puts the chit's mark on the timeline straight away, so it is a running account of
 the day rather than a snapshot of how it started. A chit saved at the current time places its
 mark inside the now ring — now, with something written in it.
 

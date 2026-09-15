@@ -19,9 +19,10 @@ Read these three, in this order. It is about ten minutes and it is the whole con
 
 | # | Read | For |
 |---|---|---|
-| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, what the last session did, the current milestone's task list, every open item. If you read one thing, read this |
+| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, what the last session did, every open item. If you read one thing, read this |
 | 2 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the standing rule below, the engineering principles, the commit format |
 | 3 | **[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md)** | What "done" means for the milestone `PROGRESS.md` just named |
+| 4 | **[`docs/TASKS.md`](docs/TASKS.md)** | That milestone cut into buildable groups, with the decisions it turns on already settled |
 
 Then read what that milestone points at, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
@@ -103,7 +104,9 @@ Everything in the product follows from that:
   automatically when a chit is opened.
 - **the thread** — a day's chits, in order, hanging off a vertical rail. A day reads as one
   continuous thing.
-- **the day arc** — a horizontal line from 5am to midnight showing *when* today's chits landed.
+- **the timeline** — a horizontal line under the date showing *when* chits landed, each mark
+  where its time actually falls. It covers today and the two days before it, midnight to
+  midnight, and scrolls; it rests at now (ADR-024).
 
 
 ---
@@ -115,7 +118,7 @@ A chit is text, audio, or both:
 | Field | Notes |
 |---|---|
 | `id` | |
-| `createdAt` | drives both the day arc and the day grouping |
+| `createdAt` | drives both the timeline and the day grouping |
 | `text` | what the chit says. Typed, transcribed, or transcribed and then corrected. **Null when a recording produced nothing and the user wrote nothing.** |
 | `audioPath` | present whenever a recording was kept |
 | `textOrigin` | `typed` \| `transcript` \| `transcriptEdited` — where the words came from |
@@ -155,7 +158,7 @@ index, so this one is maintained by the build.
 chit/
 ├── README.md               this file — §0 says where to start, §10 is this map
 ├── CLAUDE.md               how to work here: the standing rule, the principles, the commits
-├── docs/                   §10.1 — ten documents, one question each
+├── docs/                   §10.1 — eleven documents, one question each
 ├── lib/                    §10.2 — the Flutter source
 ├── test/                   §10.3 — what is enforced rather than intended
 ├── design/                 §10.4 — the prototype, and the visual target
@@ -170,8 +173,9 @@ chit/
 
 | File | Answers | Read it |
 |---|---|---|
-| [`docs/PROGRESS.md`](docs/PROGRESS.md) | **Where the build stands and what is next.** The status board, what the last session did, the current milestone's task list, and every open item | First. Always |
+| [`docs/PROGRESS.md`](docs/PROGRESS.md) | **Where the build stands and what is next.** The status board, what the last session did, and every open item | First. Always |
 | [`CLAUDE.md`](CLAUDE.md) | How to work here — the standing rule, the engineering principles, the commit format, the commands | Second, before writing anything |
+| [`docs/TASKS.md`](docs/TASKS.md) | **The current milestone, cut into groups that can each be built, tested and committed on their own.** Holds one milestone at a time and is replaced wholesale when the next starts; `PROGRESS.md` keeps the history | Third, when you are about to write code |
 | [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) | The order it gets built in, M0 to M7, and what "done" means for each | Starting a milestone |
 | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
 | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | **§6 and §7** — the palette, the three faces, the spacing, the motion, the accessibility floors, and the prototype | Drawing anything |

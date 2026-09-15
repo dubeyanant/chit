@@ -74,7 +74,12 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   /// Borders and rules.
   final Color hair;
 
-  /// Inner dividers.
+  /// Inner dividers — **on [paper] only**, where it measures 1.13:1.
+  ///
+  /// It measures 1.0145:1 on [slip] and would not be seen. v6 brightened the
+  /// chit surface onto it; nothing draws this pair any more, and the one
+  /// place that did — Discard's pressed background — takes
+  /// [discardPressedWash] instead.
   final Color hairSoft;
 
   /// The one accent, as a mark — and only on what is live (ADR-022): the ring
@@ -121,6 +126,22 @@ final class ChitColors extends ThemeExtension<ChitColors> {
 
   /// The microphone under a finger — 10%.
   static const double micPressedWash = 0.10;
+
+  /// **Discard** under a finger — 6%.
+  ///
+  /// v6 pressed it in [hairSoft], which measures 1.0145:1 on [slip] and is in
+  /// practice not drawn at all; this measures 1.17:1. Discard is the quietest
+  /// of the three controls, so it is the quietest of the washes — but a press
+  /// that shows nothing reads as a control that did nothing, and under reduced
+  /// motion, where the depress is gone (DESIGN-SYSTEM.md §6.4), this wash is
+  /// the *only* acknowledgement the press produces.
+  ///
+  /// **The label lifts to [ink] while it is held.** Discard's label is
+  /// [inkFaint], which clears the floor on a bare chit at 4.56:1 and falls
+  /// under it on any wash at all — 4.12:1 at even 4%. The prototype already
+  /// brightens the label on hover for the same reason, so this is that rule
+  /// applied to the state a phone actually has.
+  static const double discardPressedWash = 0.06;
 
   /// The calendar's four density steps, faintest first — 6, 12, 20 and 30%.
   ///

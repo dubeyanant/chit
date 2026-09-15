@@ -95,13 +95,21 @@ the decision quietly.
 
 The first screen a person could use.
 
+**[TASKS.md](TASKS.md) is M2 cut into buildable groups**, with the five decisions it turns on
+already settled — the field does not autofocus (ADR-023), there is no settings control, and the
+day arc has become the timeline (ADR-024). This section says what done means; that file says in
+what order, and it is the one to work from.
+
 - **Re-point the four theme extensions at v6 first.** M0b built them against v5 and the
   prototype moved on 15 September 2026; every token, size and radius M2 reaches for has to be
   the v6 one before a widget uses it, or the first screen ships in the old palette and the
   correction becomes a second pass over finished code. PROGRESS.md open item 11 is the list.
 - The shell and the two-tab bar; the Calendar tab is a placeholder.
-- Header, date on **one 26px line**, and the day arc from 5am to midnight with a mark per chit
-  — marks in ink, the ring at now in `--seal` (ADR-022).
+- Header, date on **one 26px line**, and the **timeline**: midnight to midnight across today
+  and the two days before it, a mark per chit where its time actually falls, scrolling and
+  resting at now, and scrolling smoothly to a chit as it is saved. Marks in ink, the ring at now
+  in `--seal` (ADR-022, ADR-024). It reads three days, so it needs the range query the
+  repository does not have yet.
 - The thread: the rail, the chit rows, the ambient stamp row, the `earlier` label and count,
   and the empty state — *"Nothing written yet today."*, no rail, no placeholder row.
 - The open chit: the slip, the perforated edge, the pad behind it, the **live field**, and the
@@ -111,7 +119,7 @@ The first screen a person could use.
   something.
 - The ambient stamp reads a real clock; weather and location are fakes returning fixed values.
 
-**Done when** a chit can be typed, saved, and found in the thread after a restart; the arc
+**Done when** a chit can be typed, saved, and found in the thread after a restart; the timeline
 updates the moment it is saved; the empty day looks empty; and an untouched chit shows neither
 Discard nor Save.
 
@@ -223,7 +231,7 @@ handle a chit that already carries an audio pill, and after M5 every chit shape 
 **Done when** a saved chit can be opened, corrected and saved; when leaving with changes asks
 and answering *discard* leaves the row exactly as it was; when editing a chit that has audio
 leaves the recording playable and untouched; and when an edit provably moves nothing on the
-day arc and relights no calendar tile.
+timeline and relights no calendar tile.
 
 The prompt is the point of this milestone as much as the editor is. Discarding an open chit
 needs no confirmation and gets none (BEHAVIOUR.md §3.1) — discarding an edit to a record does.
