@@ -5,7 +5,8 @@ it was chosen over, and what it costs. Superseding a record means adding a new o
 editing the old one.
 
 Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-to ADR-024 on 15 September 2026, ADR-025 to ADR-030 on 16 September 2026.
+to ADR-024 on 15 September 2026, ADR-025 to ADR-031 on 16 September 2026. One is **superseded**:
+ADR-030, by ADR-031 later the same day.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -41,7 +42,8 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-027 | An ambient loop is not a pace | refines ADR-010 and ADR-020 — where a looping period lives |
 | ADR-028 | The caret is the platform's, and chit draws none | reverses group F's drawn caret; corrects ADR-027 |
 | ADR-029 | The prompt reads the stamp | extends §3.3 — which words, and what they may not do |
-| ADR-030 | A screen test gets a hand-written repository | narrows CLAUDE.md §4.2 — real I/O never completes in `testWidgets` |
+| ADR-030 | A screen test gets a hand-written repository | **superseded by ADR-031** the same day — there are no screen tests now |
+| ADR-031 | No widget tests | supersedes ADR-030. The suite came out; a device and a guard test replace it |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -219,9 +221,11 @@ Until that is designed, nothing in the thread carries an affordance — an affor
 nowhere is worse than a missing one, and the design log is emphatic about it. The repository
 method can exist ahead of the UI; a dead tap target cannot.
 
-**Consequences.** `updatedAt` stops being a column written once and forgotten. Goldens and
-tests for the thread must cover an edited chit, and the archive's ordering stays on `createdAt`
-— editing a chit does not move it, because it belongs to the moment it was written.
+**Consequences.** `updatedAt` stops being a column written once and forgotten. The repository
+tests must cover an edited chit — *this line said "goldens and tests for the thread" until
+ADR-031, which leaves no way to test a thread at all; what an edit does to the rendered row is
+a device check now* — and the archive's ordering stays on `createdAt`, because editing a chit
+does not move it: it belongs to the moment it was written.
 
 ---
 
@@ -687,8 +691,9 @@ accepted.
 - §3.3's five-second prompt starts when the chit opens, not when the field is focused —
   otherwise an unfocused chit would never prompt, and the prompt is an offer to someone looking
   at the screen rather than to someone already typing.
-- M2's composer sets no `autofocus`, and there is a widget test for it: a launched app has no
-  focused editable.
+- M2's composer sets no `autofocus`. *This had a widget test until ADR-031 removed the suite;
+  it is now a device check, and `docs/PROGRESS.md` carries it — open the app and confirm the
+  keyboard does not come up on its own.*
 - If this turns out to be wrong it is one line, which is the other reason to decide it now
   rather than to design around it.
 
@@ -841,8 +846,9 @@ Nothing is lost by treating it as new, because nothing was saved.
   to `null` — but it is a network call a user can trigger repeatedly by tapping Discard, and
   M3's implementation should be as unbothered by that as the fakes are.
 - **It is one more thing that is invisible when it is wrong.** A stale stamp looks exactly like
-  a fresh one. `test/features/composer/open_chit_test.dart` moves a fake clock across the
-  discard and checks the time on the slip, which is the only way to see it.
+  a fresh one. This was checked by moving a fake clock across the discard; *that test went with
+  ADR-031's suite, and nothing replaced it.* On a device the only way to see it is to leave a
+  chit open across a minute boundary before discarding.
 
 **Consequences.** `ComposerController.discard()` is `state = _openChit()` rather than a
 `copyWith` that blanks the text — the same path the controller takes when it is first built, so
@@ -1000,6 +1006,12 @@ is a key, because a test can no longer ask for the prompt by the sentence it exp
 
 *16 September 2026. Narrows what CLAUDE.md §4.2 said about how tests override the root.*
 
+> ⚠ **Superseded by ADR-031** on 16 September 2026, a few hours after it was accepted. There
+> are no screen tests in chit any more, so the question this record answers no longer arises —
+> and the cost it lists first, *two implementations of one interface in the test tree*, is a
+> good part of why. It is kept because ADR-031's reasoning starts here, and because the
+> fake-async finding below is a real property of `flutter_test` that will catch somebody again.
+
 **Decision.** A test that pumps a widget gets `test/support/fake_repository.dart` — a
 `ChitRepository` that keeps its chits in a list. A test that is *about the data* keeps the real
 `ChitRepositoryImpl` over `NativeDatabase.memory()`, which is what `chit_repository_test.dart`,
@@ -1043,3 +1055,94 @@ is `ChitRepositoryImpl`'s claim, and it already has three suites holding it.
 a test can look at the row as well as at the pixels. CLAUDE.md §4.2's rule now says which kind
 of test gets which, because the version that said "an in-memory Drift database" sent group G
 down an hour of a silent hang.
+
+---
+
+## ADR-031 — No widget tests
+
+*16 September 2026. Supersedes ADR-030, and replaces the testing half of CLAUDE.md §4.2.*
+
+**Decision.** chit has **no widget tests**. Nothing under `test/` calls `testWidgets`,
+`pumpWidget` or `WidgetTester`, and no test builds a widget in order to look at it. The eight
+suites that did — the four in `test/shared/widgets/` and the four in `test/features/` — were
+deleted, along with `test/support/app.dart`, `test/support/pump.dart` and
+`test/support/fake_repository.dart`, which existed only to serve them.
+
+A claim that can only be checked by pumping a screen is **checked on a device**: build it, look
+at it, and write what you saw into `docs/PROGRESS.md`, which already carries an *On a handset*
+paragraph for exactly this.
+
+`test/docs/no_widget_tests_test.dart` fails if any of the three APIs reappears. A rule that
+lives only in prose lasts until somebody is in a hurry, and the suite this record removes was
+not written in one sitting either — it grew one reasonable-looking `testWidgets` at a time.
+
+**Over.** Keeping them, which is the Flutter default and what every one of ADR-030's costs was
+an attempt to make survivable.
+
+**Why.**
+
+- **The second implementation.** This is the one that decided it. A screen test cannot touch
+  real I/O — ADR-030 explains why, and that part is still true — so every screen test needed
+  `FakeChitRepository` beside `ChitRepositoryImpl`. Two implementations of one interface, held
+  together by nothing but the Liskov rule and whoever remembers it. **A fake that drifts from
+  the real one is a green test for a screen that cannot work**, which is worse than no test at
+  all: it is a test that reports on the fake.
+- **They fail for the wrong reasons.** In one milestone the suite was broken twice by the widget
+  tree rather than by the app being wrong. `find.bySemanticsLabel` returns nothing inside a
+  `SliverList`, so wrapping Today in a sliver took every semantics finder in the suite to zero
+  and read as *the labels are gone*. `RenderRepaintBoundary.toImage()` hangs outright. Neither
+  was a defect; both cost a session.
+- **They assert the structure, not the thing.** "The microphone is drawn at 54px and is not
+  marked up as a control" is a fact about a widget tree. Whether the microphone reads as an
+  equal to the field — the actual claim, the one `docs/DESIGN-LOG.md` warns about at length —
+  is not visible to a test that never rasterises, and the goldens that would rasterise it are a
+  screenshot-diff habit of their own.
+- **The device was doing the work anyway.** Every milestone so far ended with a build on a
+  handset, and every real visual defect was found there. The widget tests were a second, weaker
+  pass over surfaces that a person had already looked at.
+
+**What is tested instead**, and this is the half that matters — the rule is a constraint on
+where behaviour lives, not just on what `test/` contains:
+
+| | |
+|---|---|
+| Models and invariants | `chit_test.dart`, `chits_table_test.dart` — §5's one-of rule where it fails first and where it survives a release build |
+| The repository and the DAO | `chit_repository_test.dart`, `audio_store_test.dart`, `migration_test.dart`, against `NativeDatabase.memory()` and a real filesystem |
+| Pure functions | `prompts_test.dart`, the WMO mapping, the count-to-density scale, the timeline position for a time |
+| Services and controllers | `ambient_capture_test.dart` — through a bare `ProviderContainer` and a fake clock, no widget in sight |
+| The design-system floors | `contrast_test.dart`, `chit_type_test.dart`, `chit_motion_test.dart` — arithmetic on tokens, which needs no tree |
+| The rules about the rules | `readme_maps_everything_test.dart`, `clock_is_the_only_now_test.dart`, `no_widget_tests_test.dart` |
+
+**Pull the logic out of the widget until it can be tested that way.** A controller that can only
+be exercised through a screen is a controller with too much in it — `ComposerController` and
+`todayProvider` are both already driveable from a `ProviderContainer`, and the widget tests were
+mostly re-asserting through pixels what could be asserted through them directly.
+
+**Costs, stated plainly.**
+
+- **251 tests became 164, then 171.** Real coverage was lost, not just ceremony, and pretending
+  otherwise would make this record useless. What could not be saved: the tear edge being holes
+  rather than a dotted border (a claim `docs/DESIGN-LOG.md` calls load-bearing and two
+  characters of paint code from being wrong), the field not taking focus at launch (ADR-023),
+  the stamp being captured once (ADR-021, which was checked by *counting clock reads* — an
+  assertion no other kind of test can make), a tab return costing a fade rather than a rebuild
+  (ADR-011), and type → save → it is in the thread end to end.
+- **Some of it was never a widget test to begin with**, and finding that out is the first move
+  whenever this rule looks like it is costing something. Seven assertions came straight back as
+  `test/core/theme/widget_constants_test.dart` — the perforation's strip and the thread node's
+  halo still equalling `s1`, v6's 1.55px-on-8px figures, the rail's centre still *derived* from
+  the mark rather than set beside it — because `ChitSpace.tokens` is a const constructor and
+  those are const fields, so every one of them is arithmetic. They had been written as widget
+  tests only because they lived near widgets.
+- **ADR-021 and ADR-023 have no automated guard at all now.** Both fail silently and both are
+  invisible on a device unless you know to look. They are named in `docs/PROGRESS.md`'s device
+  checklist for that reason, and that list is the mitigation — it is a weaker one than a test
+  and should be read as such.
+- **Regressions will be found later and by a person.** That is the trade: the suite's cost was
+  continuous and its catches were occasional, but the catches were real.
+
+**Consequences.** ARCHITECTURE.md §7 no longer lists widgets or goldens among what is tested.
+README §10.3 lost eight suite rows and three support rows. M2 group I's accessibility sweep and
+M7's floors pass are both **device passes** now rather than test-writing, and BUILD-PLAN.md says
+so. If this decision is ever reversed, reverse it as a new record and start by reading the
+costs above — they are the reason, and they did not stop being true.

@@ -80,8 +80,9 @@ document, to be fixed rather than worked around.
 | `docs/OPEN-QUESTIONS.md` | **§8–§9** — what is not settled, and the feature backlog |
 | `design/chit-app-v6.html` | the interactive prototype — the visual target. Open in a browser |
 
-`design/chit-app-v5.html` and `design/chit-app-v4.html` are superseded and are history, not
-second options. v5 is worth opening beside v6 exactly once, to see what ADR-022 changed.
+v6 is the only prototype. v4 and v5 were deleted on 16 September 2026 — they were superseded,
+and a superseded prototype sitting beside the live one is a second option nobody meant to
+offer. Both are in git if the *before* half of ADR-022 is ever wanted again.
 
 **Section numbers are global and stable.** §1 to §10 are numbered once across `README.md`,
 `BEHAVIOUR.md`, `DESIGN-SYSTEM.md` and `OPEN-QUESTIONS.md`; a section keeps its number wherever
@@ -173,13 +174,21 @@ codebase, because a principle nobody can fail is a principle nobody is following
   has the seam already; `BranchFade` is written into go_router's `navigatorContainerBuilder`
   rather than around it. The single deliberate exception is ADR-011's recording sheet, which is
   a modal sheet and not a route. See `docs/ARCHITECTURE.md` §3.
-- **Tests override at the root**, with hand-written fakes and no mocking framework. **Which
-  fake depends on what the test is about** (ADR-030): a test of the *data* gets the real
-  `ChitRepositoryImpl` over `NativeDatabase.memory()`; a test that pumps a *widget* gets
-  `test/support/fake_repository.dart`, because real I/O never completes inside a `testWidgets`
-  body — not a Drift query and not `Directory.systemTemp.createTemp()` either, and the test
-  does not fail, it hangs. A fake must refuse whatever the real one refuses; that is the Liskov
-  rule above and it is the only thing keeping the two honest.
+- **No widget tests. Ever.** (ADR-031, which supersedes ADR-030.) Nothing under `test/` may call
+  `testWidgets`, `pumpWidget` or `WidgetTester`, and no test may build a widget in order to look
+  at it. **A claim that can only be checked by pumping a screen is checked on a device instead**
+  — build it, look at it, and write what you saw into `docs/PROGRESS.md`. There is a test that
+  fails if a `testWidgets` reappears, so this is enforced rather than remembered.
+- **What is tested instead**, and where the effort goes now: pure functions, models and their
+  invariants, the repository and the DAO against `NativeDatabase.memory()`, the migration
+  against the committed snapshots, controllers driven through a bare `ProviderContainer`, and
+  the design-system floors computed arithmetically. **Pull the logic out of the widget until it
+  can be tested that way** — a controller that can only be exercised through a screen is a
+  controller with too much in it. That is the rule doing its real work: it is a constraint on
+  where behaviour lives, not just on what the test folder contains.
+- **Tests override at the root**, with hand-written fakes and no mocking framework. A fake must
+  refuse whatever the real one refuses; that is the Liskov rule above, and it is the only thing
+  keeping a fake and the real implementation honest.
 - The prototype is the visual reference. When in doubt about a pixel, open it.
 
 ## 5. Commits

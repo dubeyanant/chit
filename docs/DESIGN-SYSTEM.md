@@ -332,16 +332,14 @@ Enforced, and verified on every revision:
 ## 7. The prototype
 
 `design/chit-app-v6.html` — one self-contained file, no build step. **This is the visual
-target.** When in doubt about a pixel, open it.
+target, and it is the only prototype.** When in doubt about a pixel, open it.
 
-Two earlier versions are kept beside it. Both are history, not second options:
-
-- **`design/chit-app-v5.html`** — superseded by v6 on 15 September 2026. v5's *behaviour* is
-  v6's behaviour exactly; what changed is how it looks, and §6 above is the list. Its value now
-  is as the before half of that comparison: open the two side by side and the accent rule of
-  ADR-022 is the first thing you see.
-- **`design/chit-app-v4.html`** — superseded by v5. It predates §3.2 and §3.4: it opens the
-  chit with Write and Speak as two exclusive buttons and locks a spoken chit's transcript.
+*v5 and v4 sat beside it until 16 September 2026 and were deleted.* v5 was superseded by v6 on
+15 September — same behaviour, different surface, and §6 above is the list of what changed; v4
+was superseded by v5 and predates §3.2 and §3.4 entirely. A superseded prototype beside the
+live one is a second option nobody meant to offer, so they are in git and not in `design/`:
+`git log --oneline -- design/` finds the commit that removed them. The *before* half of
+ADR-022's argument is the only thing either was still good for, and the ADR makes it in words.
 
 **v6 changed nothing about what the app does**, with four exceptions that are screen changes
 rather than behaviour changes, all recorded in BEHAVIOUR.md §4: the calendar legend is gone,

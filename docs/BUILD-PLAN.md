@@ -16,78 +16,25 @@ and what "done" means; that file says where we actually are. It is the one to re
 
 ---
 
-## M0 — Foundation
+## M0 and M1 — done
 
-The project stops being a scaffold. Split in two, because the first half is configuration that
-can be verified by building and the second half is code that can be verified by looking at it.
+**M0a** (configuration) and **M0b** (the design system in code) landed 14 September 2026;
+**M1** (the data spine) landed 15 September 2026. What each one contained is in git and in
+ARCHITECTURE.md §2; what they *settled* is in the ADRs. Two patterns they set are worth carrying
+into every milestone after them, and are why this section is still here at all:
 
-### M0a — configuration ✅ done, 14 September 2026
+- **A rule that fails silently gets a test that checks a property, not an example.** M0b's
+  `chit_motion_test.dart` asserts "no fade is slower than it was" rather than a table of
+  durations, and that is what found ADR-020 — a rule that was self-consistent and wrong, and
+  that reading the design would not have caught. M7 has four more floors to write.
+- **An invariant worth having is worth holding in more than one place, and each place is tested
+  where it lives.** README §5's one-of rule is an assert, a check constraint *and* a repository
+  refusal, because an assert is compiled out of a release build, a constraint cannot say *why*,
+  and a repository is one caller among however many a later milestone adds.
 
-- Delete the counter app. `main.dart` becomes `runApp(ProviderScope(child: ChitApp()))`.
-- Every dependency from [PACKAGES.md](PACKAGES.md), resolving; `build_runner` running clean.
-- The fonts of DESIGN-SYSTEM.md §6.2 downloaded, bundled and declared — as variable fonts (ADR-015).
-- Android and iOS only: the desktop scaffolds deleted (ADR-019).
-- Platform config in one pass — `minSdk`, permissions, the speech queries intent, the iOS
-  usage strings. PACKAGES.md "Platform configuration this implies" is the checklist.
-- The real package name, `com.infiniteants.chit`, in place of the scaffold's `com.example.chit`
-  — Android namespace and `applicationId`, the Kotlin package and its directory, and the Xcode
-  bundle identifiers. It is the app's identity, so it belongs here rather than in a later
-  release-prep pass.
-
-**Done when** `flutter pub get`, `flutter analyze`, `dart run build_runner build` and
-`flutter build apk --debug` are all clean, and the app launches to a blank screen on a handset.
-Blank is correct: `ChitApp` fills the screen with `--paper` and draws nothing else until M0b.
-
-### M0b — the design system in code ✅ done, 14 September 2026
-
-- The folder skeleton of [ARCHITECTURE.md](ARCHITECTURE.md) §2, with the empty files in place
-  so nothing lands in the wrong layer by default.
-- The four `ThemeExtension`s from DESIGN-SYSTEM.md §6 — colours, type, spacing, motion.
-- `Clock`, and the lint that nobody calls `DateTime.now()`.
-- Analysis options tightened; `riverpod_lint` enabled through `plugins:` (ADR-018).
-- The floors that fail silently, as tests: the contrast floor of DESIGN-SYSTEM.md §6.4, the
-  `fontVariations` rule of ADR-015, and the reduced-motion rule of §6.4.
-
-**Done when** the app launches to an empty screen in `--paper`, with the wordmark set in
-Newsreader and the चित्त mark in Noto Serif Devanagari; `flutter analyze` is clean; and the
-contrast test of DESIGN-SYSTEM.md §6.4 passes over every token pair, composited.
-
-M0b is where the pattern for the accessibility floors was set: **a rule that fails silently
-gets a test that checks a property, not an example.** `chit_motion_test.dart` asserting "no
-fade is slower than it was" is what found ADR-020 — a rule that was self-consistent and wrong,
-and that reading the design would not have caught. M7 has four more floors to enforce and
-should be written the same way.
-
----
-
-## M1 — The data spine ✅ done, 15 September 2026
-
-No UI. This is the milestone that is tempting to skip and expensive to retrofit.
-
-- The Drift table, the check constraints, the indexes ([DATA-MODEL.md](DATA-MODEL.md) §1).
-- `Chit` with its private constructor and assert; `AmbientStamp`; the two enums.
-- `ChitRepository` — interface in `domain`, implementation over the DAO. Both `save()` and
-  `updateText()` (ADR-014); the update path exists from the start so nothing later has to grow
-  one in a hurry.
-- `AudioStore`: temp → permanent, delete, the orphan sweep. No recorder yet; tests write
-  dummy files.
-- The migration harness and the v1 schema snapshot, before there is anything to migrate.
-
-**Done when** the repository tests pass against an in-memory database: every illegal row shape
-is rejected and all four legal ones round-trip, `localDay` is right across a midnight and across
-a timezone change, audio moves on save and is deleted on discard, and `updateText` provably
-touches nothing but `text`, `textOrigin` and `updatedAt`.
-
-M1 is where the invariant pattern was set, and it is worth copying: **an invariant worth having
-is worth holding in more than one place, and each place is tested where it lives.** README §5's
-one-of rule is an assert, a check constraint and a repository refusal, because an assert is
-compiled out of a release build, a constraint cannot say *why*, and a repository is one caller
-among however many a later milestone adds.
-
-It also settled ADR-021 — a chit is stamped when it is opened, not when it is saved — and that
-one has a consequence M2 has to honour: hold the `AmbientStamp` in `ComposerState` from the
-moment the chit opens and pass that same object to `save()`. Re-capturing it on save would undo
-the decision quietly.
+M1 also settled ADR-021 — a chit is stamped when it is opened, not when it is saved — and M2
+honours it by holding the `AmbientStamp` in `ComposerState` from the moment the chit opens and
+passing that same object to `save()`. Re-capturing it on save would undo the decision quietly.
 
 ---
 
@@ -100,10 +47,6 @@ already settled — the field does not autofocus (ADR-023), there is no settings
 day arc has become the timeline (ADR-024). This section says what done means; that file says in
 what order, and it is the one to work from.
 
-- **Re-point the four theme extensions at v6 first.** M0b built them against v5 and the
-  prototype moved on 15 September 2026; every token, size and radius M2 reaches for has to be
-  the v6 one before a widget uses it, or the first screen ships in the old palette and the
-  correction becomes a second pass over finished code. PROGRESS.md open item 11 is the list.
 - The shell and the two-tab bar; the Calendar tab is a placeholder.
 - Header, date on **one 26px line**, and the **timeline**: midnight to midnight across today
   and the two days before it, a mark per chit where its time actually falls, scrolling and
@@ -250,11 +193,17 @@ Polish, done deliberately and once. Last, so that every surface it touches alrea
   acknowledgement a finger gets.
 - The reduced-motion pass: travel and ambient loops stop, fades and colour survive.
 - Touch targets ≥44px with no exceptions — including the microphone's, which does not shrink
-  when the field has text in it; `:focus-visible` rings; a semantics audit; goldens for each
-  composer configuration and each calendar density step.
+  when the field has text in it; focus rings; a semantics audit.
 
 **Done when** the whole app is walked through once with reduced motion on and once with a
-screen reader, and DESIGN-SYSTEM.md §6.4 holds as tests rather than as intentions.
+screen reader, and DESIGN-SYSTEM.md §6.4 holds as far as it can be held.
+
+**This milestone is mostly a device pass, and ADR-031 is why.** The floors split in two. The
+ones that are arithmetic over tokens — contrast, type, the reduced-motion re-timing — are tests,
+and always were. The ones that are spatial or perceptual — targets, semantics, whether the
+stagger reads as one movement — are a person with a handset, because there are no widget tests
+to cover them and goldens are not coming back. Write what you saw into PROGRESS.md as you go: a
+floors pass nobody recorded is a floors pass nobody can trust the next time round.
 
 ---
 

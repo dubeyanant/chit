@@ -178,9 +178,10 @@ ChitRepository chitRepository(Ref ref) => throw UnimplementedError(
 ```
 
 — and supplied in `main.dart`, which is the one place the two layers are allowed to meet. A test
-overrides the same seam — with real Drift in memory where the test is about the data, and with
-`test/support/fake_repository.dart` where it is about a screen (ADR-030). `domain` takes a
-dependency on `riverpod_annotation` for this; it is pure Dart and brings nothing from Flutter or `data` with it.
+overrides the same seam, on a bare `ProviderContainer` and with real Drift in memory (ADR-031:
+there are no tests that pump a screen, so there is no second repository implementation to
+choose between). `domain` takes a dependency on `riverpod_annotation` for this; it is pure Dart
+and brings nothing from Flutter or `data` with it.
 
 ### go_router and Riverpod take every responsibility they can
 
@@ -447,22 +448,39 @@ The general shape: **ambient signals fail silently, the user's content never fai
 
 ## 7. Testing
 
-- **Repository** against `NativeDatabase.memory()` — the at-least-one invariant and the
+**No widget tests** — ADR-031, and `test/docs/no_widget_tests_test.dart` fails if one appears.
+Nothing under `test/` builds a widget. **Anything that can only be seen on a screen is seen on a
+handset**, and what was seen is written into PROGRESS.md.
+
+That is a constraint on where behaviour lives, not only on the test folder: if a rule cannot be
+reached without a widget, the rule is in the wrong place, and the fix is to move it down into a
+controller or a pure function rather than to pump a tree to get at it.
+
+What is tested:
+
+- **Repository and DAO** against `NativeDatabase.memory()` — the at-least-one invariant and the
   `textOrigin` pairing, the `localDay` computation across a midnight and a timezone change, the
   audio move-on-save and delete-on-discard, and that `updateText` leaves `createdAt`,
-  `localDay` and `audioPath` untouched.
-- **Controllers** with a `ProviderContainer`, a fake clock and hand-written fake services. The
-  five-second timer; `canSave`; and the transcript rules of §4.1 — append rather than replace,
-  the one-way slide from `transcript` to `transcriptEdited`, and all three routes to
-  `sttFailed`.
-- **Pure functions** — the WMO mapping, the count-to-density scale, the timeline position for a time.
-- **Widgets** — goldens for the slip, the perforated edge, the thread, a calendar month at each
-  density step, and the open chit in each of its meaningful configurations: empty; typed; a
-  transcript just landed; a transcript with the pill; audio with no text and the §3.5 note.
-- **The accessibility floors of DESIGN-SYSTEM.md §6.4 as tests, not as intentions.** A test that computes
-  the contrast of every text token against every surface it is used on — including composited
-  translucent surfaces, which is where the audio pill's wash caught the design out — 7% seal in
-  v5, 3.5% ink in v6, and a failure either way.
+  `localDay` and `audioPath` untouched. Plus the migration, against the snapshots committed in
+  `drift_schemas/`.
+- **Models**, where the invariant of §5 fails first — a chit that cannot be *built* — and again
+  at the table's check constraints, where it survives a release build with the asserts compiled
+  out.
+- **Controllers and services** on a bare `ProviderContainer`, with a fake clock and hand-written
+  fake services. The five-second timer; `canSave`; ADR-007's parallel capture and its timeouts;
+  and the transcript rules of §4.1 — append rather than replace, the one-way slide from
+  `transcript` to `transcriptEdited`, and all three routes to `sttFailed`.
+- **Pure functions** — the prompt book, the WMO mapping, the count-to-density scale, the
+  timeline position for a time. Most of what used to be asserted through a screen belongs here,
+  and getting it here is the work.
+- **The accessibility floors of DESIGN-SYSTEM.md §6.4 as arithmetic, not as intentions.** The
+  contrast of every text token against every surface it is used on, including composited
+  translucent surfaces — which is where the audio pill's wash caught the design out, 7% seal in
+  v5 and 3.5% ink in v6, a failure either way. Contrast is a calculation over tokens and needs
+  no widget tree; the floors that *are* spatial — touch targets, semantics, heading order — are
+  a device pass instead.
+- **The rules about the rules** — README §10's map, the injected clock of ADR-012, and the
+  no-widget-test rule itself.
 
 ---
 

@@ -88,7 +88,7 @@ final class ThreadNode extends StatelessWidget {
   ///
   /// Spelled here as a constant because [size] has to be usable by a caller
   /// laying out a row, which happens before there is a `BuildContext` to read
-  /// the scale from. `test/shared/widgets/thread_rail_test.dart` asserts that
+  /// the scale from. `test/core/theme/widget_constants_test.dart` asserts that
   /// it still equals `s1`.
   static const double halo = 4;
 

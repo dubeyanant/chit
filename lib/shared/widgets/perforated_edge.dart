@@ -40,8 +40,8 @@ final class PerforatedEdge extends StatelessWidget {
   /// [thickness] / 2 below the top of the slip's border.
   ///
   /// This is `s1`, and it is spelled here rather than read from `ChitSpace`
-  /// because the painter needs it as a compile-time constant. The test in
-  /// `test/shared/widgets/perforated_edge_test.dart` is what keeps the two
+  /// because the painter needs it as a compile-time constant.
+  /// `test/core/theme/widget_constants_test.dart` is what keeps the two
   /// agreeing.
   static const double thickness = 4;
 

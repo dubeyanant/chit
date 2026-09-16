@@ -15,11 +15,11 @@ chit is (§5), and §10 maps everything else. The behaviour specification, the d
 the open questions live in their own documents — they are still the design authority, they are
 just not all in one 500-line file.
 
-Read these three, in this order. It is about ten minutes and it is the whole context.
+Read these four, in this order. It is about ten minutes and it is the whole context.
 
 | # | Read | For |
 |---|---|---|
-| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, what the last session did, every open item. If you read one thing, read this |
+| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, what is on a handset, the device checklist, every open item. It is the present, not a log — git is the history. If you read one thing, read this |
 | 2 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the standing rule below, the engineering principles, the commit format |
 | 3 | **[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md)** | What "done" means for the milestone `PROGRESS.md` just named |
 | 4 | **[`docs/TASKS.md`](docs/TASKS.md)** | That milestone cut into buildable groups, with the decisions it turns on already settled |
@@ -32,7 +32,8 @@ Then read what that milestone points at, and open
 > code as four theme extensions against the v6 prototype, and the data spine is in place: one
 > table, the one-of invariant held in three places, and a repository with the update path of
 > ADR-014 from the start.
-> **M2, Today with text only, is next — the first screen a person could use.**
+> **M2, Today with text only, is in progress** — a chit can be typed, saved and read back in
+> the thread; the timeline is what is left.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
@@ -226,33 +227,31 @@ draws and nothing else, which is what lets a screen compose them freely.
 
 What is enforced rather than intended. `flutter test`.
 
+**There are no widget tests, and there will not be** — ADR-031. Nothing here builds a widget;
+what can only be seen on a screen is seen on a handset, and written up in PROGRESS.md. Eight
+suites and three support files were deleted on 16 September 2026 when that was decided, taking
+the count from 251 tests to 171 — 164, plus the seven that came back as arithmetic the moment
+somebody looked at whether they had ever needed a widget. The ADR lists what was lost, because
+some of it was real and could not come back.
+
 | Suite | Guards |
 |---|---|
 | `test/core/theme/contrast_test.dart` | §6.4's contrast floor: every text token against every surface it sits on, **composited**. Also the negative cases — `--seal` failing as text on a chit is why `--seal-ink` exists, and `--ink-faint` failing on the audio pill's wash is why the pill's duration is set in `--ink-muted`. It locks §6.1's quoted figures to ±0.01 so the prose and the arithmetic cannot drift apart |
 | `test/core/theme/chit_type_test.dart` | ADR-015: every style sets `fontVariations`, not `fontWeight` alone. The three faces of §6.2 are the only families used, the चित्त mark is the only thing set in Devanagari, tabular figures are on everything that counts or keeps time, no functional text is under 11.5px |
 | `test/core/theme/chit_motion_test.dart` | §6.4's reduced-motion rule: movement collapses, feedback does not. The suite that found ADR-020 |
+| `test/core/theme/widget_constants_test.dart` | The dimensions §6.3 lets a widget spell out as a compile-time constant instead of reading from `ChitSpace` — and the rule that keeps them honest: **a constant copied off the scale still equals it**. The perforation's strip and the thread node's halo are both `s1` written by hand, because a painter and a layout caller each need them before there is a `BuildContext`. Also v6's exact figures, 1.55px on an 8px pitch and the 7px mark, and that the rail's centre stays *derived* from the mark rather than set beside it |
 | `test/core/clock_is_the_only_now_test.dart` | ADR-012: nothing in `lib/` calls `DateTime.now()` except `SystemClock` |
 | `test/domain/chit_test.dart` | The invariant of §5 where it fails first: a chit with neither text nor audio, text without a provenance, half a coordinate and a recording without a length cannot be *built*. Also `localDayOf` across a midnight |
 | `test/data/db/chits_table_test.dart` | The same invariant where it survives a release build — the table's check constraints, every one of them exercised by writing the row by hand, around the repository. Also that the primary key survived being declared beside them |
 | `test/data/chit_repository_test.dart` | **M1's statement of done.** All four legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, and `updateText` provably touching nothing but `text`, `textOrigin` and `updatedAt` |
 | `test/data/audio_store_test.dart` | ADR-008: a recording is moved rather than copied, its stored path is relative and uses forward slashes, discarding twice is not a failure, and the orphan sweep deletes what no chit claims |
 | `test/data/db/migration_test.dart` | DATA-MODEL.md §6: a database created at v1 is the v1 that was committed to `drift_schemas/`, the schema the code expects is the one `createAll()` writes, and bumping `schemaVersion` without dumping a snapshot beside it fails |
-| `test/shared/widgets/slip_test.dart` | That a chit surface is one object: the slip carries its own tear edge, rests on a pad in the colour a hole reveals, reserves the `s1` that pad shows in rather than overflowing into what follows it, and keeps §6.3's single faint shadow |
-| `test/shared/widgets/perforated_edge_test.dart` | The design log's one claim about the tear edge — **holes in the surface beneath, never a dotted border** — checked against what the painter actually calls: circles in the pad's colour, and *no line, rect or path at all*. That second half is the half that matters, since a border would pass every check that only looked for the holes. Also §6.3's 1.55px-at-8px figures, which live here as constants rather than as tokens |
-| `test/shared/widgets/ambient_stamp_row_test.dart` | §3.6: the three facts spaced apart with no separators, lowercase, **the pin on the open chit only**, and ADR-007's rule that a signal which did not arrive is simply not drawn. Also that the open chit and the thread differ in brightness and in nothing else — §6.2 |
-| `test/shared/widgets/thread_rail_test.dart` | That a day reads as one continuous thing: one hairline rather than one per chit, stopping inside the thread rather than at its edges, and the 7px mark drawn over it with a halo of paper. Also that the rail's position stays derived from the mark rather than becoming a dimension of its own |
 | `test/domain/services/ambient_capture_test.dart` | ADR-007, clause by clause: the two signals go out **in parallel** rather than one after the other, each under its own timeout, and **a signal that does not arrive is null** — whether it hung, threw, or simply had nothing to say. Also ADR-021's half of it, by counting the clock reads: the stamp is the moment the chit opened, not the moment the network answered |
-| `test/features/composer/open_chit_test.dart` | The open chit, and four claims that each fail silently: `canSave` decides what the foot of the slip shows and whitespace is nothing (§3.1); the field does **not** take focus (ADR-023); the stamp is captured **once**, checked by counting clock reads across typing and across a Discard (ADR-021, ADR-026); and the microphone is drawn at 54px without being marked up as a control, because it is not one until M5 |
 | `test/domain/prompts_test.dart` | The prompt book of ADR-029, and two kinds of claim that fail differently. The **choice** — most specific first, the small hours treated as their own part of the day, stable for one chit and varied across chits, and never dependent on the machine's time zone. And the **copy**, which fails quietly: every prompt is a question, none of them shouts or instructs, nothing is said twice, and none is long enough to wrap the field |
-| `test/features/composer/five_second_prompt_test.dart` | §3.3, which is all timing and fails quietly at every step: the prompt waits five seconds, takes 700ms to arrive, goes with the first character and starts over when the field is emptied or discarded. Also the two things about it that are not about the prompt — that a **rebuild does not put the five seconds back** (ARCHITECTURE.md §4.3), and that it is an overlay rather than a `hintText`, sitting on the field's own first line without ever being the chit's content. And ADR-028: an opened app draws no caret of its own and animates nothing, and the platform's caret arrives on the tap that asks for it |
-| `test/features/today/today_screen_test.dart` | Today end to end, which is where M2 stops being parts: type → save → it is in the thread, the count follows it, a second app over the same repository still finds it. Two of its claims fail silently — **the row carries the stamp the chit was opened with** and not the moment it was saved (ADR-021, checked by moving a clock across the save), and **saving opens a new chit** (ADR-026). Also §4.1's empty day: the note, no rail, no placeholder row, and no count beside **earlier** |
-| `test/features/shell/shell_test.dart` | ADR-011's actual claim: returning to a tab costs a fade and **not a rebuild** — the same element, both branches alive, the hidden one out of the semantics tree and taking no taps. Also that the masthead belongs to the shell rather than to Today, that there is no settings control, and that a tab clears §6.4's 44px |
 | `test/docs/readme_maps_everything_test.dart` | This section, and `DECISIONS.md`'s ADR index |
+| `test/docs/no_widget_tests_test.dart` | ADR-031, which is otherwise a rule in a file nobody has to read: no `testWidgets`, `pumpWidget` or `WidgetTester` anywhere under `test/`. The suite it replaced grew one reasonable-looking widget test at a time, which is how it would come back |
 | `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |
 | `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand. It also counts its reads, which is how ADR-021's *stamped when opened* is checked: when the clock was read is the thing that matters, and no assertion on the value can see it |
-| `test/support/pump.dart` | Not a suite — pumps a widget on paper in the app's real theme. A widget test that supplied its own colours and spacing would be testing the test |
-| `test/support/app.dart` | Not a suite — pumps the **whole app** with the root overridden the way `main.dart` overrides it. Any test that boots `ChitApp` comes through here: Today builds the open chit and the thread, so it asks for an ambient stamp *and* a repository, and all three are declared in `domain` and deliberately left unimplemented — a bare `ProviderScope` throws from inside a widget build. That is the seam working, and this is the one place a test states its other half |
-| `test/support/fake_repository.dart` | Not a suite — a `ChitRepository` that keeps its chits in a list, for the tests that pump a screen. **Real I/O never completes inside a `testWidgets` body**: not a Drift query, not even `Directory.systemTemp.createTemp()`. It is a fake and not a stub — it really stores, really re-emits to everything watching, and refuses what the real one refuses. `chit_repository_test.dart` is where the real one is held to the same contract against real Drift and a real filesystem |
 | `test/data/db/generated/schema.dart`, `test/data/db/generated/schema_v1.dart` | Not suites — written by `drift_dev schema generate` from `drift_schemas/`, and read by the migration test. Generated, so excluded from analysis like any `*.g.dart` |
 
 The pattern, set in M0b and worth keeping: **a rule that fails silently gets a test that checks
@@ -270,11 +269,15 @@ milestone adds.
 | File | |
 |---|---|
 | [`design/chit-app-v6.html`](design/chit-app-v6.html) | The interactive design prototype and **the visual target**. One self-contained file, no build step — open it in any browser. §7 says what is live in it and what is deliberately not wired |
-| [`design/chit-app-v5.html`](design/chit-app-v5.html) | Superseded by v6 on 15 September 2026. Same behaviour, different surface: the accent is everywhere, the date is a masthead, the calendar runs orange. Useful as the *before* half of ADR-022, and nothing else |
-| [`design/chit-app-v4.html`](design/chit-app-v4.html) | Superseded by v5. It predates §3.2 and §3.4 — Write and Speak as two exclusive buttons, and a locked transcript. History, not a second option |
 
 When in doubt about a pixel, open v6. The type scale, the spacing steps and the motion pace
 table were all read from the prototype.
+
+*v5 and v4 sat here until 16 September 2026 and were deleted.* Both were superseded — v5 by
+ADR-022's accent rule, v4 before that by §3.2 and §3.4 — and a superseded prototype beside the
+live one invites being opened by mistake. `git log --oneline -- design/` finds the commit that
+removed them, if the *before* half of ADR-022 is ever wanted as a file rather than as the
+argument the ADR already makes in words.
 
 ### 10.5 Assets
 
