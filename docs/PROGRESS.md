@@ -6,7 +6,8 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 16 September 2026, **at the end of M2**. Today is a screen a person can use.
+**Last updated:** 16 September 2026, **at the end of M2 and after it was signed off on a
+handset**. Today is a screen a person can use, and it has been used.
 
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s table is the
 ledger of what is done. What belongs here is the present: where the build is, what the next
@@ -24,7 +25,7 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
-| **M3** — ambient capture | ⬜ **next** | the two fakes come out |
+| **M3** — ambient capture | ⬜ **next** | the two fakes come out. Cut into groups in [TASKS.md](TASKS.md) |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
@@ -63,11 +64,15 @@ deletes.
 Royal Observatory — that is `FixedWeatherService` and `FixedLocationService` doing their job,
 not a bug.*
 
-**Confirmed on a device, 16 September:** the palette, the slip, the field, the stamp, Discard,
-the prompt, the thread, the strip's marks and their positions, horizontal scrolling and its
-back-stop, the day-boundary tick, and the empty-day trim. **Not yet confirmed:** the tick at now
-in its final form, the haptic, and save-scrolls-to-now — all three landed after the device came
-off. The checklist below says what to look at.
+**Signed off on a handset, 16 September**, at the end of the milestone: the palette, the slip,
+the field, the stamp, Discard, the prompt, the thread, saving — including a long chit — the
+strip's marks and their positions, horizontal scrolling and its back-stop, the day-boundary
+tick, the empty-day trim, the tick at now in its final form, the haptic, and save-scrolls-to-now.
+
+**And chits close together in time overlap on the strip rather than smearing**, which is what
+§4.1 asks for in as many words: *four chits in an hour look like a burst, because they are one.*
+That was tried on purpose and it reads. It is the first half of open item 15 — a dozen marks
+across three days is still untried.
 
 ---
 
@@ -78,11 +83,12 @@ someone looking at one. **This list is the mitigation, and it is a weaker one th
 — it works only if it is actually run. M2 produced three reversals that nothing but a device
 would have caught (ADR-028, and ADR-036 twice), which is the argument for it.
 
+Everything on it was run at the end of M2 and passed. It stays because it is a **standing**
+list: these are the claims nothing else can hold, and they have to survive every milestone
+after this one, not only the one that introduced them.
+
 | Check | Why it is here |
 |---|---|
-| **The tick at now reads as a position, not an object** | ADR-036, third attempt. v6's ring and then a filled disc both failed here, and this has not been seen |
-| **The haptic fires once per day boundary**, and is silent when a save scrolls the strip | ADR-034. Needs two days of chits before there is anything to scroll across |
-| **Saving scrolls the strip to now**, smoothly | §4.1. Implemented, never watched |
 | The keyboard does **not** come up on launch | ADR-023. Had a test; has none now |
 | A chit left open across a minute boundary saves at the time it was **opened** | ADR-021. The stamp is held, and a stale one looks exactly like a fresh one |
 | Discard, then read the stamp — it is the **new** time | ADR-026, same failure mode, opposite direction |
@@ -92,13 +98,24 @@ would have caught (ADR-028, and ADR-036 twice), which is the argument for it.
 | The microphone is still reachable and still an equal on a half-written chit | DESIGN-LOG.md's standing warning about it drifting into a toolbar of small grey icons |
 | Reduced motion on: the prompt still fades, the tab still cross-fades, the strip **jumps** to now rather than sliding | §6.4 — movement collapses and feedback does not |
 | Every target ≥44px | §6.4 |
+| The tick at now still reads as a position, not an object | ADR-036, and it took three attempts to get there |
+| The haptic fires once per day boundary, and is silent when a save scrolls the strip | ADR-034 |
+| Saving scrolls the strip to now, smoothly | §4.1 |
 
 ---
 
 ## Next: M3 — ambient capture
 
-The fakes come out. [BUILD-PLAN.md](BUILD-PLAN.md) M3 has the statement of done; it has not been
-cut into groups yet, and cutting it is the first thing to do. What it inherits:
+The fakes come out. [BUILD-PLAN.md](BUILD-PLAN.md) M3 has the statement of done and
+[TASKS.md](TASKS.md) is it cut into six groups, **A to F**. Start with A: four decisions, of
+which *when location permission is asked for* is the one that is genuinely open and that changes
+what group C builds. B — the WMO mapping — is pure and independent, so it is the thing to build
+while A is still being argued.
+
+**M3 draws nothing.** Every surface it touches exists; what changes is what those surfaces say.
+The only new thing a user sees is a system permission dialog.
+
+What it inherits:
 
 - **`FixedWeatherService` and `FixedLocationService` are two lines in `main.dart`.** M3 deletes
   both files and changes those two lines; nothing above them moves. That was group D's whole
@@ -186,10 +203,11 @@ they are cited from other documents — so a closed item keeps its number and sh
     documented as being for tests. Perspective before anyone spends a day on it: a stock Android
     keyboard blinks whatever the animation setting says. The two honest ways forward are a
     framework issue, or writing it into §6.4 as a stated limit rather than a silent one.
-15. **Crowding on the timeline has never been seen.** ADR-024 left it open and M2 could not close
-    it: nothing has yet put fifteen to twenty marks across one strip. If it reads as a smear that
-    is a finding to record, not to tune away quietly. The debug seeder of item 10 is how to
-    produce it on purpose.
+15. **Crowding on the timeline is half answered.** Chits written minutes apart **overlap**, and
+    that reads as the burst §4.1 wants rather than as a smear — tried deliberately at the end of
+    M2. What is still untried is the case ADR-024 actually worried about: fifteen to twenty marks
+    spread across three days, which is a different picture from four marks in an hour. The debug
+    seeder of item 10 is how to produce it on purpose, and that is the reason to write it.
 16. **What the strip says at its back-stop is now a smaller question than it was.** Two days back
     on a quiet day used to be a bare line with no mark, no boundary and — by §4.1's own decision —
     no label; ADR-035 removed most of that by not drawing empty leading days at all. What is left
