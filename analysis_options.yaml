@@ -10,8 +10,9 @@
 include: package:flutter_lints/flutter.yaml
 
 # riverpod_lint 3.x is an analysis-server plugin, not a custom_lint rule set
-# (ADR-018). Declaring it here is what makes `flutter analyze` report the
-# Riverpod lints; there is no separate command to run.
+# (docs/PACKAGES.md, "Considered and not taken" — the two cannot coexist).
+# Declaring it here is what makes `flutter analyze` report the Riverpod lints;
+# there is no separate command to run.
 plugins:
   riverpod_lint: ^3.1.9
 

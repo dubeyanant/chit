@@ -35,7 +35,7 @@ resolution, so the two can be compared.
 |---|---|---|
 | `build_runner` | `^2.4.13` | runs all codegen |
 | `riverpod_generator` | ✓ `^4.0.9` | generates the providers |
-| `riverpod_lint` | `^3.0.0` → 3.1.9 | catches the misuse codegen cannot. Enabled through `plugins:` in `analysis_options.yaml`, not through `custom_lint` — ADR-018 |
+| `riverpod_lint` | `^3.0.0` → 3.1.9 | catches the misuse codegen cannot. Enabled through `plugins:` in `analysis_options.yaml`, not through `custom_lint` — see *Considered and not taken* below, which says why there is no separate lint command |
 | `drift_dev` | `^2.35.0` | generates the DAOs and the schema |
 | `freezed` | ✓ `^4.0.1` | generates the models |
 | `flutter_lints` | already present `^6.0.0` | base lint set |
@@ -135,11 +135,24 @@ each with the platform flow their plugin already handles. A third permission lib
 a second source of truth for two permissions. Add it only if a permission appears that neither
 plugin owns.
 
-**`custom_lint`** — this file used to list it as the host `riverpod_lint` plugs into. It no
-longer is: `riverpod_lint` 3.x is built on `analysis_server_plugin` and is enabled through the
-`plugins:` key in `analysis_options.yaml`. The two also cannot coexist — `riverpod_generator`
-needs `analyzer >=13` and the newest `custom_lint` is pinned to `analyzer ^8`, so version
-solving fails outright. See ADR-018.
+**`custom_lint`** — not a dependency, and cannot become one. *This was ADR-018 until
+16 September 2026, when it was folded in here: it is a fact about how two packages resolve, not
+a decision about how the app is built, and this file is where dependency facts belong.*
+
+This file used to list `custom_lint` as the host `riverpod_lint` plugs into. It no longer is.
+`riverpod_lint` 3.x is built on `analysis_server_plugin` and is enabled through the `plugins:`
+key in `analysis_options.yaml`. The two also cannot coexist: `riverpod_generator` 4.0.9 needs
+`analyzer >=13` and the newest `custom_lint` is pinned to `analyzer ^8`, so version solving
+fails outright with both present — this was discovered while resolving, not chosen.
+
+The practical gain is that `dart analyze` and `flutter analyze` surface the Riverpod lints
+directly, with **no separate `dart run custom_lint` step** and nothing extra for CI to run.
+
+It cost one thing, and the cost has since been paid: the ban on `DateTime.now()` (ADR-012) was
+going to be a `custom_lint` rule, and with no host for one it had to become either an analyzer
+exclusion or a test that reads the source. M0b chose the test —
+`test/core/clock_is_the_only_now_test.dart`, which walks `lib/` and fails on any call outside
+`SystemClock`.
 
 **`flutter_hooks`** — Riverpod's notifiers cover the state in this app, and mixing two idioms
 for local widget state makes the codebase harder to read than either alone.

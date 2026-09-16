@@ -6,10 +6,11 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 16 September 2026, after M2 group G and after a cleanup pass that did three
+**Last updated:** 16 September 2026, after M2 group G and after a cleanup pass that did four
 things, none of them to the app: removed the widget tests (ADR-031), cut this file from 930
-lines to what you are reading, and added **CLAUDE.md §0.1** — *nothing unnecessary gets
-committed*. **No behaviour changed.** The build is exactly where group G left it.
+lines to what you are reading, added **CLAUDE.md §0.1** — *nothing unnecessary gets committed* —
+and merged two spent records out of DECISIONS.md. **No behaviour changed.** The build is exactly
+where group G left it.
 
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s ✅ marks are the
 ledger of what is done. What belongs here is the present: where the build is, what the next
@@ -26,7 +27,7 @@ that is §0.1 applied to prose, and it is the reason this file is 190 lines inst
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
-| **M2** — Today, text only | 🔶 in progress | groups A–G of [TASKS.md](TASKS.md) done; **H is next**. ADR-023 to ADR-031 |
+| **M2** — Today, text only | 🔶 in progress | groups A–G of [TASKS.md](TASKS.md) done; **H is next**. ADR-023 onward |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |

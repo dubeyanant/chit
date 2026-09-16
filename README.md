@@ -189,7 +189,7 @@ chit/
 | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
 | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | **§6 and §7** — the palette, the three faces, the spacing, the motion, the accessibility floors, and the prototype | Drawing anything |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How it is put together — the three layers, the folder map, the Riverpod conventions, the data flow behaviour by behaviour | Adding a file and unsure where it goes |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | The thirty ADRs — every choice, what it was chosen over, what it costs. Indexed at its head | Before reversing something that looks arbitrary |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | The ADRs — every choice, what it was chosen over, what it costs. Indexed at its head, with a note saying where the two retired numbers went | Before reversing something that looks arbitrary |
 | [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) | The schema, the invariants, the queries, and what a migration must preserve. §5 here is the product-level version of the same thing | M1, and any change to a row |
 | [`docs/PACKAGES.md`](docs/PACKAGES.md) | Every dependency, why it is there, what it was chosen over, and the platform configuration each implies | Before adding a package. Nothing enters `pubspec.yaml` without a line there |
 | [`docs/DESIGN-LOG.md`](docs/DESIGN-LOG.md) | Why the design is what it is — including the arguments that were made and lost | Before changing something in §4 or §6 that looks arbitrary. Most of it is load-bearing |
@@ -299,7 +299,7 @@ variable rather than static cuts, and what it costs — weight has to be applied
 | File | |
 |---|---|
 | `drift_schemas/` | One JSON snapshot per schema version, taken with `drift_dev schema dump` and committed. `drift_schema_v1.json` is the shape that shipped as v1; **once a version has reached a real handset its snapshot is never edited** — DATA-MODEL.md §6 |
-| [`analysis_options.yaml`](analysis_options.yaml) | The engineering principles of `CLAUDE.md` §4.1 in the form the machine can check: strict casts, inference and raw types; exhaustive switches and unawaited futures as errors; immutability and documentation rules. `riverpod_lint` runs inside `flutter analyze` through the `plugins:` key — ADR-018, no separate command |
+| [`analysis_options.yaml`](analysis_options.yaml) | The engineering principles of `CLAUDE.md` §4.1 in the form the machine can check: strict casts, inference and raw types; exhaustive switches and unawaited futures as errors; immutability and documentation rules. `riverpod_lint` runs inside `flutter analyze` through the `plugins:` key — no separate command, and `docs/PACKAGES.md` says why there cannot be one |
 | [`pubspec.yaml`](pubspec.yaml) | Dependencies and the font declarations. Every entry is justified in [`docs/PACKAGES.md`](docs/PACKAGES.md) |
 | `android/app/src/main/AndroidManifest.xml` | `RECORD_AUDIO`, both location permissions (ADR-016), `INTERNET`, and the `android.speech.RecognitionService` queries intent `speech_to_text` needs from targetSdk 30 |
 | `android/app/build.gradle.kts` | `minSdk 24` — `record_android`'s floor, the highest of any plugin — and the `com.infiniteants.chit` application id |

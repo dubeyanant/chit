@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// ADR-012, enforced.
 ///
 /// `riverpod_lint` is an analysis-server plugin and cannot host a custom rule
-/// of ours (ADR-018), so the ban on `DateTime.now()` is a test. It is a
+/// of ours (docs/PACKAGES.md), so the ban on `DateTime.now()` is a test. It is a
 /// coarser instrument than a lint — no quick fix, and it reports at
 /// `flutter test` rather than in the editor — but it fails the build, which is
 /// the part that matters.

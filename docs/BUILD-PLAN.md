@@ -220,7 +220,11 @@ In the order OPEN-QUESTIONS.md's own §8 suggests, not in the order of appetite.
    than more design.
 4. Backlog items 1 and 3 (richer ambient capture, resurfacing) make the app stickier; 2 and 5
    (weather as a search axis, the stitch) make it distinctive.
-5. Responsive web.
+5. **An export / backup format.** Wanted eventually and not on the v1 path — ADR-004 accepted
+   "no backup beyond the OS's own" as a cost of being local-only, and this is the thing that
+   would pay it back. *Carried here on 16 September 2026 from DECISIONS.md's "Deliberately not
+   decided yet" list, which was removed for duplicating this one.*
+6. Responsive web.
 
 Deliberately not on this list: a cloud speech engine. ADR-005 rules it out until there is an
 answer to what happens to the audio, and that is not a scheduling question.

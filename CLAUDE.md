@@ -212,7 +212,7 @@ codebase, because a principle nobody can fail is a principle nobody is following
   has the seam already; `BranchFade` is written into go_router's `navigatorContainerBuilder`
   rather than around it. The single deliberate exception is ADR-011's recording sheet, which is
   a modal sheet and not a route. See `docs/ARCHITECTURE.md` §3.
-- **No widget tests. Ever.** (ADR-031, which supersedes ADR-030.) Nothing under `test/` may call
+- **No widget tests. Ever.** (ADR-031.) Nothing under `test/` may call
   `testWidgets`, `pumpWidget` or `WidgetTester`, and no test may build a widget in order to look
   at it. **A claim that can only be checked by pumping a screen is checked on a device instead**
   — build it, look at it, and write what you saw into `docs/PROGRESS.md`. There is a test that

@@ -493,9 +493,10 @@ flutter run
 ```
 
 Before a commit: `dart format .`, `flutter analyze` (clean — the Riverpod lints run inside it,
-because `riverpod_lint` is an analysis-server plugin and there is no separate `custom_lint` step,
-ADR-018), `flutter test`, **and the documents that the change made untrue** — the standing rule
-in [CLAUDE.md](../CLAUDE.md) §0.
+because `riverpod_lint` is an analysis-server plugin and there is no separate `custom_lint` step;
+[PACKAGES.md](PACKAGES.md) says why), `flutter test`, **and the documents that the change made
+untrue** — the two standing rules in [CLAUDE.md](../CLAUDE.md) §0 and §0.1, which include
+deleting whatever this change orphaned.
 
 Generated `*.g.dart` and `*.freezed.dart` files are committed, so a fresh clone runs without
 codegen first.

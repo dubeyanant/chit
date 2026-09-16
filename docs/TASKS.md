@@ -30,7 +30,7 @@ look rather than here.
 | **D** | Ambient stamp, faked | 16 Sep | The two interfaces and their fixed implementations; `AmbientCapture` as the whole of ADR-007; **ADR-025** — the weather service takes no position |
 | **E** | The open chit | 16 Sep | `ComposerState`, `ComposerController` (synchronous, stamp held from open), `OpenChit`. **ADR-026** — Discard opens a new chit, so it takes a new stamp |
 | **F** | The five-second prompt | 16 Sep | The timer in the controller; an overlay, not `hintText`. **ADR-028** — chit draws no caret. **ADR-029** — the prompt reads the stamp. **ADR-027** — an ambient loop is not a pace |
-| **G** | The thread, and Save end to end | 16 Sep | `todayProvider`, `DayThread`, `ChitRow`, `save()` with the held stamp, `closingMark`. **ADR-030**, since superseded by **ADR-031** |
+| **G** | The thread, and Save end to end | 16 Sep | `todayProvider`, `DayThread`, `ChitRow`, `save()` with the held stamp, `closingMark`. It also produced the record that became **ADR-031** |
 
 **What H, I and J still have to honour from all of that:**
 

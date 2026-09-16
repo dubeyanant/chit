@@ -5,8 +5,9 @@ it was chosen over, and what it costs. Superseding a record means adding a new o
 editing the old one.
 
 Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-to ADR-024 on 15 September 2026, ADR-025 to ADR-031 on 16 September 2026. One is **superseded**:
-ADR-030, by ADR-031 later the same day.
+to ADR-024 on 15 September 2026, ADR-025 to ADR-031 on 16 September 2026. Twenty-nine records,
+not thirty-one: **ADR-018 and ADR-030 have been merged away**, their numbers retired rather
+than reused, and the note below says where each one went.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -30,7 +31,6 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-015 | Variable fonts, and weight through `fontVariations` | and the silent failure that comes with them |
 | ADR-016 | Precise location first, coarse as the fallback | and the privacy tension it creates, stated plainly |
 | ADR-017 | The chit editor is a screen, and leaving it asks | settles §8.1 |
-| ADR-018 | `riverpod_lint` through `plugins:`, and no `custom_lint` | the two cannot coexist |
 | ADR-019 | Android and iOS only; the web folder stays | |
 | ADR-020 | Reducing motion never makes a fade slower | refines ADR-010 |
 | ADR-021 | A chit is stamped when it is opened, not when it is saved | what `createdAt` means, and which day a chit lands on |
@@ -42,10 +42,32 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-027 | An ambient loop is not a pace | refines ADR-010 and ADR-020 — where a looping period lives |
 | ADR-028 | The caret is the platform's, and chit draws none | reverses group F's drawn caret; corrects ADR-027 |
 | ADR-029 | The prompt reads the stamp | extends §3.3 — which words, and what they may not do |
-| ADR-030 | A screen test gets a hand-written repository | **superseded by ADR-031** the same day — there are no screen tests now |
-| ADR-031 | No widget tests | supersedes ADR-030. The suite came out; a device and a guard test replace it |
+| ADR-031 | No widget tests | the suite came out; a device and a guard test replace it. Absorbs ADR-030 |
 
-`test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
+`test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
+row without a record.
+
+### The numbers that are not in the table
+
+**Two records were merged away on 16 September 2026, and the numbering was left alone.** A
+citation is only worth having if it resolves, and roughly two hundred of them point into this
+file — so ADR-018 and ADR-030 are not reused, and this is where each one went:
+
+- **ADR-018** — *`riverpod_lint` through `plugins:`, and no `custom_lint`* → **PACKAGES.md**,
+  under *Considered and not taken*. It was a fact about how two packages resolve, not a decision
+  about how the app is built, and it had a stale line deferring the `DateTime.now()` question to
+  M0b — which M0b answered. All of it is in PACKAGES.md now, answer included.
+- **ADR-030** — *A screen test gets a hand-written repository* → **ADR-031**, which superseded it
+  a few hours after it was accepted. There are no screen tests any more, so the question it
+  answered cannot arise; the finding underneath it — real I/O never completes inside a
+  `testWidgets` body — is stated inside ADR-031, because it is a property of `flutter_test` that
+  will catch somebody again.
+
+This was a one-time consolidation, not a new habit. **The rule is still the one at the top of
+this file**: superseding a decision means adding a record, not editing or deleting the one it
+replaces. A record only becomes a candidate for merging once the thing it decided no longer
+exists in the app at all, and merging it means moving what is still true into a named home and
+saying so here — never dropping it.
 
 ---
 
@@ -357,20 +379,6 @@ thing we can test rather than a thing we discover.
 
 ---
 
-## Deliberately not decided yet
-
-- ~~**Where a saved chit is edited** (OPEN-QUESTIONS.md §8.1).~~ **Settled 14 September 2026 by ADR-017:**
-  a screen of its own, with a save prompt on leaving. The thread affordance arrives with it,
-  as M6.
-- **Re-transcription** (OPEN-QUESTIONS.md §8.2). ADR-005's interface allows it — a recognizer can be handed
-  an existing file — but no UI or repository method exists for it, and ADR-013's `textOrigin`
-  is the thing that would let it run without clobbering the user's own words.
-- **Export / backup format.** Wanted eventually; not on the v1 path.
-- **Web.** README targets mobile at 390×844 first. No layout work is being spent on breakpoints
-  until the phone app is real.
-
----
-
 ## ADR-015 — Variable fonts, and weight through `fontVariations`
 
 **Decision.** The three faces of DESIGN-SYSTEM.md §6.2 ship as **variable** fonts — one file per family
@@ -486,27 +494,6 @@ editor still arrive in the same change.
 
 **Costs.** A screen is more work than an inline field, and it is one more place the ambient
 stamp and the audio pill have to be drawn correctly.
-
----
-
-## ADR-018 — `riverpod_lint` through `plugins:`, and no `custom_lint`
-
-**Decision.** `custom_lint` is not a dependency. `riverpod_lint` is enabled through the
-`plugins:` key in `analysis_options.yaml`.
-
-**Over.** PACKAGES.md's original pairing of `riverpod_lint` with a `custom_lint` host.
-
-**Why.** Not a preference — a fact discovered while resolving. `riverpod_lint` 3.x is built on
-`analysis_server_plugin` and no longer uses `custom_lint` at all. The two cannot even coexist
-here: `riverpod_generator` 4.0.9 needs `analyzer >=13`, and the newest `custom_lint` is pinned
-to `analyzer ^8`. Version solving fails outright with both present.
-
-The practical gain is that `dart analyze` and `flutter analyze` now surface the Riverpod lints
-directly, with no separate `dart run custom_lint` step and no second thing for CI to run.
-
-**Costs.** The `DateTime.now()` lint of ADR-012 was going to be a `custom_lint` rule. It now has
-to be either an analyzer `forbidden_identifiers`-style exclusion or a test that reads the
-source. Which of the two, is an M0b decision.
 
 ---
 
@@ -1002,65 +989,12 @@ is a key, because a test can no longer ask for the prompt by the sentence it exp
 
 ---
 
-## ADR-030 — A screen test gets a hand-written repository, not Drift in memory
-
-*16 September 2026. Narrows what CLAUDE.md §4.2 said about how tests override the root.*
-
-> ⚠ **Superseded by ADR-031** on 16 September 2026, a few hours after it was accepted. There
-> are no screen tests in chit any more, so the question this record answers no longer arises —
-> and the cost it lists first, *two implementations of one interface in the test tree*, is a
-> good part of why. It is kept because ADR-031's reasoning starts here, and because the
-> fake-async finding below is a real property of `flutter_test` that will catch somebody again.
-
-**Decision.** A test that pumps a widget gets `test/support/fake_repository.dart` — a
-`ChitRepository` that keeps its chits in a list. A test that is *about the data* keeps the real
-`ChitRepositoryImpl` over `NativeDatabase.memory()`, which is what `chit_repository_test.dart`,
-`chits_table_test.dart` and `migration_test.dart` already do.
-
-**Over.** In-memory Drift everywhere, which is what CLAUDE.md §4.2 said and what M2 group G
-tried first.
-
-**Why.** It does not work, and it does not fail in a way that says so. `flutter_test` runs a
-`testWidgets` body inside a fake-async zone, and **real I/O never completes in it** — not a
-Drift query, and not `Directory.systemTemp.createTemp()` either, which is the one that makes it
-obvious once you probe it. There is no error and no timeout from the test itself: every test in
-the file simply never finishes and the runner sits there until it gives up.
-
-`tester.runAsync` is the escape hatch and it is the wrong one here. It gets the I/O done, but it
-also puts the screen's rebuilds back on the real event loop — and deterministic rebuilds are the
-entire reason `pump` exists. A screen test that has to sleep is a screen test that will be flaky
-on somebody else's machine.
-
-The deeper reason is that the two tests are about different things. What a screen test asserts
-is *the screen reads from the repository and writes to it* — that a saved chit comes back out
-of a stream rather than out of the widget that typed it. Whether that stream is backed by SQL
-is `ChitRepositoryImpl`'s claim, and it already has three suites holding it.
-
-**Costs.**
-
-- **Two implementations of one interface in the test tree**, and the fake can drift from the
-  real one. The Liskov rule of CLAUDE.md §4.1 is the whole defence: the fake **really stores**,
-  **really re-emits** to everything watching, and **refuses what the real one refuses** — blank
-  text normalised to `null` before anything sees it, and an illegal chit throwing on `Chit`'s
-  own asserts rather than being quietly accepted. A fake that accepts what the database rejects
-  is a green test for a screen that cannot work.
-- **No screen test touches SQL.** A query that compiles and returns the wrong rows would be
-  caught in `chit_repository_test.dart` and nowhere else. That is where it should be caught,
-  but it is worth knowing that the screen tests would not notice.
-- **"Restart and it is still there" is weaker than it sounds.** Pumping a second app over the
-  same fake is a restart of the *widget tree*, not of the process. It still earns its place —
-  the second screen has never seen the typing — but real persistence is M1's claim.
-
-**Consequences.** `test/support/app.dart` builds the fake and hands it back on `ChitHarness`, so
-a test can look at the row as well as at the pixels. CLAUDE.md §4.2's rule now says which kind
-of test gets which, because the version that said "an in-memory Drift database" sent group G
-down an hour of a silent hang.
-
----
-
 ## ADR-031 — No widget tests
 
-*16 September 2026. Supersedes ADR-030, and replaces the testing half of CLAUDE.md §4.2.*
+*16 September 2026. Replaces the testing half of CLAUDE.md §4.2, and absorbs ADR-030 — which
+had decided, a few hours earlier, which fake a screen test should get. There are no screen
+tests now, so that question does not arise; the finding underneath it is kept below, because it
+is a real property of `flutter_test` and it will catch somebody again.*
 
 **Decision.** chit has **no widget tests**. Nothing under `test/` calls `testWidgets`,
 `pumpWidget` or `WidgetTester`, and no test builds a widget in order to look at it. The eight
@@ -1076,17 +1010,24 @@ paragraph for exactly this.
 lives only in prose lasts until somebody is in a hurry, and the suite this record removes was
 not written in one sitting either — it grew one reasonable-looking `testWidgets` at a time.
 
-**Over.** Keeping them, which is the Flutter default and what every one of ADR-030's costs was
-an attempt to make survivable.
+**Over.** Keeping them, which is the Flutter default — and which the record this one absorbs
+had just spent a day trying to make survivable.
 
 **Why.**
 
-- **The second implementation.** This is the one that decided it. A screen test cannot touch
-  real I/O — ADR-030 explains why, and that part is still true — so every screen test needed
-  `FakeChitRepository` beside `ChitRepositoryImpl`. Two implementations of one interface, held
-  together by nothing but the Liskov rule and whoever remembers it. **A fake that drifts from
-  the real one is a green test for a screen that cannot work**, which is worse than no test at
-  all: it is a test that reports on the fake.
+- **The second implementation.** This is the one that decided it, and it follows from a
+  property of the framework rather than from taste. `flutter_test` runs a `testWidgets` body
+  inside a fake-async zone, and **real I/O never completes in it** — not a Drift query, and not
+  `Directory.systemTemp.createTemp()` either, which is the probe that makes it obvious. There
+  is no error and no timeout: the test simply never finishes, and the runner sits there.
+  `tester.runAsync` is the escape hatch and it is the wrong one — it gets the I/O done by
+  putting the screen's rebuilds back on the real event loop, and deterministic rebuilds are the
+  entire reason `pump` exists. So every screen test needed `FakeChitRepository` beside
+  `ChitRepositoryImpl` — **two implementations of one interface**, held together by nothing but
+  the Liskov rule and whoever remembers it. A fake that drifts from the real one is a green test
+  for a screen that cannot work, which is worse than no test at all: it is a test that reports
+  on the fake. That cost was the first one its own record listed, and it is why that record did
+  not survive the day.
 - **They fail for the wrong reasons.** In one milestone the suite was broken twice by the widget
   tree rather than by the app being wrong. `find.bySemanticsLabel` returns nothing inside a
   `SliverList`, so wrapping Today in a sliver took every semantics finder in the suite to zero

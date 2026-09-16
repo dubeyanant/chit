@@ -145,7 +145,11 @@ void main() {
       isEmpty,
       reason:
           'The index points at records that do not exist. Superseding an ADR '
-          'means adding a new one, never deleting the old:\n'
+          'means adding a new one, never editing or deleting the one it '
+          'replaces. A record is only merged away once the thing it decided '
+          'no longer exists in the app at all — and then its row goes with '
+          'it, its number is retired rather than reused, and the note at the '
+          'head of DECISIONS.md says where it went:\n'
           '${orphaned.join('\n')}',
     );
   });
