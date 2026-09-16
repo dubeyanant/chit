@@ -46,11 +46,28 @@ recording is settled. Discarding the chit is what clears it.
 ### 3.3 The prompt waits five seconds
 
 The writing area opens blank. If the user has written nothing after **5 seconds**, a prompt
-fades in over ~700ms ("What just happened?"). Typing a character dismisses it and cancels the
-timer; clearing the field starts the five seconds again.
+fades in over ~700ms. Typing a character dismisses it and cancels the timer; clearing the field
+starts the five seconds again.
 
 A prompt shown immediately is an instruction. A prompt shown after a pause is an offer.
 People who know what they want to say never see it.
+
+**Nothing moves before it.** The page opens blank and stays blank — no caret is drawn on an
+untouched field, and the one that appears when the user taps is the platform's, the same caret
+every other text field on the device has. *An earlier version drew its own, blinking, from the
+moment the app opened; an app that is animating when you open it is asking for something.*
+**ADR-028**.
+
+**Which prompt depends on the moment** — the hour the chit was opened, and the weather if it
+arrived (**ADR-029**). *"Rain. What's it like out?"* at four in the afternoon; *"Still up.
+What's keeping you?"* at one in the morning. The ambient stamp is already captured and already
+on the screen, so a prompt that ignores it is asking a generic question in front of a line that
+just said `3:42 pm  raining`.
+
+*"What just happened?"* is still in the book and is still what a chit gets when nothing more
+specific fits. Every prompt is a **short question**: no exclamation marks, nothing that
+suggests a subject worth writing about, and nothing longer than the field's own line. chit has
+no opinion about how much you write, which is the same reason it keeps no score (§1).
 
 ### 3.4 The recording and its transcript
 
@@ -147,7 +164,7 @@ Shows today.
 
   ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← perforated tear edge
   │ 3:42 pm   raining   ⌖                   │
-  │ |                                       │        ← live field; prompt after 5s
+  │                                         │        ← the page; prompt after 5s
   │                                         │
   │ ┌────┐                                  │
   │ │ ⏺  │                                  │        ← microphone, 54px, leads the row

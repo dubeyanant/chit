@@ -13,22 +13,18 @@ import '../../support/app.dart';
 /// restarts on every rebuild still fires eventually, and a prompt written into
 /// the field still looks right until somebody saves it.
 void main() {
-  const String prompt = 'What just happened?';
+  final Finder prompt = find.byKey(OpenChit.prompt);
   const Duration idle = ComposerController.idle;
 
   /// The prompt's live opacity.
   ///
-  /// It is drawn at zero rather than left out of the tree — which is what the
-  /// prototype does, and what lets it fade — so **`find.text` finds it before
-  /// it is offered**. Presence is not the question here; opacity is.
+  /// It is drawn at zero rather than left out of the tree — which is what lets
+  /// it fade — so it is **in the tree before it is offered**. Presence is not
+  /// the question here; opacity is. It is found by key rather than by its
+  /// words, because ADR-029 means the words depend on the stamp.
   double opacity(WidgetTester tester) => tester
       .widget<FadeTransition>(
-        find
-            .ancestor(
-              of: find.text(prompt),
-              matching: find.byType(FadeTransition),
-            )
-            .first,
+        find.ancestor(of: prompt, matching: find.byType(FadeTransition)).first,
       )
       .opacity
       .value;
@@ -105,8 +101,7 @@ void main() {
 
       // Not a fade-out: the prototype hides the ghost outright once the page
       // holds something, because what it was standing in for is now there.
-      expect(find.text(prompt), findsNothing);
-      expect(find.byKey(OpenChit.caret), findsNothing);
+      expect(prompt, findsNothing);
     });
 
     testWidgets('clearing the field starts the five seconds again', (
@@ -150,10 +145,11 @@ void main() {
     testWidgets('a rebuild does not put the five seconds back', (
       WidgetTester tester,
     ) async {
-      // Focusing the field rebuilds it — the drawn caret goes. A timer held in
-      // the widget would go back to five seconds there, and the difference is
-      // invisible: the prompt still arrives, just later, every time the
-      // keyboard opens or the action row grows by two controls.
+      // Focusing the field rebuilds it — the keyboard arrives and the layout
+      // moves. A timer held in the widget would go back to five seconds
+      // there, and the difference is invisible: the prompt still arrives,
+      // just later, every time the keyboard opens or the action row grows by
+      // two controls.
       await pumpChitApp(tester);
 
       await tester.pump(const Duration(seconds: 4));
@@ -161,7 +157,6 @@ void main() {
 
       await tester.tap(find.byType(TextField));
       await tester.pump();
-      expect(find.byKey(OpenChit.caret), findsNothing, reason: 'it rebuilt');
 
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
@@ -197,7 +192,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        tester.getTopLeft(find.text(prompt)).dy,
+        tester.getTopLeft(prompt).dy,
         tester.getTopLeft(find.byType(EditableText)).dy,
       );
     });
@@ -219,46 +214,42 @@ void main() {
     });
   });
 
-  group('ADR-023: the caret is what says the page is live', () {
-    testWidgets('drawn before the field is touched, gone once it is', (
+  group('ADR-028: the only caret is the platform\'s', () {
+    testWidgets('an opened app draws none of its own', (
       WidgetTester tester,
     ) async {
-      // The app opens with nothing focused, so without this the page is a
-      // blank area with no sign that it is live. Once it is focused the
-      // framework draws the real one, and two carets is one too many.
+      // The page opens blank and stays blank. Nothing blinks at the user
+      // before they have asked for anything, and the framework's caret
+      // arrives on the tap that asks — which is the caret every other field
+      // on the device has.
       await pumpChitApp(tester);
-      expect(find.byKey(OpenChit.caret), findsOneWidget);
+
+      expect(find.byType(EditableText), findsOneWidget);
+      expect(
+        tester
+            .widget<EditableText>(find.byType(EditableText))
+            .focusNode
+            .hasFocus,
+        isFalse,
+      );
+      expect(
+        tester.binding.transientCallbackCount,
+        0,
+        reason: 'nothing is animating on an untouched page',
+      );
+    });
+
+    testWidgets('and one tap brings it', (WidgetTester tester) async {
+      await pumpChitApp(tester);
 
       await tester.tap(find.byType(TextField));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(OpenChit.caret), findsNothing);
-    });
-
-    testWidgets('it blinks', (WidgetTester tester) async {
-      await pumpChitApp(tester);
-      expect(find.byKey(OpenChit.caret), findsOneWidget);
-
-      await tester.pump(const Duration(milliseconds: 600));
-      expect(find.byKey(OpenChit.caret), findsNothing);
-
-      await tester.pump(const Duration(milliseconds: 600));
-      expect(find.byKey(OpenChit.caret), findsOneWidget);
-    });
-
-    testWidgets('§6.4: under reduced motion it stops, and stays drawn', (
-      WidgetTester tester,
-    ) async {
-      // *Movement collapses and feedback does not.* Stopping the blink by
-      // hiding the caret would take away the one thing telling the user the
-      // page is theirs to write on — the loop stops at rest, not at nothing.
-      reduceMotion(tester);
-      await pumpChitApp(tester);
-
-      for (int i = 0; i < 4; i++) {
-        await tester.pump(const Duration(milliseconds: 600));
-        expect(find.byKey(OpenChit.caret), findsOneWidget);
-      }
+      final EditableTextState editable = tester.state<EditableTextState>(
+        find.byType(EditableText),
+      );
+      expect(editable.widget.showCursor, isTrue);
+      expect(editable.widget.focusNode.hasFocus, isTrue);
     });
   });
 

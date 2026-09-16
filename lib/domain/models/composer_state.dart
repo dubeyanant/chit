@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../prompts.dart';
 import 'ambient_stamp.dart';
 import 'chit.dart';
 
@@ -73,6 +74,13 @@ abstract class ComposerState with _$ComposerState {
   /// and README §5's invariant would refuse the row anyway — better to refuse
   /// to offer the button than to offer one that throws.
   bool get canSave => text.trim().isNotEmpty || audioTempPath != null;
+
+  /// The words the five-second prompt offers — BEHAVIOUR.md §3.3, ADR-029.
+  ///
+  /// Derived from [stamp] rather than stored, so there is one answer and it
+  /// cannot drift from the moment it is about. It changes once, if the weather
+  /// settles (ADR-007) before the five seconds are up.
+  String get prompt => Prompts.forStamp(stamp);
 
   /// Whether a recording has been kept. **M5.**
   ///

@@ -30,8 +30,9 @@ enum ChitPace {
 /// The motion tokens of DESIGN-SYSTEM.md §6.3, and the reduced-motion rule of §6.4.
 ///
 /// **Movement collapses and feedback does not.** [travel] is for anything that
-/// moves, zooms or loops, and it collapses to nothing when the user has asked
-/// for reduced motion. [fade] is for opacity and colour, and it survives —
+/// moves or zooms and [loop] for anything that repeats; both collapse to
+/// nothing when the user has asked for reduced motion. [fade] is for opacity
+/// and colour, and it survives —
 /// re-timed, but never removed. Reducing motion should cost a user animation,
 /// not confirmation that their action landed.
 ///
@@ -83,17 +84,18 @@ final class ChitMotion extends ThemeExtension<ChitMotion> {
       ? this
       : copyWith(reduceMotion: reduceMotion);
 
-  /// How long something that *moves* should take: travel, zoom, scale, or any
-  /// ambient loop — the caret blink, the pulse at now, the breathing record
-  /// dot, the live waveform.
+  /// How long something that *moves* should take: travel, zoom or scale.
+  ///
+  /// An ambient loop takes its period from [loop] rather than from the pace
+  /// table — ADR-027.
   ///
   /// [Duration.zero] under reduced motion, which stops the animation outright
   /// rather than speeding it up.
   Duration travel(ChitPace pace) =>
       reduceMotion ? Duration.zero : durations[pace]!;
 
-  /// How long one cycle of an **ambient loop** takes — the caret blink, the
-  /// pulse at now, the breathing record dot, the live waveform (§6.4).
+  /// How long one cycle of an **ambient loop** takes — the pulse at now, the
+  /// breathing record dot, the live waveform (§6.4).
   ///
   /// [Duration.zero] under reduced motion, exactly as [travel]: a loop stops
   /// outright rather than slowing down, and a caller that gets zero should
@@ -102,10 +104,10 @@ final class ChitMotion extends ThemeExtension<ChitMotion> {
   /// **[period] is the loop's own and belongs to the component that loops**,
   /// which is why this takes a duration where [travel] takes a [ChitPace]. A
   /// loop has a period rather than a duration; periods are not comparable to
-  /// transitions or to each other, and putting the caret's 1.15s in the pace
-  /// table would make §6.3's *"the prompt is the slowest thing in the app"*
-  /// false for no gain. §6.3 says the same about dimensions that belong to one
-  /// component, for the same reason.
+  /// transitions or to each other, and the pulse at now runs at 5.2s — putting
+  /// that in the pace table would make §6.3's *"the prompt is the slowest
+  /// thing in the app"* false for no gain. §6.3 says the same about dimensions
+  /// that belong to one component, for the same reason.
   Duration loop(Duration period) => reduceMotion ? Duration.zero : period;
 
   /// How long a change in *opacity or colour* should take.

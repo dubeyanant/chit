@@ -167,23 +167,31 @@ thread. **Until then Save is drawn and does nothing**, which is a state this mil
       `travel`.
 - [x] **Not `hintText`.** An overlay, because §3.5 warns that placeholder text is the tempting
       shortcut here and M5's failure note lands in the same place.
-- [x] The caret blink stops under reduced motion — §6.4 lists it as an ambient loop.
+- [x] ~~The caret blink stops under reduced motion — §6.4 lists it as an ambient loop.~~
+      **Overtaken by ADR-028**, which took the drawn caret out: the only caret left is the
+      framework's and Flutter will not steady it. The rule it was built against survives as
+      `ChitMotion.loop` (ADR-027); the gap is open item 14.
 - [x] Tests: the five seconds, the cancel, and the restart, against a fake clock.
 
-**The drawn caret came with it, and was not on this list.** ADR-023 means the app opens with
-nothing focused, so until the first tap there is no caret at all — a blank area with nothing
-saying it is live. It is in the same overlay as the prompt, it is what §6.4's ambient-loop rule
-actually applies to in M2, and it goes when the field takes focus.
+**Two things landed on top of the list, after the group was first built and looked at.**
+
+- [x] **ADR-028 — no drawn caret.** The prototype blinks a `--seal` bar on the untouched field
+      and group F ported it. On the device it reads as an app asking for something before you
+      have touched it, which is not what README §1 means by *blank and ready*. The only caret is
+      the platform's now, and it arrives on the first tap.
+- [x] **ADR-029 — the prompt reads the stamp.** §3.3 named one line; `domain/prompts.dart` holds
+      twenty-eight, tagged by weather, by hour or by both, and the most specific match wins.
 
 Three things the rest of M2 inherits:
 
-- **ADR-027 — an ambient loop is not a pace.** The caret's 1.15s is a constant on the caret and
-  `ChitMotion.loop` applies §6.4 to it. M5's record dot and waveform do the same; none of them
-  adds a `ChitPace`.
-- **A loop stops *drawn*.** Zero period means start no ticker, not hide the thing. Hiding the
-  caret would take away the signal along with the movement.
-- **The framework's caret still blinks once the field is focused**, and Flutter offers no way
-  to steady it that does not also hide it. Open item 14; M7's floors pass owns it.
+- **ADR-027 — an ambient loop is not a pace**, and `ChitMotion.loop` stayed when the caret went.
+  M5's record dot and waveform name their own period and ask `loop` for it; none of them adds a
+  `ChitPace`. A loop stops **drawn** — zero period means start no ticker, not hide the thing.
+- **The framework's caret blinks under reduced motion** and Flutter offers no way to steady it
+  that does not also hide it. Open item 14; M7's floors pass owns it.
+- **New copy is tested, not just written.** `prompts_test.dart` holds the voice — questions
+  only, nothing that shouts or instructs, nothing said twice, nothing long enough to wrap the
+  field. Copy is the thing that fails quietly.
 
 *The five seconds are `ComposerController.idle` — a product rule, not a pace, and not on the
 clock either: `Clock` says what time it is and a `Timer` says how long since. Tests drive it
@@ -240,8 +248,10 @@ needs a query the repository does not have yet.*
 - [ ] Touch targets ≥44px, the microphone included.
 - [ ] Semantics: heading levels do not skip, the field carries a label, and nothing that does
       nothing is marked up as a control.
-- [ ] Reduced motion across what M2 actually draws — the caret blink, the prompt's fade, and
-      the timeline's scroll-to-now.
+- [ ] Reduced motion across what M2 actually draws — the prompt's fade, the tab cross-fade,
+      Discard's wash and the timeline's scroll-to-now. *The caret blink is not on this list any
+      more: chit draws no caret (ADR-028) and the framework's cannot be steadied — open item 14
+      carries it to M7.*
 - [ ] The contrast test gains any new composited surface M2 introduced.
 
 ## J. Close the loop ⬜

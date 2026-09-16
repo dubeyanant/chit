@@ -18,22 +18,25 @@ code behind them — and after M2 groups A, B, C, D, E and F.
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
-| **M2** — Today, text only | 🔶 in progress | groups A–F of [TASKS.md](TASKS.md) done; **G is next**. ADR-023 to ADR-027 |
+| **M2** — Today, text only | 🔶 in progress | groups A–F of [TASKS.md](TASKS.md) done; **G is next**. ADR-023 to ADR-029 |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**224 tests, `flutter analyze` clean, debug APK builds.**
+**237 tests, `flutter analyze` clean, debug APK builds.**
 
 **On a handset:** the masthead on `--paper`, a two-tab bar, and **the open chit** — a slip with
 its tear edge and the pad behind it, its stamp reading `3:42 pm   raining   ⌖` spaced and never
-separated, a page to write on with a caret blinking on it, and a microphone leading the action
-row. Leave it five seconds and *"What just happened?"* fades in beside the caret. Typing brings
-**Discard** and **Save chit**; Discard works, and Save is drawn and does nothing until group G.
-Tapping *calendar* cross-fades to a placeholder line that M4 deletes. Below the slip there is
-nothing yet: the date line and the thread arrive with G, the timeline with H.
+separated, a blank page to write on, and a microphone leading the action row. **Nothing moves
+until you touch it** (ADR-028): no caret is drawn, and the one that arrives on the first tap is
+the platform's. Leave it five seconds and a prompt fades in — *"Rain. What's it like out?"* in
+the afternoon, *"Still up. What's keeping you?"* at one in the morning, chosen from the stamp
+(ADR-029). Typing brings **Discard** and **Save chit**; Discard works, and Save is drawn and
+does nothing until group G. Tapping *calendar* cross-fades to a placeholder line that M4
+deletes. Below the slip there is nothing yet: the date line and the thread arrive with G, the
+timeline with H.
 
 **It has been run on a device**, after group E and before F. What was confirmed there: the slip,
 the field and the stamp all render, typing brings the two controls, and **Discard works**. Save
@@ -591,20 +594,58 @@ instruction. A prompt shown after a pause is an offer."*
   and the prompt. It is laid over the field's own box, and because the field's first line
   starts at the top of that box the two set on one baseline — there is a test for it, because a
   prompt half a line off is a second column of text.
+- `domain/prompts.dart` — twenty-eight prompts and the pure function that picks one.
+  **ADR-029**, below.
 - `ChitMotion.loop` — **ADR-027**, below.
-- **Eighteen tests**, 206 → 224, in a suite of their own.
+- **Thirty-one tests**, 206 → 237, across two suites.
 
-### The caret was not on the list, and is the better half of the group
+### The drawn caret was built, shipped to a device, and taken out again — ADR-028
 
-ADR-023 opens the app with nothing focused, so until the first tap there is no caret at all —
-which leaves the page a blank area with nothing saying it is live. The prototype draws one and
-hides it on focus, and the reason only becomes obvious once you have the app in your hand: the
-drawn caret *is* the affordance ADR-023 traded the keyboard for.
+Worth keeping because the reasoning was good and the answer was still wrong.
 
-It is also the only place in M2 where §6.4's **ambient loop** rule has anything to apply to, and
-applying it turned up the distinction ADR-027 records. It stops **drawn** rather than hidden —
-hiding it would take the signal away along with the movement, and §6.4's whole sentence is that
-movement collapses while feedback does not.
+The prototype draws a `--seal` caret on the untouched field and hides it on focus, and the
+argument for porting it is tidy: ADR-023 opens the app with nothing focused, so until the first
+tap there is no caret at all, and the drawn one *is* the affordance ADR-023 traded the keyboard
+for. That held up in a test suite and did not survive contact with the device. **An app that is
+animating when you open it is asking for something**, and README §1 says opening chit costs
+nothing — a bar blinking in the corner of the eye of somebody who came to write four words is
+not "blank and ready".
+
+The page is also not short of signals. A slip with a tear edge, an ambient stamp and a
+microphone under it reads as something to write on, and five seconds later the prompt says so
+outright. **The caret is the platform's now**, and it arrives on the tap that asks for it.
+
+*`ChitMotion.loop` stayed.* ADR-027 is about where a loop's period lives, and which loop is
+built first does not bear on it — the design system carrying a rule ahead of its first use is
+the same pattern as `ChitType` holding twenty-five styles for the eight that are drawn. Its
+first user is M5's record dot.
+
+### ADR-029 — the prompt reads the stamp
+
+§3.3 named one line. The stamp is already captured, already on the screen, and already what
+README §1 says the moment is made of, so a prompt that ignores it is asking a generic question
+in front of a line that just said `3:42 pm  raining`. `domain/prompts.dart` holds twenty-eight
+short questions tagged by weather, by hour, or by both; the most specific match wins, and where
+several tie one is picked from the stamp's own clock fields — stable for a chit, different
+between chits.
+
+Three things about it that are not obvious:
+
+- **`ComposerState.prompt` is a getter, not a field.** Derived from the stamp, so there is one
+  answer and it cannot drift from the moment it is about.
+- **The seed is `minute + second + millisecond`, added rather than combined.** The first
+  version was `second * 1000 + millisecond`, which is always even — against a two-entry
+  shortlist the seconds counted for nothing and every chit in an hour got the same question.
+  The test that asks for variety across ten consecutive seconds is what caught it. An epoch
+  would have been worse still: it depends on the machine's time zone, so the prompt would
+  differ between two developers' test runs.
+- **The copy is tested, because copy fails quietly.** Every prompt is a question, none shouts
+  or says *"Let's"*, nothing is said twice, and none is long enough to wrap the field. A prompt
+  that instructs rather than offers reads fine to whoever wrote it and is a different app by
+  the tenth one.
+
+*In M2 you will only ever see the rain prompts, because `FixedWeatherService` always says
+`raining`. That is the fake doing its job; M3 is where it stops.*
 
 ### ADR-027 — an ambient loop is not a pace
 
@@ -636,14 +677,12 @@ widget has no `reduceMotion` branch of its own.
    character and takes it away again starts its five seconds at a known instant, and
    `tester.pump(idle)` is exact rather than approximate. No `fake_async` dependency was needed.
 
-**One thing it could not do.** §6.4 says the caret blink stops under reduced motion, and that is
-now true of the caret this app draws. **The framework's own caret, once the field has focus,
-still blinks.** `TickerMode(enabled: false)` stops it by setting its opacity to zero — it
-vanishes, which is worse than the blink — and `EditableText.debugDeterministicCursor` is a test
-hook rather than an API. Open item 14; M7's floors pass owns it, and on a stock Android keyboard
-every other text field blinks too.
+**One thing it could not do.** §6.4 says the caret blink stops under reduced motion, and with
+ADR-028 the only caret in the app is the framework's — which blinks, and which Flutter offers
+no way to steady that does not also hide it. Open item 14; M7's floors pass owns it, and on a
+stock Android keyboard every other text field blinks too.
 
-**Verified:** `flutter analyze` clean, `flutter test` 224 passing, `dart format` clean,
+**Verified:** `flutter analyze` clean, `flutter test` 237 passing, `dart format` clean,
 `dart run build_runner build` clean.
 
 ---
@@ -804,10 +843,8 @@ Things a future session needs to know but that are not yet scheduled work.
 14. **The framework's caret still blinks under reduced motion.** New with M2 group F, and it
     belongs to M7's floors pass.
 
-    DESIGN-SYSTEM.md §6.4 lists the caret blink among the ambient loops that stop outright. The
-    caret **chit draws** — the one on an untouched field, which is the only one there is until
-    the first tap (ADR-023) — now does. Once the field has focus, Flutter draws its own, and
-    there is no public way to steady it:
+    DESIGN-SYSTEM.md §6.4 lists the caret blink among the ambient loops that stop outright, and
+    since ADR-028 the only caret in the app is Flutter's. There is no public way to steady it:
 
     - `TickerMode(enabled: false)` stops the blink by setting the cursor's opacity to **zero**.
       The caret vanishes rather than resting, which is worse than the blink — it removes the

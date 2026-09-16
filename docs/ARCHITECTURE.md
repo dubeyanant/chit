@@ -58,6 +58,7 @@ lib/
 │   │   ├── weather_condition.dart  enum: raining | clear | overcast | windy | clearNight
 │   │   ├── day_summary.dart        localDay + count — feeds the calendar
 │   │   └── composer_state.dart     the open chit's state machine
+│   ├── prompts.dart                the five-second prompt of §3.3, chosen from the stamp
 │   ├── weather/
 │   │   └── wmo_mapping.dart        WMO code + is_day + wind → one of the five words
 │   ├── repositories/
@@ -326,16 +327,21 @@ appears, just later, and only sometimes. `ref.onDispose` cancels it; **Discard**
 because ADR-026 makes that a chit that has just opened.
 
 **It is drawn over the field, never into it.** `hintText` is the shortcut §4.1 warns about and
-it is wrong three times over: a hint is announced as a label on the field, it arrives on
-Material's schedule rather than after five seconds, and it has nowhere to put a caret. The
-overlay is a row — the caret, a gap, the prompt — laid over the top of the field's own box, and
-because the field's first line starts at the top of that box the two set on one baseline. M5's
-§3.5 note lands in the same overlay, for the same reason.
+it is wrong twice over: a hint is announced as a label on the field, and it arrives on
+Material's schedule rather than after five seconds. The overlay sits over the top of the
+field's own box, and because the field's first line starts at the top of that box the two set
+on one baseline. M5's §3.5 note lands in the same overlay, for the same reason.
 
-**The caret in that overlay is the app's only caret until the field is focused** (ADR-023), and
-it is what says the page is live. It blinks at `ChitMotion.loop` and therefore stops under
-reduced motion — **drawn and still**, not hidden (ADR-027). Once the field has focus the
-framework draws the real one and this one goes; two carets is one too many.
+**Nothing else is in that overlay.** An earlier version put a drawn blinking caret beside the
+prompt, the way the prototype does; ADR-028 took it out. The page opens blank and still, and
+the caret that appears on the first tap is the framework's.
+
+**Which words are offered is `Prompts.forStamp` — ADR-029**, a pure function in `domain` over
+the stamp the chit already holds. `ComposerState.prompt` is a getter over it rather than a
+stored field, so there is one answer and it cannot drift from the moment it is about; it
+changes once, if the weather settles (ADR-007) inside the five seconds. Nothing in there reads
+a clock, which is what keeps ADR-021 true of the prompt as well as of the stamp: it is for the
+moment the chit **opened**.
 
 ### 4.4 Recording
 
@@ -410,8 +416,10 @@ distinction the design log insists on and the one a global duration override wou
 fades are not passed through untouched: the design log re-times them to 140ms on transitions
 and 220ms on arrivals, so a fade still announces itself without carrying the house pace of an
 animation that is no longer moving.
-Ambient loops — the caret blink, the pulse at now, the record dot, the live waveform — check
-`MediaQuery.disableAnimationsOf(context)` and do not start.
+Ambient loops — the pulse at now, the record dot, the live waveform — take their period from
+`ChitMotion.loop`, which hands back `Duration.zero` under reduced motion: the signal to start
+no ticker at all and draw the thing at rest (ADR-027). *chit draws no caret of its own, so the
+caret blink §6.4 also names is the framework's — see PROGRESS.md open item 14.*
 
 ---
 

@@ -5,7 +5,7 @@ it was chosen over, and what it costs. Superseding a record means adding a new o
 editing the old one.
 
 Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-to ADR-024 on 15 September 2026, ADR-025 to ADR-027 on 16 September 2026.
+to ADR-024 on 15 September 2026, ADR-025 to ADR-029 on 16 September 2026.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -39,6 +39,8 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-025 | The weather service takes no position | clarifies ADR-007 against ADR-016 — how the two signals stay parallel |
 | ADR-026 | Discard opens a new chit, and that means a new stamp | what §3.1's "empty state" means for `createdAt` |
 | ADR-027 | An ambient loop is not a pace | refines ADR-010 and ADR-020 — where a looping period lives |
+| ADR-028 | The caret is the platform's, and chit draws none | reverses group F's drawn caret; corrects ADR-027 |
+| ADR-029 | The prompt reads the stamp | extends §3.3 — which words, and what they may not do |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -892,3 +894,101 @@ is the whole reason `context.motion` resolves the flag rather than exposing it.
 period and ask `loop` for it; none of them adds a pace. The caret is the first, at
 `1150ms` in `open_chit.dart`, and `five_second_prompt_test.dart` holds both halves — that it
 blinks, and that under reduced motion it stops **drawn** rather than stopping hidden.
+
+---
+
+## ADR-028 — The caret is the platform's, and chit draws none
+
+*16 September 2026. Reverses the drawn caret M2 group F built one commit earlier, and corrects
+ADR-027's consequences.*
+
+**Decision.** The open chit draws **no caret of its own**. The page opens blank and nothing on
+it moves. Tapping the field focuses it and the framework's caret appears — `--seal`, 1.5px, and
+blinking the way every text field on the device blinks.
+
+**Over.** The prototype's drawn caret, which v6 puts in the ghost line and hides on focus, and
+which group F ported faithfully: a `--seal` bar blinking at 1.15s on an untouched field.
+
+**Why.** Two reasons, and the first is the one that decides it.
+
+**An app that is animating when you open it is asking for something.** BEHAVIOUR.md §3.1 is that
+opening the app six times leaves nothing behind, and README §1 is that opening it costs nothing
+— *the page is blank and ready*. A blinking bar on a page nobody has touched is not a statement
+that the page is ready; it is a small repeated motion in the corner of the eye of somebody who
+opened the app to write four words. The prototype gets away with it because a prototype is
+looked at rather than lived with.
+
+**And the page is not actually short of signals.** ADR-023's worry — that a field with no focus
+and no caret reads as inert — is answered five seconds later by the prompt, which is what §3.3
+is for, and immediately by the slip itself: a page with a tear edge, an ambient stamp and a
+microphone under it is legible as something to write on. Group F reasoned that the drawn caret
+*was* the affordance ADR-023 traded the keyboard for. On the device it reads as a cursor in an
+app that has not been started yet.
+
+**Costs.**
+
+- **There is nothing at all for the first five seconds.** That is the design's own premise
+  taken literally, and if it turns out to read as broken the answer is the prompt's timing,
+  not a blinking bar — §3.3's five seconds are the dial.
+- **§6.4's caret-blink rule now has nothing in this app it can reach.** The only caret is the
+  framework's, and Flutter offers no way to steady it that does not also hide it. That was open
+  item 14 as a partial gap; it is now the whole of it.
+
+**Consequences.** `_Caret`, `_CaretSlot` and `OpenChit.caret` are gone, and the overlay is the
+prompt alone. `ChitMotion.loop` **stays** — ADR-027's decision is about where a loop's period
+lives and is unaffected by which loop is built first. Its consequences paragraph named the
+caret as that first caller; that is no longer true, and the first is now M5's record dot. The
+design system carrying a rule ahead of its first use is the same pattern as `ChitType` holding
+twenty-five styles for the eight that are drawn so far.
+
+---
+
+## ADR-029 — The prompt reads the stamp
+
+*16 September 2026. Extends BEHAVIOUR.md §3.3, which named one line.*
+
+**Decision.** The five-second prompt's words are chosen from the ambient stamp the chit already
+holds — the hour it was opened, and the weather if it arrived. `domain/prompts.dart` is a book
+of twenty-eight short questions and one pure function over it: the **most specific** entry that
+fits wins (weather and hour, then weather, then hour), and where several fit equally one is
+picked from the stamp's own clock fields.
+
+**Over.** The single fixed line §3.3 names — *"What just happened?"* — which is still in the
+book and is still what a chit gets when nothing else fits.
+
+**Why.** The stamp is already captured, already on the screen, and already the thing the product
+says the moment is made of (README §1: *the moment matters as much as the words*). A prompt that
+ignores it is asking a generic question in front of a line that just said `3:42 pm  raining`.
+Asking *"Rain. What's it like out?"* costs nothing that was not already paid for, and it is the
+difference between a placeholder and something that noticed.
+
+It also spreads the prompt out. One line seen twice is a label; seen for the fiftieth time it is
+furniture. A set of twenty-eight is not variety for its own sake — it is what stops the one
+feature in the app that speaks first from becoming something the eye skips.
+
+**What the copy may not do**, because this is the decision that would rot:
+
+- **Every prompt is a question, and none of them is excited.** No exclamation marks, no
+  *"Let's…"*, no suggestion of a subject worth writing about. The design log's objection to a
+  streak counter is the same objection: chit has no opinion about how much you write.
+- **Nothing is longer than the field's own line.** A prompt that wraps is a paragraph where a
+  nudge was meant.
+- **`test/domain/prompts_test.dart` holds all of that**, because copy fails quietly — the
+  wrong tone reads fine to whoever wrote it and is a different app by the tenth one.
+
+**Costs.**
+
+- **The prompt can be wrong about the weather.** ADR-025 has the condition coming from a last
+  known fix, so it can be for where you were. *"Rain. What's it like out?"* indoors, on a
+  stale fix, is a small oddity — the same one §3.6 already accepts for the stamp itself, and
+  the prompt is a question rather than an assertion, which absorbs it better than the stamp
+  does.
+- **It is more copy to keep in one voice.** Twenty-eight lines is twenty-eight chances to write
+  one that sounds like a different product. The tests are the floor and not the ceiling.
+- **In M2 you will only ever see the rain prompts**, because `FixedWeatherService` always says
+  `raining`. That is the fake doing its job, and M3 is where it stops.
+
+**Consequences.** `ComposerState.prompt` is a getter over `Prompts.forStamp(stamp)` rather than
+a stored field, so there is one answer and it cannot drift from the moment it is about. It
+changes once, if the weather settles (ADR-007) before the five seconds are up. `OpenChit.prompt`
+is a key, because a test can no longer ask for the prompt by the sentence it expects.

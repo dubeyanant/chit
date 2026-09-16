@@ -248,12 +248,15 @@ day should look empty (BEHAVIOUR.md §4.1).
   nothing it is not there at all (ARCHITECTURE.md §4.3).
 
   **An ambient loop has a period, not a pace, and the period belongs to the thing that loops.**
-  The caret blinks at **1.15s**, half on and half off; it is a constant on the caret the way
-  54px is a constant on the microphone, and `ChitMotion.loop` applies §6.4's rule to it rather
-  than holding the number. The four loops §6.4 names — the caret blink, the pulse at now, the
-  breathing record dot, the live waveform — are deliberately not rows above: the caret's 1.15s
-  is longer than the prompt's 700ms and is not slower motion, and one table holding both
-  invites exactly that comparison. **ADR-027**.
+  A loop's period is a constant on the widget that loops, the way 54px is a constant on the
+  microphone, and `ChitMotion.loop` applies §6.4's rule to it rather than holding the number.
+  The loops §6.4 names are deliberately not rows above: the pulse at now runs at **5.2s**,
+  which is longer than the prompt's 700ms without being slower motion, and one table holding
+  both invites exactly that comparison. **ADR-027**.
+
+  *The caret blink was the example that record was written from, and chit no longer draws a
+  caret — **ADR-028**. The rule stands and its first user is now M5's record dot; the loops
+  left to build are the pulse at now, the record dot and the live waveform.*
 
   The staggered arrival (fade plus 6px rise, 55–60ms apart, capped) plays when a screen
   is first built and then sheds itself. Returning to a tab costs a 200ms fade and nothing
@@ -298,13 +301,15 @@ Enforced, and verified on every revision:
   become a plain fade going nowhere, the scrim still dims, buttons still respond. Reducing
   motion should cost a user animation, not confirmation that their action landed.
 
-  **A loop stops at rest, not at nothing.** The caret is the case that shows why: it is the one
-  thing telling the user the empty page is theirs to write on, so stopping its blink by hiding
-  it would take the signal away along with the movement. M2 builds this for the **drawn** caret
-  — the one on an untouched field, which is the only caret there is until the user taps
-  (ADR-023). *The framework's own caret, once the field has focus, still blinks: Flutter offers
-  no way to steady it that does not also hide it.* PROGRESS.md open item 14 carries that, and
-  M7's pass owns it.
+  **A loop stops at rest, not at nothing.** Zero is the signal to start no ticker and draw the
+  thing still — a mark that stops by disappearing has taken the signal away along with the
+  movement, which is the opposite of the sentence above.
+
+  **The caret is the one place this is currently not honoured, and it is not ours.** chit draws
+  no caret of its own (ADR-028), so the only one in the app is the framework's, and Flutter
+  offers no way to steady it that does not also hide it. PROGRESS.md open item 14 carries the
+  detail; M7's pass owns it. Worth knowing before anyone spends a day on it: a stock Android
+  keyboard blinks its caret whatever the animation setting says.
 - **Semantics** — heading levels never skip, controls that do nothing are not marked up as
   controls, and anything the user typed is escaped before it reaches the DOM.
 
