@@ -35,9 +35,10 @@ editor (M6), and re-transcription (OPEN-QUESTIONS.md §8.2).
 | **H** | `GeolocatorLocationService` | The fix, its kinematics, and the one permission ask. **`currentFix` never raises a dialog** |
 | **I** | `OpenMeteoService` | One call, `wind_speed_unit=ms`, last-known fix only. Never throws |
 | **J** | The swap | `main.dart` wires the real pair; both fakes deleted. **Nothing above `main.dart` changed** |
-| **K** | The doc loop | ADR-040 through ADR-043, and every document they made untrue |
+| **K** | The doc loop | ADR-040 through ADR-044, and every document they made untrue |
 
 **323 tests, `flutter analyze` clean, `dart format` clean, debug and release APKs build.**
+Ambient capture has been seen working on a handset — see PROGRESS.md.
 
 ---
 
@@ -45,18 +46,22 @@ editor (M6), and re-transcription (OPEN-QUESTIONS.md §8.2).
 
 *The only thing between M3 and done. None of what follows can be held by a test — ADR-031.*
 
-- [ ] **A fresh install opens on the first-run screen, and tapping Allow raises the real system
+- [x] **A fresh install opens on the first-run screen, and tapping Allow raises the real system
       dialog.** *It did not before group H: the fake location service answered `granted` without
       asking anything, which is what was seen on a handset and was the fake doing its job.*
+- [ ] **The pin appears.** It did not on 17 September — ADR-044 raised the capture budget from
+      two seconds to twelve and had `currentFix` fall back to the cached fix, because a GPS fix
+      is not a two-second operation indoors. **This is the first thing to re-check.**
 - [ ] The second launch opens on Today. Refusing, then relaunching, does **not** ask again.
-- [ ] **Release mode.** A release build showed a bare `--paper` screen and nothing else; the
+- [ ] **A release build renders.** It showed a bare `--paper` page on 16 September, and the
       router's redirect has since been rewritten off `ref.watch` — which reaches for a `Ref`
-      that has finished building — onto a `refreshListenable`. **Unconfirmed as the cause.** If
-      it recurs, run `flutter run --release` and read the Dart exception, because the release
-      `ErrorWidget` draws nothing useful on its own.
+      that has finished building — onto a `refreshListenable`. The app has drawn Today correctly
+      since, but not in *release*. **Unconfirmed as the cause.** If it recurs, run
+      `flutter run --release` and read the Dart exception: the release `ErrorWidget` paints
+      nothing legible, so the console is the only place the cause shows up.
 - [ ] With the network off: the composer opens instantly, and a chit saved offline carries a
       time and no word, no pin, no motion — **and nothing in the UI mentions the absence**.
-- [ ] With the network on: the word matches the actual weather, and the prompt stops being the
+- [x] With the network on: the word matches the actual weather, and the prompt stops being the
       rain one (ADR-029).
 - [ ] A chit sat on for a minute saves at the time it was **saved** (ADR-040).
 - [ ] A walk outdoors produces the walking mark **in place of** the weather word (ADR-038).

@@ -18,14 +18,17 @@ final class GeolocatorLocationService implements LocationService {
   /// The service.
   const GeolocatorLocationService();
 
-  /// How long one fix may take before it counts as absent.
+  /// How long one fresh fix may take before [lastKnownFix] answers instead.
   ///
-  /// **Shorter than ADR-007's two seconds on purpose.** `AmbientCapture` puts
-  /// its own timeout over the whole capture; this one is inside it, so a fix
-  /// that is merely slow cannot eat the budget the weather call is also
-  /// drawing on. A precise fix is the slower of the two signals (ADR-016) and
-  /// this is where that cost is bounded.
-  static const Duration fixTimeout = Duration(milliseconds: 1500);
+  /// **Ten seconds, and that is not generous.** A high-accuracy fix is a GPS
+  /// fix: cold, indoors, or under cloud it takes tens of seconds and sometimes
+  /// never arrives at all. *This was 1.5s until 17 September, which is why the
+  /// pin never appeared on a handset — the fix was always still coming when the
+  /// timeout fired.*
+  ///
+  /// Nothing waits on this (ADR-044). At launch the capture runs from a
+  /// post-frame callback, and at save it runs behind a row already written.
+  static const Duration fixTimeout = Duration(seconds: 10);
 
   @override
   Future<LocationPermissionOutcome> requestPermission() async {
@@ -75,8 +78,18 @@ final class GeolocatorLocationService implements LocationService {
 
       return _fixOf(position, withKinematics: true);
     } on Object {
-      // Timed out, permission revoked mid-flight, no signal, platform error.
-      return null;
+      // Timed out, no signal, permission revoked mid-flight, platform error.
+      //
+      // **The cached fix answers instead** — ADR-044. Indoors and under cloud a
+      // GPS fix often never arrives at all, and a pin that needs a satellite is
+      // a pin nobody ever sees. A place a few minutes old is the same place at
+      // the resolution §3.6 draws it: the pin says *somewhere was recorded* and
+      // stops there.
+      //
+      // **Its kinematics are dropped**, which is the honest half of this. A
+      // stale coordinate is still true; a stale speed would say `traveling`
+      // about a phone on a desk. So this recovers the pin and never the motion.
+      return lastKnownFix();
     }
   }
 

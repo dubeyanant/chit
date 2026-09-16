@@ -31,9 +31,9 @@ part 'ambient_capture.g.dart';
 final class AmbientCapture {
   /// Captures from the two services.
   ///
-  /// [timeout] is ADR-007's short one and defaults to [defaultTimeout]. It is
-  /// a parameter so that the shape can be tested in milliseconds rather than
-  /// in seconds — not so that a screen can choose its own patience.
+  /// [timeout] defaults to [defaultTimeout]. It is a parameter so that the
+  /// shape can be tested in milliseconds rather than in seconds — not so that
+  /// a screen can choose its own patience.
   ///
   // The fields are assigned rather than declared as initialising formals
   // because a named parameter cannot be private: `prefer_initializing_formals`
@@ -47,10 +47,18 @@ final class AmbientCapture {
   }) : _weather = weather,
        _location = location;
 
-  /// **2 seconds.** ARCHITECTURE.md §4.2's working figure, and it is a ceiling
-  /// rather than a budget: nothing waits for it in the ordinary case, because
-  /// both signals are already back or already `null`.
-  static const Duration defaultTimeout = Duration(seconds: 2);
+  /// **12 seconds** — ADR-044, revising ADR-007's original two.
+  ///
+  /// *Two seconds was right when the composer was waiting on this.* Since
+  /// ADR-042 nothing is: at launch the capture runs from a post-frame callback
+  /// and is never awaited, and at save it runs behind a row already written.
+  /// The old ceiling was protecting a wait that no longer exists, and it cost
+  /// the pin — a high-accuracy fix is a GPS fix, and one of those does not
+  /// arrive in two seconds indoors.
+  ///
+  /// It is a ceiling rather than a budget: each service bounds its own leg
+  /// tighter, and in the ordinary case both are back long before this.
+  static const Duration defaultTimeout = Duration(seconds: 12);
 
   /// How long either signal has before it counts as absent.
   final Duration timeout;

@@ -49,8 +49,11 @@ void main() {
       expect(reading.lon, -0.0005);
     });
 
-    test("the default timeout is ARCHITECTURE.md §4.2's two seconds", () {
-      expect(AmbientCapture.defaultTimeout, const Duration(seconds: 2));
+    test("the default budget is ADR-044's twelve seconds", () {
+      // Twelve, not ADR-007's original two. Nothing waits on a capture since
+      // ADR-042, and two seconds is not long enough for a GPS fix — which is
+      // exactly how the pin came to be missing on a handset.
+      expect(AmbientCapture.defaultTimeout, const Duration(seconds: 12));
     });
   });
 

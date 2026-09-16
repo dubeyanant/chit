@@ -45,10 +45,11 @@ final class OpenMeteoService implements WeatherService {
 
   /// How long the call may take before it counts as absent.
   ///
-  /// **Inside ADR-007's two seconds, not equal to them.** `AmbientCapture`
-  /// bounds the whole capture; this bounds one leg of it, so a slow network
-  /// cannot spend the budget the location call is also drawing on.
-  static const Duration timeout = Duration(milliseconds: 1500);
+  /// **Inside ADR-044's budget, not equal to it.** `AmbientCapture` bounds the
+  /// whole capture; this bounds one leg of it, so a slow network cannot spend
+  /// the time the location call is also drawing on. Five seconds is a mobile
+  /// data figure rather than a wifi one.
+  static const Duration timeout = Duration(seconds: 5);
 
   final LocationService _location;
   final http.Client _client;

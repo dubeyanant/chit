@@ -77,7 +77,17 @@ tick, the empty-day trim, the tick at now in its final form, the haptic, and sav
 That was tried on purpose and it reads. It is the first half of open item 15 — a dozen marks
 across three days is still untried.
 
-### 🔶 And since 16 September — built, not yet seen
+**Seen on a handset, 17 September** — the first time ambient capture was real. The date line,
+the timeline with its tick at now, the open chit, the five-second prompt reading the stamp
+(*"Clear night, and still up. What's keeping you?"*), typing, saving, and the chit landing in
+the thread under *earlier* with its count. **The weather word was right for the actual sky**,
+which is `OpenMeteoService` and `WmoMapping` working end to end.
+
+**Two things that pass came back wrong**, and both are recorded rather than smoothed over: the
+pin was missing (open item 27, fixed by ADR-044 and **not yet re-checked**), and `clear night`
+is drawn where the stock weather app says *partly cloudy* (open item 28, accepted).
+
+### 🔶 And what is built but still unseen
 
 **Motion.** A chit records what the phone was doing: `stationary`, `walking`, `traveling` or
 `flying`, read off the speed of the same fix the pin uses (ADR-037). The stamp draws **one**
@@ -305,8 +315,9 @@ they are cited from other documents — so a closed item keeps its number and sh
     was refused because it is an ambient loop (ADR-027, §6.4), and a clock re-read on every
     rebuild would be unpredictable rather than merely stale. A middle option nobody has tried:
     re-read the preview on the *first keystroke*, which is one event rather than a loop.
-25. ### 🔶 **A release build showed a bare `--paper` screen and nothing else.** Seen on a handset,
-    16 September; **not yet reproduced or confirmed fixed.**
+25. **A release build showed a bare `--paper` screen and nothing else.** Seen 16 September;
+    **the app has since run on a handset and drawn Today correctly**, so this is very probably
+    closed by the router fix below — but nobody has re-run a *release* build to say so.
 
     The same build in **debug** reached the first-run screen and worked. The brown is `--paper`
     (`#191714`), and the Android launch background is white — so Flutter *did* boot and paint a
@@ -325,3 +336,15 @@ they are cited from other documents — so a closed item keeps its number and sh
 26. ~~**Tapping Allow raised no system dialog.**~~ **Closed 17 September** by group H. It was
     `FixedLocationService` answering `granted` without asking anything — the fake doing its job,
     since `GeolocatorLocationService` did not exist yet. The real one raises the dialog.
+27. ~~**The pin never appeared, though weather did.**~~ **Closed 17 September** by ADR-044, and
+    worth keeping as a line because of how it read. Every piece was working: the weather word
+    proved `lastKnownFix()` was answering, and the pin's absence proved `currentFix()` was not.
+    The cause was the **budget**, not the plumbing — a high-accuracy fix is a GPS fix, and
+    ADR-007's two seconds was sized when the composer was still waiting on a capture. Since
+    ADR-042 nothing waits, so the ceiling was protecting nothing and cutting off the fix.
+28. **`clear night` is drawn for Open-Meteo's *partly cloudy*.** Seen on a handset,
+    17 September, beside a stock weather app reading *partly cloudy* — and accepted rather than
+    called a bug. WMO code 2 is *partly cloudy*, and §3.6's word is *"clear or nearly clear"*,
+    so code 2 sits with 0 and 1. It is defensible and it is also the loosest call in
+    `WmoMapping`. If chits start reading `clear night` on nights that were plainly not clear,
+    moving code 2 to `overcast` is a one-line change and the test walks the table either way.

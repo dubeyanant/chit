@@ -6,7 +6,7 @@ editing the old one.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
 at its head — ADR-001 to ADR-020 on 14 September 2026, ADR-021 to ADR-024 on 15 September 2026,
-ADR-025 to ADR-042 on 16 September 2026 and ADR-043 on 17 September. Forty records, not
+ADR-025 to ADR-042 on 16 September 2026 and ADR-043 to ADR-044 on 17 September. Forty-one records, not
 forty-three: **ADR-018, ADR-026
 and ADR-030 have been merged away**, their numbers retired rather than reused, and the note
 below says where each one went.
@@ -56,6 +56,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-041 | Permission is asked once, on first run, behind a screen of our own | not a bare dialog over a blank page |
 | ADR-042 | Ambience is captured at launch and at save, and never in between | no poll, no TTL; the row is written first and patched after |
 | ADR-043 | The weather mapping: a wind threshold, a trusted flag, and one word missing | windy at 25 km/h; m/s throughout; `is_day` trusted; snow has no word |
+| ADR-044 | The capture budget is twelve seconds, and a stale place beats no place | revises ADR-007 — nothing waits on a capture since ADR-042, and the pin was the cost |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
 row without a record.
@@ -1740,3 +1741,65 @@ journal is a worse failure than under-describing the sky. `overcast` is at least
 the published table resolves — an unrecognised one is a *stated* `null` rather than a gap. Wind
 is read even when the code is not, because it is a measured number rather than a category.
 `OpenMeteoService` does transport and parsing and no interpretation.
+
+---
+
+## ADR-044 — The capture budget is twelve seconds, and a stale place beats no place
+
+*17 September 2026. Revises ADR-007's two seconds in the light of ADR-042. Found on a handset:
+the weather word appeared and **the pin never did**.*
+
+**Decision.** Two changes, one cause.
+
+1. **`AmbientCapture`'s ceiling goes from 2 seconds to 12**, and the fix inside it from 1.5
+   seconds to 10.
+2. **`currentFix()` falls back to the last known fix** when a fresh one does not arrive — and
+   **drops its kinematics** when it does.
+
+**Over.** Keeping the short budget and accepting that the pin is drawn only outdoors with a warm
+GPS; and falling back to the cached fix *with* its speed, which would have been simpler.
+
+**Why.**
+
+*Two seconds was right when something was waiting, and nothing is any more.* ADR-007 sized that
+figure when the composer itself drove the capture on every chit open — the number existed to
+stop a screen stalling. ADR-042 moved capture to launch and save: at launch it runs from a
+post-frame callback and is never awaited, and at save it runs behind a row that has already been
+written and is already in the thread. **The ceiling was protecting a wait that no longer
+exists**, and the only thing it was still doing was cutting off the fix.
+
+*A high-accuracy fix is a GPS fix, and a GPS fix is not a two-second operation.* Cold, indoors,
+or under cloud it takes tens of seconds and sometimes never arrives. The handset that found this
+was indoors at half past midnight: the weather word appeared — because ADR-025 reads the
+*cached* fix, which is instant — and the pin did not, because the fresh one was still coming
+when the timeout fired. Every piece was working; the budget was wrong.
+
+*And a pin that needs a satellite is a pin nobody ever sees.* §3.6 draws the pin to say *a place
+was recorded* and nothing else — never a name, never a coordinate, never a map. At that
+resolution a fix from a few minutes ago is the same answer, so falling back to it costs nothing
+the pin was claiming.
+
+*The kinematics are a different matter, and that asymmetry is the whole of the second decision.*
+A stale coordinate is still true. A stale **speed** is not: it would say `traveling` about a
+phone sitting on a desk, which is exactly the confident wrongness ADR-037's accuracy gate exists
+to prevent. So the fallback recovers the pin and never the motion.
+
+**Costs.**
+
+- **A capture can now run for twelve seconds.** Nothing waits on it, but it is twelve seconds of
+  GPS per launch and per save. For a journal whose premise is several chits a day that is a real
+  battery cost, accepted because recording *where* is the feature.
+- **Motion is still rare indoors**, and now visibly rarer than the pin beside it: a chit can
+  carry a pin from the cache with no motion at all. That is honest and it will look like a bug
+  to somebody who does not know this record exists.
+- **The pin can be minutes stale**, and nothing on screen says so. §3.6 already promised the pin
+  says nothing more than *somewhere*, so this narrows what was already narrow — but a chit
+  written after a short walk may pin where the walk started.
+- **The figures are still untuned.** Ten seconds is a guess informed by how GPS behaves, not a
+  measurement, and the first device pass that watches the pin arrive is what should correct it.
+
+**Consequences.** `ARCHITECTURE.md` §4.2's *"2s is the working figure"* is corrected.
+`OpenMeteoService.timeout` goes to 5 seconds — a mobile-data figure rather than a wifi one —
+and stays well inside the ceiling so a slow network cannot spend the time the location call is
+also drawing on. The two legs of a capture still run in parallel and still fail independently
+(ADR-025).

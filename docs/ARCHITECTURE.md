@@ -326,7 +326,8 @@ shape underneath it.
 ### 4.2 Ambient capture
 
 `AmbientStamp` is resolved once, when the open chit is created, and held in `ComposerState`.
-Weather and location run in parallel behind short timeouts (2s is the working figure); the
+Weather and location run in parallel behind timeouts (**12s is the ceiling** — ADR-044, which
+revised ADR-007's original 2s once ADR-042 meant nothing was waiting on a capture); the
 `Clock` is instant. Whatever has not arrived is `null`, and a null field simply is not drawn.
 Nothing here can block, spin, or fail a save (ADR-007).
 
