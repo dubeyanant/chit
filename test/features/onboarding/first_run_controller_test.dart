@@ -211,6 +211,9 @@ final class _Location implements LocationService {
         ? const GeoFix(lat: 1, lon: 2)
         : null;
   }
+
+  @override
+  Future<GeoFix?> lastKnownFix() => currentFix();
 }
 
 final class _Weather implements WeatherService {

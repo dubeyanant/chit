@@ -2,16 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/chit_app.dart';
 import 'core/clock.dart';
 import 'data/audio/audio_store.dart';
 import 'data/db/app_database.dart';
-import 'data/location/fixed_location_service.dart';
+import 'data/location/geolocator_location_service.dart';
 import 'data/preferences/prefs_first_run_store.dart';
 import 'data/repositories/chit_repository_impl.dart';
-import 'data/weather/fixed_weather_service.dart';
+import 'data/weather/open_meteo_service.dart';
 import 'domain/repositories/chit_repository.dart';
 import 'domain/services/ambient_signals.dart';
 import 'domain/services/first_run_store.dart';
@@ -46,15 +47,23 @@ Future<void> main() async {
       firstRunStoreProvider.overrideWith(
         (Ref ref) => PrefsFirstRunStore(prefs),
       ),
-      // Ambient capture, faked for M2 (TASKS.md group D). The interfaces and
-      // the assembly are real; only these two lines are not, and M3's group J
-      // replaces them with `OpenMeteoService` and `GeolocatorLocationService`
-      // without anything above this file noticing.
-      weatherServiceProvider.overrideWith(
-        (Ref ref) => const FixedWeatherService(),
-      ),
+      // **Ambient capture, for real** — M3 group J. *These two lines held
+      // `FixedWeatherService` and `FixedLocationService` from M2 until now, and
+      // nothing above this file changed when they came out.* That was the whole
+      // point of putting the interfaces in `domain` and the assembly in
+      // `AmbientCapture`.
+      //
+      // The order matters and is the one seam ADR-025 warned about: weather
+      // reads its position from the location service, so it is constructed
+      // with it rather than beside it.
       locationServiceProvider.overrideWith(
-        (Ref ref) => const FixedLocationService(),
+        (Ref ref) => const GeolocatorLocationService(),
+      ),
+      weatherServiceProvider.overrideWith(
+        (Ref ref) => OpenMeteoService(
+          location: ref.watch(locationServiceProvider),
+          client: http.Client(),
+        ),
       ),
     ],
   );

@@ -6,7 +6,8 @@ editing the old one.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
 at its head — ADR-001 to ADR-020 on 14 September 2026, ADR-021 to ADR-024 on 15 September 2026,
-ADR-025 to ADR-042 on 16 September 2026. Thirty-nine records, not forty-two: **ADR-018, ADR-026
+ADR-025 to ADR-042 on 16 September 2026 and ADR-043 on 17 September. Forty records, not
+forty-three: **ADR-018, ADR-026
 and ADR-030 have been merged away**, their numbers retired rather than reused, and the note
 below says where each one went.
 
@@ -54,6 +55,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-040 | A chit is stamped when it is saved | reverses ADR-021; absorbs ADR-026, whose number is retired |
 | ADR-041 | Permission is asked once, on first run, behind a screen of our own | not a bare dialog over a blank page |
 | ADR-042 | Ambience is captured at launch and at save, and never in between | no poll, no TTL; the row is written first and patched after |
+| ADR-043 | The weather mapping: a wind threshold, a trusted flag, and one word missing | windy at 25 km/h; m/s throughout; `is_day` trusted; snow has no word |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
 row without a record.
@@ -959,7 +961,7 @@ feature in the app that speaks first from becoming something the eye skips.
   does.
 - **It is more copy to keep in one voice.** Twenty-eight lines is twenty-eight chances to write
   one that sounds like a different product. The tests are the floor and not the ceiling.
-- **In M2 you will only ever see the rain prompts**, because `FixedWeatherService` always says
+- **Until M3 group J you would only ever see the rain prompts**, because the fake weather service always said
   `raining`. That is the fake doing its job, and M3 is where it stops.
 
 **Consequences.** `ComposerState.prompt` is a getter over `Prompts.forStamp(stamp)` rather than
@@ -1664,3 +1666,77 @@ process and owns the *when*; `AmbientCapture` keeps the *what* and loses its clo
 precisely so that the `updatedAt` rule above is expressed in the type rather than remembered. It
 **does not throw on an unknown id**: nobody is waiting on it and no screen could report it, so a
 row deleted between the write and the patch is an ordinary race.
+
+---
+
+## ADR-043 — The weather mapping: a wind threshold, a trusted flag, and one word missing
+
+*17 September 2026. Settles the last two of M3's four open decisions.*
+
+**Decision.** Four things, which belong together because they are all answers to *what does the
+app say when Open-Meteo says X*.
+
+1. **`windy` at 7.0 m/s — 25 km/h.** Beaufort 4: raises dust and loose paper, moves small
+   branches.
+2. **`domain` speaks metres per second throughout**, and the request pins `wind_speed_unit=ms`
+   at the boundary.
+3. **Open-Meteo's `is_day` flag is trusted** for the `clear` / `clearNight` boundary, and when
+   it is absent a clear sky says **nothing at all**.
+4. **Snow maps to `overcast`**, because §3.6 has no word for it.
+
+**Over.** A lower wind threshold; converting km/h somewhere downstream; computing sunrise and
+sunset from the coordinate; and mapping snow to `raining`.
+
+**Why.**
+
+*A word that is true every day carries nothing.* A coastal city sits at 15–20 km/h most
+afternoons. At a 15 km/h threshold every chit written in Mumbai between March and September
+would say `windy`, which is the same failure that keeps `MotionState.stationary` off the screen
+— and the ambient stamp only has one slot to spend (ADR-038). 25 km/h is where wind stops being
+weather you are in and becomes weather you would mention.
+
+*Two units across two domain files is a conversion somebody eventually forgets.* `MotionLadder`
+holds thresholds in m/s and `WmoMapping` now holds one too. Open-Meteo answers in km/h by
+default, so the unit is pinned in the query string — at the boundary, once — rather than
+converted at a call site that a later milestone might duplicate. 8 km/h is a still day and
+8 m/s is a windy one, which is how wrong this goes when it goes wrong, and it is why the test
+asserts the query parameter rather than trusting the comment.
+
+*Computing sunrise is a lot of code for one word boundary.* `is_day` arrives in the same
+response at no extra cost. A solar-position algorithm would need the coordinate, the date and
+correct timezone handling to answer the same question slightly better — and ADR-025 means the
+coordinate may be an hour old anyway.
+
+*And when the flag is missing, there is no honest answer.* `clear` and `clearNight` are the same
+sky and differ only by that flag. Guessing `clear` at two in the morning is exactly the
+confident wrongness ADR-007 prefers to leave blank, so a clear sky with no flag produces no
+word. Nothing else needs it: rain is rain at midnight.
+
+*Snow is a real gap and `overcast` is the least wrong of five bad options.* `WeatherCondition`'s
+own doc says `raining` is "anything falling", which would include snow — but the word drawn on
+the chit would say **raining** while it snowed, and putting a wrong noun in somebody's own
+journal is a worse failure than under-describing the sky. `overcast` is at least true: the sky
+*is* closed.
+
+**Costs.**
+
+- **The threshold is untuned.** Nobody has watched it fire against a real forecast. It is one
+  constant in `domain` with its reasoning beside it, which is the cheapest thing in this
+  milestone to change.
+- **Snow is under-described**, and for an app whose first users are in India that is cheap —
+  until it is not. A sixth word is the real answer and PROGRESS.md carries it.
+- **`windy` outranks `overcast`**, which §3.6 did not license: it said only that windy *"wins
+  over `clear` and never over `raining`"*. A grey sky is a sky's default state and a windy one
+  is not, so the wind is the fact worth the slot — but this is an extension of §3.6 rather than
+  a reading of it, and it is recorded here so it is not mistaken for one.
+- **On a brand-new install the first capture has no weather**, because ADR-025 reads the *last
+  known* fix and there is not one yet. It heals in one capture: the location leg of that same
+  capture is what fills the platform's cache, so by the first **save** — the capture that
+  actually writes a row (ADR-042) — there is a fix. Accepting a one-capture warm-up is cheaper
+  than making weather wait on a fresh precise fix, which is the coupling ADR-025 exists to
+  prevent.
+
+**Consequences.** `WmoMapping.from` takes a code, the flag and a wind speed, and every code in
+the published table resolves — an unrecognised one is a *stated* `null` rather than a gap. Wind
+is read even when the code is not, because it is a measured number rather than a category.
+`OpenMeteoService` does transport and parsing and no interpretation.

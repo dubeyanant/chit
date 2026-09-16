@@ -126,6 +126,18 @@ abstract interface class LocationService {
   /// [LocationPermissionOutcome.denied], because from the app's side there is
   /// nothing to tell apart.
   Future<LocationPermissionOutcome> requestPermission();
+
+  /// The last fix the device happens to have, without asking for a new one.
+  ///
+  /// **Cached and instant, and that is the whole point** — ADR-025. The weather
+  /// call uses this so it never waits on the slow, precise fix [currentFix]
+  /// asks for, which is what keeps ADR-007's two signals genuinely parallel
+  /// rather than one behind the other.
+  ///
+  /// `null` on a device that has never taken one. Its kinematics are **not**
+  /// read for motion: a speed from an hour ago is a lie in a way an hour-old
+  /// coordinate is not (ADR-037).
+  Future<GeoFix?> lastKnownFix();
 }
 
 /// The location service the app runs on.

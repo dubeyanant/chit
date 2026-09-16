@@ -228,6 +228,11 @@ mixin _Grants implements LocationService {
   @override
   Future<LocationPermissionOutcome> requestPermission() async =>
       LocationPermissionOutcome.granted;
+
+  /// Not read here: `AmbientCapture` asks for the current fix, never the
+  /// cached one. Only the weather service reads that (ADR-025).
+  @override
+  Future<GeoFix?> lastKnownFix() async => null;
 }
 
 /// A service that answers [condition], which may be `null`.

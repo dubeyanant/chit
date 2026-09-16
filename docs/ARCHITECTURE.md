@@ -83,11 +83,9 @@ lib/
 │   │   ├── tables/chits_table.dart
 │   │   └── daos/chit_dao.dart
 │   ├── audio/audio_store.dart      temp → permanent, delete, orphan sweep
+│   ├── weather/open_meteo_service.dart      one call; maps via domain/weather
+│   ├── location/geolocator_location_service.dart  the fix, and the one ask
 │   ├── preferences/prefs_first_run_store.dart  shared_preferences (ADR-041)
-│   ├── weather/open_meteo_service.dart      calls out; maps via domain/weather
-│   ├── weather/fixed_weather_service.dart   M2 only; M3 deletes it
-│   ├── location/geolocator_location_service.dart
-│   ├── location/fixed_location_service.dart M2 only; M3 deletes it
 │   ├── speech/on_device_speech_recognizer.dart
 │   └── repositories/chit_repository_impl.dart
 │

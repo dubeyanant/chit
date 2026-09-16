@@ -6,10 +6,9 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 16 September 2026, **part way into M3**. Motion is captured, stored, ranked,
-drawn and prompted on; a fresh install now asks for location behind a screen of its own; and a
-chit is stamped when it is **saved** rather than when it was opened. **None of it has been on a
-device yet.** The milestone's two real services are not written and the fakes are still wired in.
+**Last updated:** 17 September 2026. **M3 is code-complete**: motion, the first-run screen, the
+capture lifecycle, the WMO mapping, and both real services — the fakes are gone. What is left is
+**a device**, and the two things a handset has already said are wrong (open items 25 and 26).
 
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s table is the
 ledger of what is done. What belongs here is the present: where the build is, what the next
@@ -27,15 +26,15 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021, since **superseded by ADR-040** |
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
-| **M3** — ambient capture | 🔶 **in progress** | motion, first run and the capture lifecycle are done (A–F2); the two real services and the swap are not (G–K). [TASKS.md](TASKS.md) |
+| **M3** — ambient capture | 🔶 **code complete** | every group built (A–K). **Awaits a device pass** — TASKS.md group L |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**290 tests, `flutter analyze` clean, `dart format` clean, debug APK builds.** *But **nothing
-below marked 🔶 has been looked at on a screen.** Motion compiles, is tested, and cannot fire —
-the fakes carry no speed. The first-run screen has never been rendered.*
+**323 tests, `flutter analyze` clean, `dart format` clean, debug and release APKs build.**
+*But **nothing below marked 🔶 has been looked at on a working screen.** The one build that did
+reach a handset in release showed a bare `--paper` page and nothing else — open item 25.*
 
 ---
 
@@ -64,10 +63,9 @@ Below the thread the चित्त mark closes the day. An empty day reads *"N
 today."* with no rail and no count. Tapping *calendar* cross-fades to a placeholder line that M4
 deletes.
 
-*The weather word and the pin are fixed fakes until M3's group J and will always read `raining`
-at the Royal Observatory — that is `FixedWeatherService` and `FixedLocationService` doing their
-job, not a bug. `FixedLocationService` carries no speed, so **motion is always absent on a
-handset today** and the stamp looks exactly as it did at the end of M2.*
+*Weather, the pin and motion are **real** as of 17 September — `OpenMeteoService` and
+`GeolocatorLocationService` replaced the two fixed fakes, which are deleted. Nothing above
+`main.dart` changed when they came out, which was the whole point of M2 group D.*
 
 **Signed off on a handset, 16 September**, at the end of the milestone: the palette, the slip,
 the field, the stamp, Discard, the prompt, the thread, saving — including a long chit — the
@@ -156,37 +154,32 @@ after this one, not only the one that introduced them.
 
 ---
 
-## Next: M3 — the two services, and the swap
+## Next: M3 needs a device, and nothing else
 
-Motion, first run and the capture lifecycle are finished (TASKS.md A–F2). **What is left is what
-M3 always was**, and it is gated on the **two** decisions still open in group F: the wind
-threshold with the `is_day` rule, and what a fresh install gets before it has ever had a fix.
+**Every group is built** (TASKS.md A–K). The milestone is code-complete and unverified, which is
+an uncomfortable combination and the reason this section is short: the next session's job is to
+hold a phone, not to write anything.
 
-**Group G — the WMO mapping — needs only the first of those**, and it is the thing to build
-next. It has a worked example sitting beside it: `domain/motion/motion_ladder.dart` is the same
-shape, the same layer, the same kind of table-driven test.
+**Start with open item 25 — the release-mode blank screen.** `flutter run --release`, read the
+Dart exception, and either close the item or fix what it names. Everything else on TASKS.md
+group L is downstream of the app rendering at all.
 
-Then H (`GeolocatorLocationService`), I (`OpenMeteoService`), J (the swap and the two deletions)
-and K (the doc loop).
+Then the rest of group L, in the order a single sitting allows: a fresh install through the
+first-run screen and the real system dialog; a relaunch that does not ask again; the network off
+and then on; a chit sat on for a minute; and a walk outdoors.
 
-**Three things to carry into H**, all of which the work since M2 put there:
+**Two things are most likely to be wrong**, and both are ordinary rather than alarming:
 
-- **`GeoFix` is a class now, not a record.** It carries `speed`, `speedAccuracy` and `altitude`
-  beside the coordinate, all nullable. `GeolocatorLocationService` fills them from `Position`
-  **untouched and unjudged** — the ladder in `domain` decides what they mean.
-- **`LocationService.requestPermission()` is already on the interface**, and the first-run screen
-  is already calling it. H implements it over geolocator; nothing above `data` changes.
-  **`currentFix()` must never raise a dialog** — a capture that could is a system prompt over a
-  chit somebody is writing.
-- **`Position.speedAccuracy` may be `0.0` for *unknown*.** `MotionLadder` reads zero as unknown,
-  which is the conservative reading; if a platform means it literally, motion sticks at
-  `stationary` forever and looks like a feature that does not work. **This is the single most
-  likely thing to be wrong about motion**, and nothing in the suite can settle it.
+- **`Position.speedAccuracy` may be `0.0` for *unknown*.** The ladder reads zero as unknown. If
+  a platform means it literally, motion sticks at `stationary` for ever and looks like a broken
+  feature rather than a conservative one. Open item 18.
+- **The three motion marks have never been seen at 12px.** Open item 19. `design/chit-app-v6.html`
+  is where to change them, and the app follows it.
 
-**And one thing to do before any of that, because it costs ten minutes:** build the APK and look
-at it. Two of the three claims worth checking are available today even with the fakes in — that
-a fresh install opens on the first-run screen and the second launch does not, and that a chit
-sat on for a minute saves at the time it was *saved*. The rest waits for group J.
+When group L passes: BUILD-PLAN.md M3 gets its ✅ and what the milestone taught, and TASKS.md is
+replaced with M4 — the calendar. M4 should start by writing DATA-MODEL.md §7's debug seeder
+(open item 10), because the calendar and the timeline both want several days of history and
+ADR-035 means an empty yesterday is not even drawn.
 
 ---
 
@@ -312,3 +305,23 @@ they are cited from other documents — so a closed item keeps its number and sh
     was refused because it is an ambient loop (ADR-027, §6.4), and a clock re-read on every
     rebuild would be unpredictable rather than merely stale. A middle option nobody has tried:
     re-read the preview on the *first keystroke*, which is one event rather than a loop.
+25. ### 🔶 **A release build showed a bare `--paper` screen and nothing else.** Seen on a handset,
+    16 September; **not yet reproduced or confirmed fixed.**
+
+    The same build in **debug** reached the first-run screen and worked. The brown is `--paper`
+    (`#191714`), and the Android launch background is white — so Flutter *did* boot and paint a
+    surface, and it is the content that is missing rather than the app failing to start.
+
+    **One real bug in that area has been fixed since:** the router's `redirect` called
+    `ref.watch`, which reaches for a `Ref` that has finished building. It now reads once and
+    drives go_router's `refreshListenable`, which is both correct and cheaper — the old shape
+    would have rebuilt the provider and constructed a second `GoRouter` with empty navigation
+    stacks. **Whether that was *this* failure is unconfirmed**, and saying otherwise would be a
+    guess dressed as a diagnosis.
+
+    **How to settle it in one run:** `flutter run --release` and read the Dart exception. The
+    release `ErrorWidget` paints nothing legible, so the console is the only place the cause
+    appears. That is the first thing to do with a device.
+26. ~~**Tapping Allow raised no system dialog.**~~ **Closed 17 September** by group H. It was
+    `FixedLocationService` answering `granted` without asking anything — the fake doing its job,
+    since `GeolocatorLocationService` did not exist yet. The real one raises the dialog.

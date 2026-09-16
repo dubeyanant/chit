@@ -136,6 +136,9 @@ final class _CountingLocation implements LocationService {
   }
 
   @override
+  Future<GeoFix?> lastKnownFix() async => fix;
+
+  @override
   Future<LocationPermissionOutcome> requestPermission() async =>
       LocationPermissionOutcome.granted;
 }
@@ -148,6 +151,9 @@ final class _ThrowingWeather implements WeatherService {
 final class _ThrowingLocation implements LocationService {
   @override
   Future<GeoFix?> currentFix() async => throw const _Failure();
+
+  @override
+  Future<GeoFix?> lastKnownFix() async => throw const _Failure();
 
   @override
   Future<LocationPermissionOutcome> requestPermission() async =>

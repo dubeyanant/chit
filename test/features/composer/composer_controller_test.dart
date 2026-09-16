@@ -114,30 +114,33 @@ void main() {
       expect((await onlyChit()).createdAt, savedAt);
     });
 
-    test('a chit written across a midnight is filed on the day it was saved', () async {
-      // The failure a whole second record used to exist to contain, now
-      // impossible rather than merely handled: under ADR-021 a chit opened at
-      // 23:58 and saved at 00:05 was filed on the previous day.
-      final DateTime beforeMidnight = DateTime(2026, 9, 15, 23, 58);
-      final DateTime afterMidnight = DateTime(2026, 9, 16, 0, 5);
+    test(
+      'a chit written across a midnight is filed on the day it was saved',
+      () async {
+        // The failure a whole second record used to exist to contain, now
+        // impossible rather than merely handled: under ADR-021 a chit opened at
+        // 23:58 and saved at 00:05 was filed on the previous day.
+        final DateTime beforeMidnight = DateTime(2026, 9, 15, 23, 58);
+        final DateTime afterMidnight = DateTime(2026, 9, 16, 0, 5);
 
-      clock.moveTo(beforeMidnight);
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
+        clock.moveTo(beforeMidnight);
+        final ProviderContainer container = containerOf();
+        final ComposerController composer = container.read(
+          composerControllerProvider.notifier,
+        );
 
-      composer.edit('Still awake.');
-      clock.moveTo(afterMidnight);
-      await composer.save();
+        composer.edit('Still awake.');
+        clock.moveTo(afterMidnight);
+        await composer.save();
 
-      final List<Chit> next = await repo
-          .watchDay(Chit.localDayOf(afterMidnight))
-          .first;
+        final List<Chit> next = await repo
+            .watchDay(Chit.localDayOf(afterMidnight))
+            .first;
 
-      expect(next, hasLength(1));
-      expect(next.single.localDay, Chit.localDayOf(afterMidnight));
-    });
+        expect(next, hasLength(1));
+        expect(next.single.localDay, Chit.localDayOf(afterMidnight));
+      },
+    );
 
     test('saving opens a new chit, stamped at that moment', () async {
       final ProviderContainer container = containerOf();
@@ -212,6 +215,9 @@ final class _Location implements LocationService {
 
   @override
   Future<GeoFix?> currentFix() async => answer;
+
+  @override
+  Future<GeoFix?> lastKnownFix() async => answer;
 
   @override
   Future<LocationPermissionOutcome> requestPermission() async =>
