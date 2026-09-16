@@ -22,8 +22,10 @@ part of 'composer_controller.dart';
 /// capturing again — that is the whole decision, and it fails silently if it is
 /// got wrong, because a re-captured stamp is still a perfectly plausible time.
 ///
-/// The five-second prompt's timer belongs here too, not in the widget
-/// (ARCHITECTURE.md §4.3). It arrives with TASKS.md group F.
+/// **The five-second prompt's timer lives here, not in the widget**
+/// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
+/// is laid out again — a keyboard arriving, the action row growing by two
+/// controls — has not been idle for any less time than it was a frame ago.
 
 @ProviderFor(ComposerController)
 final composerControllerProvider = ComposerControllerProvider._();
@@ -42,8 +44,10 @@ final composerControllerProvider = ComposerControllerProvider._();
 /// capturing again — that is the whole decision, and it fails silently if it is
 /// got wrong, because a re-captured stamp is still a perfectly plausible time.
 ///
-/// The five-second prompt's timer belongs here too, not in the widget
-/// (ARCHITECTURE.md §4.3). It arrives with TASKS.md group F.
+/// **The five-second prompt's timer lives here, not in the widget**
+/// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
+/// is laid out again — a keyboard arriving, the action row growing by two
+/// controls — has not been idle for any less time than it was a frame ago.
 final class ComposerControllerProvider
     extends $NotifierProvider<ComposerController, ComposerState> {
   /// The open chit's state.
@@ -60,8 +64,10 @@ final class ComposerControllerProvider
   /// capturing again — that is the whole decision, and it fails silently if it is
   /// got wrong, because a re-captured stamp is still a perfectly plausible time.
   ///
-  /// The five-second prompt's timer belongs here too, not in the widget
-  /// (ARCHITECTURE.md §4.3). It arrives with TASKS.md group F.
+  /// **The five-second prompt's timer lives here, not in the widget**
+  /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
+  /// is laid out again — a keyboard arriving, the action row growing by two
+  /// controls — has not been idle for any less time than it was a frame ago.
   ComposerControllerProvider._()
     : super(
         from: null,
@@ -90,7 +96,7 @@ final class ComposerControllerProvider
 }
 
 String _$composerControllerHash() =>
-    r'374bf7f9106f6471fca082b0e9edd27237f4bc3d';
+    r'59bea23a343a61a20eda748196f001ff356bd55a';
 
 /// The open chit's state.
 ///
@@ -106,8 +112,10 @@ String _$composerControllerHash() =>
 /// capturing again — that is the whole decision, and it fails silently if it is
 /// got wrong, because a re-captured stamp is still a perfectly plausible time.
 ///
-/// The five-second prompt's timer belongs here too, not in the widget
-/// (ARCHITECTURE.md §4.3). It arrives with TASKS.md group F.
+/// **The five-second prompt's timer lives here, not in the widget**
+/// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
+/// is laid out again — a keyboard arriving, the action row growing by two
+/// controls — has not been idle for any less time than it was a frame ago.
 
 abstract class _$ComposerController extends $Notifier<ComposerState> {
   ComposerState build();

@@ -157,18 +157,37 @@ thread. **Until then Save is drawn and does nothing**, which is a state this mil
   `ProviderScope` no longer starts the app: Today builds the open chit, which needs the two
   services that `domain` leaves unimplemented on purpose.
 
-## F. The five-second prompt ⬜
+## F. The five-second prompt ✅ done 16 September 2026
 
 *Separable from E, and worth its own commit because it is all timing.*
 
-- [ ] The timer lives in the controller, not the widget (ARCHITECTURE.md §4.3). First character
+- [x] The timer lives in the controller, not the widget (ARCHITECTURE.md §4.3). First character
       cancels it; clearing the field starts it again.
-- [ ] 700ms appearance, and it **survives reduced motion at 140ms** — `ChitMotion.fade`, never
+- [x] 700ms appearance, and it **survives reduced motion at 140ms** — `ChitMotion.fade`, never
       `travel`.
-- [ ] **Not `hintText`.** An overlay, because §3.5 warns that placeholder text is the tempting
+- [x] **Not `hintText`.** An overlay, because §3.5 warns that placeholder text is the tempting
       shortcut here and M5's failure note lands in the same place.
-- [ ] The caret blink stops under reduced motion — §6.4 lists it as an ambient loop.
-- [ ] Tests: the five seconds, the cancel, and the restart, against a fake clock.
+- [x] The caret blink stops under reduced motion — §6.4 lists it as an ambient loop.
+- [x] Tests: the five seconds, the cancel, and the restart, against a fake clock.
+
+**The drawn caret came with it, and was not on this list.** ADR-023 means the app opens with
+nothing focused, so until the first tap there is no caret at all — a blank area with nothing
+saying it is live. It is in the same overlay as the prompt, it is what §6.4's ambient-loop rule
+actually applies to in M2, and it goes when the field takes focus.
+
+Three things the rest of M2 inherits:
+
+- **ADR-027 — an ambient loop is not a pace.** The caret's 1.15s is a constant on the caret and
+  `ChitMotion.loop` applies §6.4 to it. M5's record dot and waveform do the same; none of them
+  adds a `ChitPace`.
+- **A loop stops *drawn*.** Zero period means start no ticker, not hide the thing. Hiding the
+  caret would take away the signal along with the movement.
+- **The framework's caret still blinks once the field is focused**, and Flutter offers no way
+  to steady it that does not also hide it. Open item 14; M7's floors pass owns it.
+
+*The five seconds are `ComposerController.idle` — a product rule, not a pace, and not on the
+clock either: `Clock` says what time it is and a `Timer` says how long since. Tests drive it
+with `tester.pump(idle)`, which is exact.*
 
 ## G. The thread, and Save end to end ⬜
 

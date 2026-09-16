@@ -96,6 +96,29 @@ void main() {
     });
   });
 
+  group('ambient loops', () {
+    const Duration caretBlink = Duration(milliseconds: 1150);
+
+    test('run at their own period, which is the component\'s', () {
+      expect(motion.loop(caretBlink), caretBlink);
+    });
+
+    test('stop outright under reduced motion, rather than hurrying', () {
+      // §6.4 lists them: the caret blink, the pulse at now, the breathing
+      // record dot, the live waveform. Zero is the signal to start no ticker
+      // at all and draw the thing at rest — *visible*, and still.
+      expect(reduced.loop(caretBlink), Duration.zero);
+    });
+
+    test('are not in the pace table, and could not be', () {
+      // A loop has a period; the five paces are how long a transition takes.
+      // The caret's 1.15s is longer than the prompt's 700ms and is not a
+      // slower piece of motion, which is exactly the comparison the table
+      // invites — so it stays out of it. §6.3.
+      expect(caretBlink, greaterThan(motion.travel(ChitPace.prompt)));
+    });
+  });
+
   group('resolve', () {
     test('returns the same instance when the flag already matches', () {
       expect(identical(motion.resolve(reduceMotion: false), motion), isTrue);

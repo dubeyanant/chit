@@ -237,6 +237,7 @@ class ComposerState {
   AmbientStamp  stamp;
   bool          isRecording;   // the sheet is up
   bool          sttFailed;     // drives the §3.5 note, and nothing else
+  bool          showPrompt;    // the five seconds of §3.3 have run
 }
 
 bool get canSave => text.trim().isNotEmpty || audioTempPath != null;
@@ -316,7 +317,25 @@ The timer lives in `ComposerController`, not in the widget, so a rebuild does no
 First character cancels it; clearing the field starts it again. The 700ms appearance is
 `ChitMotion.fade` and therefore survives reduced motion, at 140ms — it is the whole event, and
 collapsing it would delete the behaviour rather than calm it. The five seconds are a product
-rule, not an animation, and never change.
+rule, not an animation, and never change: `ComposerController.idle`, not a pace.
+
+**A rebuild is the thing this is defending against, and it is invisible when it fails.** The
+field is laid out again whenever the keyboard arrives or the action row grows by two controls,
+and a timer held in the widget would go back to five seconds each time — the prompt still
+appears, just later, and only sometimes. `ref.onDispose` cancels it; **Discard** arms it again,
+because ADR-026 makes that a chit that has just opened.
+
+**It is drawn over the field, never into it.** `hintText` is the shortcut §4.1 warns about and
+it is wrong three times over: a hint is announced as a label on the field, it arrives on
+Material's schedule rather than after five seconds, and it has nowhere to put a caret. The
+overlay is a row — the caret, a gap, the prompt — laid over the top of the field's own box, and
+because the field's first line starts at the top of that box the two set on one baseline. M5's
+§3.5 note lands in the same overlay, for the same reason.
+
+**The caret in that overlay is the app's only caret until the field is focused** (ADR-023), and
+it is what says the page is live. It blinks at `ChitMotion.loop` and therefore stops under
+reduced motion — **drawn and still**, not hidden (ADR-027). Once the field has focus the
+framework draws the real one and this one goes; two carets is one too many.
 
 ### 4.4 Recording
 

@@ -7,7 +7,7 @@ Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
 **Last updated:** 16 September 2026, after M1, after v6 — which moved the documents and then the
-code behind them — and after M2 groups A, B, C, D and E.
+code behind them — and after M2 groups A, B, C, D, E and F.
 
 ---
 
@@ -18,24 +18,31 @@ code behind them — and after M2 groups A, B, C, D and E.
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
-| **M2** — Today, text only | 🔶 in progress | groups A–E of [TASKS.md](TASKS.md) done; **F and G are next**. ADR-023 to ADR-026 |
+| **M2** — Today, text only | 🔶 in progress | groups A–F of [TASKS.md](TASKS.md) done; **G is next**. ADR-023 to ADR-027 |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**206 tests, `flutter analyze` clean, debug APK builds.**
+**224 tests, `flutter analyze` clean, debug APK builds.**
 
 **On a handset:** the masthead on `--paper`, a two-tab bar, and **the open chit** — a slip with
 its tear edge and the pad behind it, its stamp reading `3:42 pm   raining   ⌖` spaced and never
-separated, a page to write on, and a microphone leading the action row. Typing brings
+separated, a page to write on with a caret blinking on it, and a microphone leading the action
+row. Leave it five seconds and *"What just happened?"* fades in beside the caret. Typing brings
 **Discard** and **Save chit**; Discard works, and Save is drawn and does nothing until group G.
 Tapping *calendar* cross-fades to a placeholder line that M4 deletes. Below the slip there is
 nothing yet: the date line and the thread arrive with G, the timeline with H.
 
-*Nobody has looked at any of it on a device. Group E is the first milestone work with real
-type on a real surface, which is what open item 1 has been waiting for.*
+**It has been run on a device**, after group E and before F. What was confirmed there: the slip,
+the field and the stamp all render, typing brings the two controls, and **Discard works**. Save
+and the microphone do nothing, which is what they are meant to do until G and M5 respectively —
+both are drawn now only because §4.1's action row is a layout that has to settle as one thing.
+*The weather word and the pin are fixed fakes until M3 and always will read `raining` at the
+Royal Observatory; that is `FixedWeatherService` and `FixedLocationService` doing their job, not
+a bug.* Nobody has yet compared Newsreader against the prototype side by side, so **open item 1
+is still open** — there is now real text on a real surface to do it with.
 
 *The palette was confirmed on a device on 15 September, before the shell existed: dark warm
 brown, "chit चित्त" in the gutter — `--paper` `#191714` behaving exactly as §6.1 sets it. Nobody
@@ -572,13 +579,76 @@ wash visible to a test.
 
 ---
 
-## Next: M2 groups F and G
+## M2 group F — the five-second prompt
 
-**F — the five-second prompt.** All timing, and separable: the timer lives in the controller
-rather than the widget (ARCHITECTURE.md §4.3), 700ms, and it **survives reduced motion** at
-140ms because it is the whole event rather than decoration. Not `hintText` — an overlay, which
-is also where M5's failure note lands. The caret blink stops under reduced motion. The field
-and the controller it needs are both in place.
+All timing, and every claim in it fails quietly. *"A prompt shown immediately is an
+instruction. A prompt shown after a pause is an offer."*
+
+- `ComposerController` gained the timer and `ComposerState` gained `showPrompt` — the five
+  seconds are `ComposerController.idle`, a **product rule rather than a pace** (§4.3), so they
+  are not in the motion table and they do not move under reduced motion.
+- `open_chit.dart` gained the ghost: an overlay over the empty field holding the caret, a gap,
+  and the prompt. It is laid over the field's own box, and because the field's first line
+  starts at the top of that box the two set on one baseline — there is a test for it, because a
+  prompt half a line off is a second column of text.
+- `ChitMotion.loop` — **ADR-027**, below.
+- **Eighteen tests**, 206 → 224, in a suite of their own.
+
+### The caret was not on the list, and is the better half of the group
+
+ADR-023 opens the app with nothing focused, so until the first tap there is no caret at all —
+which leaves the page a blank area with nothing saying it is live. The prototype draws one and
+hides it on focus, and the reason only becomes obvious once you have the app in your hand: the
+drawn caret *is* the affordance ADR-023 traded the keyboard for.
+
+It is also the only place in M2 where §6.4's **ambient loop** rule has anything to apply to, and
+applying it turned up the distinction ADR-027 records. It stops **drawn** rather than hidden —
+hiding it would take the signal away along with the movement, and §6.4's whole sentence is that
+movement collapses while feedback does not.
+
+### ADR-027 — an ambient loop is not a pace
+
+The obvious move is `ChitPace.blink` at 1150ms, and `ChitMotion.travel`'s own doc comment
+invites it by name. It is wrong, and the existing tests say so out loud: §6.3 claims the idle
+prompt is *"deliberately slower than everything else"* and `chit_motion_test.dart` holds that by
+walking `ChitPace.values`. A blink pace would have broken that test while saying nothing true —
+the caret is not slower motion than the prompt, it is a different quantity.
+
+So `loop(Duration period)` takes the period rather than naming it, and **the period belongs to
+the component that loops**, exactly as §6.3 already allows for a dimension that belongs to one
+component. What stays in `ChitMotion` is the decision: zero under reduced motion, so a looping
+widget has no `reduceMotion` branch of its own.
+
+### Three things this group found
+
+1. **A repeating `AnimationController` is a `pumpAndSettle` that never settles.** It schedules a
+   frame for ever, so `pumpAndSettle` pumps until it times out — every test that boots the app
+   would have failed, not just the caret's. A `Timer.periodic` schedules a frame only when it
+   ticks, and the blink is a step rather than a curve anyway, so the right tool was also the
+   cheap one. *Same family as group C's `toImage()` hang: the obvious widget for an animation is
+   the wrong one under the test binding.*
+2. **`flutter_test` unmounts the tree before it checks for pending timers**, which is what makes
+   a controller-held timer safe: `ref.onDispose` cancels it as the `ProviderScope` goes. Worth
+   knowing because the failure message — *"A Timer is still pending even after the widget tree
+   was disposed"* — reads as though it does not.
+3. **The test helpers cost exactly 100ms of fake time and nothing else.** `pumpChitApp` settles
+   in one 100ms pump; `enterText` and a bare `pump()` cost zero. So a timing test that types a
+   character and takes it away again starts its five seconds at a known instant, and
+   `tester.pump(idle)` is exact rather than approximate. No `fake_async` dependency was needed.
+
+**One thing it could not do.** §6.4 says the caret blink stops under reduced motion, and that is
+now true of the caret this app draws. **The framework's own caret, once the field has focus,
+still blinks.** `TickerMode(enabled: false)` stops it by setting its opacity to zero — it
+vanishes, which is worse than the blink — and `EditableText.debugDeterministicCursor` is a test
+hook rather than an API. Open item 14; M7's floors pass owns it, and on a stock Android keyboard
+every other text field blinks too.
+
+**Verified:** `flutter analyze` clean, `flutter test` 224 passing, `dart format` clean,
+`dart run build_runner build` clean.
+
+---
+
+## Next: M2 group G
 
 **G — the thread, and Save end to end.** Where M2 becomes an app somebody could use: the date
 line, `earlier` and its count, the thread off `watchDay`, the empty state, and Save wired to
@@ -600,7 +670,7 @@ The first screen a person could use. Full statement of done in
 `design/chit-app-v6.html` is the target. The spine it draws from is all in place.
 
 **[TASKS.md](TASKS.md) is the working list** — M2 in ten groups, A to J, each one buildable and
-committable on its own. A to E are done; F and G are next, and the section above says what they are.
+committable on its own. A to F are done; G is next, and the section above says what it is.
 
 Worth knowing for the rest of the milestone:
 - **The composer holds the stamp from the moment it opens** (ADR-021). Weather and location are
@@ -730,3 +800,25 @@ Things a future session needs to know but that are not yet scheduled work.
     Found by the hairline "collapse detector" in `contrast_test.dart` failing the first time the
     token moved — a floor written in M0b against a token being *tuned* into invisibility, which
     instead caught a different token moving underneath it.
+
+14. **The framework's caret still blinks under reduced motion.** New with M2 group F, and it
+    belongs to M7's floors pass.
+
+    DESIGN-SYSTEM.md §6.4 lists the caret blink among the ambient loops that stop outright. The
+    caret **chit draws** — the one on an untouched field, which is the only one there is until
+    the first tap (ADR-023) — now does. Once the field has focus, Flutter draws its own, and
+    there is no public way to steady it:
+
+    - `TickerMode(enabled: false)` stops the blink by setting the cursor's opacity to **zero**.
+      The caret vanishes rather than resting, which is worse than the blink — it removes the
+      thing the rule exists to protect.
+    - `EditableText.debugDeterministicCursor` does exactly the right thing and is documented as
+      *"useful for testing purposes"*. It is a `debug`-prefixed global that would apply to every
+      field in the app, and reaching for it to satisfy an accessibility floor is a hack that
+      will read as one to whoever finds it.
+
+    Some perspective before anyone spends a day on it: a stock Android keyboard blinks its
+    caret whatever the animation setting says, so this matches every other text field on the
+    device rather than standing out. The two honest ways forward are a framework issue, or
+    accepting it and writing that down in §6.4 as a stated limit rather than a silent one — it
+    is currently written there as the latter, pointing here.

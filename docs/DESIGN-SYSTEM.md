@@ -240,6 +240,21 @@ day should look empty (BEHAVIOUR.md §4.1).
   | The idle prompt | 700ms, deliberately slower than everything else (§3.3) |
   | Exits | always quicker than entrances; a slow dismissal reads as lag |
 
+  **The prompt fades and does not rise.** *The prototype lifts it 2px as it arrives.* It has a
+  pace of its own in that table rather than being filed under authored arrival, and M2 group E
+  made the same call for Discard and Save: a rise is what the three moments with any authorship
+  are for, and borrowing it makes an offer look like an event. What the prompt does need is to
+  **survive** reduced motion, which is why it is a fade — at 140ms it is still an offer, and at
+  nothing it is not there at all (ARCHITECTURE.md §4.3).
+
+  **An ambient loop has a period, not a pace, and the period belongs to the thing that loops.**
+  The caret blinks at **1.15s**, half on and half off; it is a constant on the caret the way
+  54px is a constant on the microphone, and `ChitMotion.loop` applies §6.4's rule to it rather
+  than holding the number. The four loops §6.4 names — the caret blink, the pulse at now, the
+  breathing record dot, the live waveform — are deliberately not rows above: the caret's 1.15s
+  is longer than the prompt's 700ms and is not slower motion, and one table holding both
+  invites exactly that comparison. **ADR-027**.
+
   The staggered arrival (fade plus 6px rise, 55–60ms apart, capped) plays when a screen
   is first built and then sheds itself. Returning to a tab costs a 200ms fade and nothing
   more — Today is opened many times a day, and a re-run entrance would turn that into waiting.
@@ -282,6 +297,14 @@ Enforced, and verified on every revision:
   breathing record dot, the live waveform. What survives is opacity and colour — arrivals
   become a plain fade going nowhere, the scrim still dims, buttons still respond. Reducing
   motion should cost a user animation, not confirmation that their action landed.
+
+  **A loop stops at rest, not at nothing.** The caret is the case that shows why: it is the one
+  thing telling the user the empty page is theirs to write on, so stopping its blink by hiding
+  it would take the signal away along with the movement. M2 builds this for the **drawn** caret
+  — the one on an untouched field, which is the only caret there is until the user taps
+  (ADR-023). *The framework's own caret, once the field has focus, still blinks: Flutter offers
+  no way to steady it that does not also hide it.* PROGRESS.md open item 14 carries that, and
+  M7's pass owns it.
 - **Semantics** — heading levels never skip, controls that do nothing are not marked up as
   controls, and anything the user typed is escaped before it reaches the DOM.
 

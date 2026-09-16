@@ -92,6 +92,22 @@ final class ChitMotion extends ThemeExtension<ChitMotion> {
   Duration travel(ChitPace pace) =>
       reduceMotion ? Duration.zero : durations[pace]!;
 
+  /// How long one cycle of an **ambient loop** takes — the caret blink, the
+  /// pulse at now, the breathing record dot, the live waveform (§6.4).
+  ///
+  /// [Duration.zero] under reduced motion, exactly as [travel]: a loop stops
+  /// outright rather than slowing down, and a caller that gets zero should
+  /// draw the thing at rest and start no ticker at all.
+  ///
+  /// **[period] is the loop's own and belongs to the component that loops**,
+  /// which is why this takes a duration where [travel] takes a [ChitPace]. A
+  /// loop has a period rather than a duration; periods are not comparable to
+  /// transitions or to each other, and putting the caret's 1.15s in the pace
+  /// table would make §6.3's *"the prompt is the slowest thing in the app"*
+  /// false for no gain. §6.3 says the same about dimensions that belong to one
+  /// component, for the same reason.
+  Duration loop(Duration period) => reduceMotion ? Duration.zero : period;
+
   /// How long a change in *opacity or colour* should take.
   ///
   /// Survives reduced motion. Arrivals become a plain fade going nowhere at

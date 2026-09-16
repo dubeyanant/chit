@@ -39,6 +39,13 @@ abstract class ComposerState with _$ComposerState {
     /// Where those words came from. `null` while there are none.
     TextOrigin? textOrigin,
 
+    /// Whether the five-second prompt is being offered — BEHAVIOUR.md §3.3.
+    ///
+    /// It is state rather than a widget's own business because the five
+    /// seconds have to survive a rebuild: a timer in the widget restarts
+    /// every time the field is laid out again (ARCHITECTURE.md §4.3).
+    @Default(false) bool showPrompt,
+
     /// Set once a recording is kept, and cleared only by Discard. **M5.**
     String? audioTempPath,
 

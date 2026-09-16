@@ -5,7 +5,7 @@ it was chosen over, and what it costs. Superseding a record means adding a new o
 editing the old one.
 
 Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-to ADR-024 on 15 September 2026, ADR-025 and ADR-026 on 16 September 2026.
+to ADR-024 on 15 September 2026, ADR-025 to ADR-027 on 16 September 2026.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -38,6 +38,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-024 | The day arc becomes the timeline | three days, full days, scrollable, proportional |
 | ADR-025 | The weather service takes no position | clarifies ADR-007 against ADR-016 — how the two signals stay parallel |
 | ADR-026 | Discard opens a new chit, and that means a new stamp | what §3.1's "empty state" means for `createdAt` |
+| ADR-027 | An ambient loop is not a pace | refines ADR-010 and ADR-020 — where a looping period lives |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -844,3 +845,50 @@ Nothing is lost by treating it as new, because nothing was saved.
 `copyWith` that blanks the text — the same path the controller takes when it is first built, so
 there is one way for a chit to come into existence. BEHAVIOUR.md §3.1 now says which reading of
 "empty state" is meant.
+
+---
+
+## ADR-027 — An ambient loop is not a pace
+
+*16 September 2026. Refines ADR-010 and ADR-020. Settles where a looping animation's period
+lives, with three more loops still to build.*
+
+**Decision.** `ChitMotion` gets `loop(Duration period)` beside `travel(ChitPace)` and
+`fade(ChitPace)`. The **period belongs to the component that loops** — the caret's 1.15s is a
+constant on the caret, the way its 1.5px width is — and `ChitMotion`'s job is only to apply
+DESIGN-SYSTEM.md §6.4 to it: `Duration.zero` under reduced motion, which is the signal to start
+no ticker and draw the thing at rest.
+
+**Over.** Adding `ChitPace.blink` at 1150ms to the pace table, which is the obvious move and
+the one the existing `travel` doc invites — it already names the caret blink as something
+`travel` serves.
+
+**Why.** A loop has a **period**; the five paces are how long a **transition** takes. They are
+not the same quantity and they do not compare, but a single table invites the comparison — and
+the app already makes it. DESIGN-SYSTEM.md §6.3 says the idle prompt is *"700ms, deliberately
+slower than everything else"*, and `chit_motion_test.dart` holds that claim by walking
+`ChitPace.values`. A blink pace at 1.15s would have broken that test while saying nothing true:
+the caret is not a slower piece of motion than the prompt, it is a different kind of thing.
+
+The alternative to a token is a bare `Duration` in a widget, which CLAUDE.md §4.2 forbids —
+except that §6.3 already carries the pattern for exactly this. A **dimension** may sit off the
+scale when it belongs to one component and is named there: the page gutter, the touch target,
+the microphone's 54px, the 7px marks. A loop period is the same shape of thing, and this record
+extends that rule from space to motion rather than inventing one.
+
+What does not move is the decision itself. §6.4's *movement collapses and feedback does not*
+stays inside `ChitMotion`, so a looping widget has no `reduceMotion` branch of its own — which
+is the whole reason `context.motion` resolves the flag rather than exposing it.
+
+**Costs.**
+
+- **Two shapes on one class.** `travel` and `fade` take a `ChitPace`; `loop` takes a
+  `Duration`. A reader has to notice why, and the answer is this record.
+- **Nothing enumerates the loops.** The pace table is a list you can read; the four loops of
+  §6.4 are named in prose and in four separate widgets. If M7's floors pass wants to check them
+  together it will have to collect them, and the honest answer may be a list at that point.
+
+**Consequences.** M5's record dot and live waveform and M7's pulse at now each name their own
+period and ask `loop` for it; none of them adds a pace. The caret is the first, at
+`1150ms` in `open_chit.dart`, and `five_second_prompt_test.dart` holds both halves — that it
+blinks, and that under reduced motion it stops **drawn** rather than stopping hidden.

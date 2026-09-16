@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,6 +30,15 @@ class OpenChit extends ConsumerWidget {
   /// when text appears, and it is deliberately not a control until M5, so
   /// there is no label to find it by. M5 attaches its behaviour here.
   static const Key microphone = Key('open-chit-microphone');
+
+  /// The drawn caret, while it is on.
+  ///
+  /// Named for the same reason the microphone is: it carries rules and has no
+  /// semantics and no words, so there is nothing else to find it by. It is
+  /// **absent from the tree on the dark half of a blink**, which is what makes
+  /// DESIGN-SYSTEM.md §6.4's *ambient loops stop outright* a thing a test can
+  /// see rather than a thing a comment claims.
+  static const Key caret = Key('open-chit-caret');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,9 +79,32 @@ class _FieldState extends ConsumerState<_Field> {
   late final TextEditingController _text = TextEditingController(
     text: ref.read(composerControllerProvider).text,
   );
+  final FocusNode _focus = FocusNode();
+
+  /// Whether to draw the ghost's own caret.
+  ///
+  /// It says *ready* before the field has been touched, which is the whole
+  /// job ADR-023 left it: the app opens with nothing focused, and without it
+  /// the page is a blank area with no sign that it is live. Once the field is
+  /// focused the framework draws the real one, and two carets is one too many.
+  bool _drawCaret = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(_onFocusChanged);
+  }
+
+  void _onFocusChanged() {
+    if (_focus.hasFocus == !_drawCaret) return;
+    setState(() => _drawCaret = !_focus.hasFocus);
+  }
 
   @override
   void dispose() {
+    _focus
+      ..removeListener(_onFocusChanged)
+      ..dispose();
     _text.dispose();
     super.dispose();
   }
@@ -92,30 +126,202 @@ class _FieldState extends ConsumerState<_Field> {
     });
 
     final colors = context.colors;
-
-    return ConstrainedBox(
-      // Two and a half lines. v4 rested at 92px because the bottom of the slip
-      // carried two full-width buttons; against a single 54px control that
-      // much blank reads as a void with something stranded under it.
-      constraints: BoxConstraints(minHeight: context.space.s8),
-      child: Semantics(
-        label: "Today's chit",
-        child: TextField(
-          controller: _text,
-          onChanged: ref.read(composerControllerProvider.notifier).edit,
-          style: context.type.composerBody,
-          // The caret is the accent's one job: it marks what is live
-          // (ADR-022). Everything else on this slip is ink.
-          cursorColor: colors.seal,
-          cursorWidth: 1.5,
-          maxLines: null,
-          keyboardType: TextInputType.multiline,
-          textCapitalization: TextCapitalization.sentences,
-          // No border, no fill, no counter. The slip is the surface; a field
-          // drawn on top of it would be a second one.
-          decoration: const InputDecoration.collapsed(hintText: null),
-        ),
+    final bool blank = ref.watch(
+      composerControllerProvider.select(
+        (ComposerState s) => s.text.trim().isEmpty,
       ),
+    );
+
+    return Stack(
+      children: <Widget>[
+        ConstrainedBox(
+          // Two and a half lines. v4 rested at 92px because the bottom of the
+          // slip carried two full-width buttons; against a single 54px control
+          // that much blank reads as a void with something stranded under it.
+          //
+          // The constraint is on the field rather than on the stack so that
+          // the whole area takes a tap — §3.2's *typing costs nothing* is
+          // about the page, not about the one line at the top of it.
+          constraints: BoxConstraints(minHeight: context.space.s8),
+          child: Semantics(
+            label: "Today's chit",
+            child: TextField(
+              controller: _text,
+              focusNode: _focus,
+              onChanged: ref.read(composerControllerProvider.notifier).edit,
+              style: context.type.composerBody,
+              // The caret is the accent's one job: it marks what is live
+              // (ADR-022). Everything else on this slip is ink.
+              cursorColor: colors.seal,
+              cursorWidth: _Caret.width,
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+              textCapitalization: TextCapitalization.sentences,
+              // No border, no fill, no counter. The slip is the surface; a
+              // field drawn on top of it would be a second one.
+              decoration: const InputDecoration.collapsed(hintText: null),
+            ),
+          ),
+        ),
+        // The field's own first line starts at the top of that box, so the
+        // ghost laid over the top of it sets on the same baseline.
+        if (blank)
+          Positioned(
+            left: 0,
+            top: 0,
+            right: 0,
+            child: IgnorePointer(child: _Ghost(drawCaret: _drawCaret)),
+          ),
+      ],
+    );
+  }
+}
+
+/// The caret and the prompt, over an empty page — BEHAVIOUR.md §3.3.
+///
+/// **Not `hintText`.** A hint is a label on the field: it is announced as one,
+/// it arrives on Material's schedule rather than after five seconds, and it
+/// has nowhere to put the caret. ARCHITECTURE.md §4.1 warns that placeholder
+/// text is the tempting shortcut here, and §3.5's failure note lands in this
+/// same overlay in M5 for the same reason — what the machine writes never goes
+/// into the field.
+class _Ghost extends ConsumerWidget {
+  const _Ghost({required this.drawCaret});
+
+  /// The offer itself. A question, because §3.3 is an offer and not an
+  /// instruction.
+  static const String prompt = 'What just happened?';
+
+  /// Whether the field is still untouched, and so still needs a caret drawn
+  /// for it.
+  final bool drawCaret;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bool showPrompt = ref.watch(
+      composerControllerProvider.select((ComposerState s) => s.showPrompt),
+    );
+    final motion = context.motion;
+
+    return Row(
+      // The caret has no baseline of its own, so the flex takes its height as
+      // one — which is exactly `vertical-align`'s rule and puts its foot on
+      // the line the prompt sits on.
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: <Widget>[
+        _CaretSlot(draw: drawCaret),
+        SizedBox(width: context.space.s1),
+        // A fade and no rise, the same call group E made for Discard and Save:
+        // the prototype lifts this 2px as it arrives, and §6.3's table gives
+        // the prompt a pace of its own rather than filing it under authored
+        // arrival. **It survives reduced motion at 140ms** — the appearance is
+        // the whole event here, so collapsing it would delete the behaviour
+        // rather than calm it (ARCHITECTURE.md §4.3).
+        AnimatedOpacity(
+          opacity: showPrompt ? 1 : 0,
+          duration: motion.fade(ChitPace.prompt),
+          curve: motion.curve,
+          child: Text(prompt, style: context.type.composerGhost),
+        ),
+      ],
+    );
+  }
+}
+
+/// The caret's place in the ghost line, whether or not one is drawn.
+///
+/// Kept at a fixed width so that focusing the field does not shift the prompt
+/// sideways by the width of a caret.
+class _CaretSlot extends StatelessWidget {
+  const _CaretSlot({required this.draw});
+
+  /// Whether a caret is drawn in the slot. When it is not, the slot still
+  /// holds its width — and the caret's ticker is gone with the widget rather
+  /// than left running behind a hidden box.
+  final bool draw;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: _Caret.width,
+      height: _Caret.heightOn(context),
+      child: draw ? const _Caret() : null,
+    );
+  }
+}
+
+/// The drawn caret: `--seal`, and blinking unless the user asked it not to.
+///
+/// DESIGN-SYSTEM.md §6.4 lists the caret blink among the app's ambient loops,
+/// so the period is asked of `ChitMotion.loop` rather than run outright. Under
+/// reduced motion it comes back as zero, no ticker starts, and the caret is
+/// drawn at rest — **visible, and still**. Stopping it by hiding it would take
+/// away the one thing telling the user the page is live, and §6.4's rule is
+/// that movement collapses while feedback does not.
+class _Caret extends StatefulWidget {
+  const _Caret();
+
+  /// 1.5px — the field's own caret width as well, so there is one number
+  /// behind both and they cannot come to disagree.
+  static const double width = 1.5;
+
+  /// One full blink; on for half of it, off for the other half.
+  static const Duration blink = Duration(milliseconds: 1150);
+
+  /// `height: 1.05em` and `vertical-align: -.18em`, in the field's own type
+  /// size rather than as two more numbers.
+  static const double _heightEm = 1.05;
+  static const double _dropEm = 0.18;
+
+  /// How tall the caret stands at the field's current type size.
+  static double heightOn(BuildContext context) =>
+      context.type.composerGhost.fontSize! * _heightEm;
+
+  @override
+  State<_Caret> createState() => _CaretState();
+}
+
+class _CaretState extends State<_Caret> {
+  Timer? _timer;
+  Duration? _period;
+  bool _on = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final Duration period = context.motion.loop(_Caret.blink);
+    if (period == _period) return;
+    _period = period;
+
+    _timer?.cancel();
+    _timer = null;
+    _on = true;
+    if (period == Duration.zero) return;
+
+    // A `Timer` rather than an `AnimationController`: the blink is a step and
+    // not a curve, and a controller that repeats for ever schedules a frame
+    // for ever, which is a `pumpAndSettle` that never settles.
+    _timer = Timer.periodic(
+      period ~/ 2,
+      (Timer _) => setState(() => _on = !_on),
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: Offset(0, context.type.composerGhost.fontSize! * _Caret._dropEm),
+      child: _on
+          ? ColoredBox(key: OpenChit.caret, color: context.colors.seal)
+          : null,
     );
   }
 }

@@ -23,12 +23,27 @@ part 'composer_controller.g.dart';
 /// capturing again — that is the whole decision, and it fails silently if it is
 /// got wrong, because a re-captured stamp is still a perfectly plausible time.
 ///
-/// The five-second prompt's timer belongs here too, not in the widget
-/// (ARCHITECTURE.md §4.3). It arrives with TASKS.md group F.
+/// **The five-second prompt's timer lives here, not in the widget**
+/// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
+/// is laid out again — a keyboard arriving, the action row growing by two
+/// controls — has not been idle for any less time than it was a frame ago.
 @riverpod
 class ComposerController extends _$ComposerController {
+  /// How long the field waits before it offers the prompt — BEHAVIOUR.md §3.3.
+  ///
+  /// **A product rule, not an animation.** It is not in the pace table, it
+  /// does not move under reduced motion, and it never changes: a prompt shown
+  /// immediately is an instruction and a prompt shown after a pause is an
+  /// offer. People who know what they want to say never see it.
+  static const Duration idle = Duration(seconds: 5);
+
+  Timer? _idle;
+
   @override
-  ComposerState build() => _openChit();
+  ComposerState build() {
+    ref.onDispose(_cancelPrompt);
+    return _openChit();
+  }
 
   /// A blank chit, stamped now, with its slow signals on the way.
   ComposerState _openChit() {
@@ -39,7 +54,28 @@ class ComposerController extends _$ComposerController {
     // on screen with its time before either service has been asked anything.
     unawaited(_settle(capture, opened));
 
+    _armPrompt();
     return ComposerState(stamp: opened);
+  }
+
+  /// Starts the five seconds again — at open, and whenever the field goes back
+  /// to empty.
+  ///
+  /// **M5:** BEHAVIOUR.md §3.5's note occupies this same space and says more
+  /// than the prompt would, so a chit whose transcription failed gets the note
+  /// and no prompt. The branch belongs here, with `sttFailed`, when the note
+  /// is drawn.
+  void _armPrompt() {
+    _idle?.cancel();
+    _idle = Timer(idle, () {
+      if (!ref.mounted) return;
+      state = state.copyWith(showPrompt: true);
+    });
+  }
+
+  void _cancelPrompt() {
+    _idle?.cancel();
+    _idle = null;
   }
 
   /// Puts the weather and the fix onto the stamp, if they arrive.
@@ -62,11 +98,25 @@ class ComposerController extends _$ComposerController {
   /// the field is emptied — a chit with no words has no provenance for them,
   /// which is the pairing README §5's invariant is about. The transcript
   /// origins of BEHAVIOUR.md §3.4 arrive with the recogniser in M5.
+  ///
+  /// The prompt goes with the first character and the five seconds start
+  /// again the moment the field is empty (BEHAVIOUR.md §3.3) — including when
+  /// it is emptied a character at a time, which is a user who has stopped
+  /// rather than one who is typing.
   void edit(String text) {
+    final bool blank = text.trim().isEmpty;
+
     state = state.copyWith(
       text: text,
-      textOrigin: text.trim().isEmpty ? null : TextOrigin.typed,
+      textOrigin: blank ? null : TextOrigin.typed,
+      showPrompt: false,
     );
+
+    if (blank) {
+      _armPrompt();
+    } else {
+      _cancelPrompt();
+    }
   }
 
   /// **Discard** — BEHAVIOUR.md §3.1.
