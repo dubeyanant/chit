@@ -89,11 +89,28 @@ void main() {
     });
 
     test('the चित्त mark is the only thing set in Devanagari', () {
+      // Two styles, and they are the same mark in the two places
+      // BEHAVIOUR.md §4.1 allows it: beside the wordmark, and closing the day
+      // at the foot of Today. Nothing else in the app is set in this face.
       final Iterable<TextStyle> deva = type.styles.where(
         (TextStyle s) => s.fontFamily == ChitType.devanagariFamily,
       );
-      expect(deva, hasLength(1));
-      expect(deva.single, type.devanagariMark);
+      expect(deva, hasLength(2));
+      expect(
+        deva,
+        unorderedEquals(<TextStyle>[type.devanagariMark, type.closingMark]),
+      );
+    });
+
+    test('the closing mark is the larger and the quieter of the two', () {
+      // It closes the day rather than labelling the app, so it is set at a
+      // size you would notice and a strength you would not read — and the
+      // prototype marks it `aria-hidden` for the same reason.
+      expect(
+        type.closingMark.fontSize,
+        greaterThan(type.devanagariMark.fontSize!),
+      );
+      expect(type.closingMark.color!.a, lessThan(type.devanagariMark.color!.a));
     });
   });
 

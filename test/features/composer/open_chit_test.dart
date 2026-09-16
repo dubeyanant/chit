@@ -26,7 +26,7 @@ void main() {
   final DateTime openedAt = DateTime(2026, 9, 16, 15, 42);
 
   /// Today, with the clock stopped at [openedAt].
-  Future<FakeClock> pumpToday(
+  Future<ChitHarness> pumpToday(
     WidgetTester tester, {
     WeatherService weather = const FakeWeather(WeatherCondition.raining),
     LocationService location = const FakeLocation((lat: 51.4769, lon: -0.0005)),
@@ -164,7 +164,7 @@ void main() {
       // somebody types would file the chit at the moment they stopped rather
       // than the moment they started. It would still look like a plausible
       // time, which is why this counts reads instead of comparing values.
-      final FakeClock clock = await pumpToday(tester);
+      final FakeClock clock = (await pumpToday(tester)).clock;
       final int atOpen = clock.reads;
 
       await type(tester, 'Didn\'t sleep. Room too cold, again.');
@@ -176,9 +176,18 @@ void main() {
     testWidgets('the clock is read once for a chit, not once per signal', (
       WidgetTester tester,
     ) async {
-      final FakeClock clock = await pumpToday(tester);
+      // Counted as a delta rather than a total, because the screen reads the
+      // clock too — once, for the date line and the day the thread asks for
+      // (`todayProvider`). What this is about is the *chit*: opening one costs
+      // exactly one read however many signals the stamp is waiting on.
+      final FakeClock clock = (await pumpToday(tester)).clock;
+      final int atOpen = clock.reads;
 
-      expect(clock.reads, 1);
+      await type(tester, 'One more.');
+      await tester.tap(find.text('Discard'));
+      await tester.pumpAndSettle();
+
+      expect(clock.reads, atOpen + 1);
     });
   });
 
@@ -205,7 +214,7 @@ void main() {
       WidgetTester tester,
     ) async {
       // Discarding at 3:42 and writing at 4:10 must not file the chit at 3:42.
-      final FakeClock clock = await pumpToday(tester);
+      final FakeClock clock = (await pumpToday(tester)).clock;
       await type(tester, 'Nothing worth keeping.');
 
       clock.moveTo(DateTime(2026, 9, 16, 16, 10));

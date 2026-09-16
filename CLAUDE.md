@@ -173,8 +173,13 @@ codebase, because a principle nobody can fail is a principle nobody is following
   has the seam already; `BranchFade` is written into go_router's `navigatorContainerBuilder`
   rather than around it. The single deliberate exception is ADR-011's recording sheet, which is
   a modal sheet and not a route. See `docs/ARCHITECTURE.md` §3.
-- **Tests override at the root** with an in-memory Drift database and hand-written fakes.
-  No mocking framework.
+- **Tests override at the root**, with hand-written fakes and no mocking framework. **Which
+  fake depends on what the test is about** (ADR-030): a test of the *data* gets the real
+  `ChitRepositoryImpl` over `NativeDatabase.memory()`; a test that pumps a *widget* gets
+  `test/support/fake_repository.dart`, because real I/O never completes inside a `testWidgets`
+  body — not a Drift query and not `Directory.systemTemp.createTemp()` either, and the test
+  does not fail, it hangs. A fake must refuse whatever the real one refuses; that is the Liskov
+  rule above and it is the only thing keeping the two honest.
 - The prototype is the visual reference. When in doubt about a pixel, open it.
 
 ## 5. Commits

@@ -197,21 +197,36 @@ Three things the rest of M2 inherits:
 clock either: `Clock` says what time it is and a `Timer` says how long since. Tests drive it
 with `tester.pump(idle)`, which is exact.*
 
-## G. The thread, and Save end to end ⬜
+## G. The thread, and Save end to end ✅ done 16 September 2026
 
 *Where M2 becomes an app somebody could use.*
 
-- [ ] `features/today/application/today_controller.dart` — `watchDay` off the repository.
-- [ ] `features/today/presentation/today_screen.dart` — the date line, `earlier` and its count,
+- [x] `features/today/application/today_controller.dart` — `watchDay` off the repository.
+- [x] `features/today/presentation/today_screen.dart` — the date line, `earlier` and its count,
       the thread, the चित्त closing mark.
-- [ ] The chit row: rail node, stamp row, text.
-- [ ] The empty state — *"Nothing written yet today."*, no rail, no placeholder row, and the
+- [x] The chit row: rail node, stamp row, text.
+- [x] The empty state — *"Nothing written yet today."*, no rail, no placeholder row, and the
       count beside **earlier** omitted.
-- [ ] Save → `ChitRepository.save()` with the **held** stamp — `state.stamp`, never a fresh
+- [x] Save → `ChitRepository.save()` with the **held** stamp — `state.stamp`, never a fresh
       capture (ADR-021). Saving also opens a new chit, the way Discard does (ADR-026).
       *Discard itself landed in group E, which is where the control it belongs to was drawn.*
-- [ ] Tests: type → save → it is in the thread; restart → it is still there; an empty day
+- [x] Tests: type → save → it is in the thread; restart → it is still there; an empty day
       looks empty.
+- [x] **`closingMark` joined `ChitType`** — the चित्त mark does two jobs and the scale had one
+      style for them. Twenty-six now; §6.2 says why the second is larger and quieter.
+
+Four things H and I inherit:
+
+- **ADR-030 — a screen test gets a hand-written repository.** In-memory Drift inside
+  `testWidgets` does not fail, it *hangs*: real I/O never completes in the fake-async zone.
+  `test/support/fake_repository.dart`, and the data suites keep the real thing.
+- **`todayProvider` is the screen's one clock read**, and H's timeline must read it too rather
+  than asking the clock again. Two reads a millisecond apart are two days at midnight.
+- **`DayThread` and `ChitRow` are M4's as well** (§4.2: the archive uses the same thread
+  treatment), which is when they move to `shared/widgets`.
+- **`find.bySemanticsLabel` finds nothing inside a `SliverList`.** Today is one
+  `SliverToBoxAdapter` holding a `Column` for that reason; if H adds a sliver, check the
+  semantics tests still see anything.
 
 ## H. The timeline ⬜
 

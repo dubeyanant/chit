@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../domain/models/ambient_stamp.dart';
 import '../../../domain/models/chit.dart';
 import '../../../domain/models/composer_state.dart';
+import '../../../domain/repositories/chit_repository.dart';
 import '../../../domain/services/ambient_capture.dart';
 
 part 'composer_controller.g.dart';
@@ -19,9 +20,9 @@ part 'composer_controller.g.dart';
 /// and a loading state is a spinner whether or not one is drawn.
 ///
 /// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-/// the clock, and `save()` in group G must pass `state.stamp` rather than
-/// capturing again — that is the whole decision, and it fails silently if it is
-/// got wrong, because a re-captured stamp is still a perfectly plausible time.
+/// the clock, and [save] passes `state.stamp` rather than capturing again —
+/// that is the whole decision, and it fails silently if it is got wrong,
+/// because a re-captured stamp is still a perfectly plausible time.
 ///
 /// **The five-second prompt's timer lives here, not in the widget**
 /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
@@ -117,6 +118,41 @@ class ComposerController extends _$ComposerController {
     } else {
       _cancelPrompt();
     }
+  }
+
+  /// **Save chit** — BEHAVIOUR.md §3.1. The only thing that inserts.
+  ///
+  /// **The stamp passed here is the held one — ADR-021.** It was taken when
+  /// the chit opened and becomes the row's `createdAt`, which decides where
+  /// the chit falls in the thread, where its mark lands on the timeline, and
+  /// which day it belongs to (ADR-006). Capturing a fresh one here would file
+  /// the chit at the moment the user stopped writing rather than the moment
+  /// they started, and it would still *look* right — a re-captured stamp is a
+  /// perfectly plausible time, which is why nothing but a test that moves a
+  /// clock across the save can see it.
+  ///
+  /// Saving then opens a new chit, the way [discard] does (ADR-026): the same
+  /// `_openChit()`, so there is one way for a chit to come into existence.
+  ///
+  /// Does nothing when there is nothing to save. The control is not drawn in
+  /// that state, so this is the belt rather than the braces — but `canSave` is
+  /// also what the repository would refuse, and refusing here is quieter.
+  Future<void> save() async {
+    final ComposerState chit = state;
+    if (!chit.canSave) return;
+
+    await ref
+        .read(chitRepositoryProvider)
+        .save(
+          stamp: chit.stamp,
+          text: chit.text,
+          textOrigin: chit.textOrigin,
+          audioTempPath: chit.audioTempPath,
+          audioDuration: chit.audioDuration,
+        );
+
+    if (!ref.mounted) return;
+    state = _openChit();
   }
 
   /// **Discard** — BEHAVIOUR.md §3.1.

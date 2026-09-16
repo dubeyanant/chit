@@ -341,10 +341,11 @@ class _CommitControls extends ConsumerWidget {
           onPressed: ref.read(composerControllerProvider.notifier).discard,
         ),
         SizedBox(width: space.s2),
-        // Save is wired to the repository in TASKS.md group G, with the thread
-        // that would show the result of pressing it. It is drawn here because
-        // §4.1's action row is a layout that has to be settled as one thing.
-        const Expanded(child: _Save()),
+        Expanded(
+          child: _Save(
+            onPressed: ref.read(composerControllerProvider.notifier).save,
+          ),
+        ),
       ],
     );
   }
@@ -413,30 +414,41 @@ class _DiscardState extends State<_Discard> {
 
 /// **Save chit** — the brightest of the three, and still not a fill.
 ///
-/// Its action arrives with TASKS.md group G, which is where the thread that
-/// shows the saved chit is built. Until then this is a drawn control with
-/// nothing behind it, which is a state the milestone plans and this comment
-/// exists so that nobody has to guess whether it is a bug.
+/// The only thing in the app that writes a row (ARCHITECTURE.md §4.1). What it
+/// hands the repository is the stamp the chit has held since it opened, never
+/// a fresh one — ADR-021 — and pressing it opens a new chit the way Discard
+/// does (ADR-026). Both of those live in `ComposerController.save`, because
+/// neither is a decision a button should be making.
 class _Save extends StatelessWidget {
-  const _Save();
+  const _Save({required this.onPressed});
+
+  /// Writes the chit. Asynchronous, and nothing here waits on it: the state
+  /// the button is drawn from changes when the save returns.
+  final Future<void> Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final space = context.space;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.inkWash(colors.slip, opacity: ChitColors.saveWash),
-        border: Border.all(color: colors.inkMuted),
-        borderRadius: BorderRadius.circular(space.radius),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: space.s4),
-        child: Text(
-          'Save chit',
-          textAlign: TextAlign.center,
-          style: context.type.button.copyWith(color: colors.ink),
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onPressed,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.inkWash(colors.slip, opacity: ChitColors.saveWash),
+            border: Border.all(color: colors.inkMuted),
+            borderRadius: BorderRadius.circular(space.radius),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: space.s4),
+            child: Text(
+              'Save chit',
+              textAlign: TextAlign.center,
+              style: context.type.button.copyWith(color: colors.ink),
+            ),
+          ),
         ),
       ),
     );

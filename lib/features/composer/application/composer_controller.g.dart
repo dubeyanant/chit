@@ -18,9 +18,9 @@ part of 'composer_controller.dart';
 /// and a loading state is a spinner whether or not one is drawn.
 ///
 /// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-/// the clock, and `save()` in group G must pass `state.stamp` rather than
-/// capturing again — that is the whole decision, and it fails silently if it is
-/// got wrong, because a re-captured stamp is still a perfectly plausible time.
+/// the clock, and [save] passes `state.stamp` rather than capturing again —
+/// that is the whole decision, and it fails silently if it is got wrong,
+/// because a re-captured stamp is still a perfectly plausible time.
 ///
 /// **The five-second prompt's timer lives here, not in the widget**
 /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
@@ -40,9 +40,9 @@ final composerControllerProvider = ComposerControllerProvider._();
 /// and a loading state is a spinner whether or not one is drawn.
 ///
 /// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-/// the clock, and `save()` in group G must pass `state.stamp` rather than
-/// capturing again — that is the whole decision, and it fails silently if it is
-/// got wrong, because a re-captured stamp is still a perfectly plausible time.
+/// the clock, and [save] passes `state.stamp` rather than capturing again —
+/// that is the whole decision, and it fails silently if it is got wrong,
+/// because a re-captured stamp is still a perfectly plausible time.
 ///
 /// **The five-second prompt's timer lives here, not in the widget**
 /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
@@ -60,9 +60,9 @@ final class ComposerControllerProvider
   /// and a loading state is a spinner whether or not one is drawn.
   ///
   /// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-  /// the clock, and `save()` in group G must pass `state.stamp` rather than
-  /// capturing again — that is the whole decision, and it fails silently if it is
-  /// got wrong, because a re-captured stamp is still a perfectly plausible time.
+  /// the clock, and [save] passes `state.stamp` rather than capturing again —
+  /// that is the whole decision, and it fails silently if it is got wrong,
+  /// because a re-captured stamp is still a perfectly plausible time.
   ///
   /// **The five-second prompt's timer lives here, not in the widget**
   /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
@@ -96,7 +96,7 @@ final class ComposerControllerProvider
 }
 
 String _$composerControllerHash() =>
-    r'59bea23a343a61a20eda748196f001ff356bd55a';
+    r'7986d2da038f05abefc442d2cdf9e3ec779ebdc7';
 
 /// The open chit's state.
 ///
@@ -108,9 +108,9 @@ String _$composerControllerHash() =>
 /// and a loading state is a spinner whether or not one is drawn.
 ///
 /// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-/// the clock, and `save()` in group G must pass `state.stamp` rather than
-/// capturing again — that is the whole decision, and it fails silently if it is
-/// got wrong, because a re-captured stamp is still a perfectly plausible time.
+/// the clock, and [save] passes `state.stamp` rather than capturing again —
+/// that is the whole decision, and it fails silently if it is got wrong,
+/// because a re-captured stamp is still a perfectly plausible time.
 ///
 /// **The five-second prompt's timer lives here, not in the widget**
 /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that

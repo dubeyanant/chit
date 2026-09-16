@@ -24,6 +24,7 @@ final class ChitType extends ThemeExtension<ChitType> {
   const ChitType({
     required this.wordmark,
     required this.devanagariMark,
+    required this.closingMark,
     required this.weekday,
     required this.date,
     required this.timelineLabel,
@@ -65,6 +66,17 @@ final class ChitType extends ThemeExtension<ChitType> {
         height: 1,
       ),
       devanagariMark: _deva(size: 11.5, color: colors.inkFaint, height: 1),
+
+      // The same mark again, closing the day at the foot of Today and nowhere
+      // else (BEHAVIOUR.md §4.1). Larger than the one beside the wordmark and
+      // drawn at half strength: it is a full stop rather than a label, and
+      // the prototype marks it `aria-hidden`, so §6.4's 4.5:1 floor for
+      // *functional* text does not reach it.
+      closingMark: _deva(
+        size: 13,
+        color: colors.inkFaint.withValues(alpha: closingMarkStrength),
+        height: 1,
+      ),
 
       // The date, above the day arc — one line, not a stacked masthead. The
       // weekday is the same size and weight as the date beside it and differs
@@ -250,6 +262,14 @@ final class ChitType extends ThemeExtension<ChitType> {
     );
   }
 
+  /// How much of `--ink-faint` the closing mark is drawn at.
+  ///
+  /// Half. It is the only place in the app a token is used at part strength,
+  /// and it is here because the mark is punctuation rather than text: a full
+  /// stop on the day, drawn at the size of a word. At full strength and 13px
+  /// it becomes something to read.
+  static const double closingMarkStrength = 0.5;
+
   /// Newsreader — the writing voice. Dates, entry text, section labels, tabs.
   static const String serifFamily = 'Newsreader';
 
@@ -372,6 +392,9 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// "चित्त", beside it.
   final TextStyle devanagariMark;
 
+  /// "चित्त", closing the day at the foot of Today.
+  final TextStyle closingMark;
+
   /// "Sunday", the italic half of the one date line. Same size and weight as
   /// [date]; only the slant and the colour differ.
   final TextStyle weekday;
@@ -464,6 +487,7 @@ final class ChitType extends ThemeExtension<ChitType> {
   Iterable<TextStyle> get styles => <TextStyle>[
     wordmark,
     devanagariMark,
+    closingMark,
     weekday,
     date,
     timelineLabel,
@@ -493,6 +517,7 @@ final class ChitType extends ThemeExtension<ChitType> {
   ChitType copyWith({
     TextStyle? wordmark,
     TextStyle? devanagariMark,
+    TextStyle? closingMark,
     TextStyle? weekday,
     TextStyle? date,
     TextStyle? timelineLabel,
@@ -520,6 +545,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     return ChitType(
       wordmark: wordmark ?? this.wordmark,
       devanagariMark: devanagariMark ?? this.devanagariMark,
+      closingMark: closingMark ?? this.closingMark,
       weekday: weekday ?? this.weekday,
       date: date ?? this.date,
       timelineLabel: timelineLabel ?? this.timelineLabel,
@@ -552,6 +578,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     return ChitType(
       wordmark: TextStyle.lerp(wordmark, other.wordmark, t)!,
       devanagariMark: TextStyle.lerp(devanagariMark, other.devanagariMark, t)!,
+      closingMark: TextStyle.lerp(closingMark, other.closingMark, t)!,
       weekday: TextStyle.lerp(weekday, other.weekday, t)!,
       date: TextStyle.lerp(date, other.date, t)!,
       timelineLabel: TextStyle.lerp(timelineLabel, other.timelineLabel, t)!,

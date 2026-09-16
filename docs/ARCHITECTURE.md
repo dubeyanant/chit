@@ -87,7 +87,7 @@ lib/
 │   ├── shell/                      bottom tab bar, the two tabs
 │   ├── today/
 │   │   ├── application/            today_controller.dart, timeline_provider.dart
-│   │   └── presentation/           today_screen.dart, widgets/
+│   │   └── presentation/           today_screen.dart, widgets/day_thread.dart
 │   ├── composer/
 │   │   ├── application/            composer_controller.dart, recording_controller.dart
 │   │   └── presentation/           open_chit.dart, recording_sheet.dart
@@ -144,17 +144,25 @@ decision is unchanged — nothing calls `DateTime.now()` — only its file path 
 **Everything is generated.** `@riverpod` on a function or a `Notifier` class; `part 'x.g.dart'`;
 `dart run build_runner watch -d` while working.
 
-**Four kinds of provider, and the rules differ.**
+**Five kinds of provider, and the rules differ.**
 
 | Kind | Example | Lifetime |
 |---|---|---|
 | Infrastructure | `routerProvider`, `appDatabaseProvider`, `chitRepositoryProvider`, the services | `@Riverpod(keepAlive: true)` |
 | Stream of truth | `todayChitsProvider`, `daySummariesProvider` | auto-disposed; Drift re-emits on subscribe |
+| The clock, once | `todayProvider`, `todayLocalDayProvider` | auto-disposed; **one read of the clock per screen** — see below |
 | Derived | `timelineMarksProvider`, `monthHeatProvider` | auto-disposed; pure functions of the above |
 | Screen state | `composerControllerProvider`, `selectedDateProvider` | auto-disposed |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** That is
 the layer rule of §1, expressed as a lint you should notice yourself breaking.
+
+**A screen reads the clock once, through a provider.** `todayProvider` is `clock.now()` and
+nothing else, and the date line and the thread both read it rather than each asking the clock.
+Two reads a millisecond apart are two different answers at midnight, and a screen showing one
+day's date above another day's chits is the failure ADR-006 exists to prevent, arriving by a
+different route. It also keeps the read count honest, which is the only thing that can catch a
+re-captured ambient stamp (ADR-021).
 
 **Where an infrastructure provider is declared follows from that rule.** `appDatabaseProvider`
 and `audioStoreProvider` are declared beside the things they build, in `data`, because only
@@ -170,9 +178,9 @@ ChitRepository chitRepository(Ref ref) => throw UnimplementedError(
 ```
 
 — and supplied in `main.dart`, which is the one place the two layers are allowed to meet. A test
-overrides the same seam with an in-memory database and a fake clock, which is what "tests
-override at the root" means below. `domain` takes a dependency on `riverpod_annotation` for
-this; it is pure Dart and brings nothing from Flutter or `data` with it.
+overrides the same seam — with real Drift in memory where the test is about the data, and with
+`test/support/fake_repository.dart` where it is about a screen (ADR-030). `domain` takes a
+dependency on `riverpod_annotation` for this; it is pure Dart and brings nothing from Flutter or `data` with it.
 
 ### go_router and Riverpod take every responsibility they can
 

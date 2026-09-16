@@ -7,7 +7,7 @@ Updated at the end of every working session, per the standing rule in
 [CLAUDE.md](../CLAUDE.md) §0 — including sessions that ended mid-milestone.
 
 **Last updated:** 16 September 2026, after M1, after v6 — which moved the documents and then the
-code behind them — and after M2 groups A, B, C, D, E and F.
+code behind them — and after M2 groups A, B, C, D, E, F and G.
 
 ---
 
@@ -18,14 +18,14 @@ code behind them — and after M2 groups A, B, C, D, E and F.
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
-| **M2** — Today, text only | 🔶 in progress | groups A–F of [TASKS.md](TASKS.md) done; **G is next**. ADR-023 to ADR-029 |
+| **M2** — Today, text only | 🔶 in progress | groups A–G of [TASKS.md](TASKS.md) done; **H is next**. ADR-023 to ADR-030 |
 | M3 — ambient capture | ⬜ | |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**237 tests, `flutter analyze` clean, debug APK builds.**
+**251 tests, `flutter analyze` clean, debug APK builds.**
 
 **On a handset:** the masthead on `--paper`, a two-tab bar, and **the open chit** — a slip with
 its tear edge and the pad behind it, its stamp reading `3:42 pm   raining   ⌖` spaced and never
@@ -33,19 +33,22 @@ separated, a blank page to write on, and a microphone leading the action row. **
 until you touch it** (ADR-028): no caret is drawn, and the one that arrives on the first tap is
 the platform's. Leave it five seconds and a prompt fades in — *"Rain. What's it like out?"* in
 the afternoon, *"Still up. What's keeping you?"* at one in the morning, chosen from the stamp
-(ADR-029). Typing brings **Discard** and **Save chit**; Discard works, and Save is drawn and
-does nothing until group G. Tapping *calendar* cross-fades to a placeholder line that M4
-deletes. Below the slip there is nothing yet: the date line and the thread arrive with G, the
-timeline with H.
+(ADR-029). Typing brings **Discard** and **Save chit**, and **both of them work**: Save writes
+the row, the chit drops into the thread under *earlier* with its count beside it, and a new
+blank chit opens stamped at that moment. Above the slip is the date — *Wednesday 16 September*
+— and below the thread the चित्त mark closes the day. An empty day reads *"Nothing written yet
+today."* with no rail and no count. Tapping *calendar* cross-fades to a placeholder line that
+M4 deletes.
 
-**It has been run on a device**, after group E and before F. What was confirmed there: the slip,
-the field and the stamp all render, typing brings the two controls, and **Discard works**. Save
-and the microphone do nothing, which is what they are meant to do until G and M5 respectively —
-both are drawn now only because §4.1's action row is a layout that has to settle as one thing.
+**The timeline is the only thing still missing from §4.1**, and it is group H.
+
+**It has been run on a device**, after group E. What was confirmed there: the slip, the field
+and the stamp all render, typing brings the two controls, and Discard works. Save and the
+microphone did nothing at that point — Save works now; the microphone is M5's.
 *The weather word and the pin are fixed fakes until M3 and always will read `raining` at the
 Royal Observatory; that is `FixedWeatherService` and `FixedLocationService` doing their job, not
 a bug.* Nobody has yet compared Newsreader against the prototype side by side, so **open item 1
-is still open** — there is now real text on a real surface to do it with.
+is still open** — there is now real text on a real surface to do it with, and a thread of it.
 
 *The palette was confirmed on a device on 15 September, before the shell existed: dark warm
 brown, "chit चित्त" in the gutter — `--paper` `#191714` behaving exactly as §6.1 sets it. Nobody
@@ -687,18 +690,84 @@ stock Android keyboard every other text field blinks too.
 
 ---
 
-## Next: M2 group G
+## M2 group G — the thread, and Save end to end
 
-**G — the thread, and Save end to end.** Where M2 becomes an app somebody could use: the date
-line, `earlier` and its count, the thread off `watchDay`, the empty state, and Save wired to
-`ChitRepository.save()`.
+Where M2 stopped being parts. A chit typed into the open chit now goes through the repository
+and comes back out into the thread, and the screen holds none of it.
 
-Two things G must get right, and both fail silently:
+- `features/today/application/today_controller.dart` — `todayProvider` (the screen's one clock
+  read), `todayLocalDayProvider`, and `todayChitsProvider` off `watchDay`.
+- `features/today/presentation/today_screen.dart` — the date line, the **earlier** heading and
+  its count, the empty note, and the चित्त closing mark.
+- `features/today/presentation/widgets/day_thread.dart` — `DayThread` and `ChitRow`. M4's
+  archive is the second screen that wants them, which is when they move to `shared/widgets`.
+- `ComposerController.save()` — the held stamp, then `_openChit()`.
+- `closingMark` in `ChitType`, taking the scale to **twenty-six**.
+- **Twenty-one tests**, 230 → 251, across a new Today suite and the two support files.
 
-- **Pass `state.stamp` to `save()`** — the held one, never a fresh capture (ADR-021). Nothing
-  in the repository's own tests can catch a re-capture, because a re-captured stamp is a
-  perfectly plausible time.
-- **Saving opens a new chit**, the way Discard does (ADR-026). The same `_openChit()`.
+### The two that fail silently, and how each is caught
+
+**The row must carry the stamp the chit was opened with.** `save()` passes `state.stamp`, and
+the test moves a fake clock from 3:42 to 4:10 *between typing and saving*: the row has to come
+back at 3:42 and on day `20260916`. A re-capture would look like a perfectly ordinary time, so
+there is nothing to notice — only a clock that moved can see it.
+
+**The thread must come out of the row, not out of the screen.** A thread built from what the
+composer just typed looks identical until the app is closed. The test pumps a **second app over
+the same repository** and expects the chit to still be there; the new screen has never seen the
+typing that produced it.
+
+### ADR-030 — a screen test gets a hand-written repository
+
+The group's real cost, and it is written down so the next person does not pay it again.
+`test/support/app.dart` was given real Drift in memory, the way CLAUDE.md §4.2 said — and
+**every test in the suite hung**. Not failed: hung, with no error and no timeout from the test
+itself.
+
+`flutter_test` runs a `testWidgets` body inside a fake-async zone and **real I/O never completes
+in it**. The probe that made it obvious was not Drift at all: `Directory.systemTemp.createTemp()`
+inside `testWidgets` never returns either. `tester.runAsync` is the escape hatch and it is the
+wrong one — it puts the screen's rebuilds back on the real event loop, which is the thing `pump`
+exists to make deterministic.
+
+So a screen test gets `FakeChitRepository`, and the data suites keep the real one. What holds
+the two together is the Liskov rule of CLAUDE.md §4.1: the fake really stores, really re-emits,
+and **refuses what the real one refuses**.
+
+### Three more things this group found
+
+1. **`find.bySemanticsLabel` finds nothing inside a `SliverList`.** Today was built as
+   `SliverList.list` and every semantics finder in the suite went to zero — including
+   `"Today's chit"`, which had passed since group E. It reads as *the label is gone* rather than
+   *the finder cannot see it*. Today is one `SliverToBoxAdapter` holding a `Column` now, which
+   is the honest structure for a page that is one flow anyway.
+2. **A screen that reads the clock twice is a screen that can show two days.** The date line and
+   the thread each called `clock.now()` at first. A millisecond apart at midnight is a date above
+   a thread that does not belong to it — ADR-006's failure arriving by another route. One
+   `todayProvider`, and both read it.
+3. **Counting clock reads stopped being a total.** ADR-021's test asserted `clock.reads == 1`,
+   which was only ever true because nothing else read the clock. It counts a **delta across a
+   discard** now — one read per chit, whatever the screen around it does — which is what the
+   assertion always meant.
+
+**Verified:** `flutter analyze` clean, `flutter test` 251 passing, `dart format` clean,
+`dart run build_runner build` clean.
+
+---
+
+## Next: M2 group H — the timeline
+
+The largest piece left, reshaped by ADR-024: a full day, three days of span, proportional,
+scrolling, resting at now. [TASKS.md](TASKS.md) H has the list. Four things it inherits from
+here:
+
+- **`ChitRepository.watchDayRange` does not exist yet** — the thread reads one day and the
+  timeline reads three, so H adds the query and the DAO method under it (DATA-MODEL.md §4).
+- **Read `todayProvider`**, not the clock. See above.
+- **The pulse at `now` is `ChitMotion.loop`'s first caller** (ADR-027), at the prototype's 5.2s.
+  It stops *drawn* under reduced motion, not hidden.
+- **If H adds a sliver to Today, check the semantics tests still see anything** — finding 1
+  above.
 
 ---
 
@@ -709,7 +778,7 @@ The first screen a person could use. Full statement of done in
 `design/chit-app-v6.html` is the target. The spine it draws from is all in place.
 
 **[TASKS.md](TASKS.md) is the working list** — M2 in ten groups, A to J, each one buildable and
-committable on its own. A to F are done; G is next, and the section above says what it is.
+committable on its own. A to G are done; H is next, and the section above says what it is.
 
 Worth knowing for the rest of the milestone:
 - **The composer holds the stamp from the moment it opens** (ADR-021). Weather and location are

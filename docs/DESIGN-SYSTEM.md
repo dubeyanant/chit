@@ -116,9 +116,17 @@ surface text sits on, and §6.4 does not make exceptions for surfaces that are b
 
 - **Newsreader** — the writing voice. Dates, entry text, section labels, tab labels.
 - **Hanken Grotesk** — UI metadata, stamps, buttons.
-- **Noto Serif Devanagari** — the चित्त mark.
+- **Noto Serif Devanagari** — the चित्त mark, and nothing else in the app.
 
 Section labels are lowercase serif italic with a hairline running off to the right.
+
+**The चित्त mark is two styles, because it does two jobs.** `devanagariMark` is 11.5px in
+`--ink-faint` beside the wordmark, where it is a name. `closingMark` is **13px at half that
+strength**, centred at the foot of Today, where it is a full stop on the day (BEHAVIOUR.md
+§4.1) — larger so it is noticed, quieter so it is not read. It is the one place in the app a
+colour token is used at part strength, and it is allowed because the mark is decoration: the
+prototype marks it `aria-hidden` and the app excludes it from semantics, so §6.4's 4.5:1 floor
+for *functional* text does not reach it. M2 group G added it, taking the scale to twenty-six.
 
 **Uppercase appears in one place: `LISTENING` on the recording sheet.** It is a state, it is
 shown while a thing is happening, and it is the one label in the app that should read as a
@@ -178,6 +186,12 @@ day should look empty (BEHAVIOUR.md §4.1).
   the minimum touch target (44px), the microphone (54px), and the 7px marks on the timeline and
   the thread rail. A dimension is a property of one component; a gap is a relationship between
   two, and relationships are what a scale exists to keep consistent.
+
+  M2 group G put a fourth back: the 5px between a saved chit's stamp and its words is `s1`.
+  It also **derived the thread's mark rather than placing it**. *The prototype drops the node
+  19px from the top of a row, which is 7px into the row's content;* here it is centred on the
+  stamp line it belongs to, which lands it 3px higher and keeps it right when the stamp's type
+  size moves. An absolute offset into a block of text is a number that is correct exactly once.
 
   M2 group C put three more of the prototype's odd numbers back on the scale, on that reading:
   the ambient stamp's 11px gaps are `s3`, the pad behind the open chit is offset by `s1` rather

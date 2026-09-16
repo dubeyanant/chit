@@ -5,7 +5,7 @@ it was chosen over, and what it costs. Superseding a record means adding a new o
 editing the old one.
 
 Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-to ADR-024 on 15 September 2026, ADR-025 to ADR-029 on 16 September 2026.
+to ADR-024 on 15 September 2026, ADR-025 to ADR-030 on 16 September 2026.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -41,6 +41,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-027 | An ambient loop is not a pace | refines ADR-010 and ADR-020 — where a looping period lives |
 | ADR-028 | The caret is the platform's, and chit draws none | reverses group F's drawn caret; corrects ADR-027 |
 | ADR-029 | The prompt reads the stamp | extends §3.3 — which words, and what they may not do |
+| ADR-030 | A screen test gets a hand-written repository | narrows CLAUDE.md §4.2 — real I/O never completes in `testWidgets` |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above.
 
@@ -992,3 +993,53 @@ feature in the app that speaks first from becoming something the eye skips.
 a stored field, so there is one answer and it cannot drift from the moment it is about. It
 changes once, if the weather settles (ADR-007) before the five seconds are up. `OpenChit.prompt`
 is a key, because a test can no longer ask for the prompt by the sentence it expects.
+
+---
+
+## ADR-030 — A screen test gets a hand-written repository, not Drift in memory
+
+*16 September 2026. Narrows what CLAUDE.md §4.2 said about how tests override the root.*
+
+**Decision.** A test that pumps a widget gets `test/support/fake_repository.dart` — a
+`ChitRepository` that keeps its chits in a list. A test that is *about the data* keeps the real
+`ChitRepositoryImpl` over `NativeDatabase.memory()`, which is what `chit_repository_test.dart`,
+`chits_table_test.dart` and `migration_test.dart` already do.
+
+**Over.** In-memory Drift everywhere, which is what CLAUDE.md §4.2 said and what M2 group G
+tried first.
+
+**Why.** It does not work, and it does not fail in a way that says so. `flutter_test` runs a
+`testWidgets` body inside a fake-async zone, and **real I/O never completes in it** — not a
+Drift query, and not `Directory.systemTemp.createTemp()` either, which is the one that makes it
+obvious once you probe it. There is no error and no timeout from the test itself: every test in
+the file simply never finishes and the runner sits there until it gives up.
+
+`tester.runAsync` is the escape hatch and it is the wrong one here. It gets the I/O done, but it
+also puts the screen's rebuilds back on the real event loop — and deterministic rebuilds are the
+entire reason `pump` exists. A screen test that has to sleep is a screen test that will be flaky
+on somebody else's machine.
+
+The deeper reason is that the two tests are about different things. What a screen test asserts
+is *the screen reads from the repository and writes to it* — that a saved chit comes back out
+of a stream rather than out of the widget that typed it. Whether that stream is backed by SQL
+is `ChitRepositoryImpl`'s claim, and it already has three suites holding it.
+
+**Costs.**
+
+- **Two implementations of one interface in the test tree**, and the fake can drift from the
+  real one. The Liskov rule of CLAUDE.md §4.1 is the whole defence: the fake **really stores**,
+  **really re-emits** to everything watching, and **refuses what the real one refuses** — blank
+  text normalised to `null` before anything sees it, and an illegal chit throwing on `Chit`'s
+  own asserts rather than being quietly accepted. A fake that accepts what the database rejects
+  is a green test for a screen that cannot work.
+- **No screen test touches SQL.** A query that compiles and returns the wrong rows would be
+  caught in `chit_repository_test.dart` and nowhere else. That is where it should be caught,
+  but it is worth knowing that the screen tests would not notice.
+- **"Restart and it is still there" is weaker than it sounds.** Pumping a second app over the
+  same fake is a restart of the *widget tree*, not of the process. It still earns its place —
+  the second screen has never seen the typing — but real persistence is M1's claim.
+
+**Consequences.** `test/support/app.dart` builds the fake and hands it back on `ChitHarness`, so
+a test can look at the row as well as at the pixels. CLAUDE.md §4.2's rule now says which kind
+of test gets which, because the version that said "an in-memory Drift database" sent group G
+down an hour of a silent hang.
