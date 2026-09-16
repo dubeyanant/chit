@@ -81,11 +81,15 @@ final class AmbientCapture {
       _bestEffort(_location.currentFix()),
     ).wait;
 
+    // `readAt` is left null: this class holds no clock, and stamping the
+    // reading is `AmbientSignals`' job — it is the thing that knows a reading
+    // has been *kept*, which is what ADR-045's window is measured from.
     return (
       weather: weather,
       lat: fix?.lat,
       lon: fix?.lon,
       motion: _motionOf(fix),
+      readAt: null,
     );
   }
 

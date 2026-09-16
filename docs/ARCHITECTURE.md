@@ -361,14 +361,19 @@ Three things about it are load-bearing:
   to a screen that must not stall there is no useful difference between no network, no
   permission and a service that fell over.
 
-**Captured at launch and at save, and never in between — ADR-042.** `AmbientSignals` owns the
-*when* and holds the reading for the life of the process; `AmbientCapture` owns the *what*.
-There is no timer, no time-to-live and no refresh on resume. *The composer used to drive a
-capture on every chit open,* which meant four taps of **Discard** made four network calls and
-four location fixes.
+**Captured at launch, and at a save holding something stale — ADR-042, ADR-045.**
+`AmbientSignals` owns the *when* and holds the reading for the life of the process;
+`AmbientCapture` owns the *what*. There is no timer and no refresh on resume. *The composer used
+to drive a capture on every chit open,* which meant four taps of **Discard** made four network
+calls and four location fixes; *and then every save did,* which charged a burst of chits in one
+sitting for a GPS fix each. **A reading is good for five minutes**, and inside that a save asks
+for nothing — which is why `AmbientReading` carries a `readAt` and `AmbientSignals` holds a
+clock to stamp it.
 
-**The row is written first and patched after.** A save inserts with whatever is held, starts a
-fresh read beside it, and corrects the row through `ChitRepository.updateAmbient` when it lands.
+**The row is written first, and patched after only when it was stale.** A save inserts with
+whatever is held; if that reading had aged past five minutes it starts a fresh read beside the
+insert and corrects the row through `ChitRepository.updateAmbient` when it lands. That one
+capture does both jobs — it patches the row *and* becomes what the next chit previews.
 That method exists separately from `updateText` so that one rule is in the type rather than in
 somebody's memory: **the patch moves neither `createdAt` nor `updatedAt`** — moving the first
 would move the chit in the thread and, across a midnight, onto another day; moving the second

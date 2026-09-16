@@ -6,7 +6,7 @@ editing the old one.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
 at its head — ADR-001 to ADR-020 on 14 September 2026, ADR-021 to ADR-024 on 15 September 2026,
-ADR-025 to ADR-042 on 16 September 2026 and ADR-043 to ADR-044 on 17 September. Forty-one records, not
+ADR-025 to ADR-042 on 16 September 2026 and ADR-043 to ADR-045 on 17 September. Forty-two records, not
 forty-three: **ADR-018, ADR-026
 and ADR-030 have been merged away**, their numbers retired rather than reused, and the note
 below says where each one went.
@@ -54,9 +54,10 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-039 | Motion is an icon where weather is a word | and it is drawn in the thread, where the pin is not |
 | ADR-040 | A chit is stamped when it is saved | reverses ADR-021; absorbs ADR-026, whose number is retired |
 | ADR-041 | Permission is asked once, on first run, behind a screen of our own | not a bare dialog over a blank page |
-| ADR-042 | Ambience is captured at launch and at save, and never in between | no poll, no TTL; the row is written first and patched after |
+| ADR-042 | Ambience is captured at launch and at save, and never in between | no poll, no TTL; the row is written first and patched after. **Amended by ADR-045** |
 | ADR-043 | The weather mapping: a wind threshold, a trusted flag, and one word missing | windy at 25 km/h; m/s throughout; `is_day` trusted; snow has no word |
 | ADR-044 | The capture budget is twelve seconds, and a stale place beats no place | revises ADR-007 — nothing waits on a capture since ADR-042, and the pin was the cost |
+| ADR-045 | A reading stays good for five minutes | amends ADR-042 — a burst of chits costs one capture, not one each |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
 row without a record.
@@ -1803,3 +1804,58 @@ to prevent. So the fallback recovers the pin and never the motion.
 and stays well inside the ceiling so a slow network cannot spend the time the location call is
 also drawing on. The two legs of a capture still run in parallel and still fail independently
 (ADR-025).
+
+---
+
+## ADR-045 — A reading stays good for five minutes
+
+*17 September 2026. Amends ADR-042 after M3's device pass.*
+
+**Decision.** A save re-reads the two services **only when what it is holding is more than five
+minutes old**. Inside that window it writes the row from the held reading and asks for nothing
+at all — no GPS fix, no network call, and no patch to the row afterwards.
+
+`AmbientReading` grows a `readAt`, and `AmbientSignals` holds a clock for the sole purpose of
+stamping it.
+
+**Over.** ADR-042's *captured at launch and at save*, which asked on **every** save. And over a
+half-measure that skipped only the row patch while still refreshing for the preview — which
+would have saved one local database write and none of the cost that matters.
+
+**Why.**
+
+*A sitting is one moment, and it was being charged for as several.* The premise of the app is
+several chits a day, often in a burst. Under ADR-042 five chits written over ten minutes bought
+five GPS fixes and five API calls, and produced five readings that were the same reading. The
+window is what makes a burst cost one capture.
+
+*Five minutes is set by the place, not by the weather.* Weather barely moves in five minutes and
+would tolerate an hour. A *place* can move a long way in five, and the pin is the signal with
+the shortest honest shelf life — so it sets the ceiling. Below that it is long enough that a
+sitting is one capture; above it a chit written after a short walk would pin where the walk
+began.
+
+*And the half-measure would have been the worst of both.* Refreshing anyway, for the preview,
+spends exactly what this decision exists to stop spending — the row patch is a local write and
+costs nothing. Skipping the capture entirely is the only version that does anything.
+
+**Costs.**
+
+- **A chit can be written from a reading up to five minutes old.** That is the trade, stated
+  plainly: the row says where you were when the app last looked, not where you were when you
+  pressed Save. At the resolution §3.6 draws a pin, and for five words of weather, they are
+  almost always the same answer — but *almost* is doing work in that sentence.
+- **Motion is the field this fits worst.** A speed five minutes old is exactly the kind of claim
+  ADR-037's accuracy gate was built to refuse, and here it can reach a row. A chit written on a
+  train five minutes after the launch capture says `stationary`, because that is what the phone
+  was doing on the platform. Untested against a real journey.
+- **`AmbientSignals` now holds a clock**, which its own doc used to say it deliberately did not.
+  The reason it gave still holds for what it was about — no chit takes its time from here — but
+  the sentence was broader than the rule, and a reading has to be able to say how old it is.
+- **The window is untuned**, like every other figure in this milestone.
+
+**Consequences.** `AmbientCapture.read()` returns `readAt: null`; stamping is `AmbientSignals`'
+job, because it is the thing that knows a reading has been *kept*. The composer's
+`_refreshAmbience` runs only on the stale path, and then does two jobs with one capture: it
+patches the row and becomes what the next chit previews. The freshness rule itself is an
+extension on the record, so it is pure and testable without a container.

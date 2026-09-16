@@ -95,32 +95,46 @@ invisible at arm's length, which is the same as not drawing them.
 
 ---
 
-## M3 — Ambient capture
+## M3 — Ambient capture ✅ done, 17 September 2026
 
 The fakes come out.
 
-- `OpenMeteoWeatherService` and the WMO mapping, with the mapping unit-tested against a table
-  of codes.
+- `OpenMeteoService` and the WMO mapping, with the mapping unit-tested against a table of codes.
 - `GeolocatorLocationService` at high accuracy, accepting the coarse fix when that is all the
   user granted (ADR-016); the permission flow; the pin.
 - Parallel capture under a timeout. A signal that does not arrive is null and is not drawn.
 - The platform permission strings themselves landed in M0a. M3 is where the flows that raise
   them do — behind a **first-run screen of our own** (ADR-041), shown once, asking for location
   and leaving the microphone to M5.
-- **Captured at launch and at save, never in between** (ADR-042), and a chit is **stamped when
-  it is saved** (ADR-040). The row is written at once and the fresh reading patched in after, so
-  nothing about a save is ever behind a network call.
 - **Motion** — `stationary`, `walking`, `traveling`, `flying`, read off the speed of the same
   fix the pin needs (ADR-037), so it adds no package, no permission and no third call. The stamp
   draws **one** ambient fact rather than two, ranked (ADR-038), and motion is an icon where
-  weather is a word (ADR-039). *This was not in the milestone when it was planned; it was added
-  on 16 September 2026 and it is the reason M3 stopped being a milestone that draws nothing.*
+  weather is a word (ADR-039). *This was not in the milestone when it was planned.*
+- **Captured at launch and at a stale save** (ADR-042, ADR-045), and a chit is **stamped when it
+  is saved** (ADR-040). The row is written at once and patched after only if it needed it.
 
-**Done when** the composer opens instantly with no network, and a chit saved offline carries a
-time, no weather word, no pin and no motion — with nothing in the UI noting the absence. And on
-a device with the network on: a fresh install asks once and never again, the word is right for
-the actual weather, a chit saved twenty minutes after it was opened carries the **save** time,
-and a walk outdoors produces the walking mark in place of the word.
+**All of it holds**, checked in release on a handset on 17 September.
+
+*What the milestone taught, which is the part worth keeping:*
+
+- **A milestone can double in scope and still be one milestone.** M3 was planned as six groups
+  that drew nothing; it shipped as twelve, with a screen, a schema migration and a reversed ADR.
+  What kept it coherent was that every addition answered the same question — *what does a chit
+  know about the moment it was written* — and TASKS.md was re-cut twice rather than appended to.
+- **A timeout sized for one architecture is wrong in the next, and silently.** ADR-007's two
+  seconds existed to stop the composer stalling. ADR-042 moved capture off that path and nobody
+  revisited the number, so the budget went on cutting off a GPS fix that nothing was waiting
+  for — and the symptom was a missing pin, three milestones away from the cause. **When a
+  constraint's reason is removed, the constraint is now a guess.**
+- **The device found four things the suite could not, and none of them was a test failure.** A
+  release build that drew nothing, a dialog that never appeared, a pin that never appeared, and
+  a keyboard that never went down. Three were in code that 300 green tests ran over daily.
+  PROGRESS.md's standing list is the only thing that catches this class, and it only works if
+  somebody actually holds a phone.
+- **Two of the four were caused by a fake being honest.** `FixedLocationService` granted
+  permission without asking and answered a fix without a satellite, which is exactly what a fake
+  should do — and it meant the first real test of both was the day they came out. A fake that
+  cannot fail hides the failure path until the swap.
 
 ---
 

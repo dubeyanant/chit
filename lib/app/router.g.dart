@@ -20,6 +20,13 @@ part of 'router.dart';
 /// `keepAlive` because it outlives every screen. Disposed with the container,
 /// so a test gets a fresh router per `ProviderScope` and two tests cannot leak
 /// navigation state into each other.
+///
+/// **This function must run exactly once.** Everything it depends on is read
+/// with `ref.read` or `ref.listen`, never `ref.watch` — a watch here would
+/// rebuild the provider, and rebuilding it constructs a second `GoRouter` that
+/// starts with empty navigation stacks. Anything that needs to change the
+/// router's behaviour later goes through a listenable, as the first-run gate
+/// below does.
 
 @ProviderFor(router)
 final routerProvider = RouterProvider._();
@@ -36,6 +43,13 @@ final routerProvider = RouterProvider._();
 /// `keepAlive` because it outlives every screen. Disposed with the container,
 /// so a test gets a fresh router per `ProviderScope` and two tests cannot leak
 /// navigation state into each other.
+///
+/// **This function must run exactly once.** Everything it depends on is read
+/// with `ref.read` or `ref.listen`, never `ref.watch` — a watch here would
+/// rebuild the provider, and rebuilding it constructs a second `GoRouter` that
+/// starts with empty navigation stacks. Anything that needs to change the
+/// router's behaviour later goes through a listenable, as the first-run gate
+/// below does.
 
 final class RouterProvider
     extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
@@ -52,6 +66,13 @@ final class RouterProvider
   /// `keepAlive` because it outlives every screen. Disposed with the container,
   /// so a test gets a fresh router per `ProviderScope` and two tests cannot leak
   /// navigation state into each other.
+  ///
+  /// **This function must run exactly once.** Everything it depends on is read
+  /// with `ref.read` or `ref.listen`, never `ref.watch` — a watch here would
+  /// rebuild the provider, and rebuilding it constructs a second `GoRouter` that
+  /// starts with empty navigation stacks. Anything that needs to change the
+  /// router's behaviour later goes through a listenable, as the first-run gate
+  /// below does.
   RouterProvider._()
     : super(
         from: null,
@@ -85,4 +106,4 @@ final class RouterProvider
   }
 }
 
-String _$routerHash() => r'55f63c90213858ae3cdb2086558a1abed0b8f1fe';
+String _$routerHash() => r'722e4661d231348d51debbd1a756501f11359d77';

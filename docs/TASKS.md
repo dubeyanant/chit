@@ -6,8 +6,8 @@ that can each be built, tested and committed on their own.
 This file holds **one milestone at a time** and is replaced wholesale when the next one starts.
 It is the working list; [PROGRESS.md](PROGRESS.md) is the handover.
 
-> **Every group is built.** What M3 has left is **a device**, and nothing else. The list below
-> is kept only until that pass is done and M4 replaces this file.
+> **M3 is done**, signed off in release on a handset on 17 September. This file is kept as the
+> record of it until somebody cuts M4 and replaces it.
 
 **M3 grew twice while it was being built.** *It was six groups, A to F, and it drew nothing at
 all.* Motion arrived first (ADR-037, ADR-038, ADR-039), then the first-run screen and the
@@ -35,40 +35,34 @@ editor (M6), and re-transcription (OPEN-QUESTIONS.md §8.2).
 | **H** | `GeolocatorLocationService` | The fix, its kinematics, and the one permission ask. **`currentFix` never raises a dialog** |
 | **I** | `OpenMeteoService` | One call, `wind_speed_unit=ms`, last-known fix only. Never throws |
 | **J** | The swap | `main.dart` wires the real pair; both fakes deleted. **Nothing above `main.dart` changed** |
-| **K** | The doc loop | ADR-040 through ADR-044, and every document they made untrue |
+| **K** | The doc loop | ADR-040 through ADR-045, and every document they made untrue |
 
-**323 tests, `flutter analyze` clean, `dart format` clean, debug and release APKs build.**
+**327 tests, `flutter analyze` clean, `dart format` clean, debug and release APKs build.**
 Ambient capture has been seen working on a handset — see PROGRESS.md.
 
 ---
 
-## L. The device pass ⬜
+## L. The device pass ✅
 
-*The only thing between M3 and done. None of what follows can be held by a test — ADR-031.*
+*Run in release on a handset, 17 September. All of it passed, and the four things it found
+before it did are PROGRESS.md open items 25 to 28.*
 
-- [x] **A fresh install opens on the first-run screen, and tapping Allow raises the real system
-      dialog.** *It did not before group H: the fake location service answered `granted` without
-      asking anything, which is what was seen on a handset and was the fake doing its job.*
-- [ ] **The pin appears.** It did not on 17 September — ADR-044 raised the capture budget from
-      two seconds to twelve and had `currentFix` fall back to the cached fix, because a GPS fix
-      is not a two-second operation indoors. **This is the first thing to re-check.**
-- [ ] The second launch opens on Today. Refusing, then relaunching, does **not** ask again.
-- [ ] **A release build renders.** It showed a bare `--paper` page on 16 September, and the
-      router's redirect has since been rewritten off `ref.watch` — which reaches for a `Ref`
-      that has finished building — onto a `refreshListenable`. The app has drawn Today correctly
-      since, but not in *release*. **Unconfirmed as the cause.** If it recurs, run
-      `flutter run --release` and read the Dart exception: the release `ErrorWidget` paints
-      nothing legible, so the console is the only place the cause shows up.
-- [ ] With the network off: the composer opens instantly, and a chit saved offline carries a
-      time and no word, no pin, no motion — **and nothing in the UI mentions the absence**.
-- [x] With the network on: the word matches the actual weather, and the prompt stops being the
-      rain one (ADR-029).
-- [ ] A chit sat on for a minute saves at the time it was **saved** (ADR-040).
-- [ ] A walk outdoors produces the walking mark **in place of** the weather word (ADR-038).
-- [ ] **`Position.speedAccuracy` is not reported as `0.0` for *unknown*.** `MotionLadder` reads
-      zero as unknown; if a platform means it literally, motion sticks at `stationary` for ever
-      and looks like a feature that does not work. **The single most likely thing to be wrong
-      about motion**, and nothing in the suite can settle it.
-- [ ] The rest of PROGRESS.md's standing list, which every milestone inherits.
+- [x] A fresh install opens on the first-run screen, and **Allow** raises the real system dialog.
+- [x] The second launch opens on Today.
+- [x] A release build renders. *It did not on 16 September; the router's `redirect` was reaching
+      for a `Ref` that had finished building.*
+- [x] **The pin appears.** *It did not until ADR-044 gave the fix time to arrive — two seconds is
+      not a GPS fix indoors.*
+- [x] With the network on: the word matches the actual weather, and the prompt reads the stamp.
+- [x] Tapping away from the field puts the keyboard down. *It did not; `onTapOutside` now does.*
 
-Then M3 is done, BUILD-PLAN.md M3 gets its ✅ and what it taught, and this file becomes M4's.
+**Still untried, and carried into M4's inherited list rather than held here:** a walk outdoors
+(the motion marks have never been drawn on a real device), a chit sat on across a minute
+boundary, the network off, and a sitting long enough to cross ADR-045's five-minute window.
+PROGRESS.md's standing list is where those live now.
+
+---
+
+M3 is done. [BUILD-PLAN.md](BUILD-PLAN.md) M3 carries what the milestone taught, and **this file
+is replaced by M4's groups the moment somebody cuts them** — which has deliberately not been
+done yet.

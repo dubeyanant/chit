@@ -9,83 +9,74 @@ part of 'ambient_signals.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// The three best-effort signals, held for the life of the process —
-/// **ADR-042**.
+/// **ADR-042**, as amended by **ADR-045**.
 ///
-/// **They are captured twice and never in between**: once at launch, and again
-/// when a chit is saved. There is no timer, no time-to-live, and no refresh
-/// when the app returns to the foreground.
+/// **Captured at launch, and at a save that is holding something stale.** Once
+/// after the first frame, and again when a chit is saved more than
+/// `freshFor` after the last reading came back. There is no timer, no refresh
+/// on resume, and no capture at all on a chit that is merely opened.
 ///
 /// *The app used to ask both services on every chit open*, which meant four
-/// taps of **Discard** made four network calls. The record that governed
-/// Discard asked for an implementation "as unbothered by that as the fakes
-/// are" without saying how; this is how. Nothing is asked unless a chit is
-/// actually written.
+/// taps of **Discard** made four network calls. *And then it asked on every
+/// save*, which meant a burst of chits in one sitting paid for a GPS fix each.
+/// Neither is true now: a save inside the window writes what is already in
+/// hand.
 ///
 /// **What is held here is the preview; what a saved chit carries is the
-/// record.** They are different values on purpose. The stamp on the open chit
-/// draws whatever landed at launch, and on a phone that has been open all day
-/// that can be hours old. The staleness is confined to the screen: [refresh]
-/// runs before a row is written (ADR-040), so no chit is ever *recorded* with
-/// a signal from launch.
+/// record.** They can differ, and the staleness lives on the screen rather
+/// than in the data.
 ///
-/// **It holds no clock.** The time on a stamp is read where it is used — by
-/// the composer for what it shows, and by `save` for what it writes — because
-/// a time held here would be the one thing in the app that went stale
-/// dangerously rather than harmlessly.
+/// **It holds a clock, and only to timestamp itself.** `readAt` is what makes
+/// ADR-045's window checkable; no chit ever takes its time from here, because
+/// a chit is stamped where it is saved (ADR-040).
 
 @ProviderFor(AmbientSignals)
 final ambientSignalsProvider = AmbientSignalsProvider._();
 
 /// The three best-effort signals, held for the life of the process —
-/// **ADR-042**.
+/// **ADR-042**, as amended by **ADR-045**.
 ///
-/// **They are captured twice and never in between**: once at launch, and again
-/// when a chit is saved. There is no timer, no time-to-live, and no refresh
-/// when the app returns to the foreground.
+/// **Captured at launch, and at a save that is holding something stale.** Once
+/// after the first frame, and again when a chit is saved more than
+/// `freshFor` after the last reading came back. There is no timer, no refresh
+/// on resume, and no capture at all on a chit that is merely opened.
 ///
 /// *The app used to ask both services on every chit open*, which meant four
-/// taps of **Discard** made four network calls. The record that governed
-/// Discard asked for an implementation "as unbothered by that as the fakes
-/// are" without saying how; this is how. Nothing is asked unless a chit is
-/// actually written.
+/// taps of **Discard** made four network calls. *And then it asked on every
+/// save*, which meant a burst of chits in one sitting paid for a GPS fix each.
+/// Neither is true now: a save inside the window writes what is already in
+/// hand.
 ///
 /// **What is held here is the preview; what a saved chit carries is the
-/// record.** They are different values on purpose. The stamp on the open chit
-/// draws whatever landed at launch, and on a phone that has been open all day
-/// that can be hours old. The staleness is confined to the screen: [refresh]
-/// runs before a row is written (ADR-040), so no chit is ever *recorded* with
-/// a signal from launch.
+/// record.** They can differ, and the staleness lives on the screen rather
+/// than in the data.
 ///
-/// **It holds no clock.** The time on a stamp is read where it is used — by
-/// the composer for what it shows, and by `save` for what it writes — because
-/// a time held here would be the one thing in the app that went stale
-/// dangerously rather than harmlessly.
+/// **It holds a clock, and only to timestamp itself.** `readAt` is what makes
+/// ADR-045's window checkable; no chit ever takes its time from here, because
+/// a chit is stamped where it is saved (ADR-040).
 final class AmbientSignalsProvider
     extends $NotifierProvider<AmbientSignals, AmbientReading> {
   /// The three best-effort signals, held for the life of the process —
-  /// **ADR-042**.
+  /// **ADR-042**, as amended by **ADR-045**.
   ///
-  /// **They are captured twice and never in between**: once at launch, and again
-  /// when a chit is saved. There is no timer, no time-to-live, and no refresh
-  /// when the app returns to the foreground.
+  /// **Captured at launch, and at a save that is holding something stale.** Once
+  /// after the first frame, and again when a chit is saved more than
+  /// `freshFor` after the last reading came back. There is no timer, no refresh
+  /// on resume, and no capture at all on a chit that is merely opened.
   ///
   /// *The app used to ask both services on every chit open*, which meant four
-  /// taps of **Discard** made four network calls. The record that governed
-  /// Discard asked for an implementation "as unbothered by that as the fakes
-  /// are" without saying how; this is how. Nothing is asked unless a chit is
-  /// actually written.
+  /// taps of **Discard** made four network calls. *And then it asked on every
+  /// save*, which meant a burst of chits in one sitting paid for a GPS fix each.
+  /// Neither is true now: a save inside the window writes what is already in
+  /// hand.
   ///
   /// **What is held here is the preview; what a saved chit carries is the
-  /// record.** They are different values on purpose. The stamp on the open chit
-  /// draws whatever landed at launch, and on a phone that has been open all day
-  /// that can be hours old. The staleness is confined to the screen: [refresh]
-  /// runs before a row is written (ADR-040), so no chit is ever *recorded* with
-  /// a signal from launch.
+  /// record.** They can differ, and the staleness lives on the screen rather
+  /// than in the data.
   ///
-  /// **It holds no clock.** The time on a stamp is read where it is used — by
-  /// the composer for what it shows, and by `save` for what it writes — because
-  /// a time held here would be the one thing in the app that went stale
-  /// dangerously rather than harmlessly.
+  /// **It holds a clock, and only to timestamp itself.** `readAt` is what makes
+  /// ADR-045's window checkable; no chit ever takes its time from here, because
+  /// a chit is stamped where it is saved (ADR-040).
   AmbientSignalsProvider._()
     : super(
         from: null,
@@ -113,32 +104,29 @@ final class AmbientSignalsProvider
   }
 }
 
-String _$ambientSignalsHash() => r'd3b099e133c81f57be238d0b81b8af616cd6442b';
+String _$ambientSignalsHash() => r'9032b35e07861f42fd33958fed2e6e01a727da70';
 
 /// The three best-effort signals, held for the life of the process —
-/// **ADR-042**.
+/// **ADR-042**, as amended by **ADR-045**.
 ///
-/// **They are captured twice and never in between**: once at launch, and again
-/// when a chit is saved. There is no timer, no time-to-live, and no refresh
-/// when the app returns to the foreground.
+/// **Captured at launch, and at a save that is holding something stale.** Once
+/// after the first frame, and again when a chit is saved more than
+/// `freshFor` after the last reading came back. There is no timer, no refresh
+/// on resume, and no capture at all on a chit that is merely opened.
 ///
 /// *The app used to ask both services on every chit open*, which meant four
-/// taps of **Discard** made four network calls. The record that governed
-/// Discard asked for an implementation "as unbothered by that as the fakes
-/// are" without saying how; this is how. Nothing is asked unless a chit is
-/// actually written.
+/// taps of **Discard** made four network calls. *And then it asked on every
+/// save*, which meant a burst of chits in one sitting paid for a GPS fix each.
+/// Neither is true now: a save inside the window writes what is already in
+/// hand.
 ///
 /// **What is held here is the preview; what a saved chit carries is the
-/// record.** They are different values on purpose. The stamp on the open chit
-/// draws whatever landed at launch, and on a phone that has been open all day
-/// that can be hours old. The staleness is confined to the screen: [refresh]
-/// runs before a row is written (ADR-040), so no chit is ever *recorded* with
-/// a signal from launch.
+/// record.** They can differ, and the staleness lives on the screen rather
+/// than in the data.
 ///
-/// **It holds no clock.** The time on a stamp is read where it is used — by
-/// the composer for what it shows, and by `save` for what it writes — because
-/// a time held here would be the one thing in the app that went stale
-/// dangerously rather than harmlessly.
+/// **It holds a clock, and only to timestamp itself.** `readAt` is what makes
+/// ADR-045's window checkable; no chit ever takes its time from here, because
+/// a chit is stamped where it is saved (ADR-040).
 
 abstract class _$AmbientSignals extends $Notifier<AmbientReading> {
   AmbientReading build();

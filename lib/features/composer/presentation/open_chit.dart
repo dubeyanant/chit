@@ -129,6 +129,18 @@ class _FieldState extends ConsumerState<_Field> {
               maxLines: null,
               keyboardType: TextInputType.multiline,
               textCapitalization: TextCapitalization.sentences,
+              // **Tapping away puts the keyboard down.** On mobile Flutter
+              // leaves the field focused when the tap lands outside it, which
+              // on this screen means the keyboard covers the thread and stays
+              // there — the one surface §3.2 says the page is.
+              //
+              // `onTapOutside` rather than a `GestureDetector` around the
+              // screen: a detector would have to be told about every control
+              // it must not swallow, and this already knows what *outside*
+              // means. Taps on Discard, Save and the microphone still land —
+              // the region reports the tap, it does not eat it.
+              onTapOutside: (PointerDownEvent _) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
               // No border, no fill, no counter. The slip is the surface; a
               // field drawn on top of it would be a second one.
               decoration: const InputDecoration.collapsed(hintText: null),

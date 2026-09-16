@@ -33,9 +33,11 @@ slip showed. That is the cost of the rule above and it is accepted rather than h
 **Discard** returns the open chit to its empty state — and *empty* means **new**, not blanked:
 the preview is taken again, so the blank slip does not sit there showing a time that has passed.
 
-**Saving never waits.** The row is written at once with what the app has in hand, a fresh
-reading is taken behind it, and the chit is corrected a moment later if anything changed
-(**ADR-042**). Nothing about a save is ever behind a network call.
+**Saving never waits.** The row is written at once with what the app has in hand. If that
+reading is more than **five minutes** old a fresh one is taken behind the save and the chit is
+corrected a moment later; inside five minutes nothing is asked at all, because a burst of chits
+in one sitting is one moment and should cost one capture (**ADR-042**, **ADR-045**). Nothing
+about a save is ever behind a network call.
 
 ### 3.2 One surface, two ways in
 
@@ -46,6 +48,14 @@ secondary action tucked into a corner.
 The two are not alternatives and there is no mode to choose. A chit may end up as typed text,
 as a recording with its transcript, as a recording whose transcript was corrected by hand, or
 as a recording with nothing written at all. All four are ordinary.
+
+**Tapping the page gives the field focus; tapping away takes it back.** The keyboard comes up on
+the first touch of the page (ADR-023 — never on launch) and goes down again the moment a tap
+lands outside it. A keyboard that stays up after you have plainly finished covers the thread,
+which is the half of the screen §4.1 is about.
+
+The controls on the slip are not *outside* in that sense: Discard, Save and the microphone still
+take their tap, and the keyboard goes down as they do.
 
 What keeps the microphone an equal is that it is reachable and never a step: it is available on
 an empty chit and on one already half-written, its target does not shrink when text appears, and
@@ -214,9 +224,14 @@ the UI mentions its absence.
 
 #### 3.6.3 When capture happens
 
-**Twice, and never in between** — ADR-042. Once at launch, fired after the app has drawn and
-never waited on; and again each time a chit is saved. There is no polling, no expiry, and no
-refresh when the app comes back to the foreground.
+**At launch, and at a save holding something stale** — ADR-042 as amended by ADR-045. Once after
+the app has drawn, never waited on; and again when a chit is saved more than five minutes after
+the last reading came back. There is no polling, no refresh on resume, and no capture at all on
+a chit that is merely opened — or on one saved inside the window.
+
+Five minutes is set by the **place** rather than the weather. Weather would tolerate an hour; a
+place can move a long way in five minutes, and the pin is the signal with the shortest honest
+shelf life.
 
 So the stamp on the open chit draws whatever landed at launch, and on a phone that has been open
 all day that can be hours old. **No chit is ever recorded with it**, because saving re-reads —

@@ -107,7 +107,18 @@ void main() {
         container.read(ambientSignalsProvider.notifier).prime(),
         completes,
       );
-      expect(container.read(ambientSignalsProvider), AmbientSignals.nothing);
+
+      final AmbientReading held = container.read(ambientSignalsProvider);
+      expect(held.weather, isNull);
+      expect(held.lat, isNull);
+      expect(held.motion, isNull);
+      expect(
+        held.readAt,
+        isNotNull,
+        reason:
+            'an empty answer is still an answer — ADR-045 dates it, so a'
+            ' save does not keep re-asking a service that has nothing',
+      );
     },
   );
 }

@@ -126,16 +126,18 @@ class ComposerController extends _$ComposerController {
   /// and which day it belongs to (ADR-006). *This reverses ADR-021, which
   /// stamped a chit when it opened.* The gain is that a chit is always filed on
   /// the day it was actually saved — the wrong-day case that ADR-021 created,
-  /// and that a second record used to contain, cannot happen at all now. The cost is that the stamp on the slip
-  /// is a **preview**: it shows when the chit was opened, and a chit sat on for
-  /// twenty minutes lands in the thread carrying a later time.
+  /// and that a second record used to contain, cannot happen at all now. The
+  /// cost is that the stamp on the slip is a **preview**: it shows when the
+  /// chit was opened, and a chit sat on for twenty minutes lands in the thread
+  /// carrying a later time.
   ///
-  /// **The row is written first and the ambience is patched in after**
-  /// (ADR-042). Nothing about a save waits on a network call: the insert goes
-  /// out with whatever `AmbientSignals` is holding, a fresh read is started
-  /// beside it, and the row is corrected when it lands. Since §3.6 draws
-  /// nothing for a `null`, that correction is usually invisible — at worst a
-  /// word appears in the thread a beat after the chit does.
+  /// **The row is written first, and corrected after only if it is stale**
+  /// (ADR-042, ADR-045). Nothing about a save waits on a network call: the
+  /// insert goes out with whatever `AmbientSignals` is holding. If that reading
+  /// is less than `AmbientSignals.freshFor` old it is already right and the row
+  /// is left alone — a burst of chits in one sitting costs one capture, not one
+  /// each. Only a stale reading is patched, and since §3.6 draws nothing for a
+  /// `null` even that is usually invisible.
   ///
   /// Saving then opens a new chit, the way [discard] does: the same
   /// `_openChit()`, so there is one way for a chit to come into existence.
@@ -147,30 +149,47 @@ class ComposerController extends _$ComposerController {
     final ComposerState chit = state;
     if (!chit.canSave) return;
 
+    final DateTime now = ref.read(clockProvider).now();
+    final AmbientReading held = ref.read(ambientSignalsProvider);
+    final bool fresh = held.isFreshAt(now);
+
     final Chit saved = await ref
         .read(chitRepositoryProvider)
         .save(
-          stamp: _stampNow(),
+          stamp: AmbientStamp(
+            capturedAt: now,
+            weather: held.weather,
+            lat: held.lat,
+            lon: held.lon,
+            motion: held.motion,
+          ),
           text: chit.text,
           textOrigin: chit.textOrigin,
           audioTempPath: chit.audioTempPath,
           audioDuration: chit.audioDuration,
         );
 
-    // Deliberately not awaited — the chit is already in the thread, and this
-    // is the half of ADR-042 that must never be in front of the user.
-    unawaited(_refreshAmbience(saved.id));
+    // **Inside the window, nothing is asked at all** — ADR-045. What was
+    // written was read less than `freshFor` ago, so it is both what the row
+    // should say and what the next chit should preview. Refreshing anyway
+    // would cost exactly what this decision exists to stop paying: a GPS fix
+    // and a network call for every chit in a sitting.
+    //
+    // Outside it, deliberately not awaited — the chit is already in the
+    // thread, and this is the half of ADR-042 that must never be in front of
+    // the user.
+    if (!fresh) unawaited(_refreshAmbience(saved.id));
 
     if (!ref.mounted) return;
     state = _openChit();
   }
 
-  /// The stamp a row is written with: **the clock now**, and the ambience in
-  /// hand.
+  /// The stamp the preview is drawn from: **the clock now**, and the ambience
+  /// in hand.
   ///
   /// The reading may be empty — at launch, before the first capture has landed,
   /// or on an install where location was refused. That is the ordinary ADR-007
-  /// outcome and the row simply carries a time.
+  /// outcome and the slip simply shows a time.
   AmbientStamp _stampNow() {
     final AmbientReading held = ref.read(ambientSignalsProvider);
 
@@ -183,17 +202,22 @@ class ComposerController extends _$ComposerController {
     );
   }
 
-  /// Reads the services again and corrects the row that was just written.
+  /// Reads the services again and corrects the row — **only when the reading
+  /// the row was written from had gone stale** (ADR-045).
   ///
-  /// **`createdAt` is never touched** — moving it would move the chit in the
-  /// thread and on the strip, and across a midnight it would move it to
-  /// another day. Only the three best-effort fields change, and `updatedAt`
-  /// does not move either: ADR-014 reserves that for a change to the *text*,
-  /// and a signal arriving late is not an edit anybody made.
+  /// It does two jobs at once and that is the point: the fresh answer both
+  /// patches the row and becomes what the next chit previews, so one capture
+  /// serves the record and the screen.
+  ///
+  /// **`createdAt` is never touched** — moving it would
+  /// move the chit in the thread and on the strip, and across a midnight it
+  /// would move it to another day. `updatedAt` does not move either, because
+  /// ADR-014 reserves that for a change to the *text*.
   Future<void> _refreshAmbience(String id) async {
     await ref.read(ambientSignalsProvider.notifier).refresh();
 
     if (!ref.mounted) return;
+
     final AmbientReading fresh = ref.read(ambientSignalsProvider);
 
     await ref
