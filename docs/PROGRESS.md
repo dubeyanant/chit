@@ -3,16 +3,19 @@
 **Where the build is, and what to do next.** This is the handover: a session that has read only
 this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 
-Updated at the end of every working session, per the standing rule in CLAUDE.md §0 — including
-sessions that ended mid-milestone.
+Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
+including sessions that ended mid-milestone.
 
-**Last updated:** 16 September 2026, after M2 group G and after the cleanup pass that removed
-the widget tests (ADR-031) and cut this file from 930 lines to what you are reading.
+**Last updated:** 16 September 2026, after M2 group G and after a cleanup pass that did three
+things, none of them to the app: removed the widget tests (ADR-031), cut this file from 930
+lines to what you are reading, and added **CLAUDE.md §0.1** — *nothing unnecessary gets
+committed*. **No behaviour changed.** The build is exactly where group G left it.
 
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s ✅ marks are the
 ledger of what is done. What belongs here is the present: where the build is, what the next
 session picks up, what has been seen on a device, and what is known-wrong and unscheduled. A
-session that finishes a group **replaces** the *Next* section rather than appending to a log.
+session that finishes a group **replaces** the *Next* section rather than appending to a log —
+that is §0.1 applied to prose, and it is the reason this file is 190 lines instead of 930.
 
 ---
 

@@ -29,6 +29,7 @@ So, as part of the same change — never as a follow-up:
 | changes why the design is what it is | `docs/DESIGN-LOG.md` |
 | changes the order of work or what "done" means | `docs/BUILD-PLAN.md` |
 | changes how to work in this repo | this file |
+| **orphans a file** — a support file, an asset, a prototype, a fixture | **delete it, in this commit.** §0.1 below |
 
 **Contradicting a document is a change to it.** If the code has to depart from what a doc
 says, the doc gets corrected in the same change, with a line saying what it used to say and
@@ -37,6 +38,41 @@ why it moved. Silently diverging is the one thing that is never acceptable.
 **`docs/PROGRESS.md` is the handover.** It is the single place that answers "where are we and
 what is next". Update it at the end of every working session even when nothing else moved —
 including when the session ended mid-milestone, in which case say exactly where it stopped.
+
+### 0.1 The second standing rule — nothing unnecessary gets committed
+
+**A file that has stopped earning its place is deleted in the same change that stopped it
+earning it.** This is the other half of §0 and it is not a housekeeping pass somebody schedules
+later: a repository is read by whoever arrives next, and every file in it is a claim that it is
+worth reading. A superseded prototype, a scratch script, a support file whose last caller is
+gone, a doc nobody has cited in three milestones — each one costs the next session time and
+context to rule out, and the cost is paid on every session, forever, by everyone.
+
+**Git is the archive. The working tree is not.** Nothing is ever lost by deleting a tracked
+file, so "keep it just in case" is never the reason — it is in the history, and the commit
+message says where to look. Superseded means deleted, not moved to `old/`, not renamed with a
+`_v2`, and not left in place with a comment saying it is dead.
+
+**Before every commit, ask what this change has orphaned**, and delete it in the same commit:
+
+- The file a deleted caller was the last user of — a test support file, a fake, a helper.
+- The asset, fixture, snapshot or prototype that the thing replacing it just superseded.
+- Anything written to the repository that was only ever scaffolding for the work itself —
+  scratch scripts, probe files, sample output, a `.gitkeep` in a folder that now has contents.
+- An empty directory left behind by any of the above.
+- **In the documents**, the same rule applies to prose: a paragraph describing what a milestone
+  *did* belongs in git, not in `docs/PROGRESS.md`. That file carries the present — where the
+  build is, what is next, what is known-wrong — and a session that appends to it instead of
+  replacing what is no longer true is doing the thing this rule forbids, in slow motion.
+
+What this rule does **not** licence: deleting something because it is merely old, unfamiliar or
+understood by somebody else. "Not earning its place" means nothing points at it and nothing
+would — not "I did not need it today". Two things earn their place by being deliberately kept
+and say so where they live: `web/` (ADR-019) and the generated `*.g.dart` and `*.freezed.dart`
+files, which are committed so a fresh clone runs without codegen.
+
+If a deletion is a judgement call rather than an orphan, it is a decision — **say what was
+deleted and why in the commit body**, which is where §5 says the reasoning goes.
 
 ### The checklist to run before saying a piece of work is done
 
@@ -48,7 +84,9 @@ including when the session ended mid-milestone, in which case say exactly where 
    here once already, with `--seal`'s contrast ratio. The rule is only as good as the search.
 5. `docs/PROGRESS.md` reflects reality — the milestone state, what was just finished, what is
    next, and any new open question.
-6. The change and its doc updates are in the same commit.
+6. **§0.1 was run: what this change orphaned is deleted, in this commit.** `git status` shows
+   nothing untracked that should not be there, and nothing tracked that nothing points at.
+7. The change, its doc updates and its deletions are all in the same commit.
 
 ---
 

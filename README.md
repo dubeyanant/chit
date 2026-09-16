@@ -20,7 +20,7 @@ Read these four, in this order. It is about ten minutes and it is the whole cont
 | # | Read | For |
 |---|---|---|
 | 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, what is on a handset, the device checklist, every open item. It is the present, not a log — git is the history. If you read one thing, read this |
-| 2 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the standing rule below, the engineering principles, the commit format |
+| 2 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the two standing rules below, the engineering principles, the commit format |
 | 3 | **[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md)** | What "done" means for the milestone `PROGRESS.md` just named |
 | 4 | **[`docs/TASKS.md`](docs/TASKS.md)** | That milestone cut into buildable groups, with the decisions it turns on already settled |
 
@@ -60,7 +60,7 @@ That is why the numbering here has gaps. It is not an omission:
 | **§9** | **Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
 | §10 | The map | this file |
 
-### The standing rule
+### The two standing rules
 
 **No change is finished until the documents that describe it are true again** — in the *same*
 change, never as a follow-up. Contradicting a document is a change to that document.
@@ -70,9 +70,17 @@ That is what makes the reading order above work. A session that follows the rule
 anything. A session that skips it leaves the next one with a lie and no way to tell which half
 to trust.
 
-[`CLAUDE.md`](CLAUDE.md) §0 has the full version — which document to update for which kind of
-change, and the checklist to run before calling anything done. If you are Claude Code, that
-file is already loaded: read `docs/PROGRESS.md` and start.
+**And nothing unnecessary gets committed.** A file that has stopped earning its place is
+deleted in the same change that stopped it earning it — the support file whose last caller is
+gone, the prototype something just superseded, the scratch script, the paragraph in
+`PROGRESS.md` describing what a milestone *did*. Git is the archive; the working tree is not,
+so nothing is lost by deleting and "keep it just in case" is never the reason. Every file here
+is a claim that it is worth reading, and a stale claim is paid for by every session that
+follows.
+
+[`CLAUDE.md`](CLAUDE.md) §0 and §0.1 have the full versions — which document to update for which
+kind of change, what counts as an orphan, and the checklist to run before calling anything done.
+If you are Claude Code, that file is already loaded: read `docs/PROGRESS.md` and start.
 
 ---
 
@@ -158,7 +166,7 @@ index, so this one is maintained by the build.
 ```
 chit/
 ├── README.md               this file — §0 says where to start, §10 is this map
-├── CLAUDE.md               how to work here: the standing rule, the principles, the commits
+├── CLAUDE.md               how to work here: the two standing rules, the principles, the commits
 ├── docs/                   §10.1 — eleven documents, one question each
 ├── lib/                    §10.2 — the Flutter source
 ├── test/                   §10.3 — what is enforced rather than intended
@@ -175,7 +183,7 @@ chit/
 | File | Answers | Read it |
 |---|---|---|
 | [`docs/PROGRESS.md`](docs/PROGRESS.md) | **Where the build stands and what is next.** The status board, what the last session did, and every open item | First. Always |
-| [`CLAUDE.md`](CLAUDE.md) | How to work here — the standing rule, the engineering principles, the commit format, the commands | Second, before writing anything |
+| [`CLAUDE.md`](CLAUDE.md) | How to work here — the two standing rules, the engineering principles, the commit format, the commands | Second, before writing anything |
 | [`docs/TASKS.md`](docs/TASKS.md) | **The current milestone, cut into groups that can each be built, tested and committed on their own.** Holds one milestone at a time and is replaced wholesale when the next starts; `PROGRESS.md` keeps the history | Third, when you are about to write code |
 | [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) | The order it gets built in, M0 to M7, and what "done" means for each | Starting a milestone |
 | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
