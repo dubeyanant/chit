@@ -1,22 +1,25 @@
 import 'dart:async';
 
-import 'package:chit/domain/models/ambient_stamp.dart';
+import 'package:chit/domain/models/motion_state.dart';
 import 'package:chit/domain/models/weather_condition.dart';
 import 'package:chit/domain/services/ambient_capture.dart';
+import 'package:chit/domain/services/ambient_signals.dart';
 import 'package:chit/domain/services/location_service.dart';
 import 'package:chit/domain/services/weather_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../support/fake_clock.dart';
-
 /// ADR-007, as a test rather than as an intention.
 ///
-/// *Time, weather and location are gathered when the open chit is created, in
-/// parallel, each under a short timeout. Any signal that does not arrive is
-/// null.* Every clause of that is checkable and every one of them is checked
-/// here — including the two ways a signal fails to arrive, because a service
-/// that throws and a service that hangs have to look identical from the
-/// composer, and only one of them is obvious.
+/// *Weather and location are gathered in parallel, each under a short timeout.
+/// Any signal that does not arrive is null.* Every clause of that is checkable
+/// and every one of them is checked here — including the two ways a signal
+/// fails to arrive, because a service that throws and a service that hangs
+/// have to look identical to the caller, and only one of them is obvious.
+///
+/// **The time is not here any more.** Under ADR-040 a chit is stamped when it
+/// is saved, and the clock is read where a time is used rather than inside a
+/// capture; ADR-042 moved the *when* of capture to `AmbientSignals`. What is
+/// left in this class is the *what*, which is the part with the failure modes.
 ///
 /// The fakes are honest, which is CLAUDE.md §4.1's Liskov rule: a fake that
 /// "fails" fails the way the real thing does. [_SlowWeather] does not return a
@@ -24,8 +27,6 @@ import '../../support/fake_clock.dart';
 /// the timeout is what produces the `null` and the test would notice if it
 /// stopped doing so.
 void main() {
-  final DateTime openedAt = DateTime(2026, 9, 16, 15, 42);
-
   /// Short enough that the slow cases cost milliseconds, long enough that the
   /// fast ones are never a race. The product figure is
   /// [AmbientCapture.defaultTimeout].
@@ -34,28 +35,21 @@ void main() {
   AmbientCapture capture({
     required WeatherService weather,
     required LocationService location,
-  }) => AmbientCapture(
-    clock: FakeClock(openedAt),
-    weather: weather,
-    location: location,
-    timeout: timeout,
-  );
+  }) => AmbientCapture(weather: weather, location: location, timeout: timeout);
 
   group('both signals arrive', () {
-    test('the stamp carries the time, the word and the fix', () async {
-      final AmbientStamp stamp = await capture(
+    test('the reading carries the word and the fix', () async {
+      final AmbientReading reading = await capture(
         weather: const _Weather(WeatherCondition.overcast),
-        location: const _Location((lat: 51.4769, lon: -0.0005)),
-      ).capture();
+        location: const _Location(GeoFix(lat: 51.4769, lon: -0.0005)),
+      ).read();
 
-      expect(stamp.capturedAt, openedAt);
-      expect(stamp.weather, WeatherCondition.overcast);
-      expect(stamp.lat, 51.4769);
-      expect(stamp.lon, -0.0005);
-      expect(stamp.hasLocation, isTrue);
+      expect(reading.weather, WeatherCondition.overcast);
+      expect(reading.lat, 51.4769);
+      expect(reading.lon, -0.0005);
     });
 
-    test('the default timeout is ARCHITECTURE.md §4.2\'s two seconds', () {
+    test("the default timeout is ARCHITECTURE.md §4.2's two seconds", () {
       expect(AmbientCapture.defaultTimeout, const Duration(seconds: 2));
     });
   });
@@ -63,50 +57,49 @@ void main() {
   group('a signal that does not arrive is null', () {
     test('weather that says nothing', () async {
       // The ordinary offline answer, and the one the real service gives.
-      final AmbientStamp stamp = await capture(
+      final AmbientReading reading = await capture(
         weather: const _Weather(null),
-        location: const _Location((lat: 1.0, lon: 2.0)),
-      ).capture();
+        location: const _Location(GeoFix(lat: 1, lon: 2)),
+      ).read();
 
-      expect(stamp.weather, isNull);
-      expect(
-        stamp.hasLocation,
-        isTrue,
-        reason: 'the other signal is untouched',
-      );
+      expect(reading.weather, isNull);
+      expect(reading.lat, 1, reason: 'the other signal is untouched');
     });
 
     test('weather that hangs — the timeout is what makes it null', () async {
-      final AmbientStamp stamp = await capture(
+      final AmbientReading reading = await capture(
         weather: _SlowWeather(),
-        location: const _Location((lat: 1.0, lon: 2.0)),
-      ).capture();
+        location: const _Location(GeoFix(lat: 1, lon: 2)),
+      ).read();
 
-      expect(stamp.weather, isNull);
-      expect(stamp.hasLocation, isTrue);
+      expect(reading.weather, isNull);
+      expect(reading.lat, 1);
     });
 
     test('weather that throws looks exactly the same', () async {
       // A service that fell over and a service that is merely offline are the
-      // same event to a composer that must not stall (ADR-007).
-      final AmbientStamp stamp = await capture(
+      // same event to a screen that must not stall (ADR-007).
+      final AmbientReading reading = await capture(
         weather: _ThrowingWeather(),
-        location: const _Location((lat: 1.0, lon: 2.0)),
-      ).capture();
+        location: const _Location(GeoFix(lat: 1, lon: 2)),
+      ).read();
 
-      expect(stamp.weather, isNull);
+      expect(reading.weather, isNull);
     });
 
     test('a refused permission is no fix, and no half of one', () async {
-      final AmbientStamp stamp = await capture(
+      final AmbientReading reading = await capture(
         weather: const _Weather(WeatherCondition.clear),
         location: const _Location(null),
-      ).capture();
+      ).read();
 
-      expect(stamp.hasLocation, isFalse);
-      expect(stamp.lat, isNull);
-      expect(stamp.lon, isNull);
-      expect(stamp.weather, WeatherCondition.clear);
+      expect(reading.lat, isNull);
+      expect(reading.lon, isNull);
+      expect(
+        reading.weather,
+        WeatherCondition.clear,
+        reason: 'ADR-025: the two signals fail independently',
+      );
     });
 
     test('location that hangs, and location that throws', () async {
@@ -114,74 +107,41 @@ void main() {
         _SlowLocation(),
         _ThrowingLocation(),
       ]) {
-        final AmbientStamp stamp = await capture(
+        final AmbientReading reading = await capture(
           weather: const _Weather(WeatherCondition.windy),
           location: service,
-        ).capture();
+        ).read();
 
-        expect(stamp.hasLocation, isFalse, reason: '$service');
-        expect(stamp.weather, WeatherCondition.windy);
+        expect(reading.lat, isNull, reason: '$service');
+        expect(reading.weather, WeatherCondition.windy);
       }
     });
 
-    test('nothing arrives at all, and a stamp is still a stamp', () async {
+    test('nothing arrives at all, and that is a legal reading', () async {
       // The state a phone in flight mode with location off is actually in.
       // BEHAVIOUR.md §3.6's line is then one fact long, and that is correct
       // behaviour rather than a gap to fill with a placeholder.
-      final AmbientStamp stamp = await capture(
+      final AmbientReading reading = await capture(
         weather: _SlowWeather(),
         location: _ThrowingLocation(),
-      ).capture();
+      ).read();
 
-      expect(stamp.capturedAt, openedAt);
-      expect(stamp.weather, isNull);
-      expect(stamp.hasLocation, isFalse);
+      expect(reading, AmbientSignals.nothing);
     });
   });
 
-  group('nothing here can block the composer', () {
-    test('opening a chit is synchronous, and gives it its time at once', () {
-      // ADR-007: nothing about capture may delay the composer. A single
-      // `Future<AmbientStamp> capture()` would make the composer itself
-      // asynchronous, and a composer with a loading state has broken that
-      // promise whether or not a spinner is ever drawn. So `open()` returns a
-      // stamp rather than a future, and it is the only clock read.
-      final AmbientStamp opened = capture(
-        weather: _SlowWeather(),
-        location: _SlowLocation(),
-      ).open();
-
-      expect(opened.capturedAt, openedAt);
-      expect(opened.weather, isNull);
-      expect(opened.hasLocation, isFalse);
-    });
-
-    test('settling never moves the time it was opened at', () async {
-      // The signals may take up to a timeout to land. `capturedAt` becomes the
-      // chit's createdAt (ADR-021), so it has to survive that untouched.
-      final AmbientCapture ambient = capture(
-        weather: const _Weather(WeatherCondition.overcast),
-        location: const _Location((lat: 1.0, lon: 2.0)),
-      );
-      final AmbientStamp opened = ambient.open();
-
-      final AmbientStamp settled = await ambient.settle(opened);
-
-      expect(settled.capturedAt, opened.capturedAt);
-      expect(settled.weather, WeatherCondition.overcast);
-    });
-
+  group('nothing here can block whoever called it', () {
     test('the two go out in parallel, not one after the other', () async {
       // The claim is worth a test because the sequential version passes every
       // other test in this file: two 20ms timeouts in a row still produce the
-      // same empty stamp, just twice as slowly. Each fake records whether the
-      // other had already been asked when it was.
+      // same empty reading, just twice as slowly. Each fake records whether
+      // the other had already been asked when it was.
       final _Order order = _Order();
 
       await capture(
         weather: _OrderedWeather(order),
         location: _OrderedLocation(order),
-      ).capture();
+      ).read();
 
       expect(
         order.locationAskedBeforeWeatherAnswered,
@@ -193,10 +153,7 @@ void main() {
     test('both hanging costs one timeout, not two', () async {
       final Stopwatch clock = Stopwatch()..start();
 
-      await capture(
-        weather: _SlowWeather(),
-        location: _SlowLocation(),
-      ).capture();
+      await capture(weather: _SlowWeather(), location: _SlowLocation()).read();
 
       clock.stop();
       expect(
@@ -207,37 +164,70 @@ void main() {
     });
   });
 
-  group('ADR-021: the chit is stamped when it is opened', () {
-    test('the time is read before the signals are asked for', () async {
-      // capturedAt becomes the chit's createdAt, which decides where it falls
-      // in the thread and on the timeline. A clock read after a slow network
-      // came back would put the chit two seconds after the moment it belongs
-      // to — here, a whole timeout late.
-      final FakeClock clock = FakeClock(openedAt);
-      final AmbientCapture ambient = AmbientCapture(
-        clock: clock,
-        weather: _SlowWeather(),
-        location: _SlowLocation(),
-        timeout: timeout,
-      );
+  group('ADR-037: motion rides in on the fix, and costs no second call', () {
+    test('a moving fix becomes a motion state', () async {
+      final AmbientReading reading = await capture(
+        weather: const _Weather(null),
+        location: const _Location(
+          GeoFix(lat: 1, lon: 2, speed: 20, speedAccuracy: 1),
+        ),
+      ).read();
 
-      final AmbientStamp stamp = await ambient.capture();
+      expect(reading.motion, MotionState.traveling);
+    });
 
-      expect(stamp.capturedAt, openedAt);
-      expect(clock.reads, 1, reason: 'read once, at the top, and never again');
+    test('a still fix is stationary, stored and never drawn', () async {
+      final AmbientReading reading = await capture(
+        weather: const _Weather(null),
+        location: const _Location(
+          GeoFix(lat: 1, lon: 2, speed: 0.1, speedAccuracy: 0.5),
+        ),
+      ).read();
+
+      expect(reading.motion, MotionState.stationary);
+    });
+
+    test('a fix with no speed carries a place and no motion', () async {
+      // The ordinary indoor case: the pin is drawn and nothing else is.
+      final AmbientReading reading = await capture(
+        weather: const _Weather(null),
+        location: const _Location(GeoFix(lat: 1, lon: 2)),
+      ).read();
+
+      expect(reading.lat, 1);
+      expect(reading.motion, isNull);
+    });
+
+    test('no fix is no motion, the same null the pin gets', () async {
+      // A refused permission costs the pin and the motion together, because
+      // they are one signal. ADR-025 is why it does not also cost the weather.
+      for (final LocationService service in <LocationService>[
+        const _Location(null),
+        _SlowLocation(),
+        _ThrowingLocation(),
+      ]) {
+        final AmbientReading reading = await capture(
+          weather: const _Weather(WeatherCondition.clear),
+          location: service,
+        ).read();
+
+        expect(reading.motion, isNull, reason: '$service');
+        expect(reading.lat, isNull, reason: '$service');
+        expect(reading.weather, WeatherCondition.clear);
+      }
     });
   });
 }
 
-/// The two halves as the composer drives them: the instant stamp, and then the
-/// settled one.
+/// Grants, because none of these fakes is about the permission flow.
 ///
-/// Spelled once here so that every case above reads as a single capture. The
-/// split itself — that [AmbientCapture.open] answers without waiting for
-/// anything — is what the *nothing here can block the composer* group tests
-/// directly.
-extension on AmbientCapture {
-  Future<AmbientStamp> capture() => settle(open());
+/// A fake that refused while still answering `currentFix` would be the Liskov
+/// violation CLAUDE.md §4.1 warns about, so the two always agree here.
+/// `first_run_controller_test.dart` is where refusal is exercised.
+mixin _Grants implements LocationService {
+  @override
+  Future<LocationPermissionOutcome> requestPermission() async =>
+      LocationPermissionOutcome.granted;
 }
 
 /// A service that answers [condition], which may be `null`.
@@ -251,7 +241,7 @@ final class _Weather implements WeatherService {
 }
 
 /// A service that answers [fix], which may be `null`.
-final class _Location implements LocationService {
+final class _Location with _Grants implements LocationService {
   const _Location(this.fix);
 
   final GeoFix? fix;
@@ -271,7 +261,7 @@ final class _SlowWeather implements WeatherService {
 }
 
 /// Never comes back.
-final class _SlowLocation implements LocationService {
+final class _SlowLocation with _Grants implements LocationService {
   @override
   Future<GeoFix?> currentFix() => Completer<GeoFix?>().future;
 
@@ -289,7 +279,7 @@ final class _ThrowingWeather implements WeatherService {
 }
 
 /// Fails the way a refused permission used to, before ADR-007.
-final class _ThrowingLocation implements LocationService {
+final class _ThrowingLocation with _Grants implements LocationService {
   @override
   Future<GeoFix?> currentFix() async => throw const _Failure();
 
@@ -326,7 +316,7 @@ final class _OrderedWeather implements WeatherService {
 }
 
 /// Records whether the weather had already come back when it was asked.
-final class _OrderedLocation implements LocationService {
+final class _OrderedLocation with _Grants implements LocationService {
   _OrderedLocation(this.order);
 
   final _Order order;
@@ -334,6 +324,6 @@ final class _OrderedLocation implements LocationService {
   @override
   Future<GeoFix?> currentFix() async {
     order.locationAskedBeforeWeatherAnswered = !order.weatherAnswered;
-    return (lat: 1.0, lon: 2.0);
+    return const GeoFix(lat: 1, lon: 2);
   }
 }

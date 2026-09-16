@@ -18,11 +18,19 @@ final class FixedLocationService implements LocationService {
   /// as a stand-in the moment anyone reads a row: nothing about M2's rows
   /// should look like a place a person was. `(0, 0)` would have done the same
   /// job and reads as a bug instead of as a placeholder.
-  static const GeoFix greenwich = (lat: 51.4769, lon: -0.0005);
+  static const GeoFix greenwich = GeoFix(lat: 51.4769, lon: -0.0005);
 
   /// Where it says the device is.
   final GeoFix? fix;
 
   @override
   Future<GeoFix?> currentFix() async => fix;
+
+  /// Always granted, and no dialog. It models a device that said yes, which is
+  /// the only honest thing for a fake that always has a fix — a fake that
+  /// refused while still answering [currentFix] would be the Liskov violation
+  /// CLAUDE.md §4.1 warns about.
+  @override
+  Future<LocationPermissionOutcome> requestPermission() async =>
+      LocationPermissionOutcome.granted;
 }

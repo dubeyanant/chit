@@ -18,10 +18,11 @@ part 'composer_state.freezed.dart';
 /// nothing behind, so this lives in `ComposerController` and nowhere else
 /// until **Save chit** inserts.
 ///
-/// **The stamp is set once, when the chit opens, and never re-read**
-/// (ADR-021). It becomes the chit's `createdAt`, which is what decides where
-/// the chit falls in the thread and on the timeline — so a controller that
-/// re-captures on save moves the chit to a moment the user was not writing in.
+/// **The stamp here is a preview** (ADR-040). It is what the slip draws — the
+/// time the chit opened, and whatever ambience the app is holding — and it is
+/// not what gets written: `save` reads the clock and the services again, and
+/// the row carries that. *It used to be the value that became `createdAt`,
+/// which is why nothing in the controller re-read it.*
 @freezed
 abstract class ComposerState with _$ComposerState {
   /// Lets this class carry getters. Freezed requires it.

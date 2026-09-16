@@ -10,6 +10,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'ambient_stamp.dart';
+import 'motion_state.dart';
 import 'weather_condition.dart';
 
 part 'chit.freezed.dart';
@@ -117,6 +118,10 @@ abstract class Chit with _$Chit {
 
     /// Longitude, if a fix arrived. Stored, never displayed.
     double? lon,
+
+    /// What the phone was doing when the chit was opened (ADR-037), read off
+    /// the same fix as [lat] and [lon]. `null` when no usable speed arrived.
+    MotionState? motion,
   }) = _Chit;
 
   /// The local day a moment belongs to, as `yyyymmdd`.
@@ -144,9 +149,17 @@ abstract class Chit with _$Chit {
   static DateTime startOfLocalDay(DateTime when, {int offsetDays = 0}) =>
       DateTime(when.year, when.month, when.day + offsetDays);
 
-  /// The three signals of BEHAVIOUR.md §3.6, as the one row they are drawn as.
-  AmbientStamp get stamp =>
-      AmbientStamp(capturedAt: createdAt, weather: weather, lat: lat, lon: lon);
+  /// The signals of BEHAVIOUR.md §3.6, as the one row they are drawn as.
+  ///
+  /// [weather] and [motion] both travel here; only one of them is drawn, and
+  /// `domain/ambient/ambient_fact.dart` ranks them (ADR-038).
+  AmbientStamp get stamp => AmbientStamp(
+    capturedAt: createdAt,
+    weather: weather,
+    lat: lat,
+    lon: lon,
+    motion: motion,
+  );
 
   /// Whether the chit says anything.
   bool get hasText => text != null;

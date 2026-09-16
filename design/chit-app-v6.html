@@ -188,6 +188,24 @@ body{
 .pin svg{display:block}
 [data-weather="off"] .w-word{display:none}
 
+/* Motion — ADR-038 and ADR-039. One ambient slot, ranked: flying, travelling,
+   raining, windy, walking, overcast, clear. So a vehicle takes the slot off
+   the weather word, and a walk only takes it when the sky had nothing louder
+   to say. `stationary` is stored and never drawn, which is why it has no rule
+   here and no icon above.
+
+   The icon carries the row's own colour rather than the pin's `--ink-faint`:
+   it is standing in for a word, so it should weigh what that word weighed. */
+.motion{display:none;align-items:center;flex:none}
+.mi{display:block;fill:none;stroke:currentColor;stroke-width:1.42;
+    stroke-linecap:round;stroke-linejoin:round}
+[data-motion="walking"][data-weather="off"] .m-walking,
+[data-motion="traveling"] .m-traveling,
+[data-motion="flying"] .m-flying{display:flex}
+[data-motion="traveling"] .w-word,
+[data-motion="flying"] .w-word{display:none}
+.thread-motion{display:flex}
+
 /* The page itself — live from the moment the chit opens, always the user's.
    v4 rested at 92px because the bottom of the slip carried two full-width
    buttons; against a single 54px control that much blank reads as a void with
@@ -599,6 +617,32 @@ body{
 </head>
 <body>
 
+<!-- §3.6's motion marks — ADR-039. Three icons in the pin's own 14-unit box at
+     its own 1.42 stroke, so the row has one drawing weight and not two.
+     Drawn as strokes rather than as outlines on purpose: a plane's wings and a
+     figure's limbs are a unit and a half wide, and an outline of either closes
+     into a blob under a 1.22px stroke at 12px. There is no icon for
+     `stationary` because §3.6 draws none. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="ic-walking" viewBox="0 0 14 14">
+    <circle cx="8.2" cy="2.6" r="1.3"/>
+    <path d="M8.2 5.2 6.9 8.4l2.2 4.3"/>
+    <path d="M6.9 8.4 4.5 11.8"/>
+    <path d="M8 6.2 5.3 6.9"/>
+  </symbol>
+  <symbol id="ic-traveling" viewBox="0 0 14 14">
+    <path d="M2.1 8.7V6.9l1.7-3h6.4l1.7 3v1.8"/>
+    <path d="M1.6 8.7h10.8"/>
+    <circle cx="4.5" cy="9.5" r="1.1"/>
+    <circle cx="9.5" cy="9.5" r="1.1"/>
+  </symbol>
+  <symbol id="ic-flying" viewBox="0 0 14 14">
+    <path d="M7 1.9v10.2"/>
+    <path d="M1.9 8 7 5.2l5.1 2.8"/>
+    <path d="M4.7 12 7 10.6l2.3 1.4"/>
+  </symbol>
+</defs></svg>
+
 <p class="caption">chit &nbsp;·&nbsp; today &amp; calendar &nbsp;·&nbsp; <b>v6</b></p>
 
 <div class="device" id="device">
@@ -642,6 +686,9 @@ body{
             <span class="stamp">
               <span>3:42 pm</span>
               <span class="w-word">raining</span>
+              <span class="motion m-walking" aria-label="Walking"><svg class="mi" width="12" height="12"><use href="#ic-walking"/></svg></span>
+              <span class="motion m-traveling" aria-label="Travelling"><svg class="mi" width="12" height="12"><use href="#ic-traveling"/></svg></span>
+              <span class="motion m-flying" aria-label="Flying"><svg class="mi" width="12" height="12"><use href="#ic-flying"/></svg></span>
               <span class="pin" aria-label="Location noted">
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.42" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12.6s4.4-4 4.4-7A4.4 4.4 0 0 0 2.6 5.6c0 3 4.4 7 4.4 7Z"/><circle cx="7" cy="5.5" r="1.5"/></svg>
               </span>
@@ -756,6 +803,8 @@ body{
     <div class="seg" role="group" aria-labelledby="lb-today" data-key="today"><button data-v="has" aria-pressed="true">Has chits</button><button data-v="empty" aria-pressed="false">Empty</button></div></div>
   <div class="tw"><label id="lb-weather">Weather word</label>
     <div class="seg" role="group" aria-labelledby="lb-weather" data-key="weather"><button data-v="on" aria-pressed="true">On</button><button data-v="off" aria-pressed="false">Off</button></div></div>
+  <div class="tw"><label id="lb-motion">Motion (§3.6)</label>
+    <div class="seg" role="group" aria-labelledby="lb-motion" data-key="motion"><button data-v="stationary" aria-pressed="true">Still</button><button data-v="walking" aria-pressed="false">Walk</button><button data-v="traveling" aria-pressed="false">Travel</button><button data-v="flying" aria-pressed="false">Fly</button></div></div>
   <div class="tw"><label id="lb-prompt">Idle prompt (5s)</label>
     <div class="seg" role="group" aria-labelledby="lb-prompt" data-key="prompt"><button data-v="on" aria-pressed="true">On</button><button data-v="off" aria-pressed="false">Off</button></div></div>
   <div class="tw"><label id="lb-deva">चित्त mark</label>
@@ -797,7 +846,7 @@ function audioPill(len) {
    the engine could not read, and shows its pill alone. */
 const ARCHIVE = [
   {date:13, label:"Today", chits:[
-    {t:"11:20 am", w:"overcast", x:"Reorg meeting pushed again. Third time."},
+    {t:"11:20 am", w:"overcast", m:"traveling", x:"Reorg meeting pushed again. Third time."},
     {t:"8:05 am",  w:"clear",    x:"Didn't sleep. Room too cold, again.", audio:"0:22"}]},
   {date:12, label:"Yesterday", chits:[
     {t:"9:48 pm", w:"clear night", x:"Called Ma. Told her about the flat."},
@@ -821,10 +870,18 @@ const NUM_WORD = ["no","one","two","three","four","five","six","seven","eight","
   "twenty-seven","twenty-eight","twenty-nine","thirty","thirty-one"];
 const plural = n => `${n} ${n === 1 ? "chit" : "chits"}`;
 
+/* ADR-039 — motion is drawn under a saved chit where the pin is not. The pin
+   is on every chit, so repeating it distinguishes nothing; motion is on almost
+   none, so the two you wrote on a train stand out from the ten you wrote at
+   home. Same argument as §3.6 makes about the pin, opposite outcome. */
+const motionHTML = m =>
+  `<span class="motion thread-motion" aria-label="${{walking:"Walking",traveling:"Travelling",flying:"Flying"}[m]}">` +
+  `<svg class="mi" width="12" height="12"><use href="#ic-${m}"/></svg></span>`;
+
 const chitHTML = c => `
   <div class="chit">
     <div class="chit-meta">
-      <span>${esc(c.t)}</span><span class="wx">${esc(c.w)}</span>
+      <span>${esc(c.t)}</span>${c.m ? motionHTML(c.m) : `<span class="wx">${esc(c.w)}</span>`}
     </div>
     ${c.x ? `<p class="chit-text">${esc(c.x)}</p>` : ""}
     ${c.audio ? audioPill(c.audio) : ""}
@@ -1235,7 +1292,7 @@ function setTodayEmpty(on) {
   syncAll(false);
 }
 
-Object.entries({stt:"ok", today:"has", weather:"on", prompt:"on", deva:"on", grain:"on"})
+Object.entries({stt:"ok", today:"has", weather:"on", motion:"stationary", prompt:"on", deva:"on", grain:"on"})
   .forEach(([k, v]) => root.setAttribute("data-" + k, v));
 document.querySelectorAll(".seg").forEach(seg => {
   seg.addEventListener("click", e => {

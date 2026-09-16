@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'models/ambient_stamp.dart';
+import 'models/motion_state.dart';
 import 'models/weather_condition.dart';
 
 /// Which part of the day a chit was opened in.
@@ -29,18 +30,32 @@ enum _PartOfDay {
 /// One prompt, and the moment it is for.
 @immutable
 final class _Entry {
-  const _Entry(this.words, {this.weather, this.when});
+  const _Entry(this.words, {this.weather, this.motion, this.when});
 
   final String words;
   final WeatherCondition? weather;
+  final MotionState? motion;
   final _PartOfDay? when;
 
-  /// How much this entry claims to know. Weather outranks the hour, because
-  /// the hour is always available and a condition is the rarer signal.
-  int get specificity => (weather == null ? 0 : 2) + (when == null ? 0 : 1);
+  /// How much this entry claims to know.
+  ///
+  /// **Motion outranks weather, which outranks the hour.** The hour is always
+  /// available; a condition is rarer; motion is rarer still and says more —
+  /// a chit opened on a train is somewhere, and asking it about the evening
+  /// wastes the one thing that was unusual about the moment. The same ordering
+  /// ADR-038 gives the stamp, for the same reason.
+  int get specificity =>
+      (motion == null ? 0 : 4) +
+      (weather == null ? 0 : 2) +
+      (when == null ? 0 : 1);
 
-  bool matches(WeatherCondition? condition, _PartOfDay part) =>
+  bool matches(
+    WeatherCondition? condition,
+    MotionState? state,
+    _PartOfDay part,
+  ) =>
       (weather == null || weather == condition) &&
+      (motion == null || motion == state) &&
       (when == null || when == part);
 }
 
@@ -59,8 +74,10 @@ final class _Entry {
 ///
 /// The rule lives in `domain` for the reason `weather/wmo_mapping.dart` does —
 /// it is a product decision rather than a detail of anything. Nothing here
-/// reads a clock; the stamp is the only input, which is what makes it pure and
-/// what makes ADR-021 hold: the prompt is for the moment the chit **opened**.
+/// reads a clock; the stamp is the only input, which is what makes it pure.
+/// The stamp it is given is the slip's preview (ADR-040), so the question asked
+/// is about the moment the writer is sitting in rather than the moment the row
+/// will later be stamped with.
 abstract final class Prompts {
   /// The line BEHAVIOUR.md §3.3 names, and the floor under everything else.
   ///
@@ -81,7 +98,7 @@ abstract final class Prompts {
 
     final List<_Entry> fitting = <_Entry>[
       for (final _Entry entry in _book)
-        if (entry.matches(stamp.weather, part)) entry,
+        if (entry.matches(stamp.weather, stamp.motion, part)) entry,
     ];
 
     int best = 0;
@@ -159,6 +176,33 @@ abstract final class Prompts {
     _Entry(
       "Clear night. What's left from today?",
       weather: WeatherCondition.clearNight,
+    ),
+
+    // Motion, which outranks both. **Nothing here for `stationary`** — it is
+    // what most chits are, and a question about sitting still is a question
+    // about nothing. Those chits get the weather and the hour, as before.
+    _Entry('Where are you headed?', motion: MotionState.traveling),
+    _Entry("On the way. What's on your mind?", motion: MotionState.traveling),
+    _Entry("Out walking. What's about?", motion: MotionState.walking),
+    _Entry('Walking. What are you turning over?', motion: MotionState.walking),
+    _Entry("In the air. What's the thought?", motion: MotionState.flying),
+    _Entry('Flying. What did you leave behind?', motion: MotionState.flying),
+
+    // Motion and one more thing, where the pair says more than either half.
+    _Entry(
+      'On the way home. How did the day go?',
+      motion: MotionState.traveling,
+      when: _PartOfDay.evening,
+    ),
+    _Entry(
+      "Walking in the rain. What's it like?",
+      motion: MotionState.walking,
+      weather: WeatherCondition.raining,
+    ),
+    _Entry(
+      "In the air, and still up. What's keeping you?",
+      motion: MotionState.flying,
+      when: _PartOfDay.smallHours,
     ),
 
     // Both, where the pair says more than either half.

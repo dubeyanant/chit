@@ -2,27 +2,33 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/clock.dart';
 import '../../../domain/models/ambient_stamp.dart';
 import '../../../domain/models/chit.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../domain/repositories/chit_repository.dart';
-import '../../../domain/services/ambient_capture.dart';
+import '../../../domain/services/ambient_signals.dart';
 
 part 'composer_controller.g.dart';
 
 /// The open chit's state.
 ///
 /// **Synchronous by construction.** ADR-007 says nothing about ambient capture
-/// may delay the composer, so `build` does not wait for anything: it takes the
-/// instant half of the stamp from [AmbientCapture.open] and hands the slow half
-/// to [AmbientCapture.settle], which lands whenever it lands. A
+/// may delay the composer, so `build` does not wait for anything: it shows the
+/// time at once and whatever ambience the app is already holding. A
 /// `FutureOr<ComposerState> build()` would give the open chit a loading state,
 /// and a loading state is a spinner whether or not one is drawn.
 ///
-/// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-/// the clock, and [save] passes `state.stamp` rather than capturing again —
-/// that is the whole decision, and it fails silently if it is got wrong,
-/// because a re-captured stamp is still a perfectly plausible time.
+/// **This screen captures nothing** (ADR-042). *It used to drive an
+/// `open()`/`settle()` pair on every chit open, which meant four taps of
+/// Discard made four network calls.* Capture now happens twice in the life of
+/// the app — at launch and at save — and what the slip draws is whatever
+/// `AmbientSignals` is holding.
+///
+/// **The stamp on screen is a preview** (ADR-040). The row is stamped when
+/// [save] runs, from a fresh clock read and a fresh capture, so a chit sat on
+/// for twenty minutes lands in the thread carrying a later time than the slip
+/// showed.
 ///
 /// **The five-second prompt's timer lives here, not in the widget**
 /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
@@ -43,20 +49,26 @@ class ComposerController extends _$ComposerController {
   @override
   ComposerState build() {
     ref.onDispose(_cancelPrompt);
+
+    // Watched, not read: when the launch capture lands (ADR-042) the open
+    // chit's stamp gains its word and its pin without anything here asking.
+    // That is the same arrival ADR-007 always described — what changed is that
+    // the capture is the app's rather than this chit's.
+    ref.watch(ambientSignalsProvider);
+
     return _openChit();
   }
 
-  /// A blank chit, stamped now, with its slow signals on the way.
+  /// A blank chit, showing the time now and whatever ambience has landed.
+  ///
+  /// **This is a preview, not the record** (ADR-040, ADR-042). Nothing is
+  /// captured here and nothing is written; [save] reads both the clock and the
+  /// services again. The time shown is the moment the chit opened, and it does
+  /// not tick — a stamp that updated itself would be an ambient loop, which
+  /// ADR-027 and §6.4 have already ruled out.
   ComposerState _openChit() {
-    final AmbientCapture capture = ref.read(ambientCaptureProvider);
-    final AmbientStamp opened = capture.open();
-
-    // Deliberately not awaited: this is the *point* of ADR-007. The chit is
-    // on screen with its time before either service has been asked anything.
-    unawaited(_settle(capture, opened));
-
     _armPrompt();
-    return ComposerState(stamp: opened);
+    return ComposerState(stamp: _stampNow());
   }
 
   /// Starts the five seconds again — at open, and whenever the field goes back
@@ -77,20 +89,6 @@ class ComposerController extends _$ComposerController {
   void _cancelPrompt() {
     _idle?.cancel();
     _idle = null;
-  }
-
-  /// Puts the weather and the fix onto the stamp, if they arrive.
-  Future<void> _settle(AmbientCapture capture, AmbientStamp opened) async {
-    final AmbientStamp settled = await capture.settle(opened);
-
-    // The chit this started for may be gone — discarded, saved, or the screen
-    // disposed — in which case the answer is stale and belongs to nothing. The
-    // identity check is on `capturedAt`, which is the one field that cannot
-    // change under a chit and is different for every chit that follows it.
-    if (!ref.mounted) return;
-    if (state.stamp.capturedAt != opened.capturedAt) return;
-
-    state = state.copyWith(stamp: settled);
   }
 
   /// What the user has typed.
@@ -122,16 +120,24 @@ class ComposerController extends _$ComposerController {
 
   /// **Save chit** — BEHAVIOUR.md §3.1. The only thing that inserts.
   ///
-  /// **The stamp passed here is the held one — ADR-021.** It was taken when
-  /// the chit opened and becomes the row's `createdAt`, which decides where
-  /// the chit falls in the thread, where its mark lands on the timeline, and
-  /// which day it belongs to (ADR-006). Capturing a fresh one here would file
-  /// the chit at the moment the user stopped writing rather than the moment
-  /// they started, and it would still *look* right — a re-captured stamp is a
-  /// perfectly plausible time, which is why nothing but a test that moves a
-  /// clock across the save can see it.
+  /// **The chit is stamped here, not when it was opened — ADR-040.** The clock
+  /// is read at this moment and becomes the row's `createdAt`, which decides
+  /// where the chit falls in the thread, where its mark lands on the timeline,
+  /// and which day it belongs to (ADR-006). *This reverses ADR-021, which
+  /// stamped a chit when it opened.* The gain is that a chit is always filed on
+  /// the day it was actually saved — the wrong-day case that ADR-021 created,
+  /// and that a second record used to contain, cannot happen at all now. The cost is that the stamp on the slip
+  /// is a **preview**: it shows when the chit was opened, and a chit sat on for
+  /// twenty minutes lands in the thread carrying a later time.
   ///
-  /// Saving then opens a new chit, the way [discard] does (ADR-026): the same
+  /// **The row is written first and the ambience is patched in after**
+  /// (ADR-042). Nothing about a save waits on a network call: the insert goes
+  /// out with whatever `AmbientSignals` is holding, a fresh read is started
+  /// beside it, and the row is corrected when it lands. Since §3.6 draws
+  /// nothing for a `null`, that correction is usually invisible — at worst a
+  /// word appears in the thread a beat after the chit does.
+  ///
+  /// Saving then opens a new chit, the way [discard] does: the same
   /// `_openChit()`, so there is one way for a chit to come into existence.
   ///
   /// Does nothing when there is nothing to save. The control is not drawn in
@@ -141,24 +147,72 @@ class ComposerController extends _$ComposerController {
     final ComposerState chit = state;
     if (!chit.canSave) return;
 
-    await ref
+    final Chit saved = await ref
         .read(chitRepositoryProvider)
         .save(
-          stamp: chit.stamp,
+          stamp: _stampNow(),
           text: chit.text,
           textOrigin: chit.textOrigin,
           audioTempPath: chit.audioTempPath,
           audioDuration: chit.audioDuration,
         );
 
+    // Deliberately not awaited — the chit is already in the thread, and this
+    // is the half of ADR-042 that must never be in front of the user.
+    unawaited(_refreshAmbience(saved.id));
+
     if (!ref.mounted) return;
     state = _openChit();
   }
 
+  /// The stamp a row is written with: **the clock now**, and the ambience in
+  /// hand.
+  ///
+  /// The reading may be empty — at launch, before the first capture has landed,
+  /// or on an install where location was refused. That is the ordinary ADR-007
+  /// outcome and the row simply carries a time.
+  AmbientStamp _stampNow() {
+    final AmbientReading held = ref.read(ambientSignalsProvider);
+
+    return AmbientStamp(
+      capturedAt: ref.read(clockProvider).now(),
+      weather: held.weather,
+      lat: held.lat,
+      lon: held.lon,
+      motion: held.motion,
+    );
+  }
+
+  /// Reads the services again and corrects the row that was just written.
+  ///
+  /// **`createdAt` is never touched** — moving it would move the chit in the
+  /// thread and on the strip, and across a midnight it would move it to
+  /// another day. Only the three best-effort fields change, and `updatedAt`
+  /// does not move either: ADR-014 reserves that for a change to the *text*,
+  /// and a signal arriving late is not an edit anybody made.
+  Future<void> _refreshAmbience(String id) async {
+    await ref.read(ambientSignalsProvider.notifier).refresh();
+
+    if (!ref.mounted) return;
+    final AmbientReading fresh = ref.read(ambientSignalsProvider);
+
+    await ref
+        .read(chitRepositoryProvider)
+        .updateAmbient(
+          id: id,
+          weather: fresh.weather,
+          lat: fresh.lat,
+          lon: fresh.lon,
+          motion: fresh.motion,
+        );
+  }
+
   /// **Discard** — BEHAVIOUR.md §3.1.
   ///
-  /// Opens a fresh chit rather than emptying this one, which means a **new
-  /// stamp**: ADR-026. Discarding at 3:42 and writing at 4:10 must not file
-  /// the chit at 3:42.
+  /// Opens a fresh chit rather than emptying this one, so the slip's preview
+  /// reads the moment it was discarded rather than a time that has passed.
+  /// *Under ADR-021 this was load-bearing enough to have a record of its own,
+  /// because the shown stamp was the one that got written. Under ADR-040 it is
+  /// honesty about a preview — a smaller claim, and still the right behaviour.*
   void discard() => state = _openChit();
 }

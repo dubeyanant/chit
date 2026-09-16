@@ -8,17 +8,17 @@ part of 'ambient_capture.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The capture the composer opens a chit with.
+/// The capture behind `AmbientSignals`.
 
 @ProviderFor(ambientCapture)
 final ambientCaptureProvider = AmbientCaptureProvider._();
 
-/// The capture the composer opens a chit with.
+/// The capture behind `AmbientSignals`.
 
 final class AmbientCaptureProvider
     extends $FunctionalProvider<AmbientCapture, AmbientCapture, AmbientCapture>
     with $Provider<AmbientCapture> {
-  /// The capture the composer opens a chit with.
+  /// The capture behind `AmbientSignals`.
   AmbientCaptureProvider._()
     : super(
         from: null,
@@ -52,4 +52,4 @@ final class AmbientCaptureProvider
   }
 }
 
-String _$ambientCaptureHash() => r'0b65e3cf28d70d7df53a6b4c75815a6ad1b22eb3';
+String _$ambientCaptureHash() => r'8cad0626ddb1e9612e71da6c39abc1f80bf0b079';

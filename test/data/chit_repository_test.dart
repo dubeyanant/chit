@@ -7,6 +7,7 @@ import 'package:chit/data/repositories/chit_repository_impl.dart';
 import 'package:chit/domain/models/ambient_stamp.dart';
 import 'package:chit/domain/models/chit.dart';
 import 'package:chit/domain/models/day_summary.dart';
+import 'package:chit/domain/models/motion_state.dart';
 import 'package:chit/domain/models/weather_condition.dart';
 import 'package:chit/domain/repositories/chit_repository.dart';
 import 'package:drift/native.dart';
@@ -129,6 +130,7 @@ void main() {
           weather: WeatherCondition.raining,
           lat: 19.0760,
           lon: 72.8777,
+          motion: MotionState.traveling,
         ),
         text: 'Train 20 late.',
         textOrigin: TextOrigin.typed,
@@ -139,6 +141,26 @@ void main() {
       expect(stamp.weather, WeatherCondition.raining);
       expect(stamp.lat, closeTo(19.0760, 1e-9));
       expect(stamp.lon, closeTo(72.8777, 1e-9));
+      expect(stamp.motion, MotionState.traveling);
+    });
+
+    test('every motion state survives the round trip', () async {
+      // The column is a `textEnum`, so a state renamed in Dart silently stops
+      // matching the rows already written with the old name. This is what
+      // would notice.
+      for (final MotionState motion in MotionState.values) {
+        final Chit saved = await repo.save(
+          stamp: AmbientStamp(capturedAt: morning, motion: motion),
+          text: 'Train 20 late.',
+          textOrigin: TextOrigin.typed,
+        );
+
+        expect(
+          (await repo.byId(saved.id))!.motion,
+          motion,
+          reason: motion.name,
+        );
+      }
     });
 
     test('a signal that never arrived is null, not a placeholder', () async {
@@ -150,6 +172,7 @@ void main() {
 
       final Chit read = (await repo.byId(saved.id))!;
       expect(read.weather, isNull);
+      expect(read.motion, isNull);
       expect(read.stamp.hasLocation, isFalse);
     });
 
@@ -367,6 +390,128 @@ void main() {
         expect(audioFileOf(saved).existsSync(), isTrue);
       },
     );
+  });
+
+  group('updateAmbient (ADR-042)', () {
+    late Chit original;
+
+    setUp(() async {
+      original = await repo.save(
+        stamp: AmbientStamp(
+          capturedAt: morning,
+          weather: WeatherCondition.raining,
+          lat: 19.0760,
+          lon: 72.8777,
+          motion: MotionState.stationary,
+        ),
+        text: 'Train 20 late.',
+        textOrigin: TextOrigin.typed,
+      );
+      clock.moveTo(DateTime(2026, 9, 16, 8, 0));
+    });
+
+    test('touches the ambient fields — and nothing else', () async {
+      await repo.updateAmbient(
+        id: original.id,
+        weather: WeatherCondition.clear,
+        lat: 1.5,
+        lon: 2.5,
+        motion: MotionState.walking,
+      );
+
+      final Chit patched = (await repo.byId(original.id))!;
+
+      expect(patched.weather, WeatherCondition.clear);
+      expect(patched.lat, closeTo(1.5, 1e-9));
+      expect(patched.lon, closeTo(2.5, 1e-9));
+      expect(patched.motion, MotionState.walking);
+
+      // Everything else, field by field rather than by comparing a copyWith:
+      // a field dropped from the model would pass that comparison happily.
+      expect(patched.id, original.id);
+      expect(patched.text, original.text);
+      expect(patched.textOrigin, original.textOrigin);
+      expect(patched.audioPath, original.audioPath);
+      expect(patched.audioDuration, original.audioDuration);
+    });
+
+    test('createdAt and localDay never move', () async {
+      // The claim that matters most. `createdAt` decides where the chit sits
+      // in the thread and where its mark falls on the strip, and `localDay`
+      // decides which day it belongs to — a late signal moving either would
+      // move a chit that the user is already looking at, and across a midnight
+      // it would move it to another day (ADR-006).
+      await repo.updateAmbient(
+        id: original.id,
+        weather: null,
+        lat: null,
+        lon: null,
+        motion: null,
+      );
+
+      final Chit patched = (await repo.byId(original.id))!;
+
+      expect(patched.createdAt, original.createdAt);
+      expect(patched.localDay, original.localDay);
+    });
+
+    test('updatedAt does not move — ADR-014 reserves it for the text', () async {
+      // The clock has moved on by an hour in setUp, so an implementation that
+      // stamped this the way `updateText` does would be caught here. A signal
+      // arriving late is not an edit anybody made, and OPEN-QUESTIONS.md §8.2's
+      // re-transcription is the thing that would be misled by the difference.
+      await repo.updateAmbient(
+        id: original.id,
+        weather: WeatherCondition.clear,
+        lat: null,
+        lon: null,
+        motion: null,
+      );
+
+      expect((await repo.byId(original.id))!.updatedAt, original.updatedAt);
+    });
+
+    test(
+      'a null clears what was there — the whole reading replaces it',
+      () async {
+        // Not a partial patch. A capture that came back empty legitimately
+        // clears what the launch capture had put there: the user walked indoors
+        // and the pin should go, rather than a stale coordinate persisting
+        // because `null` was read as "no opinion".
+        await repo.updateAmbient(
+          id: original.id,
+          weather: null,
+          lat: null,
+          lon: null,
+          motion: null,
+        );
+
+        final Chit patched = (await repo.byId(original.id))!;
+
+        expect(patched.weather, isNull);
+        expect(patched.lat, isNull);
+        expect(patched.lon, isNull);
+        expect(patched.motion, isNull);
+        expect(patched.stamp.hasLocation, isFalse);
+      },
+    );
+
+    test('an unknown id is silent, where updateText throws', () async {
+      // Nobody is waiting on this and no screen could report it: a row deleted
+      // between the write and the patch is an ordinary race (ADR-042). The
+      // contrast with `updateText` is deliberate and is the reason these are
+      // two methods.
+      await expectLater(
+        repo.updateAmbient(
+          id: 'no-such-chit',
+          weather: WeatherCondition.clear,
+          lat: null,
+          lon: null,
+          motion: null,
+        ),
+        completes,
+      );
+    });
   });
 
   group('updateText (ADR-014)', () {

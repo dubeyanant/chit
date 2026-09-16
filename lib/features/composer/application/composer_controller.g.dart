@@ -11,16 +11,21 @@ part of 'composer_controller.dart';
 /// The open chit's state.
 ///
 /// **Synchronous by construction.** ADR-007 says nothing about ambient capture
-/// may delay the composer, so `build` does not wait for anything: it takes the
-/// instant half of the stamp from [AmbientCapture.open] and hands the slow half
-/// to [AmbientCapture.settle], which lands whenever it lands. A
+/// may delay the composer, so `build` does not wait for anything: it shows the
+/// time at once and whatever ambience the app is already holding. A
 /// `FutureOr<ComposerState> build()` would give the open chit a loading state,
 /// and a loading state is a spinner whether or not one is drawn.
 ///
-/// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-/// the clock, and [save] passes `state.stamp` rather than capturing again —
-/// that is the whole decision, and it fails silently if it is got wrong,
-/// because a re-captured stamp is still a perfectly plausible time.
+/// **This screen captures nothing** (ADR-042). *It used to drive an
+/// `open()`/`settle()` pair on every chit open, which meant four taps of
+/// Discard made four network calls.* Capture now happens twice in the life of
+/// the app — at launch and at save — and what the slip draws is whatever
+/// `AmbientSignals` is holding.
+///
+/// **The stamp on screen is a preview** (ADR-040). The row is stamped when
+/// [save] runs, from a fresh clock read and a fresh capture, so a chit sat on
+/// for twenty minutes lands in the thread carrying a later time than the slip
+/// showed.
 ///
 /// **The five-second prompt's timer lives here, not in the widget**
 /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
@@ -33,16 +38,21 @@ final composerControllerProvider = ComposerControllerProvider._();
 /// The open chit's state.
 ///
 /// **Synchronous by construction.** ADR-007 says nothing about ambient capture
-/// may delay the composer, so `build` does not wait for anything: it takes the
-/// instant half of the stamp from [AmbientCapture.open] and hands the slow half
-/// to [AmbientCapture.settle], which lands whenever it lands. A
+/// may delay the composer, so `build` does not wait for anything: it shows the
+/// time at once and whatever ambience the app is already holding. A
 /// `FutureOr<ComposerState> build()` would give the open chit a loading state,
 /// and a loading state is a spinner whether or not one is drawn.
 ///
-/// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-/// the clock, and [save] passes `state.stamp` rather than capturing again —
-/// that is the whole decision, and it fails silently if it is got wrong,
-/// because a re-captured stamp is still a perfectly plausible time.
+/// **This screen captures nothing** (ADR-042). *It used to drive an
+/// `open()`/`settle()` pair on every chit open, which meant four taps of
+/// Discard made four network calls.* Capture now happens twice in the life of
+/// the app — at launch and at save — and what the slip draws is whatever
+/// `AmbientSignals` is holding.
+///
+/// **The stamp on screen is a preview** (ADR-040). The row is stamped when
+/// [save] runs, from a fresh clock read and a fresh capture, so a chit sat on
+/// for twenty minutes lands in the thread carrying a later time than the slip
+/// showed.
 ///
 /// **The five-second prompt's timer lives here, not in the widget**
 /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
@@ -53,16 +63,21 @@ final class ComposerControllerProvider
   /// The open chit's state.
   ///
   /// **Synchronous by construction.** ADR-007 says nothing about ambient capture
-  /// may delay the composer, so `build` does not wait for anything: it takes the
-  /// instant half of the stamp from [AmbientCapture.open] and hands the slow half
-  /// to [AmbientCapture.settle], which lands whenever it lands. A
+  /// may delay the composer, so `build` does not wait for anything: it shows the
+  /// time at once and whatever ambience the app is already holding. A
   /// `FutureOr<ComposerState> build()` would give the open chit a loading state,
   /// and a loading state is a spinner whether or not one is drawn.
   ///
-  /// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-  /// the clock, and [save] passes `state.stamp` rather than capturing again —
-  /// that is the whole decision, and it fails silently if it is got wrong,
-  /// because a re-captured stamp is still a perfectly plausible time.
+  /// **This screen captures nothing** (ADR-042). *It used to drive an
+  /// `open()`/`settle()` pair on every chit open, which meant four taps of
+  /// Discard made four network calls.* Capture now happens twice in the life of
+  /// the app — at launch and at save — and what the slip draws is whatever
+  /// `AmbientSignals` is holding.
+  ///
+  /// **The stamp on screen is a preview** (ADR-040). The row is stamped when
+  /// [save] runs, from a fresh clock read and a fresh capture, so a chit sat on
+  /// for twenty minutes lands in the thread carrying a later time than the slip
+  /// showed.
   ///
   /// **The five-second prompt's timer lives here, not in the widget**
   /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that
@@ -96,21 +111,26 @@ final class ComposerControllerProvider
 }
 
 String _$composerControllerHash() =>
-    r'7986d2da038f05abefc442d2cdf9e3ec779ebdc7';
+    r'f67f85ce867c00287ccc11356499fe5696f5b306';
 
 /// The open chit's state.
 ///
 /// **Synchronous by construction.** ADR-007 says nothing about ambient capture
-/// may delay the composer, so `build` does not wait for anything: it takes the
-/// instant half of the stamp from [AmbientCapture.open] and hands the slow half
-/// to [AmbientCapture.settle], which lands whenever it lands. A
+/// may delay the composer, so `build` does not wait for anything: it shows the
+/// time at once and whatever ambience the app is already holding. A
 /// `FutureOr<ComposerState> build()` would give the open chit a loading state,
 /// and a loading state is a spinner whether or not one is drawn.
 ///
-/// **The stamp is captured once and held** (ADR-021). Nothing in here re-reads
-/// the clock, and [save] passes `state.stamp` rather than capturing again —
-/// that is the whole decision, and it fails silently if it is got wrong,
-/// because a re-captured stamp is still a perfectly plausible time.
+/// **This screen captures nothing** (ADR-042). *It used to drive an
+/// `open()`/`settle()` pair on every chit open, which meant four taps of
+/// Discard made four network calls.* Capture now happens twice in the life of
+/// the app — at launch and at save — and what the slip draws is whatever
+/// `AmbientSignals` is holding.
+///
+/// **The stamp on screen is a preview** (ADR-040). The row is stamped when
+/// [save] runs, from a fresh clock read and a fresh capture, so a chit sat on
+/// for twenty minutes lands in the thread carrying a later time than the slip
+/// showed.
 ///
 /// **The five-second prompt's timer lives here, not in the widget**
 /// (ARCHITECTURE.md §4.3), so that a rebuild does not restart it. A field that

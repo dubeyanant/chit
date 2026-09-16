@@ -52,6 +52,52 @@ void main() {
     await db.close();
   });
 
+  test('a v1 database migrates to the v2 that was committed', () async {
+    // The claim this file was built for, finally firing. v2 adds
+    // `chits.motion` (ADR-037), and this is the only thing that checks the
+    // step actually produces the shape the Dart code expects rather than
+    // merely running without throwing.
+    final DatabaseConnection connection = await verifier.startAt(1);
+    final AppDatabase db = AppDatabase(connection);
+
+    await verifier.migrateAndValidate(db, 2);
+    await db.close();
+  });
+
+  test('a chit written at v1 survives the upgrade, with a null motion', () async {
+    // What a migration is actually for, and the claim `migrateAndValidate`
+    // does not make: it checks the *shape* that comes out, not that the rows
+    // that were already there came through it. `motion` is nullable precisely
+    // so a chit written before M3 answers *I do not know* rather than carrying
+    // a backfilled guess (DATA-MODEL.md §6).
+    final InitializedSchema schema = await verifier.schemaAt(1);
+
+    schema.rawDatabase.execute(
+      'INSERT INTO chits (id, created_at, local_day, body, text_origin, '
+      'updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      <Object>[
+        'written-before-m3',
+        1757980000000,
+        20260915,
+        'the rain has not stopped',
+        'typed',
+        1757980000000,
+      ],
+    );
+
+    final AppDatabase db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 2);
+    await db.close();
+
+    final Map<String, Object?> row = schema.rawDatabase.select(
+      'SELECT body, motion FROM chits WHERE id = ?',
+      <Object>['written-before-m3'],
+    ).single;
+
+    expect(row['body'], 'the rain has not stopped');
+    expect(row['motion'], null, reason: 'nothing is backfilled');
+  });
+
   test('the schema the code expects is the schema createAll() writes', () async {
     // Not the same claim as the one above. This one catches a table changed in
     // Dart without a version bump — the failure mode that makes every query
@@ -63,12 +109,12 @@ void main() {
   });
 
   test('an upgrade with no step refuses loudly', () async {
-    // There is no v2, so nothing here can be exercised for real. What can be
-    // checked is that the strategy fails rather than opening a database whose
-    // shape nobody has looked at.
+    // v1 → v2 exists now. v2 → v3 does not, and what is checked here is that
+    // the strategy fails rather than opening a database whose shape nobody has
+    // looked at. This assertion moves up a version every time one ships.
     final AppDatabase db = AppDatabase(NativeDatabase.memory());
     await expectLater(
-      db.migration.onUpgrade(Migrator(db), 1, 2),
+      db.migration.onUpgrade(Migrator(db), 2, 3),
       throwsA(isA<StateError>()),
     );
     await db.close();

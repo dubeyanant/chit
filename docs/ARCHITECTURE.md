@@ -54,11 +54,16 @@ lib/
 ├── domain/
 │   ├── models/
 │   │   ├── chit.dart               freezed; the one-of invariant
-│   │   ├── ambient_stamp.dart      time + weather? + location?
+│   │   ├── ambient_stamp.dart      time + weather? + location? + motion?
 │   │   ├── weather_condition.dart  enum: raining | clear | overcast | windy | clearNight
+│   │   ├── motion_state.dart       enum: stationary | walking | traveling | flying (ADR-037)
 │   │   ├── day_summary.dart        localDay + count — feeds the calendar
 │   │   └── composer_state.dart     the open chit's state machine
 │   ├── prompts.dart                the five-second prompt of §3.3, chosen from the stamp
+│   ├── ambient/
+│   │   └── ambient_fact.dart       which one fact the stamp draws — the ladder (ADR-038)
+│   ├── motion/
+│   │   └── motion_ladder.dart      speed + accuracy + altitude → one of the four states
 │   ├── weather/
 │   │   └── wmo_mapping.dart        WMO code + is_day + wind → one of the five words
 │   ├── repositories/
@@ -67,8 +72,10 @@ lib/
 │       ├── speech_recognizer.dart  interface (ADR-005)
 │       ├── audio_recorder.dart     interface
 │       ├── weather_service.dart    interface — no position argument (ADR-025)
-│       ├── location_service.dart   interface, and GeoFix
-│       └── ambient_capture.dart    the two in parallel under a timeout (ADR-007)
+│       ├── location_service.dart   interface, GeoFix, and the permission ask (ADR-041)
+│       ├── first_run_store.dart    interface — the two flags an install remembers
+│       ├── ambient_capture.dart    the two in parallel under a timeout (ADR-007)
+│       └── ambient_signals.dart    holds the reading; launch and save (ADR-042)
 │
 ├── data/
 │   ├── db/
@@ -76,6 +83,7 @@ lib/
 │   │   ├── tables/chits_table.dart
 │   │   └── daos/chit_dao.dart
 │   ├── audio/audio_store.dart      temp → permanent, delete, orphan sweep
+│   ├── preferences/prefs_first_run_store.dart  shared_preferences (ADR-041)
 │   ├── weather/open_meteo_service.dart      calls out; maps via domain/weather
 │   ├── weather/fixed_weather_service.dart   M2 only; M3 deletes it
 │   ├── location/geolocator_location_service.dart
@@ -94,25 +102,33 @@ lib/
 │   ├── calendar/
 │   │   ├── application/            month_provider.dart, archive_provider.dart
 │   │   └── presentation/           calendar_screen.dart, widgets/
-│   └── editor/                     M6 — a saved chit, on its own screen (ADR-017)
-│       ├── application/            editor_controller.dart — dirty tracking, the save prompt
-│       └── presentation/           editor_screen.dart
+│   ├── editor/                     M6 — a saved chit, on its own screen (ADR-017)
+│   │   ├── application/            editor_controller.dart — dirty tracking, the save prompt
+│   │   └── presentation/           editor_screen.dart
+│   └── onboarding/                 the first-run screen, shown once (ADR-041)
+│       ├── application/            first_run_controller.dart
+│       └── presentation/           first_run_screen.dart
 │
 └── shared/widgets/
     ├── slip.dart                   a chit surface, its tear edge and the pad behind it
     ├── perforated_edge.dart        holes in the surface beneath — see the design log
     ├── thread_rail.dart            the rail (ThreadRail) and the mark on it (ThreadNode)
     ├── ambient_stamp_row.dart      .open and .saved — §3.6's two weights, and the pin
+    ├── motion_icon.dart            the three marks of ADR-039; stationary draws nothing
+    ├── wordmark.dart               "chit चित्त", baseline-aligned
+    ├── buttons.dart                the two weights of §6.1
     └── audio_pill.dart
 ```
 
 `shared/widgets` holds the pieces used by more than one feature. A widget used by one screen
 lives in that screen's `presentation/widgets/`, and moves out only when a second screen wants it.
 
-**These five are the chit vocabulary, and they hold no state and read no provider.** They take
-what they draw and nothing else — `AmbientStampRow` takes an `AmbientStamp`, `Slip` takes a
-child — which is what lets a screen compose them without either of them knowing about the
-other. M2 group C wrote the first four.
+**These are the chit vocabulary, and they hold no state and read no provider.** They take what
+they draw and nothing else — `AmbientStampRow` takes an `AmbientStamp`, `Slip` takes a child —
+which is what lets a screen compose them without either of them knowing about the other. M2
+group C wrote the first four; `wordmark.dart` and `buttons.dart` arrived with the first-run
+screen (ADR-041), each **moved out of the one feature that used to own it** the moment a second
+feature wanted it, which is the rule above doing its job rather than an exception to it.
 
 `Slip` draws its own `PerforatedEdge`, because a slip and the tear that made it are one object
 rather than two a caller has to remember to assemble. `ThreadRail` is the opposite case and
@@ -162,7 +178,7 @@ nothing else, and the date line and the thread both read it rather than each ask
 Two reads a millisecond apart are two different answers at midnight, and a screen showing one
 day's date above another day's chits is the failure ADR-006 exists to prevent, arriving by a
 different route. It also keeps the read count honest, which is the only thing that can catch a
-re-captured ambient stamp (ADR-021).
+screen that stopped re-reading the clock at midnight (ADR-033).
 
 **Where an infrastructure provider is declared follows from that rule.** `appDatabaseProvider`
 and `audioStoreProvider` are declared beside the things they build, in `data`, because only
@@ -316,25 +332,52 @@ Weather and location run in parallel behind short timeouts (2s is the working fi
 `Clock` is instant. Whatever has not arrived is `null`, and a null field simply is not drawn.
 Nothing here can block, spin, or fail a save (ADR-007).
 
+**There are three signals and still two calls — ADR-037.** Motion rides in on the position fix:
+`GeoFix` carries `speed`, `speedAccuracy` and `altitude` beside its coordinate, and
+`AmbientCapture` puts them through `domain/motion/motion_ladder.dart`, one pure function, to get
+a `MotionState`. So the parallel shape above is untouched, nothing waits longer, and motion
+costs no package and no second permission. The corollary is that a refused location costs the
+pin **and** the motion together, because they are one signal — the coupling ADR-025 went out of
+its way to avoid between location and *weather*, and the right one here.
+
+**Only one of weather and motion is ever drawn**, and `domain/ambient/ambient_fact.dart` ranks
+them (ADR-038). That is presentation logic living in `domain` on purpose: which fact is worth a
+chit is a product decision, and the widget only switches on the answer.
+
 **`AmbientCapture` in `domain/services` is that paragraph, and it is the whole of it** — M2
 group D. Every line is a product rule rather than a network detail, which is why it sits in
 `domain` and why M3 changes only which implementations the two service providers resolve to.
-Two things about it are load-bearing:
+Three things about it are load-bearing:
 
-- **It is two methods rather than one.** `open()` is synchronous and gives the chit its time at
-  once; `settle()` fills in what arrives. That split is what keeps §4.1's controller
-  synchronous, and it is the whole reason there is no `Future<AmbientStamp> capture()`.
-- **The clock is read before either signal is asked for**, exactly once, in `open()`.
-  `capturedAt` becomes the chit's `createdAt` (ADR-021), so a clock read after a slow network
-  came back would file the chit up to a timeout later than the moment it belongs to. The test
-  counts the reads rather than checking the value, because a value assertion cannot catch that.
-- **A stale answer is dropped.** `settle()` may come back to a chit that has been discarded
-  (ADR-026) or saved, in which case its weather belongs to a moment that is gone. The
-  controller compares `capturedAt` before taking it.
+- **The capture holds no clock.** `AmbientCapture.read()` answers the two services and nothing
+  else. A time is read where a time is used: by `ComposerController` for the preview on the
+  slip, and by its `save` for the value that goes into the row (ADR-040). *This used to be an
+  `open()`/`settle()` pair that carried a `capturedAt` through it.*
+- **Nothing here ever runs on a path the user is waiting on.** At launch it is fired from a
+  post-frame callback and never awaited; at save it runs behind a row that has already been
+  written. There is no third caller, and adding one is how the two-second timeout below becomes
+  visible to somebody.
 - **A signal that throws and a signal that hangs produce the same `null`.** This is the one
   place the *fail loudly in development* rule of CLAUDE.md §4.1 is deliberately not applied:
-  to a composer that must not stall there is no useful difference between no network, no
+  to a screen that must not stall there is no useful difference between no network, no
   permission and a service that fell over.
+
+**Captured at launch and at save, and never in between — ADR-042.** `AmbientSignals` owns the
+*when* and holds the reading for the life of the process; `AmbientCapture` owns the *what*.
+There is no timer, no time-to-live and no refresh on resume. *The composer used to drive a
+capture on every chit open,* which meant four taps of **Discard** made four network calls and
+four location fixes.
+
+**The row is written first and patched after.** A save inserts with whatever is held, starts a
+fresh read beside it, and corrects the row through `ChitRepository.updateAmbient` when it lands.
+That method exists separately from `updateText` so that one rule is in the type rather than in
+somebody's memory: **the patch moves neither `createdAt` nor `updatedAt`** — moving the first
+would move the chit in the thread and, across a midnight, onto another day; moving the second
+would claim the user had edited something (ADR-014).
+
+**What is held is a preview; what a row carries is the record.** They differ on purpose, and the
+staleness lives on the screen rather than in the data: a phone open all day draws the launch
+weather on the open chit, and no chit is ever *recorded* with it.
 
 **Weather takes no position — ADR-025.** This document used to say the two signals run in
 parallel without saying how that was possible, given that Open-Meteo is a lookup by
@@ -366,7 +409,7 @@ rule, not an animation, and never change: `ComposerController.idle`, not a pace.
 field is laid out again whenever the keyboard arrives or the action row grows by two controls,
 and a timer held in the widget would go back to five seconds each time — the prompt still
 appears, just later, and only sometimes. `ref.onDispose` cancels it; **Discard** arms it again,
-because ADR-026 makes that a chit that has just opened.
+because **Discard** opens a chit that has just been opened (ADR-040).
 
 **It is drawn over the field, never into it.** `hintText` is the shortcut §4.1 warns about and
 it is wrong twice over: a hint is announced as a label on the field, and it arrives on
@@ -381,9 +424,10 @@ the caret that appears on the first tap is the framework's.
 **Which words are offered is `Prompts.forStamp` — ADR-029**, a pure function in `domain` over
 the stamp the chit already holds. `ComposerState.prompt` is a getter over it rather than a
 stored field, so there is one answer and it cannot drift from the moment it is about; it
-changes once, if the weather settles (ADR-007) inside the five seconds. Nothing in there reads
-a clock, which is what keeps ADR-021 true of the prompt as well as of the stamp: it is for the
-moment the chit **opened**.
+changes once, if a launch capture lands (ADR-042) inside the five seconds. Nothing in there
+reads a clock: the prompt is chosen from the stamp on the slip, which is the preview, so the
+question asked is about **the moment you are sitting in** rather than the moment the row will
+later be stamped with (ADR-040).
 
 ### 4.4 Recording
 

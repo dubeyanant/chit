@@ -333,6 +333,106 @@ empty and waiting.
 A cloud engine is not ruled out forever. It is ruled out until someone can say what happens to
 the audio, and that is a privacy decision rather than a technical one.
 
+
+## Motion is an icon, and weather stays a word
+
+A chit records what the phone was doing when it opened — still, walking, travelling, flying.
+The obvious thing to do with a fourth signal is to add it to the stamp beside the other three,
+and the obvious way to say it is a word, since that is how the weather is said.
+
+Both of those are wrong, and for the same underlying reason: the stamp is already full.
+
+The row exists in the shape it does because *three items at 11.5px strung on middle dots is
+five things to read where there are three*. That sentence is a ceiling, not a preference, and a
+fourth item does not survive it — the row is the same width, the same size, and one more thing
+on it. So weather and motion **share** one slot and a ladder decides which appears. What makes
+that bearable is the thing worth stating twice: a chit written at a desk in the rain reads
+exactly as it always did. The mark appears only by displacing a word, and only when the phone
+was moving, which is almost never.
+
+The word question is separate and it settles itself as soon as you try to write the words down.
+A condition is a word because "raining" is a **feeling** — the chit carries the feel of the
+moment, which is why the app records five words and not a temperature. There is no equivalent
+for motion. Every English phrase for it is `in transit`, `in vehicle`, `active`, `on foot` —
+the vocabulary of a fitness tracker, which is the one voice this app most needs not to have. A
+journal that tells you that you were *active* has started having opinions about your day, and
+that is the same objection the log already makes to a streak and to a word count.
+
+Drawn, it says the fact and stops, which is exactly what the pin does with a place.
+
+The one thing that genuinely surprised: **the pin's argument reverses.** The pin is kept off
+the thread because *every* chit has a location, so ten identical marks distinguish nothing. Run
+that same test on motion and it comes out the other way — almost no chit has one, so the two
+you wrote on a train stand out from the ten you wrote at home. The rule was never "ambient
+marks belong on the open chit"; it was "draw what varies". `stationary` drawing nothing is that
+rule a third time, since it is what most chits are.
+
+The costs are honest ones. An icon is guessed at where a word is read, and there is no legend
+anywhere in the app — a plane and a car are near-universal, a walking figure less so. And they
+are drawn as strokes rather than as silhouettes, because at 12px an outlined plane's wings
+close into a blob: three lines that suggest a plane survive the size, and a traced one does
+not. That is a real constraint on how much these marks can ever say.
+
+
+## The stamp on the slip stopped being a promise
+
+A chit used to be stamped the moment it was opened. The time on the slip was the time that got
+written, and that was the appeal: what you saw was what you got.
+
+It also created a bug that needed its own decision to contain. A chit opened at 23:58 and
+written at 00:05 was filed on the previous day — the exact failure the local-day rule exists to
+prevent. The containment was to re-open the chit whenever **Discard** was pressed, so the stamp
+could not sit there going stale. That fixed one of the two ways a chit could be sat on. Nothing
+re-opened a chit the user simply left alone for twenty minutes.
+
+Stamping at save deletes the whole class rather than patching the paths. There is no interval
+between the reading and the write, so there is nothing for anything to go stale in, and a chit
+is always filed on the day it was actually written.
+
+What it costs is the appeal. The slip now shows a **preview** — the time the chit was opened —
+and the record can say something later. It does not tick, either: a self-updating clock on a
+chit would be an ambient loop, and the design has already ruled those out; a time that redrew
+itself on every rebuild would be worse, because it would be unpredictable instead of merely
+stale.
+
+The honest summary is that the old rule was right about a chit written in ten seconds, which is
+nearly all of them, and in that case the two readings are the same to the minute the stamp
+displays. Where they differ, the chit was sat on — and *the moment you finished* is at least as
+good an answer as *the moment you began*.
+
+## Asking for a permission is a design problem, not a plumbing one
+
+The platform will raise a location dialog for you. What it will not do is say why, in your
+voice, before it appears — and the honest reason here is specific enough to be worth saying:
+*so that a chit can remember what the weather was.* No system prompt says that.
+
+The obvious alternative was to ask in context, at the first chit open, which is what most
+guidance recommends. It does not survive contact with this app's first promise. Opening the app
+costs nothing; the page is blank and ready. A system dialog over the open chit is a cost on
+exactly the path that is supposed to be free, and it arrives at the worst possible moment —
+somebody had a thought and went to write it down.
+
+So the ask moved to its own screen, shown once in the life of an install, built out of the same
+slip and the same tear edge as a chit. That is the part worth keeping: **nothing on it is a new
+kind of object.** It would have been easy to reach for a modal with an illustration and a
+progress dot, and the result would have been a preamble to the app rather than the app. A page
+made of the app's own furniture says *this is what you are about to use* before it says anything
+else.
+
+Two smaller things fell out of it, and both are about not overreaching.
+
+**It asks for location and not the microphone**, even though the microphone is coming. Asking
+at launch for a control this build does not yet have is the thing that would undo the trust the
+screen exists to build — and the screen's own sentence is about ambience, which a microphone is
+not.
+
+**"Not now" raises nothing at all.** A quiet option that still summons a system prompt is a dark
+pattern wearing a polite label, and it is the most common way an onboarding screen lies. Either
+button spends the app's one ask, and neither is ever shown again.
+
+The cost is written down rather than argued away: a refusal is a dead end, because there is no
+settings screen to re-enable from. That is the price of never nagging, and a way back is owed.
+
 ## Open threads
 
 See OPEN-QUESTIONS.md §8. The one closest to the surface is re-transcription: a chit whose audio was kept

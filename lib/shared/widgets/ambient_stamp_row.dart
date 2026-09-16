@@ -2,13 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/extensions.dart';
+import '../../domain/ambient/ambient_fact.dart';
 import '../../domain/models/ambient_stamp.dart';
+import '../../domain/models/motion_state.dart';
 import '../../domain/models/weather_condition.dart';
+import 'motion_icon.dart';
 
-/// Time, condition word and pin, set as a stamp — BEHAVIOUR.md §3.6.
+/// Time, one ambient fact and the pin, set as a stamp — BEHAVIOUR.md §3.6.
 ///
 /// One line, lowercase, **spaced apart with no separators**. Three items at
 /// 11.5px strung on middle dots is five things to read where there are three.
+///
+/// **Three items is also the ceiling, which is why weather and motion share a
+/// slot** (ADR-038). Motion was a fourth signal and it did not get a fourth
+/// place on the row: `AmbientFact.of` ranks the two and one of them is drawn.
+/// The ordinary chit is unchanged by that — a chit written at a desk in the
+/// rain still reads `raining`, because an icon only ever appears by displacing
+/// a word, and only when the phone was moving.
 ///
 /// The same words, the same case and the same size wherever it appears. The
 /// open chit differs from a saved one only in being *brighter*
@@ -17,21 +27,24 @@ import '../../domain/models/weather_condition.dart';
 /// uppercase at `.1em` and murmured the same three facts under every chit
 /// below it; DESIGN-SYSTEM.md §6.2 has the argument.
 ///
-/// **A signal that did not arrive is not drawn** (ADR-007). Weather and
-/// location are best-effort and never block, so a null is simply absent — not
-/// a dash, not "unknown", and not a gap where a word would have been.
+/// **A signal that did not arrive is not drawn** (ADR-007). Weather, location
+/// and motion are best-effort and never block, so a null is simply absent —
+/// not a dash, not "unknown", and not a gap where a word would have been.
 final class AmbientStampRow extends StatelessWidget {
   /// The stamp on the chit being written. Brighter, and the one place the pin
   /// is drawn.
   const AmbientStampRow.open({required this.stamp, super.key})
     : _onOpenChit = true;
 
-  /// The stamp under a chit in the thread. Quieter, and never pinned.
+  /// The stamp under a chit in the thread. Quieter, and never pinned —
+  /// though it does carry motion (ADR-039).
   ///
   /// Every chit carries a location, so a pin on all of them distinguishes
   /// nothing — it is ten identical marks down a screen, each carrying no
   /// information because none of them could ever be absent. *v5 drew it under
-  /// every chit.*
+  /// every chit.* **Motion is the opposite case and so it is drawn here**:
+  /// almost no chit has one, so the two you wrote on a train stand out from
+  /// the ten you wrote at home. Same argument, opposite outcome.
   const AmbientStampRow.saved({required this.stamp, super.key})
     : _onOpenChit = false;
 
@@ -69,11 +82,29 @@ final class AmbientStampRow extends StatelessWidget {
 
   /// The facts this stamp actually has, in order. Never a placeholder.
   List<Widget> _facts(BuildContext context) {
-    final WeatherCondition? weather = stamp.weather;
+    final AmbientFact? fact = AmbientFact.of(stamp);
 
     return <Widget>[
       Text(_timeOf(stamp.capturedAt)),
-      if (weather != null) Text(weather.word),
+      // **One ambient slot, ranked** — ADR-038. Weather and motion share it,
+      // and `AmbientFact.of` decides which. Exhaustive with no `default:`, so
+      // a new kind of fact arrives as a compile error rather than as a blank
+      // on a chit (CLAUDE.md §4.1).
+      if (fact != null)
+        switch (fact) {
+          WeatherFact(:final WeatherCondition condition) => Text(
+            condition.word,
+          ),
+          // The icon takes the row's own colour, not the pin's: it is standing
+          // in for the word it displaced, so it weighs what that weighed.
+          MotionFact(:final MotionState state) => MotionIcon(
+            state: state,
+            colour: _onOpenChit
+                ? context.colors.inkMuted
+                : context.colors.inkFaint,
+            size: context.space.s3,
+          ),
+        },
       // §3.6: the pin says a place was recorded and stops there — never a
       // name, never a coordinate, never a map. And only on the open chit,
       // where it means something present tense: *this is being noted, now.*

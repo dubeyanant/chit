@@ -1,0 +1,160 @@
+import 'package:chit/domain/models/motion_state.dart';
+import 'package:chit/domain/models/weather_condition.dart';
+import 'package:chit/domain/services/ambient_signals.dart';
+import 'package:chit/domain/services/location_service.dart';
+import 'package:chit/domain/services/weather_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+/// ADR-042: **captured twice, and never in between.**
+///
+/// The decision this file holds is the one that is invisible when it is wrong.
+/// An implementation that polled, or that refreshed on every read, would pass
+/// every assertion about *values* in this codebase and would only show up as
+/// battery on somebody's phone. So what is counted here is **how many times
+/// the services were asked**, which is the only way that claim is checkable.
+void main() {
+  ProviderContainer containerWith(_CountingLocation location) {
+    final ProviderContainer container = ProviderContainer(
+      overrides: [
+        weatherServiceProvider.overrideWith(
+          (Ref ref) => const _Weather(WeatherCondition.raining),
+        ),
+        locationServiceProvider.overrideWith((Ref ref) => location),
+      ],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
+
+  test('it holds nothing until something is asked for', () {
+    final ProviderContainer container = containerWith(_CountingLocation());
+
+    expect(container.read(ambientSignalsProvider), AmbientSignals.nothing);
+    expect(
+      container.read(ambientSignalsProvider).weather,
+      isNull,
+      reason: 'reading it must not trigger a capture',
+    );
+  });
+
+  test('reading the value never asks the services', () async {
+    // The whole point. A provider that captured lazily on first read would
+    // look identical from the outside and would fire on every rebuild of the
+    // open chit — which is the behaviour ADR-042 exists to remove.
+    final _CountingLocation location = _CountingLocation();
+    final ProviderContainer container = containerWith(location);
+
+    for (int i = 0; i < 5; i++) {
+      container.read(ambientSignalsProvider);
+    }
+    await Future<void>.delayed(Duration.zero);
+
+    expect(location.fixes, 0);
+  });
+
+  test('prime asks once, and what lands is what is held', () async {
+    final _CountingLocation location = _CountingLocation();
+    final ProviderContainer container = containerWith(location);
+
+    await container.read(ambientSignalsProvider.notifier).prime();
+
+    expect(location.fixes, 1);
+    expect(
+      container.read(ambientSignalsProvider).weather,
+      WeatherCondition.raining,
+    );
+    expect(container.read(ambientSignalsProvider).lat, 1);
+    expect(container.read(ambientSignalsProvider).motion, MotionState.walking);
+  });
+
+  test('refresh asks again and replaces what is held', () async {
+    // The save path (ADR-040). The second answer wins outright rather than
+    // merging, so a signal that has gone away actually goes away.
+    final _CountingLocation location = _CountingLocation();
+    final ProviderContainer container = containerWith(location);
+
+    await container.read(ambientSignalsProvider.notifier).prime();
+    location.fix = null;
+    await container.read(ambientSignalsProvider.notifier).refresh();
+
+    expect(location.fixes, 2);
+    expect(container.read(ambientSignalsProvider).lat, isNull);
+    expect(container.read(ambientSignalsProvider).motion, isNull);
+    expect(
+      container.read(ambientSignalsProvider).weather,
+      WeatherCondition.raining,
+      reason: 'the other signal is untouched',
+    );
+  });
+
+  test(
+    'a service that throws leaves it holding nothing, not an error',
+    () async {
+      // ADR-007 all the way up: there is no failure state to hold, because
+      // nothing downstream could do anything with one.
+      final ProviderContainer container = ProviderContainer(
+        overrides: [
+          weatherServiceProvider.overrideWith((Ref ref) => _ThrowingWeather()),
+          locationServiceProvider.overrideWith(
+            (Ref ref) => _ThrowingLocation(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await expectLater(
+        container.read(ambientSignalsProvider.notifier).prime(),
+        completes,
+      );
+      expect(container.read(ambientSignalsProvider), AmbientSignals.nothing);
+    },
+  );
+}
+
+/// A service that always answers [condition].
+final class _Weather implements WeatherService {
+  const _Weather(this.condition);
+
+  final WeatherCondition? condition;
+
+  @override
+  Future<WeatherCondition?> currentCondition() async => condition;
+}
+
+/// Counts how many times it was asked. The count is the claim.
+final class _CountingLocation implements LocationService {
+  int fixes = 0;
+
+  /// Walking pace, so the ladder has something to answer with.
+  GeoFix? fix = const GeoFix(lat: 1, lon: 2, speed: 1.4, speedAccuracy: 0.4);
+
+  @override
+  Future<GeoFix?> currentFix() async {
+    fixes++;
+    return fix;
+  }
+
+  @override
+  Future<LocationPermissionOutcome> requestPermission() async =>
+      LocationPermissionOutcome.granted;
+}
+
+final class _ThrowingWeather implements WeatherService {
+  @override
+  Future<WeatherCondition?> currentCondition() async => throw const _Failure();
+}
+
+final class _ThrowingLocation implements LocationService {
+  @override
+  Future<GeoFix?> currentFix() async => throw const _Failure();
+
+  @override
+  Future<LocationPermissionOutcome> requestPermission() async =>
+      throw const _Failure();
+}
+
+/// Not an `Error` — a bug in our own code should still crash.
+final class _Failure implements Exception {
+  const _Failure();
+}

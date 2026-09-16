@@ -1,3 +1,4 @@
+| 3:42 pm   raining   ⌖                   |        ← time, one ambient fact, the pin
 # Behaviour
 
 **What chit does, and what it looks like doing it.** §3 is the behaviour specification and §4
@@ -20,10 +21,21 @@ lives here. [README §10](../README.md#10-the-map) maps every section to its fil
 Opening the app presents a new chit for today. It becomes a record when the user presses
 **Save chit**. Opening the app six times leaves nothing behind.
 
+**A chit is stamped when it is saved** (**ADR-040**). The time, the weather word, the motion and
+the fix are all read at the moment **Save chit** is pressed, and a chit is therefore always
+filed on the day it was actually written. *This reverses the earlier rule, which stamped a chit
+when it was opened and then had to defend against the stamp going stale.*
+
+**The stamp on the open chit is a preview.** It shows the time the chit was opened and does not
+tick, so a chit sat on for twenty minutes lands in the thread carrying a later time than the
+slip showed. That is the cost of the rule above and it is accepted rather than hidden.
+
 **Discard** returns the open chit to its empty state — and *empty* means **new**, not blanked:
-the stamp is taken again, so the chit left behind was opened at the moment of the discard
-(**ADR-026**). Discarding at 3:42 and writing at 4:10 must not file the chit at 3:42, and at
-23:58 it must not file it on the wrong day.
+the preview is taken again, so the blank slip does not sit there showing a time that has passed.
+
+**Saving never waits.** The row is written at once with what the app has in hand, a fresh
+reading is taken behind it, and the chit is corrected a moment later if anything changed
+(**ADR-042**). Nothing about a save is ever behind a network call.
 
 ### 3.2 One surface, two ways in
 
@@ -127,9 +139,10 @@ the engine could not read is still a record the user can play back.
 |---|---|
 | Time | `3:42 pm` |
 | Weather condition | a word — `raining`, `clear`, `overcast`, `windy`, `clear night` |
+| Motion | an icon — a walking figure, a car, a plane. Never a word (ADR-039) |
 | Location | a pin symbol on the open chit — the fact of a place, never its name |
 
-The three sit on one line, lowercase, spaced apart with no separators between them, and in the
+The facts sit on one line, lowercase, spaced apart with no separators between them, and in the
 same words and the same case wherever they appear. On the open chit the line is set in
 `--ink-muted` and under a saved chit in `--ink-faint`: the chit being written is brighter than
 the ones already written, which is the only difference between them.
@@ -144,8 +157,74 @@ says so and stops there.
 Every chit carries a location, so a pin on all of them distinguishes nothing — it is ten
 identical marks down a screen, each carrying no information because none of them could ever be
 absent. On the open chit it means something present tense: *this is being noted, now.* The
-location is still captured and still stored for every chit (README §5); what changed is that
+location is still captured and still stored for every chit (README §5); what changed is what
 the thread stopped drawing a constant.
+
+**Motion is drawn in the thread as well** — the same argument, reversed (ADR-039). Almost no
+chit has a motion, so a mark that appears on two chits out of twelve carries real information:
+the ones you wrote on a train stand out from the ones you wrote at home. It is an icon rather
+than a word because every English phrase for it — *in transit*, *in vehicle*, *active* — reads
+like a fitness tracker, and §6.2 is not a voice that says `active`.
+
+#### 3.6.1 One ambient fact, ranked
+
+**The row shows the time, one ambient fact and the pin.** Weather and motion share a single
+slot and never both appear — ADR-038. Three items at 11.5px is the ceiling the spacing above is
+built on, and motion arrived fourth.
+
+Which one wins, highest first:
+
+| | Fact | Why it sits here |
+|---|---|---|
+| 1 | `flying` | being in the air says more about a moment than anything else on this list |
+| 2 | `traveling` | inside a vehicle, the sky outside is no longer what you are in |
+| 3 | `raining` | rain is a feeling, and it outranks a way of moving you are not using |
+| 4 | `windy` | the same, one step quieter |
+| 5 | `walking` | you feel the weather while walking, so anything louder already won above |
+| 6 | `overcast` | the sky is closed, and that is the last thing worth the slot |
+| 7 | `clear` / `clearNight` | the default sky |
+| — | `stationary` | **never drawn.** Stored, and that is all |
+
+The consequence worth stating plainly: **a chit written at a desk in the rain reads exactly as
+it did before motion existed** — `3:42 pm   raining   ⌖`. An icon appears only by *displacing*
+a word, and only when the phone was actually moving. `stationary` is what most chits are, and a
+mark on all of them would distinguish nothing.
+
+#### 3.6.2 What the motion states mean
+
+Four, and no more (ADR-037). They are read from the speed on the position fix the pin already
+needs — so motion costs no second permission and no second dialog, and a refused location costs
+the pin and the motion together.
+
+| State | Means | Drawn |
+|---|---|---|
+| `stationary` | still, or moving too uncertainly to claim otherwise | nothing |
+| `walking` | on foot | a walking figure |
+| `traveling` | a ground vehicle — car, bus, train, bicycle | a car |
+| `flying` | airborne | a plane |
+
+**There is no `running` and no `cycling`.** Speed cannot tell a cyclist at 20 km/h from a car in
+traffic at 20 km/h, and a state the signal cannot defend has no more place on a chit than a
+temperature reading does.
+
+**A motion that did not arrive is not drawn**, exactly as a condition that did not arrive is
+not drawn (ADR-007). Indoors, with location refused, and in the first seconds after a cold
+start there is usually no usable speed at all — so most chits carry no motion, and nothing in
+the UI mentions its absence.
+
+#### 3.6.3 When capture happens
+
+**Twice, and never in between** — ADR-042. Once at launch, fired after the app has drawn and
+never waited on; and again each time a chit is saved. There is no polling, no expiry, and no
+refresh when the app comes back to the foreground.
+
+So the stamp on the open chit draws whatever landed at launch, and on a phone that has been open
+all day that can be hours old. **No chit is ever recorded with it**, because saving re-reads —
+the staleness is on the screen, not in the data.
+
+**Permission is asked once, on first run** (ADR-041), behind §4.4's screen. An install where it
+was refused simply has quieter chits: no pin, no motion, and — since the two are one signal —
+nothing in the UI mentioning either absence.
 
 ---
 
@@ -163,7 +242,7 @@ Shows today.
     Fri        Sat          today                   ← the timeline; scrolls, rests at now
 
   ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← perforated tear edge
-  │ 3:42 pm   raining   ⌖                   │
+  │ 3:42 pm   raining   ⌖                   │        ← time, one ambient fact, the pin
   │                                         │        ← the page; prompt after 5s
   │                                         │
   │ ┌────┐                                  │
@@ -179,7 +258,7 @@ Shows today.
 
   earlier ─────────────────────────── 2 chits
 
-  ▪ 11:20 am   overcast
+  ▪ 11:20 am   ‹car›                               ← §3.6.1 — the icon displaced the word
   │ Reorg meeting pushed again. Third time.
   ▪ 8:05 am   clear
   │ Didn't sleep. Room too cold, again.
@@ -319,4 +398,54 @@ are left as they were written.
 ### 4.3 Recording sheet
 
 A bottom sheet carrying the same perforated edge as a chit. Covered in §3.4 and §3.5.
+
+### 4.4 First run
+
+The screen a fresh install opens on, **once in the life of an install** — ADR-041.
+
+```
+  chit  चित्त
+
+                                                   ← the page rests low; this is
+                                                     a page, not a dialog
+  ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← the same tear edge as a chit
+  │ A chit remembers its moment.            │
+  │                                         │
+  │ Every chit is stamped with the time,    │
+  │ and — if you let it — the weather,      │
+  │ whether you were moving, and that a     │
+  │ place was recorded.                     │
+  │                                         │
+  │ A chit shows that a place was noted.    │
+  │ It never shows where, and none of it    │
+  │ leaves this phone.                      │
+  └─────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────┐
+  │                 Allow                   │        ← raises the system dialog
+  └─────────────────────────────────────────┘
+                  Not now                            ← raises nothing at all
+```
+
+**Why it exists at all.** A bare system prompt asks for a permission without saying what it
+buys, over a screen the user has not seen yet. The honest answer — *so a chit can remember what
+the weather was* — is not something Android or iOS will say on our behalf. This screen makes the
+case; the platform's dialog then arrives as a confirmation of something already agreed to.
+
+**It is built from the vocabulary that already exists** — the wordmark, a slip with its tear
+edge, and the two button weights of §6.1. Nothing on it is a new kind of object, because the
+first thing a user sees should be the app rather than a preamble to it.
+
+| Control | What it does |
+|---|---|
+| **Allow** | Raises the system location dialog, then opens Today. Whatever the user answers there, the app opens — a refusal is not an error state and there is no second screen about it |
+| **Not now** | Opens Today. **Raises nothing.** A quiet option that still summoned a system prompt would be a dark pattern wearing a polite label |
+
+**Neither is asked again.** The app spends one ask in the life of an install, whichever button
+ended this screen (ADR-016). An install that refused runs with no pin and no motion, and says
+nothing about it — §3.6's `null` is simply not drawn.
+
+**Only location is asked for here.** The microphone belongs to §3.4 and is asked for the first
+time somebody taps the microphone, because asking at launch for a control this build does not
+yet have is the thing that would undo the trust this screen exists to build.
 

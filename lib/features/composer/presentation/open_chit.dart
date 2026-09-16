@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions.dart';
-import '../../../core/theme/chit_colors.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
+import '../../../shared/widgets/buttons.dart';
 import '../../../shared/widgets/slip.dart';
 import '../application/composer_controller.dart';
 
@@ -328,6 +328,11 @@ class _MicrophonePainter extends CustomPainter {
 /// brighter one and a faint ink wash, and Discard has no outline at all. *v5
 /// made Save a solid `--seal` bar*, which became the loudest thing on the
 /// screen the instant a word was typed.
+///
+/// **Save is the only thing in the app that writes a row** (ARCHITECTURE.md
+/// §4.1). It stamps the chit at the moment it is pressed — ADR-040 — and opens
+/// a new one after. Both of those live in `ComposerController.save`, because
+/// neither is a decision a button should be making.
 class _CommitControls extends ConsumerWidget {
   const _CommitControls();
 
@@ -337,120 +342,18 @@ class _CommitControls extends ConsumerWidget {
 
     return Row(
       children: <Widget>[
-        _Discard(
+        QuietButton(
+          label: 'Discard',
           onPressed: ref.read(composerControllerProvider.notifier).discard,
         ),
         SizedBox(width: space.s2),
         Expanded(
-          child: _Save(
+          child: PrimaryButton(
+            label: 'Save chit',
             onPressed: ref.read(composerControllerProvider.notifier).save,
           ),
         ),
       ],
-    );
-  }
-}
-
-/// The quietest of the three. No outline, and no colour of its own.
-class _Discard extends StatefulWidget {
-  const _Discard({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  State<_Discard> createState() => _DiscardState();
-}
-
-class _DiscardState extends State<_Discard> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final space = context.space;
-
-    return Semantics(
-      button: true,
-      child: GestureDetector(
-        onTapDown: (TapDownDetails _) => setState(() => _pressed = true),
-        onTapUp: (TapUpDetails _) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        onTap: widget.onPressed,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            // Decision 4 of TASKS.md group A. v6 pressed this in `--hair-soft`,
-            // which measures 1.0145:1 on a chit and is in practice not drawn
-            // at all; an ink wash measures 1.17:1. Under reduced motion, where
-            // the depress is gone (§6.4), this wash is the *only*
-            // acknowledgement the press produces.
-            color: _pressed
-                ? colors.inkWash(
-                    colors.slip,
-                    opacity: ChitColors.discardPressedWash,
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(space.radius),
-          ),
-          child: Padding(
-            // 14px by 16px in the prototype; both are `s4`. A padding is a
-            // relationship and DESIGN-SYSTEM.md §6.3 keeps those on the scale.
-            // At 16px the control measures 49px, clear of §6.4's 44px floor.
-            padding: EdgeInsets.all(space.s4),
-            child: Text(
-              'Discard',
-              // The label lifts to `--ink` while it is held. `--ink-faint`
-              // clears the floor on a bare chit at 4.56:1 and falls under it
-              // on any wash at all — 4.12:1 at even 4%. DESIGN-SYSTEM.md §6.1.
-              style: context.type.button.copyWith(
-                color: _pressed ? colors.ink : colors.inkFaint,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// **Save chit** — the brightest of the three, and still not a fill.
-///
-/// The only thing in the app that writes a row (ARCHITECTURE.md §4.1). What it
-/// hands the repository is the stamp the chit has held since it opened, never
-/// a fresh one — ADR-021 — and pressing it opens a new chit the way Discard
-/// does (ADR-026). Both of those live in `ComposerController.save`, because
-/// neither is a decision a button should be making.
-class _Save extends StatelessWidget {
-  const _Save({required this.onPressed});
-
-  /// Writes the chit. Asynchronous, and nothing here waits on it: the state
-  /// the button is drawn from changes when the save returns.
-  final Future<void> Function() onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final space = context.space;
-
-    return Semantics(
-      button: true,
-      child: GestureDetector(
-        onTap: onPressed,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.inkWash(colors.slip, opacity: ChitColors.saveWash),
-            border: Border.all(color: colors.inkMuted),
-            borderRadius: BorderRadius.circular(space.radius),
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: space.s4),
-            child: Text(
-              'Save chit',
-              textAlign: TextAlign.center,
-              style: context.type.button.copyWith(color: colors.ink),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -1,39 +1,35 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../core/clock.dart';
-import '../models/ambient_stamp.dart';
+import '../models/motion_state.dart';
 import '../models/weather_condition.dart';
+import '../motion/motion_ladder.dart';
+import 'ambient_signals.dart';
 import 'location_service.dart';
 import 'weather_service.dart';
 
 part 'ambient_capture.g.dart';
 
-/// Assembles the [AmbientStamp] a chit is opened with — ADR-007.
+/// One reading of the two ambient services — ADR-007.
 ///
 /// The whole of that record is here: the two signals go out **in parallel**,
 /// each under a short timeout, and **whatever has not come back is `null`**.
-/// Nothing here can block the composer, show a spinner or fail a save.
-/// README §1 is the reason — *opening the app costs nothing* — and a journal
-/// has to work on a train.
+/// Nothing here can block a screen, show a spinner or fail a save. README §1
+/// is the reason — *opening the app costs nothing* — and a journal has to work
+/// on a train.
 ///
-/// **It is two methods rather than one, and that is what keeps the promise.**
-/// [open] is synchronous and gives the chit its time at once; [settle] fills
-/// in what arrives. A single `Future<AmbientStamp> capture()` would make the
-/// composer itself asynchronous, and a composer with a loading state has
-/// already broken ADR-007 whether or not a spinner is drawn.
-///
-/// **The time is read before either signal is asked for**, exactly once, in
-/// [open]. ADR-021 says a chit is stamped when it is *opened*, and
-/// [AmbientStamp.capturedAt] becomes its `createdAt`; a clock read after the
-/// network came back would put the chit two seconds later in the thread than
-/// the moment it belongs to.
+/// **It answers what, and `AmbientSignals` decides when** (ADR-042). *This
+/// class used to hold the time as well, in an `open()`/`settle()` pair the
+/// composer drove on every chit open.* Both halves of that moved: the clock is
+/// read where a time is actually used, and the decision to ask at all belongs
+/// to the thing that knows there are only two moments worth asking in — launch,
+/// and save.
 ///
 /// It lives in `domain` because every line of it is a product rule rather than
-/// a network detail. What M3 changes is which implementations
+/// a network detail. What changes underneath is which implementations
 /// `weatherServiceProvider` and `locationServiceProvider` resolve to; this
 /// class does not move.
 final class AmbientCapture {
-  /// Captures from [clock] and the two services.
+  /// Captures from the two services.
   ///
   /// [timeout] is ADR-007's short one and defaults to [defaultTimeout]. It is
   /// a parameter so that the shape can be tested in milliseconds rather than
@@ -45,12 +41,10 @@ final class AmbientCapture {
   // `ChitRepositoryImpl`.
   // ignore_for_file: prefer_initializing_formals
   const AmbientCapture({
-    required Clock clock,
     required WeatherService weather,
     required LocationService location,
     this.timeout = defaultTimeout,
-  }) : _clock = clock,
-       _weather = weather,
+  }) : _weather = weather,
        _location = location;
 
   /// **2 seconds.** ARCHITECTURE.md §4.2's working figure, and it is a ceiling
@@ -61,57 +55,65 @@ final class AmbientCapture {
   /// How long either signal has before it counts as absent.
   final Duration timeout;
 
-  final Clock _clock;
   final WeatherService _weather;
   final LocationService _location;
 
-  /// The stamp a chit opens with: **its time, and nothing else yet.**
+  /// Both services, asked **together**, each under [timeout].
   ///
-  /// Synchronous, because ADR-007 does not allow the composer to wait for
-  /// anything — *nothing about capture can delay the composer, show a spinner,
-  /// or fail a save.* A composer built on a `Future` has a loading state, and
-  /// a loading state is a spinner whether or not one is drawn.
+  /// Whatever has not come back is `null`. **Never throws** — a reading is
+  /// three nullable fields, and there is no failure it can report that a
+  /// caller could do anything about.
   ///
-  /// This is the only clock read in the whole capture. [settle] carries
-  /// [AmbientStamp.capturedAt] through untouched, so the chit's `createdAt` is
-  /// the moment it opened however long the two signals take (ADR-021).
-  AmbientStamp open() => AmbientStamp(capturedAt: _clock.now());
-
-  /// [opened] again, with whatever the two signals returned.
-  ///
-  /// They go out **together**, each under [timeout], and whatever has not come
-  /// back is left `null`. Never throws: a stamp always has its time, and the
-  /// other two fields are present or they are not.
-  ///
-  /// The caller shows [open]'s stamp immediately and replaces it with this one
-  /// when it lands, which is how ADR-007's *best-effort, never blocks* reads
-  /// on a screen: the time is there at once, and the weather word appears a
-  /// moment later or not at all.
-  Future<AmbientStamp> settle(AmbientStamp opened) async {
+  /// Nobody awaits this on a path a user is waiting on: at launch it is fired
+  /// after the first frame, and at save it runs behind a row that has already
+  /// been written (ADR-040, ADR-042).
+  Future<AmbientReading> read() async {
     final (WeatherCondition? weather, GeoFix? fix) = await (
       _bestEffort(_weather.currentCondition()),
       _bestEffort(_location.currentFix()),
     ).wait;
 
-    return opened.copyWith(weather: weather, lat: fix?.lat, lon: fix?.lon);
+    return (
+      weather: weather,
+      lat: fix?.lat,
+      lon: fix?.lon,
+      motion: _motionOf(fix),
+    );
   }
+
+  /// What the phone was doing, read off [fix] — ADR-037.
+  ///
+  /// **The same call answers the place and the movement**, so this is not a
+  /// third signal and ADR-007's shape is untouched: two calls go out, and one
+  /// of them now yields two facts. A fix that did not arrive is no motion,
+  /// which is the same `null` the pin gets and is not drawn either.
+  ///
+  /// The thresholds are not here. They are a product decision and they live in
+  /// [MotionLadder], where they can be tested as arithmetic — this method is
+  /// only the wiring between one fix and one pure function.
+  static MotionState? _motionOf(GeoFix? fix) => fix == null
+      ? null
+      : MotionLadder.from(
+          speed: fix.speed,
+          speedAccuracy: fix.speedAccuracy,
+          altitude: fix.altitude,
+        );
 
   /// [signal], or `null` if it was slow or it threw.
   ///
   /// **A thrown error is not louder than a timeout here**, which is the one
   /// place this codebase's *fail loudly in development* rule is deliberately
   /// not applied: ADR-007 says any signal that does not arrive is `null`, and
-  /// to a composer that must not stall there is no useful difference between
+  /// to a screen that must not stall there is no useful difference between
   /// no network, no permission and a service that fell over.
   Future<T?> _bestEffort<T>(Future<T?> signal) => signal
       .timeout(timeout, onTimeout: () => null)
       .onError((Object _, StackTrace _) => null);
 }
 
-/// The capture the composer opens a chit with.
+/// The capture behind `AmbientSignals`.
 @Riverpod(keepAlive: true)
 AmbientCapture ambientCapture(Ref ref) => AmbientCapture(
-  clock: ref.watch(clockProvider),
   weather: ref.watch(weatherServiceProvider),
   location: ref.watch(locationServiceProvider),
 );

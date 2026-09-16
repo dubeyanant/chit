@@ -32,9 +32,11 @@ into every milestone after them, and are why this section is still here at all:
   refusal, because an assert is compiled out of a release build, a constraint cannot say *why*,
   and a repository is one caller among however many a later milestone adds.
 
-M1 also settled ADR-021 — a chit is stamped when it is opened, not when it is saved — and M2
-honours it by holding the `AmbientStamp` in `ComposerState` from the moment the chit opens and
-passing that same object to `save()`. Re-capturing it on save would undo the decision quietly.
+M1 settled where a chit gets its time, and M3 reversed it. **ADR-040 stamps a chit when it is
+saved**, so `ComposerController.save` reads the clock at that moment and the `AmbientStamp` in
+`ComposerState` is a preview of what will be written rather than the value itself. *ADR-021 held
+the opposite and M2 was built to it; the reversal is why `createdAt` and `updatedAt` are now the
+same instant at insert.*
 
 ---
 
@@ -101,13 +103,24 @@ The fakes come out.
   of codes.
 - `GeolocatorLocationService` at high accuracy, accepting the coarse fix when that is all the
   user granted (ADR-016); the permission flow; the pin.
-- Parallel capture under a timeout, on chit open. A signal that does not arrive is null and is
-  not drawn.
+- Parallel capture under a timeout. A signal that does not arrive is null and is not drawn.
 - The platform permission strings themselves landed in M0a. M3 is where the flows that raise
-  them do.
+  them do — behind a **first-run screen of our own** (ADR-041), shown once, asking for location
+  and leaving the microphone to M5.
+- **Captured at launch and at save, never in between** (ADR-042), and a chit is **stamped when
+  it is saved** (ADR-040). The row is written at once and the fresh reading patched in after, so
+  nothing about a save is ever behind a network call.
+- **Motion** — `stationary`, `walking`, `traveling`, `flying`, read off the speed of the same
+  fix the pin needs (ADR-037), so it adds no package, no permission and no third call. The stamp
+  draws **one** ambient fact rather than two, ranked (ADR-038), and motion is an icon where
+  weather is a word (ADR-039). *This was not in the milestone when it was planned; it was added
+  on 16 September 2026 and it is the reason M3 stopped being a milestone that draws nothing.*
 
 **Done when** the composer opens instantly with no network, and a chit saved offline carries a
-time, no weather word, and no pin — with nothing in the UI noting the absence.
+time, no weather word, no pin and no motion — with nothing in the UI noting the absence. And on
+a device with the network on: a fresh install asks once and never again, the word is right for
+the actual weather, a chit saved twenty minutes after it was opened carries the **save** time,
+and a walk outdoors produces the walking mark in place of the word.
 
 ---
 

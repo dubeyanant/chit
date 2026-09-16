@@ -19,7 +19,11 @@ mixin _$AmbientStamp {
  DateTime get capturedAt;/// The condition, if the call came back in time.
  WeatherCondition? get weather;/// Latitude, if a fix came back in time. Stored, never displayed.
  double? get lat;/// Longitude, if a fix came back in time. Stored, never displayed.
- double? get lon;
+ double? get lon;/// What the phone was doing, read off the same fix (ADR-037).
+///
+/// `null` when no usable speed arrived — which is most of the time
+/// indoors, and always when location was refused.
+ MotionState? get motion;
 /// Create a copy of AmbientStamp
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,20 +35,20 @@ $AmbientStampCopyWith<AmbientStamp> get copyWith => _$AmbientStampCopyWithImpl<A
 @override
 bool operator ==(Object other) {
   final _this = this as AmbientStamp;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AmbientStamp&&(identical(other.capturedAt, _this.capturedAt) || other.capturedAt == _this.capturedAt)&&(identical(other.weather, _this.weather) || other.weather == _this.weather)&&(identical(other.lat, _this.lat) || other.lat == _this.lat)&&(identical(other.lon, _this.lon) || other.lon == _this.lon));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AmbientStamp&&(identical(other.capturedAt, _this.capturedAt) || other.capturedAt == _this.capturedAt)&&(identical(other.weather, _this.weather) || other.weather == _this.weather)&&(identical(other.lat, _this.lat) || other.lat == _this.lat)&&(identical(other.lon, _this.lon) || other.lon == _this.lon)&&(identical(other.motion, _this.motion) || other.motion == _this.motion));
 }
 
 
 @override
 int get hashCode {
   final _this = this as AmbientStamp;
-  return Object.hash(runtimeType,_this.capturedAt,_this.weather,_this.lat,_this.lon);
+  return Object.hash(runtimeType,_this.capturedAt,_this.weather,_this.lat,_this.lon,_this.motion);
 }
 
 @override
 String toString() {
   final _this = this as AmbientStamp;
-  return 'AmbientStamp(capturedAt: ${_this.capturedAt}, weather: ${_this.weather}, lat: ${_this.lat}, lon: ${_this.lon})';
+  return 'AmbientStamp(capturedAt: ${_this.capturedAt}, weather: ${_this.weather}, lat: ${_this.lat}, lon: ${_this.lon}, motion: ${_this.motion})';
 }
 
 
@@ -55,7 +59,7 @@ abstract mixin class $AmbientStampCopyWith<$Res>  {
   factory $AmbientStampCopyWith(AmbientStamp value, $Res Function(AmbientStamp) _then) = _$AmbientStampCopyWithImpl;
 @useResult
 $Res call({
- DateTime capturedAt, WeatherCondition? weather, double? lat, double? lon
+ DateTime capturedAt, WeatherCondition? weather, double? lat, double? lon, MotionState? motion
 });
 
 
@@ -72,13 +76,14 @@ class _$AmbientStampCopyWithImpl<$Res>
 
 /// Create a copy of AmbientStamp
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? capturedAt = null,Object? weather = freezed,Object? lat = freezed,Object? lon = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? capturedAt = null,Object? weather = freezed,Object? lat = freezed,Object? lon = freezed,Object? motion = freezed,}) {
   return _then(AmbientStamp(
 capturedAt: null == capturedAt ? _self.capturedAt : capturedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,weather: freezed == weather ? _self.weather : weather // ignore: cast_nullable_to_non_nullable
 as WeatherCondition?,lat: freezed == lat ? _self.lat : lat // ignore: cast_nullable_to_non_nullable
 as double?,lon: freezed == lon ? _self.lon : lon // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,motion: freezed == motion ? _self.motion : motion // ignore: cast_nullable_to_non_nullable
+as MotionState?,
   ));
 }
 
@@ -163,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime capturedAt,  WeatherCondition? weather,  double? lat,  double? lon)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime capturedAt,  WeatherCondition? weather,  double? lat,  double? lon,  MotionState? motion)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AmbientStamp() when $default != null:
-return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon);case _:
+return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon,_that.motion);case _:
   return orElse();
 
 }
@@ -184,10 +189,10 @@ return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime capturedAt,  WeatherCondition? weather,  double? lat,  double? lon)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime capturedAt,  WeatherCondition? weather,  double? lat,  double? lon,  MotionState? motion)  $default,) {final _that = this;
 switch (_that) {
 case _AmbientStamp():
-return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon);case _:
+return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon,_that.motion);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +209,10 @@ return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime capturedAt,  WeatherCondition? weather,  double? lat,  double? lon)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime capturedAt,  WeatherCondition? weather,  double? lat,  double? lon,  MotionState? motion)?  $default,) {final _that = this;
 switch (_that) {
 case _AmbientStamp() when $default != null:
-return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon);case _:
+return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon,_that.motion);case _:
   return null;
 
 }
@@ -219,7 +224,7 @@ return $default(_that.capturedAt,_that.weather,_that.lat,_that.lon);case _:
 
 
 class _AmbientStamp extends AmbientStamp {
-  const _AmbientStamp({required this.capturedAt, this.weather, this.lat, this.lon}): assert((lat == null) == (lon == null), 'a coordinate is both halves or neither — half a fix is not a place'),super._();
+  const _AmbientStamp({required this.capturedAt, this.weather, this.lat, this.lon, this.motion}): assert((lat == null) == (lon == null), 'a coordinate is both halves or neither — half a fix is not a place'),super._();
   
 
 /// The moment the chit was opened, in the device's local zone.
@@ -230,6 +235,11 @@ class _AmbientStamp extends AmbientStamp {
 @override final  double? lat;
 /// Longitude, if a fix came back in time. Stored, never displayed.
 @override final  double? lon;
+/// What the phone was doing, read off the same fix (ADR-037).
+///
+/// `null` when no usable speed arrived — which is most of the time
+/// indoors, and always when location was refused.
+@override final  MotionState? motion;
 
 /// Create a copy of AmbientStamp
 /// with the given fields replaced by the non-null parameter values.
@@ -241,18 +251,18 @@ _$AmbientStampCopyWith<_AmbientStamp> get copyWith => __$AmbientStampCopyWithImp
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AmbientStamp&&(identical(other.capturedAt, capturedAt) || other.capturedAt == capturedAt)&&(identical(other.weather, weather) || other.weather == weather)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lon, lon) || other.lon == lon));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AmbientStamp&&(identical(other.capturedAt, capturedAt) || other.capturedAt == capturedAt)&&(identical(other.weather, weather) || other.weather == weather)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lon, lon) || other.lon == lon)&&(identical(other.motion, motion) || other.motion == motion));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,capturedAt,weather,lat,lon);
+    return Object.hash(runtimeType,capturedAt,weather,lat,lon,motion);
 }
 
 @override
 String toString() {
-    return 'AmbientStamp(capturedAt: $capturedAt, weather: $weather, lat: $lat, lon: $lon)';
+    return 'AmbientStamp(capturedAt: $capturedAt, weather: $weather, lat: $lat, lon: $lon, motion: $motion)';
 }
 
 
@@ -263,7 +273,7 @@ abstract mixin class _$AmbientStampCopyWith<$Res> implements $AmbientStampCopyWi
   factory _$AmbientStampCopyWith(_AmbientStamp value, $Res Function(_AmbientStamp) _then) = __$AmbientStampCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime capturedAt, WeatherCondition? weather, double? lat, double? lon
+ DateTime capturedAt, WeatherCondition? weather, double? lat, double? lon, MotionState? motion
 });
 
 
@@ -280,13 +290,14 @@ class __$AmbientStampCopyWithImpl<$Res>
 
 /// Create a copy of AmbientStamp
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? capturedAt = null,Object? weather = freezed,Object? lat = freezed,Object? lon = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? capturedAt = null,Object? weather = freezed,Object? lat = freezed,Object? lon = freezed,Object? motion = freezed,}) {
   return _then(_AmbientStamp(
 capturedAt: null == capturedAt ? _self.capturedAt : capturedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,weather: freezed == weather ? _self.weather : weather // ignore: cast_nullable_to_non_nullable
 as WeatherCondition?,lat: freezed == lat ? _self.lat : lat // ignore: cast_nullable_to_non_nullable
 as double?,lon: freezed == lon ? _self.lon : lon // ignore: cast_nullable_to_non_nullable
-as double?,
+as double?,motion: freezed == motion ? _self.motion : motion // ignore: cast_nullable_to_non_nullable
+as MotionState?,
   ));
 }
 

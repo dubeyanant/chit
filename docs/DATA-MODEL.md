@@ -20,6 +20,7 @@ class Chits extends Table {
   TextColumn    get weather      => textEnum<WeatherCondition>().nullable()();
   RealColumn    get lat          => real().nullable()();
   RealColumn    get lon          => real().nullable()();
+  TextColumn    get motion       => textEnum<MotionState>().nullable()();  // v2, ADR-037
   IntColumn     get updatedAt    => integer()();
 
   @override Set<Column> get primaryKey => {id};
@@ -27,7 +28,8 @@ class Chits extends Table {
 ```
 
 Indexes: `localDay` (every calendar and archive query groups on it), `createdAt` (the timeline and
-ordering within a day), `weather` (backlog item 2, and it costs nothing now).
+ordering within a day), `weather` (backlog item 2, and it costs nothing now). **Not `motion`** —
+nothing queries it, and an index on speculation is the thing YAGNI forbids.
 
 **Two names here changed in M1, and both were forced.**
 
@@ -53,9 +55,11 @@ layer ever arrives (ADR-004).
 repository. A chit written at 00:20 IST belongs to that morning permanently, and nothing
 recomputes it when the device changes timezone (ADR-006).
 
-`createdAt` is the moment the chit was **opened**, not the moment it was saved — it is the same
-instant the ambient stamp was captured, because there is one time column and the stamp is what
-it holds (ADR-021).
+`createdAt` is the moment the chit was **saved** — ADR-040. There is one time column and the
+stamp is what it holds, so this is also the instant the ambient reading was taken. *It used to
+be the moment the chit was **opened** (ADR-021), which meant a chit opened at 23:58 and saved at
+00:05 was filed on the previous day; that failure is now unreachable rather than defended
+against.*
 
 **`body`** — what the chit says: typed, transcribed, or transcribed and then corrected. `NULL`
 only when a recording produced nothing and the user wrote nothing either. The failure note the
@@ -82,6 +86,19 @@ the next app update.
 stops there. Nothing in the app reverse-geocodes these, and if a future feature wants coarse
 places ("home", "office") that is a new decision, not an existing capability.
 
+**`motion`** — what the phone was doing when the chit was opened. Added in **schema v2**
+(ADR-037), and read off the speed of the same fix that produced `lat`/`lon`, so it costs no
+second permission and no second call. One of `stationary`, `walking`, `traveling`, `flying`, or
+`NULL` when no usable speed arrived — which is most chits, since indoors there is rarely one.
+
+`stationary` is stored and never drawn (BEHAVIOUR.md §3.6.1). It is also where an unusable
+reading lands, so a noisy speed can slow a chit down and can never put a plane on one.
+
+**There is no `CHECK (motion IS NULL OR lat IS NOT NULL)`**, though it would hold for every row
+the app writes today. Motion comes off the fix because that is how this milestone reads it —
+that is a fact about the implementation, not about what a chit *is*, and the five constraints in
+§2 are all the second kind.
+
 They are as precise as the fix was. ADR-016 asks for high accuracy and accepts a coarse fix
 when that is all the user granted, so this column may hold anything from a rooftop-accurate
 position to a neighbourhood. The display promise is unchanged — no name, no coordinate, no map
@@ -90,10 +107,20 @@ database rather than about the UI. It is why ADR-004's "local only" is load-bear
 a constraint on any sync design rather than an argument against the accuracy.
 
 **`updatedAt`** — written on every edit (ADR-014), and set at insert to the moment the row was
-written. It is the only column that reads the clock at save time; everything else about when a
-chit happened comes from the stamp. Editing does **not** change `createdAt` or `localDay`: a
-chit belongs to the moment it was written, and correcting a typo the next morning must not move
-it in the thread or relight a calendar tile.
+written. Editing does **not** change `createdAt` or `localDay`: a chit belongs to the moment it
+was written, and correcting a typo the next morning must not move it in the thread or relight a
+calendar tile.
+
+Since ADR-040 `createdAt` and `updatedAt` are **the same instant at insert**, because the chit
+is stamped when it is saved rather than when it was opened. They diverge on the first edit and
+never before.
+
+**`updateAmbient` moves neither of them**, and that is a rule rather than an oversight — ADR-042.
+A save writes the row and then patches the three ambient fields when a fresh reading lands a
+moment later; that patch must not move `createdAt` (it would move the chit in the thread and,
+across a midnight, onto another day) and must not move `updatedAt` (it would claim the user had
+edited something). OPEN-QUESTIONS.md §8.2's re-transcription is the thing that would be misled
+by the second, which is why it is worth stating twice.
 
 ---
 
@@ -274,8 +301,19 @@ v1 was taken in M1, before there was anything to migrate. That is the point: the
 migration is not the moment to find out the harness does not work. It earned its keep
 immediately — it is what proved the text column could not be called `text` (§1).
 
-There is no `onUpgrade` step yet and the strategy throws rather than opening a database whose
-shape nobody has looked at. The first real migration replaces that throw; it does not add to it.
+**v2 is the first real one.** It adds `chits.motion` (ADR-037) with `m.addColumn`, and
+**nothing is backfilled**: there is no way to know what a phone was doing last Tuesday, and a
+guess written into a row is indistinguishable from a fact a month later. Every row written
+before M3 answers `NULL`, which is exactly what a chit opened indoors answers today, and is not
+drawn either way.
+
+`migration_test.dart` checks the step twice over, because the two claims are different: that
+the **shape** after migrating is the v2 that was committed, and that a chit **written at v1 is
+still readable** afterwards with a null motion. `migrateAndValidate` makes only the first claim
+— it inspects the schema, not the rows.
+
+The `StateError` the strategy still throws now guards `v2 → v3`. That assertion moves up a
+version every time one ships.
 
 Changes already visible on the horizon, so the shape does not surprise us:
 

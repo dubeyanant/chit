@@ -22,12 +22,13 @@ resolution, so the two can be compared.
 | `record` | ✓ `^7.1.1` | recording to a temp file |
 | `just_audio` | ✓ `^0.10.6` | playback behind the audio pill |
 | `speech_to_text` | ✓ `^7.4.0` | on-device transcription (ADR-005) |
-| `geolocator` | `^14.0.3` | the fix behind the pin — precise, falling back to coarse (ADR-016); also owns the location permission flow, and its **last known** fix is what the weather call uses so the two signals stay parallel (ADR-025) |
+| `geolocator` | `^14.0.3` | the fix behind the pin — precise, falling back to coarse (ADR-016); also owns the location permission flow, and its **last known** fix is what the weather call uses so the two signals stay parallel (ADR-025). **Its `Position` also carries `speed`, `speedAccuracy` and `altitude`, which is the whole of motion capture** (ADR-037) — the reason chit needs no motion-sensor package and no second permission |
 | `http` | `^1.2.2` | one call, to Open-Meteo |
 | `intl` | `^0.20.2` | dates and the tabular-figure formats of DESIGN-SYSTEM.md §6.2 |
 | `path_provider` | `^2.1.5` | the app documents directory for the audio store |
 | `path` | `^1.9.1` | joining those paths without string concatenation |
 | `uuid` | `^4.5.1` | client-generated ids (ADR-004) |
+| `shared_preferences` | `^2.3.3` | **two booleans.** Whether the first-run screen has been shown, and whether the app has spent its one permission ask (ADR-041). The only state chit keeps outside the database, and the only thing `main()` awaits before the first frame — the router cannot pick the right first screen without it |
 
 ## Development
 
@@ -130,6 +131,16 @@ if the app grows a backend.
 **A cloud speech engine** (`google_speech`, or Google Cloud STT behind a proxy) — ADR-005.
 Reopening it is a privacy decision, not a package decision.
 
+**`flutter_activity_recognition` / `sensors_plus`** — the two ways to read motion from the
+sensors rather than from the fix, and **ADR-037 took neither**. `sensors_plus` gives raw
+accelerometer and gyroscope, and neither of those measures speed: recovering it from
+acceleration needs a double integration whose error compounds uselessly within seconds, and a
+gyroscope only measures rotation. `flutter_activity_recognition` wraps the platform classifiers,
+which do work — at the price of a **second runtime permission** on both platforms
+(`ACTIVITY_RECOGNITION`, Motion & Fitness) against README §1's *opening the app costs nothing*,
+a Google Play Services dependency, a stream-only API with no one-shot query, and no flying class
+regardless. `geolocator` already returns the speed on a fix chit was taking anyway.
+
 **`permission_handler`** — `record` asks for the microphone and `geolocator` asks for location,
 each with the platform flow their plugin already handles. A third permission library would be
 a second source of truth for two permissions. Add it only if a permission appears that neither
@@ -156,9 +167,6 @@ exclusion or a test that reads the source. M0b chose the test —
 
 **`flutter_hooks`** — Riverpod's notifiers cover the state in this app, and mixing two idioms
 for local widget state makes the codebase harder to read than either alone.
-
-**`shared_preferences`** — nothing to store yet. The settings screen in BEHAVIOUR.md §4.1's sketch
-has no defined contents; when it gets some, this is the likely answer.
 
 ---
 

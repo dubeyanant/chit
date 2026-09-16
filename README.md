@@ -28,11 +28,13 @@ Then read what that milestone points at, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
-> **Status:** in build, and **M2 is done** — Today is a screen a person can use. A chit can be
-> typed, saved and read back in the thread after a restart; the strip above it carries a mark
-> for every chit where its time falls, across up to three days; the five-second prompt reads
-> the ambient stamp. Weather and location are still fixed fakes.
-> **M3 — ambient capture — is next**, and it is where those two fakes come out.
+> **Status:** in build, and **M3 is part way through.** Today is a screen a person can use: a
+> chit can be typed, saved and read back after a restart, and the strip above it carries a mark
+> for every chit where its time falls. A chit now also records **what the phone was doing**
+> (ADR-037), the stamp draws **one ranked ambient fact** rather than two (ADR-038), a fresh
+> install asks for location behind a screen of its own (ADR-041), and a chit is stamped when it
+> is **saved** rather than when it was opened (ADR-040). Weather and location are still fixed
+> fakes — M3's remaining groups are what take them out.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
@@ -94,10 +96,10 @@ Everything in the product follows from that:
 |---|---|
 | People write in bursts, not sessions | A chit is short. The composer is always open on the home screen. |
 | A day holds many chits | The home screen is a thread of today. |
-| Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready. |
+| Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready. **One exception, once:** a fresh install opens on a screen explaining what is captured, and asks (ADR-041). |
 | Speaking is often faster than typing | The composer is one surface: a live field, a microphone beside it. |
 | Speech gets names, places and code-switching wrong | Whatever the machine hears lands in the field, where it can be fixed. |
-| The moment matters as much as the words | Time, weather and location are captured with every chit. |
+| The moment matters as much as the words | Time, weather, motion and location are recorded with every chit. |
 | The habit survives on rhythm, not scores | Rhythm is shown as shape and colour; the app keeps no score. |
 
 ---
@@ -108,8 +110,10 @@ Everything in the product follows from that:
   context.
 - **the open chit** — a blank chit at the top of the home screen: a field ready to type in,
   with a microphone beside it. It becomes a record when the user saves it.
-- **the ambient stamp** — time, weather condition and a location marker, captured
-  automatically when a chit is opened.
+- **the ambient stamp** — the time, one ambient fact and a location marker, carried by every
+  chit. The time is read when the chit is **saved** (ADR-040); the weather, the motion and the
+  fix are read once at launch and again at each save, never in between (ADR-042). The stamp on
+  the open chit is a preview of what will be recorded.
 - **the thread** — a day's chits, in order, hanging off a vertical rail. A day reads as one
   continuous thing.
 - **the timeline** — a horizontal line under the date showing *when* chits landed, each mark
@@ -132,6 +136,7 @@ A chit is text, audio, or both:
 | `textOrigin` | `typed` \| `transcript` \| `transcriptEdited` — where the words came from |
 | `weather` | a condition word |
 | `location` | stored; surfaced in the UI only as the pin |
+| `motion` | what the phone was doing — `stationary`, `walking`, `traveling`, `flying`. Read off the same fix as `location` (ADR-037). Drawn as an icon, and `stationary` is not drawn at all |
 
 `text` and `audioPath` are independently nullable and **at least one of them is always
 present** — a chit with neither is not a chit, and is what §3.1 refuses to save.
@@ -211,7 +216,7 @@ lib/
 ├── core/          the design system, the clock, the BuildContext accessors
 ├── domain/        models and interfaces. Pure Dart; imports neither of the two below
 ├── data/          the implementations: Drift, files, network, platform plugins
-├── features/      one folder per screen — shell, today, composer, calendar, editor
+├── features/      one folder per screen — shell, today, composer, calendar, editor, onboarding
 └── shared/        widgets used by more than one feature
 ```
 
@@ -227,7 +232,8 @@ one table, the DAO, and `ChitRepository` — the interface in `domain`, the impl
 `data`, and `main.dart` the one place the two are allowed to meet.
 
 `lib/shared/widgets/` is the chit vocabulary: the slip and its tear edge, the ambient stamp
-row, the rail a day hangs off. They hold no state and read no provider — each takes what it
+row and the three motion marks it can draw, the rail a day hangs off, the wordmark, and the two
+button weights of §6.1. They hold no state and read no provider — each takes what it
 draws and nothing else, which is what lets a screen compose them freely.
 
 ### 10.3 The tests
@@ -252,16 +258,21 @@ some of it was real and could not come back.
 | `test/data/db/chits_table_test.dart` | The same invariant where it survives a release build — the table's check constraints, every one of them exercised by writing the row by hand, around the repository. Also that the primary key survived being declared beside them |
 | `test/data/chit_repository_test.dart` | **M1's statement of done.** All four legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, and `updateText` provably touching nothing but `text`, `textOrigin` and `updatedAt` |
 | `test/data/audio_store_test.dart` | ADR-008: a recording is moved rather than copied, its stored path is relative and uses forward slashes, discarding twice is not a failure, and the orphan sweep deletes what no chit claims |
-| `test/data/db/migration_test.dart` | DATA-MODEL.md §6: a database created at v1 is the v1 that was committed to `drift_schemas/`, the schema the code expects is the one `createAll()` writes, and bumping `schemaVersion` without dumping a snapshot beside it fails |
-| `test/domain/services/ambient_capture_test.dart` | ADR-007, clause by clause: the two signals go out **in parallel** rather than one after the other, each under its own timeout, and **a signal that does not arrive is null** — whether it hung, threw, or simply had nothing to say. Also ADR-021's half of it, by counting the clock reads: the stamp is the moment the chit opened, not the moment the network answered |
-| `test/domain/prompts_test.dart` | The prompt book of ADR-029, and two kinds of claim that fail differently. The **choice** — most specific first, the small hours treated as their own part of the day, stable for one chit and varied across chits, and never dependent on the machine's time zone. And the **copy**, which fails quietly: every prompt is a question, none of them shouts or instructs, nothing is said twice, and none is long enough to wrap the field |
+| `test/data/db/migration_test.dart` | DATA-MODEL.md §6: a database created at v1 is the v1 that was committed to `drift_schemas/`, the schema the code expects is the one `createAll()` writes, and bumping `schemaVersion` without dumping a snapshot beside it fails. **Since v2 it also runs a real migration**: v1 → v2 adds `chits.motion` (ADR-037), and a chit written at v1 comes through it readable with a null motion — which `migrateAndValidate` does not check, since it inspects the shape and not the rows |
+| `test/domain/services/ambient_capture_test.dart` | ADR-007, clause by clause: the two signals go out **in parallel** rather than one after the other, each under its own timeout, and **a signal that does not arrive is null** — whether it hung, threw, or simply had nothing to say. Since ADR-040 the time is no longer part of it; what is left is the half with the failure modes |
+| `test/domain/services/ambient_signals_test.dart` | **ADR-042, by counting.** *Captured twice and never in between* is invisible when it is wrong — an implementation that polled would pass every assertion about values in this repository and show up only as battery on somebody's phone. So this counts how many times the services were asked: reading the held value asks nothing, `prime` asks once, `refresh` asks again and replaces rather than merges |
+| `test/features/composer/composer_controller_test.dart` | **ADR-040's reversal**, which fails silently — a stamp taken at the wrong moment is still a plausible time, and only a clock moved across the save can tell. The row carries the save time and not the open time; a chit opened at 23:58 and saved at 00:05 lands on the *new* day; and ADR-042's half: the save returns without waiting on a capture that never comes back, and the patch that follows moves neither `createdAt` nor `updatedAt` |
+| `test/features/onboarding/first_run_controller_test.dart` | **ADR-041's one promise: the app asks once.** The claim a future change breaks silently, since re-asking every launch is annoying rather than broken. Every refusal settles it and none of them is an error; **Not now** never raises a dialog at all; a grant is what primes the launch capture; and the screen is never owed twice whichever button ended it |
+| `test/domain/prompts_test.dart` | The prompt book of ADR-029, and two kinds of claim that fail differently. The **choice** — most specific first, the small hours treated as their own part of the day, stable for one chit and varied across chits, and never dependent on the machine's time zone. And the **copy**, which fails quietly: every prompt is a question, none of them shouts or instructs, nothing is said twice, and none is long enough to wrap the field. Since ADR-037 it also holds the rung above weather: a chit opened on the move is asked about the move, and `stationary` is asked exactly what a chit with no motion at all is asked |
+| `test/domain/motion/motion_ladder_test.dart` | **ADR-037's arithmetic**, which is where M3's motion correctness lives. Every band and both sides of every floor; the altitude rule that keeps a 300 km/h train off an aeroplane; and the gate — a speed whose error is larger than itself degrades to `stationary`, so noise can slow a chit down and can never put a plane on one. Also the three ways a platform says *no reading*: null, negative and NaN |
+| `test/domain/ambient/ambient_fact_test.dart` | **ADR-038's ladder**, as the whole cross product rather than as chosen examples — four motion states against five conditions, plus the two null rows, each resolving to the rung the record names. A precedence bug is exactly what an example misses. It also pins the claim that made the change safe to ship: a chit written at a desk in the rain still reads `raining` |
 | `test/features/today/timeline_window_test.dart` | **The arithmetic the timeline rests on** (ADR-024): the window is three whole local days ending at the next midnight, an hour is the same width wherever it falls, and a moment outside it is `null` rather than clamped — which is the day arc's bug, where a chit at 00:20 and one at 5:00 landed on the same pixel. Also that the window slides at midnight, and that a chit falls off the far end when it does |
 | `test/features/today/timeline_providers_test.dart` | The seam between that arithmetic and the query under it, on a `ProviderContainer`: the strip asks for exactly the three days the window spans, it reads `todayProvider` rather than the clock a second time, and one save reaches both the strip and the thread — two queries over one table, and not two sources of truth |
 | `test/docs/readme_maps_everything_test.dart` | This section, and `DECISIONS.md`'s ADR index |
 | `test/docs/no_widget_tests_test.dart` | ADR-031, which is otherwise a rule in a file nobody has to read: no `testWidgets`, `pumpWidget` or `WidgetTester` anywhere under `test/`. The suite it replaced grew one reasonable-looking widget test at a time, which is how it would come back |
 | `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |
 | `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand. It also counts its reads, which is how ADR-021's *stamped when opened* is checked: when the clock was read is the thing that matters, and no assertion on the value can see it |
-| `test/data/db/generated/schema.dart`, `test/data/db/generated/schema_v1.dart` | Not suites — written by `drift_dev schema generate` from `drift_schemas/`, and read by the migration test. Generated, so excluded from analysis like any `*.g.dart` |
+| `test/data/db/generated/schema.dart`, `test/data/db/generated/schema_v1.dart`, `test/data/db/generated/schema_v2.dart` | Not suites — written by `drift_dev schema generate` from `drift_schemas/`, and read by the migration test. Generated, so excluded from analysis like any `*.g.dart` |
 
 The pattern, set in M0b and worth keeping: **a rule that fails silently gets a test that checks
 a property, not an example.** `chit_motion_test.dart` asserting "no fade is slower than it was"
@@ -299,7 +310,7 @@ variable rather than static cuts, and what it costs — weight has to be applied
 
 | File | |
 |---|---|
-| `drift_schemas/` | One JSON snapshot per schema version, taken with `drift_dev schema dump` and committed. `drift_schema_v1.json` is the shape that shipped as v1; **once a version has reached a real handset its snapshot is never edited** — DATA-MODEL.md §6 |
+| `drift_schemas/` | One JSON snapshot per schema version, taken with `drift_dev schema dump` and committed. `drift_schema_v1.json` is the shape that shipped as v1 and `drift_schema_v2.json` the one that added `chits.motion` (ADR-037); **once a version has reached a real handset its snapshot is never edited** — DATA-MODEL.md §6 |
 | [`analysis_options.yaml`](analysis_options.yaml) | The engineering principles of `CLAUDE.md` §4.1 in the form the machine can check: strict casts, inference and raw types; exhaustive switches and unawaited futures as errors; immutability and documentation rules. `riverpod_lint` runs inside `flutter analyze` through the `plugins:` key — no separate command, and `docs/PACKAGES.md` says why there cannot be one |
 | [`pubspec.yaml`](pubspec.yaml) | Dependencies and the font declarations. Every entry is justified in [`docs/PACKAGES.md`](docs/PACKAGES.md) |
 | `android/app/src/main/AndroidManifest.xml` | `RECORD_AUDIO`, both location permissions (ADR-016), `INTERNET`, and the `android.speech.RecognitionService` queries intent `speech_to_text` needs from targetSdk 30 |

@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/chit.dart';
+import '../../domain/models/motion_state.dart';
 import '../../domain/models/weather_condition.dart';
 import 'daos/chit_dao.dart';
 import 'tables/chits_table.dart';
@@ -28,19 +29,31 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.onDevice() : super(driftDatabase(name: 'chit'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   /// One `from → to` step per version, each tested against a checked-in
   /// schema snapshot in `drift_schemas/`.
   ///
   /// **The rule: once a version has shipped to a real handset, its step is
-  /// never edited** (DATA-MODEL.md §6). There is nothing to migrate yet, which
-  /// is exactly why the snapshot and the test around it are taken now — the
-  /// first migration is not the moment to find out the harness does not work.
+  /// never edited** (DATA-MODEL.md §6). v1 has shipped to a handset, so its
+  /// shape is settled and v2 adds to it rather than altering it.
+  ///
+  /// **v1 → v2 adds `chits.motion`** (ADR-037). Nullable and with no default,
+  /// so every row written before M3 answers `NULL` — which is exactly what a
+  /// chit opened indoors says today, and is not drawn either.
+  ///
+  /// **Nothing is backfilled.** There is no way to know what a phone was doing
+  /// last Tuesday, and a guess written into a row is indistinguishable from a
+  /// fact a month later.
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) => m.createAll(),
     onUpgrade: (Migrator m, int from, int to) async {
+      if (from == 1 && to == 2) {
+        await m.addColumn(chits, chits.motion);
+        return;
+      }
+
       throw StateError('no migration from v$from to v$to exists yet');
     },
   );

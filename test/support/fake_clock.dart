@@ -14,10 +14,11 @@ final class FakeClock implements Clock {
 
   /// How many times [now] has been asked since this clock was made.
   ///
-  /// ADR-021 turns on *when* the clock is read rather than on what it says: a
-  /// chit is stamped when it is opened, so a capture that reads the clock
-  /// again after a slow signal comes back would file the chit late. A value
-  /// assertion cannot catch that and a count can.
+  /// Some decisions turn on *when* the clock is read rather than on what it
+  /// says, and a value assertion cannot see the difference — two reads a
+  /// second apart both look like plausible times. ADR-033's midnight rollover
+  /// is the live example: Today must re-read the clock, and counting is the
+  /// only way to know that it did.
   int get reads => _reads;
 
   @override
@@ -28,7 +29,4 @@ final class FakeClock implements Clock {
 
   /// Moves the clock to [when].
   void moveTo(DateTime when) => _now = when;
-
-  /// Moves the clock forward by [by].
-  void advance(Duration by) => _now = _now.add(by);
 }

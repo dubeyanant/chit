@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/ambient_stamp.dart';
 import '../models/chit.dart';
 import '../models/day_summary.dart';
+import '../models/motion_state.dart';
+import '../models/weather_condition.dart';
 
 part 'chit_repository.g.dart';
 
@@ -59,6 +61,36 @@ abstract interface class ChitRepository {
     required String id,
     required String text,
     required TextOrigin textOrigin,
+  });
+
+  /// Corrects a chit's ambience after the row was written — **ADR-042**.
+  ///
+  /// A save writes immediately and re-reads the services behind it, so that
+  /// nothing about saving waits on a network call (ADR-040). This is where the
+  /// fresh answer lands, a moment later.
+  ///
+  /// **Touches the three ambient fields and nothing else.** `createdAt` and
+  /// `localDay` are not parameters, so a late signal cannot move a chit in the
+  /// thread, move its mark on the timeline, or move it to another day.
+  /// **`updatedAt` does not move either** — ADR-014 reserves that for a change
+  /// to the *text*, and a signal arriving two seconds late is not an edit
+  /// anybody made. That distinction is the whole reason this is a separate
+  /// method rather than an argument to [updateText].
+  ///
+  /// Every parameter is nullable and a `null` is written as `null`: this is the
+  /// whole reading replacing the whole reading, not a partial patch. A capture
+  /// that came back with nothing legitimately clears a value that the launch
+  /// capture had — the user walked indoors, and the pin should go.
+  ///
+  /// **Does nothing if no chit has that [id]**, rather than throwing. Unlike
+  /// [updateText], nobody is waiting on this and no screen can report it; a row
+  /// deleted between the write and the patch is an ordinary race, not a fault.
+  Future<void> updateAmbient({
+    required String id,
+    required WeatherCondition? weather,
+    required double? lat,
+    required double? lon,
+    required MotionState? motion,
   });
 
   /// One chit, or null. The editor of M6 opens on this.

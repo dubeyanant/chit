@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../domain/models/chit.dart';
+import '../../../domain/models/motion_state.dart';
 import '../../../domain/models/weather_condition.dart';
 
 /// The one table. DATA-MODEL.md §1.
@@ -61,6 +62,17 @@ class Chits extends Table {
 
   /// Longitude. Stored, never displayed.
   RealColumn get lon => real().nullable()();
+
+  /// What the phone was doing when the chit was opened, or `NULL` if no
+  /// usable speed arrived (ADR-037). Added in schema v2.
+  ///
+  /// **No index and no check constraint.** Nothing queries it — [Chits.weather]
+  /// is indexed because a backlog item wants it, and this has no such caller.
+  /// And `CHECK (motion IS NULL OR lat IS NOT NULL)` would be true today only
+  /// because motion happens to be read off the fix; that is a fact about this
+  /// milestone's implementation, not about what a chit is, and the other five
+  /// constraints below are all the second kind.
+  TextColumn get motion => textEnum<MotionState>().nullable()();
 
   /// When the text was last changed (ADR-014), as UTC milliseconds.
   IntColumn get updatedAt => integer()();

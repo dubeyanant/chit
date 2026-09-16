@@ -1,4 +1,5 @@
 import 'package:chit/domain/models/ambient_stamp.dart';
+import 'package:chit/domain/models/motion_state.dart';
 import 'package:chit/domain/models/weather_condition.dart';
 import 'package:chit/domain/prompts.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,11 +11,79 @@ import 'package:flutter_test/flutter_test.dart';
 /// **copy** fails quietly: a prompt that instructs rather than offers reads
 /// fine to whoever wrote it, and it is a different app by the tenth one.
 void main() {
-  AmbientStamp at(int hour, {WeatherCondition? weather, int minute = 0}) =>
-      AmbientStamp(
-        capturedAt: DateTime(2026, 9, 16, hour, minute),
-        weather: weather,
+  AmbientStamp at(
+    int hour, {
+    WeatherCondition? weather,
+    MotionState? motion,
+    int minute = 0,
+  }) => AmbientStamp(
+    capturedAt: DateTime(2026, 9, 16, hour, minute),
+    weather: weather,
+    motion: motion,
+  );
+
+  group('motion outranks the weather and the hour — ADR-037, ADR-038', () {
+    test('a chit opened on the move is asked about the move', () {
+      // The rain entry for an evening is the most specific thing that fits
+      // without motion. With it, the prompt should stop being about the sky.
+      final String words = Prompts.forStamp(
+        at(
+          19,
+          weather: WeatherCondition.raining,
+          motion: MotionState.traveling,
+        ),
       );
+
+      expect(words.toLowerCase(), isNot(contains('rain')));
+      expect(words, 'On the way home. How did the day go?');
+    });
+
+    test('each moving state has something of its own to ask', () {
+      for (final MotionState motion in <MotionState>[
+        MotionState.walking,
+        MotionState.traveling,
+        MotionState.flying,
+      ]) {
+        expect(
+          Prompts.forStamp(at(14, motion: motion)),
+          isNot(Prompts.forStamp(at(14))),
+          reason: '${motion.name} should not be asked the plain afternoon one',
+        );
+      }
+    });
+
+    test('stationary is asked exactly what a chit with no motion is asked', () {
+      // The claim that makes this safe to ship: the ordinary chit is
+      // unchanged. `stationary` is what most of them are, and there is nothing
+      // in the book for it.
+      for (final int hour in <int>[2, 8, 14, 19, 22]) {
+        expect(
+          Prompts.forStamp(
+            at(
+              hour,
+              weather: WeatherCondition.raining,
+              motion: MotionState.stationary,
+            ),
+          ),
+          Prompts.forStamp(at(hour, weather: WeatherCondition.raining)),
+          reason: '$hour:00',
+        );
+      }
+    });
+
+    test('a walk in the rain is asked about both', () {
+      expect(
+        Prompts.forStamp(
+          at(
+            14,
+            weather: WeatherCondition.raining,
+            motion: MotionState.walking,
+          ),
+        ),
+        "Walking in the rain. What's it like?",
+      );
+    });
+  });
 
   group('the choice is the most specific thing that fits', () {
     test('weather and the hour together beat either alone', () {

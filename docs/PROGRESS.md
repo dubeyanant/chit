@@ -6,8 +6,10 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 16 September 2026, **at the end of M2 and after it was signed off on a
-handset**. Today is a screen a person can use, and it has been used.
+**Last updated:** 16 September 2026, **part way into M3**. Motion is captured, stored, ranked,
+drawn and prompted on; a fresh install now asks for location behind a screen of its own; and a
+chit is stamped when it is **saved** rather than when it was opened. **None of it has been on a
+device yet.** The milestone's two real services are not written and the fakes are still wired in.
 
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s table is the
 ledger of what is done. What belongs here is the present: where the build is, what the next
@@ -23,15 +25,17 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 |---|---|---|
 | **M0a** — project stops being a scaffold | ✅ done | 14 Sep 2026 |
 | **M0b** — the design system in code | ✅ done | 14 Sep 2026 |
-| **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021 |
+| **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021, since **superseded by ADR-040** |
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
-| **M3** — ambient capture | ⬜ **next** | the two fakes come out. Cut into groups in [TASKS.md](TASKS.md) |
+| **M3** — ambient capture | 🔶 **in progress** | motion, first run and the capture lifecycle are done (A–F2); the two real services and the swap are not (G–K). [TASKS.md](TASKS.md) |
 | M4 — calendar | ⬜ | |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**232 tests, `flutter analyze` clean, `dart format` clean, debug APK builds.**
+**290 tests, `flutter analyze` clean, `dart format` clean, debug APK builds.** *But **nothing
+below marked 🔶 has been looked at on a screen.** Motion compiles, is tested, and cannot fire —
+the fakes carry no speed. The first-run screen has never been rendered.*
 
 ---
 
@@ -60,9 +64,10 @@ Below the thread the चित्त mark closes the day. An empty day reads *"N
 today."* with no rail and no count. Tapping *calendar* cross-fades to a placeholder line that M4
 deletes.
 
-*The weather word and the pin are fixed fakes until M3 and will always read `raining` at the
-Royal Observatory — that is `FixedWeatherService` and `FixedLocationService` doing their job,
-not a bug.*
+*The weather word and the pin are fixed fakes until M3's group J and will always read `raining`
+at the Royal Observatory — that is `FixedWeatherService` and `FixedLocationService` doing their
+job, not a bug. `FixedLocationService` carries no speed, so **motion is always absent on a
+handset today** and the stamp looks exactly as it did at the end of M2.*
 
 **Signed off on a handset, 16 September**, at the end of the milestone: the palette, the slip,
 the field, the stamp, Discard, the prompt, the thread, saving — including a long chit — the
@@ -73,6 +78,41 @@ tick, the empty-day trim, the tick at now in its final form, the haptic, and sav
 §4.1 asks for in as many words: *four chits in an hour look like a burst, because they are one.*
 That was tried on purpose and it reads. It is the first half of open item 15 — a dozen marks
 across three days is still untried.
+
+### 🔶 And since 16 September — built, not yet seen
+
+**Motion.** A chit records what the phone was doing: `stationary`, `walking`, `traveling` or
+`flying`, read off the speed of the same fix the pin uses (ADR-037). The stamp draws **one**
+ambient fact rather than two (ADR-038) — a ranked ladder, with a motion icon displacing the
+weather word when it outranks it, and `stationary` drawing nothing at all. The icon appears
+under saved chits in the thread as well, where the pin does not (ADR-039).
+
+**The ordinary chit is unchanged by all of it**, which is the claim the whole design rests on:
+at a desk in the rain the row still reads `8:46 pm   raining   ⌖`. That is asserted in
+`ambient_fact_test.dart` and in `prompts_test.dart`, and it is the first thing to confirm on a
+screen.
+
+`design/chit-app-v6.html` has the three marks and a **Motion** control in its tweaks panel —
+they were drawn there first and the app followed, which is the only reason they have a source.
+**Open it in a browser before judging them in Flutter.**
+
+**A first-run screen** (ADR-041). A fresh install opens on a page of chit's own furniture — the
+wordmark, a slip with its tear edge, **Allow** and **Not now** — explaining that a chit is
+stamped with the time, the weather, whether you were moving, and that a place was recorded, and
+that none of it leaves the phone. **Allow** raises the system location dialog; **Not now** raises
+nothing at all. Either spends the app's one ask, and neither is ever shown again. The microphone
+is not asked for: that is M5's, at the moment somebody taps it.
+
+**And the capture lifecycle changed under all of it.** Ambience is read **at launch and at save,
+never in between** (ADR-042) — no timer, no expiry, no refresh on resume — where it used to be
+read on every chit open. A chit is **stamped when it is saved** (ADR-040), which reverses ADR-021
+and makes the wrong-day case unreachable rather than defended against. Saving writes the row at
+once and patches the fresh reading in a moment later, so nothing about a save is behind a
+network call.
+
+**The visible consequence, and the thing to look for first:** the stamp on the open chit is now
+a **preview**. It shows the time the chit was opened, it does not tick, and a chit sat on for
+twenty minutes lands in the thread carrying a later time than the slip showed.
 
 ---
 
@@ -90,8 +130,8 @@ after this one, not only the one that introduced them.
 | Check | Why it is here |
 |---|---|
 | The keyboard does **not** come up on launch | ADR-023. Had a test; has none now |
-| A chit left open across a minute boundary saves at the time it was **opened** | ADR-021. The stamp is held, and a stale one looks exactly like a fresh one |
-| Discard, then read the stamp — it is the **new** time | ADR-026, same failure mode, opposite direction |
+| **🔶 A chit left open across a minute boundary saves at the time it was _saved_** | **ADR-040, the reversal.** This row is the old one inverted — it used to read *opened*. A stamp taken at the wrong moment is still a plausible time, so this is the only place it can be seen |
+| Discard, then read the stamp — it is the **new** time | The preview must not sit there showing a time that has passed (ADR-040) |
 | A phone left open across midnight rolls the date, the thread **and** the strip together | ADR-033. The one thing on this screen no test can drive |
 | The tear edge is holes in the pad, not a dotted border | DESIGN-LOG.md calls this load-bearing, and it is two characters of paint code from being wrong |
 | Switching tabs and back does not reset the field | ADR-011 — a fade, not a rebuild |
@@ -101,37 +141,52 @@ after this one, not only the one that introduced them.
 | The tick at now still reads as a position, not an object | ADR-036, and it took three attempts to get there |
 | The haptic fires once per day boundary, and is silent when a save scrolls the strip | ADR-034 |
 | Saving scrolls the strip to now, smoothly | §4.1 |
+| **🔶 A fresh install opens on the first-run screen; the second launch opens on Today** | ADR-041, the whole flow — and the thing a stale preference breaks silently |
+| **🔶 Refusing, then relaunching, does *not* ask again** | ADR-016 forbids nagging. Tested in a container; never seen against real `shared_preferences` |
+| **🔶 Refusing leaves an app that works and says nothing about it** | ADR-007. No pin, no motion, no placeholder, no apology |
+| **🔶 The first-run screen reads as chit, not as a system prompt** | It is the reason it exists instead of a bare dialog. Nothing on it is a new kind of object |
+| **🔶 Nothing at launch delays the first paint** | README §1, and why `prime()` runs from a post-frame callback and is never awaited |
+| **🔶 A chit appears in the thread instantly on Save, with the network off** | ADR-042 — the write is never behind a capture |
+| **🔶 At a desk in the rain the stamp is byte-for-byte what M2 signed off** | ADR-038's safety claim. If this moved, the ladder is wrong and everything below is moot |
+| **🔶 The three marks read at 12px beside 11.5px text, and weigh what the pin weighs** | ADR-039. They are strokes because an outline blobs at this size — that judgement has not been checked by eye |
+| **🔶 A walk produces the figure, and the weather word goes** | The displacement *is* the design. Needs group J and a walk outdoors |
+| **🔶 TalkBack / VoiceOver reads *Walking*, *Travelling*, *Flying*** | §6.4 — the mark is the whole of the fact, not an adornment beside it |
+| 🔶 Location refused → no pin **and** no motion, and nothing says so | ADR-007, and ADR-037's one real coupling: they are a single signal |
+| 🔶 The mark does not flicker between two states while a chit is open | The app captures at launch and at save, never in between (ADR-042) |
 
 ---
 
-## Next: M3 — ambient capture
+## Next: M3 — the two services, and the swap
 
-The fakes come out. [BUILD-PLAN.md](BUILD-PLAN.md) M3 has the statement of done and
-[TASKS.md](TASKS.md) is it cut into six groups, **A to F**. Start with A: four decisions, of
-which *when location permission is asked for* is the one that is genuinely open and that changes
-what group C builds. B — the WMO mapping — is pure and independent, so it is the thing to build
-while A is still being argued.
+Motion, first run and the capture lifecycle are finished (TASKS.md A–F2). **What is left is what
+M3 always was**, and it is gated on the **two** decisions still open in group F: the wind
+threshold with the `is_day` rule, and what a fresh install gets before it has ever had a fix.
 
-**M3 draws nothing.** Every surface it touches exists; what changes is what those surfaces say.
-The only new thing a user sees is a system permission dialog.
+**Group G — the WMO mapping — needs only the first of those**, and it is the thing to build
+next. It has a worked example sitting beside it: `domain/motion/motion_ladder.dart` is the same
+shape, the same layer, the same kind of table-driven test.
 
-What it inherits:
+Then H (`GeolocatorLocationService`), I (`OpenMeteoService`), J (the swap and the two deletions)
+and K (the doc loop).
 
-- **`FixedWeatherService` and `FixedLocationService` are two lines in `main.dart`.** M3 deletes
-  both files and changes those two lines; nothing above them moves. That was group D's whole
-  point and it should stay true.
-- **`WeatherService.currentCondition()` takes no position** — ADR-025. `OpenMeteoService` uses
-  the device's *last known* fix and answers `null` when there is not one. Giving it coordinates
-  would make the two signals sequential where ADR-007 promises parallel, and reversing it needs
-  a new record.
-- **ADR-007's shape is already in place**: both signals go out at once, each under its own
-  timeout, and a signal that does not arrive is null and is not drawn. M3 swaps implementations
-  in behind `AmbientCapture` and should not need to touch it.
-- **The WMO mapping is a pure function and belongs in `domain`**, unit-tested against a table of
-  codes — which under ADR-031 is exactly where the milestone's correctness should live.
-- **The permission flow is new surface**, and it is the first thing in the app that can ask the
-  user for something. §3.6 shows a pin and never a place name; ADR-016 stores a precise fix and
-  states the tension plainly. Neither changes.
+**Three things to carry into H**, all of which the work since M2 put there:
+
+- **`GeoFix` is a class now, not a record.** It carries `speed`, `speedAccuracy` and `altitude`
+  beside the coordinate, all nullable. `GeolocatorLocationService` fills them from `Position`
+  **untouched and unjudged** — the ladder in `domain` decides what they mean.
+- **`LocationService.requestPermission()` is already on the interface**, and the first-run screen
+  is already calling it. H implements it over geolocator; nothing above `data` changes.
+  **`currentFix()` must never raise a dialog** — a capture that could is a system prompt over a
+  chit somebody is writing.
+- **`Position.speedAccuracy` may be `0.0` for *unknown*.** `MotionLadder` reads zero as unknown,
+  which is the conservative reading; if a platform means it literally, motion sticks at
+  `stationary` forever and looks like a feature that does not work. **This is the single most
+  likely thing to be wrong about motion**, and nothing in the suite can settle it.
+
+**And one thing to do before any of that, because it costs ten minutes:** build the APK and look
+at it. Two of the three claims worth checking are available today even with the fakes in — that
+a fresh install opens on the first-run screen and the second launch does not, and that a chit
+sat on for a minute saves at the time it was *saved*. The rest waits for group J.
 
 ---
 
@@ -216,3 +271,44 @@ they are cited from other documents — so a closed item keeps its number and sh
 17. **`ChitMotion.loop` has no caller.** ADR-036 took the pulse off the strip, so nothing in the
     app loops. The rule is still right (ADR-027) and M5's record dot is its first user; this is
     here so that nobody deletes it as dead code in the meantime.
+18. **`Position.speedAccuracy` may mean *unknown* when it says `0.0`, and the ladder bets that
+    it does.** This is **the single most likely thing to be wrong about motion**, and nothing in
+    the suite can settle it — it is a fact about two platform implementations. `MotionLadder`
+    refuses to claim any state above `stationary` without a usable accuracy, and reads zero as
+    absent rather than as perfect, because the other reading inverts the gate exactly where it
+    matters. If a platform turns out to mean `0.0` literally, motion will be stuck at
+    `stationary` forever and look like a feature that simply does not work. **Check it in
+    TASKS.md group H**, against a real `Position`, before concluding anything else is broken.
+19. **The three motion marks have never been looked at, at 12px, by anyone.** They are drawn as
+    strokes rather than as silhouettes because an outlined plane's wings close into a blob under
+    a 1.22px stroke — that is reasoning, not evidence. The walking figure is the weakest of the
+    three and the most likely to need redrawing; it is four strokes and a circle in a 14-unit
+    box, and `design/chit-app-v6.html` is where to change it first. ADR-039 carries the cost.
+20. **`flying` will almost never fire, and that is expected rather than broken.** Most devices
+    disable GPS in airplane mode, so there is no fix, so there is no speed. The state is correct
+    when it does fire and it is cheap to keep. This is here so that a future session does not
+    spend a day debugging a state that was never going to appear — ADR-037 states it as a cost.
+    If it turns out to matter, the honest routes are a barometer (cabin pressure is a real
+    signal that survives airplane mode) or accepting it as a state that only shows up on the
+    rare flight with location services left on.
+21. **Nothing tunes the motion thresholds.** 0.7, 3.0 and 55 m/s and the 2000 m ceiling are
+    defensible arithmetic, not measurements — nobody has walked, driven or flown with this
+    build. The boundary most likely to read wrong in practice is `walking` against `traveling`
+    at 3.0 m/s: a cyclist and a car in heavy traffic both sit near it, and both are `traveling`
+    by design (ADR-037 refuses `cycling` because speed cannot defend it).
+22. **A refusal is a dead end, and a way back is owed.** ADR-041 spends the app's one permission
+    ask on the first-run screen and never asks again (ADR-016). There is no settings screen, so
+    an install that refused — or that tapped **Not now** — can only re-enable location through
+    the OS. That is the correct trade today and it stops being correct the moment there is
+    anywhere sensible to put a control. BEHAVIOUR.md §4.1's settings sketch is where it lands.
+23. **The preview on the open chit goes stale without bound.** ADR-042 captures at launch and at
+    save and never in between, so a phone left open all day draws the launch weather on the slip.
+    **No chit is ever recorded with it** — save re-reads — but a user could reasonably look at a
+    word that is six hours old. If that turns out to matter on a device, the smallest honest fix
+    is a refresh when the app returns to the foreground after a long absence, which is the option
+    ADR-042 considered and did not take.
+24. **The stamp's time does not tick.** It shows when the chit was opened and the row carries when
+    it was saved (ADR-040), so the two drift apart the longer a chit sits. A self-updating clock
+    was refused because it is an ambient loop (ADR-027, §6.4), and a clock re-read on every
+    rebuild would be unpredictable rather than merely stale. A middle option nobody has tried:
+    re-read the preview on the *first keystroke*, which is one event rather than a loop.

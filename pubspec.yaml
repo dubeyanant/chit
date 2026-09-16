@@ -43,6 +43,9 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
 
+  # First run: whether it has happened, and whether permission was refused for good — ADR-041
+  shared_preferences: ^2.3.3
+
   # Client-generated ids — ADR-004
   uuid: ^4.5.1
 

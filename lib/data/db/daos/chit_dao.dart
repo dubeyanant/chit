@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 
 import '../../../domain/models/chit.dart';
 import '../../../domain/models/day_summary.dart';
+import '../../../domain/models/motion_state.dart';
+import '../../../domain/models/weather_condition.dart';
 import '../app_database.dart';
 import '../tables/chits_table.dart';
 
@@ -124,6 +126,32 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
       body: Value<String?>(text),
       textOrigin: Value<TextOrigin?>(textOrigin),
       updatedAt: Value<int>(updatedAt.millisecondsSinceEpoch),
+    ),
+  );
+
+  /// Replaces the three ambient fields of one chit and nothing else — ADR-042.
+  ///
+  /// **`updatedAt` is not a parameter**, and that is the point rather than an
+  /// omission: ADR-014 makes it the moment the *text* last changed, and a
+  /// signal arriving two seconds after the insert is not an edit. Neither are
+  /// `createdAt` and `localDay`, so a late answer cannot move the chit.
+  ///
+  /// A `null` is written as `null` — this is the whole reading replacing the
+  /// whole reading, so a capture that came back empty legitimately clears what
+  /// the launch capture had put there. Returns the number of rows written:
+  /// 0 if [id] is unknown, which the repository treats as ordinary.
+  Future<int> updateAmbientOf({
+    required String id,
+    required WeatherCondition? weather,
+    required double? lat,
+    required double? lon,
+    required MotionState? motion,
+  }) => (update(chits)..where(($ChitsTable t) => t.id.equals(id))).write(
+    ChitsCompanion(
+      weather: Value<WeatherCondition?>(weather),
+      lat: Value<double?>(lat),
+      lon: Value<double?>(lon),
+      motion: Value<MotionState?>(motion),
     ),
   );
 

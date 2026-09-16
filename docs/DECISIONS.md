@@ -4,10 +4,11 @@ One record per decision that would be expensive to reverse. Each says what was c
 it was chosen over, and what it costs. Superseding a record means adding a new one, not
 editing the old one.
 
-Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-to ADR-024 on 15 September 2026, ADR-025 to ADR-036 on 16 September 2026. Thirty-four records,
-not thirty-six: **ADR-018 and ADR-030 have been merged away**, their numbers retired rather
-than reused, and the note below says where each one went.
+Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
+at its head — ADR-001 to ADR-020 on 14 September 2026, ADR-021 to ADR-024 on 15 September 2026,
+ADR-025 to ADR-042 on 16 September 2026. Thirty-nine records, not forty-two: **ADR-018, ADR-026
+and ADR-030 have been merged away**, their numbers retired rather than reused, and the note
+below says where each one went.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
 revise ADR-005 and sit beside it. The index is numerical.
@@ -33,12 +34,11 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-017 | The chit editor is a screen, and leaving it asks | settles §8.1 |
 | ADR-019 | Android and iOS only; the web folder stays | |
 | ADR-020 | Reducing motion never makes a fade slower | refines ADR-010 |
-| ADR-021 | A chit is stamped when it is opened, not when it is saved | what `createdAt` means, and which day a chit lands on |
+| ADR-021 | A chit is stamped when it is opened, not when it is saved | **superseded by ADR-040** — it is stamped when it is saved |
 | ADR-022 | The seal means now; a record is ink | refines ADR-010. v6 |
 | ADR-023 | The field is live, but it does not take focus | what opening the app costs |
 | ADR-024 | The day arc becomes the timeline | three days, full days, scrollable, proportional |
 | ADR-025 | The weather service takes no position | clarifies ADR-007 against ADR-016 — how the two signals stay parallel |
-| ADR-026 | Discard opens a new chit, and that means a new stamp | what §3.1's "empty state" means for `createdAt` |
 | ADR-027 | An ambient loop is not a pace | refines ADR-010 and ADR-020 — where a looping period lives |
 | ADR-028 | The caret is the platform's, and chit draws none | reverses group F's drawn caret; corrects ADR-027 |
 | ADR-029 | The prompt reads the stamp | extends §3.3 — which words, and what they may not do |
@@ -48,32 +48,43 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-034 | A day passing is a haptic | the boundaries are unlabelled by design; this is how they are noticed |
 | ADR-035 | Days with nothing in them are not drawn | narrows ADR-024 — the query stays three days, the strip may be one |
 | ADR-036 | Now is a tick, not a dot | reverses v6's outline, and the disc that replaced it. No pulse |
+| ADR-037 | Motion is read off the position fix, not off a motion sensor | an accelerometer cannot measure speed; a fix already carries it |
+| ADR-038 | The stamp carries one ambient fact, ranked | weather and motion share one slot; stationary is never drawn |
+| ADR-039 | Motion is an icon where weather is a word | and it is drawn in the thread, where the pin is not |
+| ADR-040 | A chit is stamped when it is saved | reverses ADR-021; absorbs ADR-026, whose number is retired |
+| ADR-041 | Permission is asked once, on first run, behind a screen of our own | not a bare dialog over a blank page |
+| ADR-042 | Ambience is captured at launch and at save, and never in between | no poll, no TTL; the row is written first and patched after |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
 row without a record.
 
 ### The numbers that are not in the table
 
-**Two records were merged away on 16 September 2026, and the numbering was left alone.** A
-citation is only worth having if it resolves, and roughly two hundred of them point into this
-file — so ADR-018 and ADR-030 are not reused, and this is where each one went:
+**Three records have been merged away, and the numbering was left alone.** A citation is only
+worth having if it resolves, and roughly two hundred of them point into this file — so ADR-018,
+ADR-026 and ADR-030 are not reused, and this is where each one went:
 
 - **ADR-018** — *`riverpod_lint` through `plugins:`, and no `custom_lint`* → **PACKAGES.md**,
   under *Considered and not taken*. It was a fact about how two packages resolve, not a decision
   about how the app is built, and it had a stale line deferring the `DateTime.now()` question to
   M0b — which M0b answered. All of it is in PACKAGES.md now, answer included.
+- **ADR-026** — *Discard opens a new chit, and that means a new stamp* → **ADR-040**, on
+  16 September 2026. Its entire argument was that a held stamp goes stale and files a chit on
+  the wrong day; ADR-040 stamps at save, so there is no interval for a stamp to go stale in and
+  the failure it guarded against cannot occur. Discard still opens a new chit — that behaviour
+  is stated in ADR-040 and in BEHAVIOUR.md §3.1 — but it is now honesty about a preview rather
+  than a correctness fix, and a record whose whole argument has been absorbed has stopped
+  earning its place (CLAUDE.md §0.1).
 - **ADR-030** — *A screen test gets a hand-written repository* → **ADR-031**, which superseded it
   a few hours after it was accepted. There are no screen tests any more, so the question it
   answered cannot arise; the finding underneath it — real I/O never completes inside a
   `testWidgets` body — is stated inside ADR-031, because it is a property of `flutter_test` that
   will catch somebody again.
 
-This was a one-time consolidation, not a new habit. **The rule is still the one at the top of
-this file**: superseding a decision means adding a record, not editing or deleting the one it
-replaces. A record only becomes a candidate for merging once the thing it decided no longer
-exists in the app at all, and merging it means moving what is still true into a named home and
-saying so here — never dropping it.
-
+**One record is superseded but still here.** ADR-021 — *a chit is stamped when it is opened* —
+was reversed by ADR-040 rather than absorbed by it. It was a real decision that was really
+tried, and a reversal is only legible beside the thing it reversed, so it keeps its number, its
+place and a header saying what happened to it.
 ---
 
 ## ADR-001 — Riverpod, with code generation
@@ -555,6 +566,12 @@ remember.
 
 ## ADR-021 — A chit is stamped when it is opened, not when it is saved
 
+> **Superseded by ADR-040 on 16 September 2026**, which reverses it: a chit is now stamped when
+> it is **saved**. The record stays because a reversal is only legible beside the thing it
+> reversed — and because the failure it created is the reason ADR-026 existed at all. What
+> follows is what was decided, not what the app does.
+
+
 **Decision.** `createdAt` is the moment the open chit was created — the same instant the ambient
 stamp was captured. `ChitRepository.save()` takes an `AmbientStamp` and stores its `capturedAt`;
 `localDay` is computed from that. The clock is read at save time for one thing only, `updatedAt`.
@@ -804,48 +821,6 @@ anyway.
 **Consequences.** `AmbientCapture` fires both calls at once and neither knows about the other.
 ARCHITECTURE.md §4.2 is corrected: it used to say weather and location *run in parallel*
 without saying how that was possible given the API, which is the gap this record fills.
-
----
-
-## ADR-026 — Discard opens a new chit, and that means a new stamp
-
-*16 September 2026. Settles what BEHAVIOUR.md §3.1's "empty state" means for the stamp.*
-
-**Decision.** **Discard** opens a fresh chit: the field empties *and* the ambient stamp is
-taken again, from the clock and the two services. The chit in front of the user after a discard
-was opened at the moment they discarded.
-
-**Over.** Emptying the text and keeping the stamp, which is the literal reading of §3.1 —
-*"Discard returns the open chit to its empty state"* — and the cheaper implementation.
-
-**Why.** ADR-021 makes the stamp the chit's `createdAt`, which decides where it lands in the
-thread, where its mark falls on the timeline, and which day it belongs to (ADR-006). Keeping
-the old stamp means a chit discarded at 3:42 and written at 4:10 is filed at 3:42 — and, at
-the edge, a chit discarded at 23:58 and written at 00:05 is filed **on the wrong day**, which
-is the exact failure ADR-006 exists to prevent.
-
-It also reads wrong on the screen with nothing hidden: the stamp at the top of a blank slip
-would say a time that has passed, while the user sits looking at an empty page.
-
-And the alternative reading holds up: §3.1's sentence is about what the *user* sees — a blank
-chit, nothing kept — and a blank chit that was just opened is exactly what the app is for.
-Nothing is lost by treating it as new, because nothing was saved.
-
-**Costs.**
-
-- **A discard costs a capture.** Every Discard asks the weather service and the location
-  service again. ADR-007 already makes that free of consequence — it cannot block, and it fails
-  to `null` — but it is a network call a user can trigger repeatedly by tapping Discard, and
-  M3's implementation should be as unbothered by that as the fakes are.
-- **It is one more thing that is invisible when it is wrong.** A stale stamp looks exactly like
-  a fresh one. This was checked by moving a fake clock across the discard; *that test went with
-  ADR-031's suite, and nothing replaced it.* On a device the only way to see it is to leave a
-  chit open across a minute boundary before discarding.
-
-**Consequences.** `ComposerController.discard()` is `state = _openChit()` rather than a
-`copyWith` that blanks the text — the same path the controller takes when it is first built, so
-there is one way for a chit to come into existence. BEHAVIOUR.md §3.1 now says which reading of
-"empty state" is meant.
 
 ---
 
@@ -1364,3 +1339,328 @@ argument: `--seal` marks what is live, and it does not need size as well.
 ticker and no `AnimationController`. DESIGN-SYSTEM.md §6.3's list of dimensions off the scale
 **returns to four** — the 11px ring was briefly the fifth and is not there any more — and §6.4's
 list of ambient loops loses the pulse at now.
+
+---
+
+## ADR-037 — Motion is read off the position fix, not off a motion sensor
+
+*16 September 2026. Adds a third ambient signal without adding a third call.*
+
+**Decision.** `MotionState` — `stationary`, `walking`, `traveling`, `flying` — is derived from
+the **speed already on the position fix** that BEHAVIOUR.md §3.6's pin needs. `GeoFix` carries
+`speed`, `speedAccuracy` and `altitude` beside its coordinate; `domain/motion/motion_ladder.dart`
+turns them into a state; `AmbientCapture` writes it onto the stamp. **No new package, no new
+permission, no new dialog, and no third signal.**
+
+**Over.** Reading the accelerometer or the gyroscope, and the platform activity-recognition APIs
+(`flutter_activity_recognition`, wrapping Android's `ActivityRecognitionClient` and iOS's
+`CMMotionActivity`).
+
+**Why.**
+
+*Neither an accelerometer nor a gyroscope can measure speed.* An accelerometer measures
+acceleration; recovering speed from it needs a double integration whose error compounds so fast
+that the result is useless within seconds. A gyroscope measures angular rate and says nothing
+about travel at all. What an accelerometer is genuinely good for is the periodicity of walking
+— and that still cannot separate a car from a train from a plane, because **that distinction
+is speed**. Speed comes from GPS Doppler, and it arrives on a fix we are already taking.
+
+*The activity-recognition APIs would cost a permission the app has no way to justify.* They want
+`ACTIVITY_RECOGNITION` on Android and Motion & Fitness on iOS — a second system dialog, against
+README §1's *opening the app costs nothing*. They also pull in Google Play Services, and the
+Flutter wrapper is stream-only with no one-shot query, which fights a model that captures once
+when a chit opens. They have no flying class regardless, so the speed ladder would have been
+needed anyway.
+
+*And it keeps ADR-007's shape exactly.* Two calls go out in parallel; one of them now yields two
+facts. Nothing waits longer, nothing new can fail, and a refused permission costs the pin and
+the motion together because they are one signal — which is the same coupling ADR-025 was careful
+to avoid between location and *weather*, and is correct here for the opposite reason.
+
+**The ladder.** 0.7 m/s and 3.0 m/s divide stationary from walking from travelling; 55 m/s with
+an altitude above 2000 m is flying, and 55 m/s without that altitude is a high-speed train and
+stays travelling. **An uncertain reading degrades to `stationary`**: claiming anything above it
+requires `speedAccuracy` no larger than `speed` itself — the error smaller than the thing
+measured — and `0.0` is read as *unknown* rather than as *perfect*, because some platforms
+report it for an accuracy they do not have. Noise can slow a chit down; it can never put a plane
+on one.
+
+**Costs.**
+
+- **No fix, no motion.** Indoors, with location refused, and in the first seconds after a cold
+  start there is no usable speed. That is an ordinary ADR-007 `null` and it is not drawn — so
+  most chits written at a desk carry no motion at all, which is the intended outcome and not a
+  degraded one.
+- **A stopped car reads `stationary`.** Correct rather than wrong, and not what a user sitting
+  in traffic might expect.
+- **`flying` will rarely fire.** Most devices disable GPS in airplane mode, and without a fix
+  there is no speed. The state is right when it fires and it will not fire often. Written here
+  rather than discovered in a bug report.
+- **No `running` and no `cycling`.** Speed cannot tell a cyclist at 20 km/h from a car in
+  traffic at 20 km/h, and a state the signal cannot defend is the mistake `WeatherCondition`
+  already refuses.
+- **The thresholds are untuned.** They are defensible arithmetic, not measurements. PROGRESS.md
+  carries the device checks.
+
+**Consequences.** `GeoFix` stops being a record and becomes a class — five fields want defaults
+and a record cannot give them. `chits.motion` arrives as schema v2, nullable, with **nothing
+backfilled**: there is no way to know what a phone was doing last Tuesday, and a guess written
+into a row is indistinguishable from a fact a month later. The column takes no index, because
+nothing queries it, and no `CHECK (motion IS NULL OR lat IS NOT NULL)` — that would be true
+today only because motion happens to be read off the fix, which is a fact about this
+implementation rather than about what a chit is.
+
+---
+
+## ADR-038 — The stamp carries one ambient fact, ranked
+
+*16 September 2026. What motion does to a row that was already full.*
+
+**Decision.** The ambient stamp shows the time, **one** ambient fact and the pin. Weather and
+motion **share** one slot, and `domain/ambient/ambient_fact.dart` ranks them: flying,
+travelling, raining, windy, walking, overcast, clear, clear night. `stationary` is stored and
+never drawn.
+
+**Over.** Giving motion its own slot beside the weather word, so a row could read
+`8:46 pm  raining  ✈  ⌖`.
+
+**Why.**
+
+*§3.6's spacing argument is a ceiling, not a preference.* The facts sit apart with no separators
+because *three items at 11.5px strung on middle dots is five things to read where there are
+three*. A fourth item does not survive that sentence — it is the same row, the same size, and
+one more thing on it.
+
+*The two are usually alternatives anyway.* Inside a vehicle the sky outside is no longer what
+you are in, and being in the air says more about a moment than the weather over the airport
+does. Where the weather is the better fact the ladder says so: rain outranks a walk, because
+you feel the weather while walking.
+
+*And the ordinary chit is unchanged, which is what makes it safe.* A chit written at a desk in
+the rain still reads `8:46 pm  raining  ⌖`, exactly as M2 signed it off. An icon appears only
+by **displacing** a word, and only when the phone was moving.
+
+**Costs.**
+
+- **Something true is not shown.** A chit written in a car in the rain records both and draws
+  one. Both are in the row, and the ladder decides — which is a real loss of information on
+  screen and an accepted one.
+- **The ranking is a judgement.** Whether rain should outrank a walk is arguable, and it is
+  arguable the other way for someone who walks in the rain often. It is one list in one file,
+  and it is tested as a cross product rather than as examples.
+
+**Consequences.** `AmbientFact` is a sealed type rather than a nullable pair, so the widget's
+switch is exhaustive with no `default:` and a sixth condition arrives as a compile error. The
+prompt book of ADR-029 takes the same ordering — motion outranks weather outranks the hour —
+because a chit opened on a train is somewhere, and asking it about the evening wastes the one
+thing that was unusual about the moment.
+
+---
+
+## ADR-039 — Motion is an icon where weather is a word, and it is drawn in the thread
+
+*16 September 2026. How the fourth signal is said, and where.*
+
+**Decision.** A motion state is drawn as an **icon**; a condition stays a **word**. The icon is
+drawn **under saved chits in the thread as well as on the open chit** — unlike the pin.
+
+**Over.** Giving motion words of its own (`in transit`, `on foot`), and keeping it to the open
+chit as §3.6 keeps the pin.
+
+**Why.**
+
+*A condition is recorded as a word because "raining" is a feeling; a motion state is a fact
+about the phone.* Every English word for it — *in transit*, *in vehicle*, *active* — reads like
+a fitness tracker, and §6.2 is not a voice that says `active`. Drawing it keeps the row to one
+word at most, which is also what ADR-038 needs.
+
+*The pin's argument reverses for motion.* §3.6 keeps the pin off the thread because **every**
+chit carries a location, so ten identical marks distinguish nothing. Motion is the opposite:
+almost no chit has one, so the two you wrote on a train stand out from the ten you wrote at
+home. Same argument, opposite outcome — and `stationary` drawing nothing is the same argument a
+third time, since it is what most chits are.
+
+*The icon takes the row's colour, not the pin's.* The pin is hard-wired `--ink-faint` because it
+is an adornment beside the words; a motion icon is standing in for the word it displaced, so it
+weighs what that word weighed — `--ink-muted` on the open chit, `--ink-faint` in the thread.
+
+**Costs.**
+
+- **An icon is guessed at, where a word is read.** There is no legend anywhere in the app. A
+  plane and a car are close to universal and a walking figure is the weakest of the three.
+- **They are drawn as strokes, not as silhouettes.** At the 12px this actually renders at, an
+  outlined plane's wings and a figure's limbs close into a blob under a 1.22px stroke. Three
+  lines that suggest a plane survive the size; a traced one does not — so these are sparser
+  marks than the pin is.
+- **The thread gains density** for the first time since M2 signed it off.
+
+**Consequences.** `lib/shared/widgets/motion_icon.dart` holds the three marks in the pin's own
+14-unit box at its own 1.42 stroke, so the row has one drawing weight rather than two. Each
+carries a `Semantics` label, which §6.4 requires of a mark that is the whole of a fact with no
+text beside it. The paths were designed in `design/chit-app-v6.html` first, which is where the
+pin's came from.
+
+---
+
+## ADR-040 — A chit is stamped when it is saved
+
+*16 September 2026. **Reverses ADR-021**, and absorbs ADR-026.*
+
+**Decision.** The clock is read when **Save** is pressed, and that reading becomes the chit's
+`createdAt` and its `localDay`. The stamp drawn on the open chit is a **preview** of what will
+be recorded, not the value that gets written.
+
+**Over.** ADR-021, which stamped a chit at the moment it was *opened* and passed that held stamp
+to the repository untouched.
+
+**Why.**
+
+*A chit is filed on the day it was actually saved, and the wrong-day case becomes impossible.*
+ADR-021 created a failure that ADR-026 then had to work around: a chit opened at 23:58 and
+written at 00:05 was filed on the previous day, which is the exact thing ADR-006 exists to
+prevent. ADR-026 patched it by re-opening the chit on **Discard** so the stamp could not go
+stale — a fix for one path out of two, since nothing re-opened a chit that was merely sat on.
+Stamping at save removes the whole class: there is no interval between the reading and the write
+for anything to go stale in.
+
+*The ambient signals want re-reading anyway.* ADR-042 has a save re-ask both services so a chit
+written at six in the evening does not carry the weather fetched at nine in the morning. Once
+the row is being built from fresh signals, building it from a stale *time* is the odd one out.
+
+*And what ADR-021 was protecting turns out to be smaller than it looked.* Its argument was that
+a chit belongs to the moment you started writing it. That is true of a chit written in ten
+seconds, which is nearly all of them — and in that case the two readings are the same to the
+minute the stamp displays. Where they differ, the chit was sat on, and *the moment you finished*
+is at least as defensible as *the moment you began*.
+
+**Costs.**
+
+- **The stamp on the slip is a preview, and can disagree with the record.** Sit on a chit for
+  twenty minutes and the thread shows a later time than the slip did. This is the real cost and
+  it is the one thing ADR-021 got right.
+- **The preview does not tick**, so it drifts further from the truth the longer a chit is open.
+  A self-updating clock would be an ambient loop, and ADR-027 and §6.4 have ruled on those; a
+  time that redrew itself on every rebuild would be worse, because it would be unpredictable
+  rather than merely stale.
+- **It cannot be seen to be wrong.** A stamp taken at the wrong moment is still a perfectly
+  plausible time. Only a test that moves a clock across the save can tell, which is why
+  `composer_controller_test.dart` does exactly that — the same argument ADR-021's test made,
+  pointing the other way.
+
+**Consequences.** `AmbientCapture` no longer holds a `Clock`; the clock is read where a time is
+used. `ComposerController.save` builds the stamp itself. **ADR-026 is merged into this record
+and its number retired** — *Discard opens a new chit* is still what happens, but it is now
+honesty about a preview rather than the load-bearing correctness fix it was, and a record whose
+entire argument has been absorbed is a record that has stopped earning its place (CLAUDE.md
+§0.1). ADR-021 is **superseded** rather than retired: it was a real decision that was really
+reversed, and the reversal is only legible beside it.
+
+---
+
+## ADR-041 — Permission is asked once, on first run, behind a screen of our own
+
+*16 September 2026. Settles the first of M3's four open decisions.*
+
+**Decision.** A fresh install opens on a **first-run screen** — chit's own, full-screen, shown
+once in the life of an install — which explains what is captured and why. **Allow** raises the
+system location dialog; **Not now** raises nothing. Either way the screen is never shown again
+and the app never asks a second time.
+
+Only **location** is requested. The microphone waits for M5 and is asked for when the microphone
+is first tapped.
+
+**Over.** Raising the system dialog on first chit open, on first save, or never proactively —
+the three candidates TASKS.md listed. And over asking for every permission the app will ever
+want, microphone included, in one pass at launch.
+
+**Why.**
+
+*A bare system prompt asks for a permission without saying what it buys.* The honest answer —
+*so that a chit can remember what the weather was* — is not something Android or iOS will say on
+our behalf, and the dialog appears over a blank page on a screen the user has not seen yet. A
+screen of ours can make the case, and the platform's dialog then arrives as a confirmation of
+something already agreed to.
+
+*Asking in context sounds better than it is, here.* The in-context moment would be the first
+chit open — which is also the moment README §1 promises costs nothing, and §3.1 promises that
+six opens leave nothing behind. A system dialog over the open chit is a cost on exactly the path
+that is supposed to be free.
+
+*The microphone is not ambience.* Asking for it at launch means asking for a control this build
+does not yet have. That is the kind of request that erodes the trust the screen exists to build,
+and it draws store scrutiny for a feature the user cannot reach.
+
+**Costs.**
+
+- **README §1's *opening the app costs nothing* gains an exception**, and the README says so
+  rather than quietly meaning something narrower. It is one screen, once.
+- **`shared_preferences` becomes a dependency**, and `main()` gains the one `await` before
+  `runApp`. It is a local read of two booleans; the database and both services stay lazy behind
+  it. Without it the router opens on Today and jumps a frame later.
+- **A refusal is a dead end.** There is no settings screen to re-enable from, so the only way
+  back is the OS. That is the price of ADR-016's no-nagging rule, and a settings path is owed.
+- **The screen is shown before the app is.** A first impression that is not Today.
+
+**Consequences.** `LocationService` gains `requestPermission()` and a
+`LocationPermissionOutcome`, so `features` can put a dialog on screen without importing
+geolocator. The first-run screen is a **top-level route, not a `ChitRoute`** — that enum is the
+list the tab bar is built from, and a third constant in it would be a third tab. The launch
+capture of ADR-042 is skipped on a fresh install and primed by **Allow** instead, because
+capturing before the screen has explained itself is how a system dialog appears over a blank
+page.
+
+---
+
+## ADR-042 — Ambience is captured at launch and at save, and never in between
+
+*16 September 2026. Settles the second of M3's four open decisions — the cache.*
+
+**Decision.** The three best-effort signals are read **twice**: once at launch, fired after the
+first frame and never awaited, and again when a chit is **saved**. There is no timer, no
+time-to-live, and **no refresh when the app returns to the foreground**.
+
+A save **writes the row immediately** with whatever is held, starts the fresh read beside it,
+and **patches the row** when it lands.
+
+**Over.** Capturing on every chit open, which is what M2 did; and a time-to-live or a
+resume-triggered refresh, which is what a cache normally means.
+
+**Why.**
+
+*Capturing per chit open was the thing ADR-026 warned about.* Four taps of **Discard** made four
+network calls and four location fixes. ADR-026 asked for an implementation "as unbothered by
+that as the fakes are" without saying how; this is how. Nothing is asked unless a chit is
+actually written.
+
+*The two moments that matter are the two that are kept.* Launch is when the open chit needs
+something to draw. Save is when a value is committed to a row that will outlive the session.
+Every other moment is a poll, and a poll spends battery and data on a word that nobody has asked
+to see.
+
+*Writing first and patching after is the only way to have both.* A fresh read costs up to
+ADR-007's two seconds, and ADR-007 forbids putting that in front of the user. Waiting would put
+it behind the Save button. Not re-reading would leave a chit written at six in the evening
+carrying the weather from nine in the morning. So the row goes out at once and is corrected a
+moment later — and because §3.6 draws nothing for a `null`, the correction is usually invisible.
+
+**Costs.**
+
+- **The preview goes stale, without bound.** A phone open all day draws the launch weather on
+  the open chit. No chit is ever *recorded* with it, because save re-reads — the staleness is
+  confined to the screen, which is the right place for it, but it is real and a user could
+  notice a word that is hours out of date.
+- **A chit can change in the thread a beat after it appears.** At worst one word arrives or
+  swaps. Most chits carry no motion and many carry no weather, so most of the time nothing moves.
+- **A second write per save.** One extra `UPDATE` against a local SQLite file, off the path the
+  user is on.
+- **`updatedAt` does not move when the patch lands**, which is a rule somebody will later
+  mistake for a bug. ADR-014 makes `updatedAt` the moment the *text* last changed, and a signal
+  arriving two seconds after the insert is not an edit anybody made — OPEN-QUESTIONS.md §8.2's
+  re-transcription is the thing that would be misled if it did.
+
+**Consequences.** `AmbientSignals` in `domain/services` holds the reading for the life of the
+process and owns the *when*; `AmbientCapture` keeps the *what* and loses its clock and its
+`open()`/`settle()` pair. `ChitRepository.updateAmbient` is a separate method from `updateText`
+precisely so that the `updatedAt` rule above is expressed in the type rather than remembered. It
+**does not throw on an unknown id**: nobody is waiting on it and no screen could report it, so a
+row deleted between the write and the patch is an ordinary race.

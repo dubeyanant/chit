@@ -5,6 +5,7 @@ import '../../core/clock.dart';
 import '../../domain/models/ambient_stamp.dart';
 import '../../domain/models/chit.dart';
 import '../../domain/models/day_summary.dart';
+import '../../domain/models/motion_state.dart';
 import '../../domain/models/weather_condition.dart';
 import '../../domain/repositories/chit_repository.dart';
 import '../audio/audio_store.dart';
@@ -89,6 +90,7 @@ final class ChitRepositoryImpl implements ChitRepository {
       weather: stamp.weather,
       lat: stamp.lat,
       lon: stamp.lon,
+      motion: stamp.motion,
     );
 
     await _dao.insertRow(
@@ -104,6 +106,7 @@ final class ChitRepositoryImpl implements ChitRepository {
         weather: Value<WeatherCondition?>(chit.weather),
         lat: Value<double?>(chit.lat),
         lon: Value<double?>(chit.lon),
+        motion: Value<MotionState?>(chit.motion),
       ),
     );
 
@@ -135,6 +138,26 @@ final class ChitRepositoryImpl implements ChitRepository {
     if (written == 0) {
       throw StateError('no chit with id $id');
     }
+  }
+
+  @override
+  Future<void> updateAmbient({
+    required String id,
+    required WeatherCondition? weather,
+    required double? lat,
+    required double? lon,
+    required MotionState? motion,
+  }) async {
+    // No `written == 0` check, and no throw. Unlike `updateText` there is
+    // nobody waiting on this and no screen that could report it — a row gone
+    // between the insert and the patch is an ordinary race (ADR-042).
+    await _dao.updateAmbientOf(
+      id: id,
+      weather: weather,
+      lat: lat,
+      lon: lon,
+      motion: motion,
+    );
   }
 
   @override
@@ -189,5 +212,6 @@ final class ChitRepositoryImpl implements ChitRepository {
     weather: row.weather,
     lat: row.lat,
     lon: row.lon,
+    motion: row.motion,
   );
 }
