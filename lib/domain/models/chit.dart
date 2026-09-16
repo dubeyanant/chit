@@ -127,6 +127,23 @@ abstract class Chit with _$Chit {
   static int localDayOf(DateTime when) =>
       when.year * 10000 + when.month * 100 + when.day;
 
+  /// Midnight at the start of the local day [when] belongs to, or [offsetDays]
+  /// whole local days from it.
+  ///
+  /// The boundary form of [localDayOf], and here for the same reason: the two
+  /// have to agree about where a day starts, and they only do that reliably by
+  /// being one piece of arithmetic. `startOfLocalDay(t)` is the first instant
+  /// `localDayOf` answers with `localDayOf(t)`.
+  ///
+  /// [offsetDays] goes through the constructor rather than a [Duration], so it
+  /// is **whole local days and not multiples of 24 hours**. Across a daylight
+  /// saving change those differ by an hour, and a window built out of
+  /// `subtract(Duration(days: 2))` would start at 23:00 or 01:00 of the right
+  /// day — which is the same class of bug ADR-006 exists to prevent, arriving
+  /// from the other end.
+  static DateTime startOfLocalDay(DateTime when, {int offsetDays = 0}) =>
+      DateTime(when.year, when.month, when.day + offsetDays);
+
   /// The three signals of BEHAVIOUR.md §3.6, as the one row they are drawn as.
   AmbientStamp get stamp =>
       AmbientStamp(capturedAt: createdAt, weather: weather, lat: lat, lon: lon);

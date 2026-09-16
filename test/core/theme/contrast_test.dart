@@ -272,6 +272,66 @@ void main() {
     });
   });
 
+  group('the timeline, which is all non-text components on paper', () {
+    // M2 group I. Everything the strip draws is a mark, a line or a tick — a
+    // non-text UI component, so the floor is 3:1 rather than 4.5:1 — except the
+    // word "now", which is text and takes the higher one. §6.4.
+    const double component = 3;
+
+    test('a chit mark is visible as a component, not just as a tint', () {
+      // --ink-faint carries the marks and the day boundaries. It already has
+      // to clear 4.5:1 as text on two surfaces, so this passes with room; it is
+      // here so that tuning the token for text cannot quietly take the strip
+      // below the component floor on the way.
+      expect(
+        contrastRatio(colors.inkFaint, colors.paper),
+        greaterThan(component),
+      );
+    });
+
+    test('the tick at now clears the floor it is held to', () {
+      // ADR-036: a non-text component in --seal on --paper. The accent fails as
+      // *text* on a chit (4.09:1, which is why --seal-ink exists) and that has
+      // nothing to say about it as a mark on the ground.
+      expect(contrastRatio(colors.seal, colors.paper), greaterThan(component));
+    });
+
+    test('the word "now" is text, and takes the text floor', () {
+      // Which is why the cap is --seal-ink and the tick under it is --seal.
+      // One is read and the other is seen, and §6.1 keeps the two apart.
+      expect(contrastRatio(colors.sealInk, colors.paper), greaterThan(4.5));
+    });
+
+    test('the accent does NOT out-contrast ink on paper — so shape carries it', () {
+      // Found by writing the opposite assertion and watching it fail, which is
+      // the M0b pattern paying for itself again.
+      //
+      // --seal measures 4.56:1 on --paper and --ink-faint measures 5.08:1. The
+      // tick at now is, in pure luminance, *quieter* than the chit marks around
+      // it. What separates it is hue, and hue alone is exactly what §6.4 will
+      // not let a signal rest on.
+      //
+      // So the tick is **taller and thinner than a mark** (ADR-036), and that
+      // is not a stylistic choice — it is the non-colour difference that makes
+      // the accent legible as a distinct thing. A future marker that matched a
+      // mark's shape and differed only in colour would pass every ratio in this
+      // file and still be wrong.
+      expect(
+        contrastRatio(colors.seal, colors.paper),
+        lessThan(contrastRatio(colors.inkFaint, colors.paper)),
+        reason: 'if this ever reverses, the note above is stale — rewrite it',
+      );
+      expect(contrastRatio(colors.seal, colors.paper), closeTo(4.56, 0.01));
+      expect(contrastRatio(colors.inkFaint, colors.paper), closeTo(5.08, 0.01));
+    });
+
+    test('the line is a hairline on paper, and stays drawn', () {
+      // The strip's line is --hair on --paper and doubles as the rule under the
+      // date (§4.1), so it is the one structural line on the screen.
+      expect(contrastRatio(colors.hair, colors.paper), greaterThan(1.03));
+    });
+  });
+
   group('a press shows, even when the movement does not', () {
     // Under reduced motion the 0.985 depress is gone (§6.4), so a pressed
     // wash is the whole acknowledgement. Each of these has to be visible

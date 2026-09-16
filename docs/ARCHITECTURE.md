@@ -87,7 +87,7 @@ lib/
 │   ├── shell/                      bottom tab bar, the two tabs
 │   ├── today/
 │   │   ├── application/            today_controller.dart, timeline_provider.dart
-│   │   └── presentation/           today_screen.dart, widgets/day_thread.dart
+│   │   └── presentation/           today_screen.dart, widgets/{day_thread,timeline}.dart
 │   ├── composer/
 │   │   ├── application/            composer_controller.dart, recording_controller.dart
 │   │   └── presentation/           open_chit.dart, recording_sheet.dart
@@ -149,9 +149,9 @@ decision is unchanged — nothing calls `DateTime.now()` — only its file path 
 | Kind | Example | Lifetime |
 |---|---|---|
 | Infrastructure | `routerProvider`, `appDatabaseProvider`, `chitRepositoryProvider`, the services | `@Riverpod(keepAlive: true)` |
-| Stream of truth | `todayChitsProvider`, `daySummariesProvider` | auto-disposed; Drift re-emits on subscribe |
-| The clock, once | `todayProvider`, `todayLocalDayProvider` | auto-disposed; **one read of the clock per screen** — see below |
-| Derived | `timelineMarksProvider`, `monthHeatProvider` | auto-disposed; pure functions of the above |
+| Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `daySummariesProvider` | auto-disposed; Drift re-emits on subscribe |
+| The clock, once | `todayProvider`, `todayLocalDayProvider`, `timelineQueryWindowProvider` | auto-disposed; **one read of the clock per screen** — see below |
+| Derived | `timelineWindowProvider`, `monthHeatProvider` | auto-disposed; pure functions of the above |
 | Screen state | `composerControllerProvider`, `selectedDateProvider` | auto-disposed |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** That is
@@ -275,6 +275,39 @@ to break in a text controller:
 never a value of `text` — which now matters more than it did, because `text` is bound to an
 editable field: a note written there is a note the user has to delete before they can write.
 Placeholder text has the same problem in a milder form and is the tempting shortcut here.
+
+### 4.1a The timeline is three providers, and only one of them touches the database
+
+ADR-024, ADR-032, ADR-035. The strip is the one thing on Today whose shape depends on its own
+answer, so it is deliberately three steps rather than one:
+
+```
+todayProvider ──► timelineQueryWindowProvider ──► timelineChitsProvider ──┐
+  (the clock,          (three whole local days,       (watchDayRange,     │
+   read once)           ADR-006 boundaries)            oldest first)      │
+                                │                                         │
+                                └──────────► timelineWindowProvider ◄──────┘
+                                              (what is drawn: the query
+                                               window trimmed to the
+                                               oldest chit in it)
+```
+
+**The query window and the drawn window cannot be one provider.** What is drawn depends on what
+came back, and what came back depends on what was asked for; a single provider would have to
+watch its own result. Splitting them also keeps the query honest: it stays three days wide
+however little is drawn, so the strip can grow backwards as soon as there is anything back
+there to grow into (ADR-035).
+
+**`TimelineWindow` is a plain value with no Flutter and no Riverpod in it**, and every question
+about *where* is answered on it — `fractionOf`, `dayBoundaries`, `dayAt`, `trimmedTo`. That is
+ADR-031 applied where it bites: under a no-widget-test rule, correctness has to live somewhere
+a test can reach without building anything, so the widget is left with layout and gestures and
+nothing to be wrong about.
+
+**The widget owns two pieces of state and no more**: the `ScrollController`, and which day was
+last under the middle of the viewport (for ADR-034's haptic). Resting at now is computed from
+the scroll position rather than stored, so nothing has to be invalidated when the window changes
+shape underneath it.
 
 ### 4.2 Ambient capture
 

@@ -9,11 +9,15 @@ part 'chit_dao.g.dart';
 
 /// Every query the screens run. DATA-MODEL.md §4.
 ///
-/// Three queries behind six readings: the thread and the day arc are one
-/// query, the calendar's density and its month summary are one more, and the
-/// archive is the third. That is the mechanism behind DESIGN-SYSTEM.md §7's
-/// requirement that the two tabs never disagree — they are not kept in step,
-/// they are the same data.
+/// Four queries behind six readings: the thread reads one day, the timeline
+/// reads three (ADR-024), the calendar's density and its month summary are one
+/// more between them, and the archive is the fourth. That is the mechanism
+/// behind DESIGN-SYSTEM.md §7's requirement that the two tabs never disagree —
+/// they are not kept in step, they are the same data.
+///
+/// *It was three until ADR-024 widened the strip under the date from one day to
+/// three; the thread and the timeline can no longer be one query, and
+/// DATA-MODEL.md §4 records that as a cost of the decision.*
 ///
 /// Reads return rows. Turning a row into a [Chit] is the repository's job, and
 /// so is deciding what goes into one — a caller that writes here directly can
@@ -23,12 +27,37 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
   /// A DAO over [db].
   ChitDao(super.db);
 
-  /// One day's chits, newest first. Today's thread and today's arc.
+  /// One day's chits, newest first. Today's thread.
   Stream<List<ChitRow>> watchDay(int localDay) =>
       (select(chits)
             ..where(($ChitsTable t) => t.localDay.equals(localDay))
             ..orderBy(<OrderClauseGenerator<$ChitsTable>>[
               ($ChitsTable t) => OrderingTerm.desc(t.createdAt),
+            ]))
+          .watch();
+
+  /// Every chit between [fromDay] and [toDay], inclusive, **oldest first**.
+  ///
+  /// The timeline, and the one query that reads more than a day (ADR-024).
+  /// Ascending where [watchDay] is descending, because this is read left to
+  /// right along a line rather than down a thread — and a caller that wants it
+  /// the other way is asking for a different screen, not a different sort.
+  ///
+  /// It filters on `localDay` rather than on a `createdAt` range so the
+  /// window is the same local-calendar window the thread and the calendar use
+  /// (ADR-006). A millisecond range over `createdAt` would include a chit
+  /// written at 23:59 on the day before the window in a timezone that has
+  /// since moved, and would not use the index.
+  Stream<List<ChitRow>> watchDayRange({
+    required int fromDay,
+    required int toDay,
+  }) =>
+      (select(chits)
+            ..where(
+              ($ChitsTable t) => t.localDay.isBetweenValues(fromDay, toDay),
+            )
+            ..orderBy(<OrderClauseGenerator<$ChitsTable>>[
+              ($ChitsTable t) => OrderingTerm.asc(t.createdAt),
             ]))
           .watch();
 

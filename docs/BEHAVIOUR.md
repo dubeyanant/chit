@@ -212,9 +212,21 @@ DESIGN-SYSTEM.md §6.2.
 
 **The timeline.** A horizontal line carrying a mark for every chit, each one where its time
 actually falls — four chits in an hour look like a burst, because they are one. It runs
-**midnight to midnight** and covers **today and the two days before it**, it **scrolls**
+**midnight to midnight** and covers **today and up to the two days before it**, it **scrolls**
 horizontally, and it rests at now. Saving puts a mark at the current time and the timeline
 scrolls smoothly to it.
+
+**One day is one screen**, so scrolling back a screen is scrolling back a day, and now rests in
+the middle of the viewport wherever that leaves it — which for most of the day means the screen
+is today, and in the small hours means yesterday evening is beside this morning (ADR-032).
+
+**Nothing on the strip moves.** No pulse, no blink, no drift; it changes when a chit is saved
+and when the day turns, and not otherwise.
+
+**Days with nothing written in them are not drawn at the front** (ADR-035). A strip never opens
+on a stretch that was never written in: on a first run it is today alone and does not scroll,
+and it grows backwards as there is something back there to grow into. A quiet day *between* two
+days that have something is still drawn, and still reads as quiet.
 
 *It was the **day arc** until 15 September 2026: one day, 5am to midnight, fixed width.* That
 window left out the five hours ADR-006 works hardest to protect — a chit written at 00:20
@@ -228,11 +240,25 @@ at three days and will know it without being told, and someone who never looks a
 nothing. Naming each day would turn a rhythm signal into a second calendar, and §4.2 is already
 that.
 
+**And a day passing can be felt.** Scrolling a boundary past the middle of the screen gives one
+small haptic, the way a picker does when a detent goes by (ADR-034). It is the same decision as
+the mark: the boundary is worth noticing and not worth reading, and a haptic costs no ink, no
+label and no space. It is feedback for a gesture, so the strip is silent when it scrolls itself
+after a save.
+
 This is the question ADR-024 left open and it is answered here, which is where that record said
 the answer would go.
 
-The timeline's marks are **ink**, not accent; only the ring at `now` is `--seal`. A row of
+The timeline's marks are **ink**, not accent; only the marker at `now` is `--seal`. A row of
 orange marks made every past moment look as live as the present one (ADR-022).
+
+That marker is a **short vertical tick through the line** — thin, and taller than a mark, so it
+reads as a position rather than as an object sitting on the strip. It is the same shape as the
+day boundary below the line, and the colour is the whole of the difference. *v6 draws a ring
+here, and this section used to say a chit saved at the current time places its mark inside it —
+"now, with something written in it". At 11px on a handset the two read as separate shapes, and
+filling the ring to fix that made it the loudest thing on a quiet screen.* ADR-036 has both
+attempts and what each cost.
 
 **There is no settings control.** The prototype draws a gear in the top row and gives it
 nothing to do; v1 has no settings screen anywhere in §3 or §4. §6.4 says a control that does
@@ -246,9 +272,9 @@ The चित्त mark closes the day at the foot of the thread. It appears th
 wordmark, and nowhere else — *v5 also repeated it at the foot of the calendar*, which made a
 closing mark into a page decoration.
 
-Saving puts the chit's mark on the timeline straight away, so it is a running account of
-the day rather than a snapshot of how it started. A chit saved at the current time places its
-mark inside the now ring — now, with something written in it.
+Saving puts the chit's mark on the timeline straight away, so it is a running account of the day
+rather than a snapshot of how it started. A chit saved at this instant lands behind the tick at
+now, which is thin enough to leave most of it showing.
 
 Before anything is written, the thread reads *"Nothing written yet today."* and the count
 beside **earlier** is omitted. There is no rail and no placeholder row; an empty day looks

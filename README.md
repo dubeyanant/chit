@@ -28,12 +28,11 @@ Then read what that milestone points at, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
-> **Status:** in build. M0 and M1 are done — the project is configured, the design system is in
-> code as four theme extensions against the v6 prototype, and the data spine is in place: one
-> table, the one-of invariant held in three places, and a repository with the update path of
-> ADR-014 from the start.
-> **M2, Today with text only, is in progress** — a chit can be typed, saved and read back in
-> the thread; the timeline is what is left.
+> **Status:** in build, and **M2 is done** — Today is a screen a person can use. A chit can be
+> typed, saved and read back in the thread after a restart; the strip above it carries a mark
+> for every chit where its time falls, across up to three days; the five-second prompt reads
+> the ambient stamp. Weather and location are still fixed fakes.
+> **M3 — ambient capture — is next**, and it is where those two fakes come out.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
@@ -256,6 +255,8 @@ some of it was real and could not come back.
 | `test/data/db/migration_test.dart` | DATA-MODEL.md §6: a database created at v1 is the v1 that was committed to `drift_schemas/`, the schema the code expects is the one `createAll()` writes, and bumping `schemaVersion` without dumping a snapshot beside it fails |
 | `test/domain/services/ambient_capture_test.dart` | ADR-007, clause by clause: the two signals go out **in parallel** rather than one after the other, each under its own timeout, and **a signal that does not arrive is null** — whether it hung, threw, or simply had nothing to say. Also ADR-021's half of it, by counting the clock reads: the stamp is the moment the chit opened, not the moment the network answered |
 | `test/domain/prompts_test.dart` | The prompt book of ADR-029, and two kinds of claim that fail differently. The **choice** — most specific first, the small hours treated as their own part of the day, stable for one chit and varied across chits, and never dependent on the machine's time zone. And the **copy**, which fails quietly: every prompt is a question, none of them shouts or instructs, nothing is said twice, and none is long enough to wrap the field |
+| `test/features/today/timeline_window_test.dart` | **The arithmetic the timeline rests on** (ADR-024): the window is three whole local days ending at the next midnight, an hour is the same width wherever it falls, and a moment outside it is `null` rather than clamped — which is the day arc's bug, where a chit at 00:20 and one at 5:00 landed on the same pixel. Also that the window slides at midnight, and that a chit falls off the far end when it does |
+| `test/features/today/timeline_providers_test.dart` | The seam between that arithmetic and the query under it, on a `ProviderContainer`: the strip asks for exactly the three days the window spans, it reads `todayProvider` rather than the clock a second time, and one save reaches both the strip and the thread — two queries over one table, and not two sources of truth |
 | `test/docs/readme_maps_everything_test.dart` | This section, and `DECISIONS.md`'s ADR index |
 | `test/docs/no_widget_tests_test.dart` | ADR-031, which is otherwise a rule in a file nobody has to read: no `testWidgets`, `pumpWidget` or `WidgetTester` anywhere under `test/`. The suite it replaced grew one reasonable-looking widget test at a time, which is how it would come back |
 | `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |

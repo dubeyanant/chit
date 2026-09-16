@@ -16,7 +16,8 @@ import 'package:path/path.dart' as p;
 import '../support/fake_clock.dart';
 
 /// The data spine, against a database in memory and a filesystem in a
-/// temporary directory. M1's statement of done is this file.
+/// temporary directory. M1's statement of done is this file, and every query
+/// added since lands here too — `watchDayRange` arrived with M2 group H.
 ///
 /// The third of the three places the invariant of README §5 is held
 /// (DATA-MODEL.md §2). The other two — the asserts on [Chit] and the check
@@ -484,6 +485,93 @@ void main() {
 
     test('an empty day is empty, and says so by being empty', () async {
       expect(await repo.watchDay(20260915).first, isEmpty);
+    });
+
+    group('watchDayRange — the timeline, ADR-024', () {
+      test('reads the range oldest first, which is left to right', () async {
+        // Where the thread is newest first, because it is read down. The
+        // strip is read along, so the query hands it the order it draws in.
+        final Chit first = await chitAt(DateTime(2026, 9, 14, 9), 'First.');
+        final Chit second = await chitAt(DateTime(2026, 9, 15, 11), 'Second.');
+        final Chit third = await chitAt(
+          DateTime(2026, 9, 16, 15, 42),
+          'Third.',
+        );
+
+        expect(
+          await repo.watchDayRange(fromDay: 20260914, toDay: 20260916).first,
+          <Chit>[first, second, third],
+        );
+      });
+
+      test('both bounds are inclusive', () async {
+        await chitAt(DateTime(2026, 9, 14, 9), 'First day.');
+        await chitAt(DateTime(2026, 9, 16, 9), 'Last day.');
+
+        expect(
+          await repo.watchDayRange(fromDay: 20260914, toDay: 20260916).first,
+          hasLength(2),
+        );
+      });
+
+      test('a day outside the window is not in it', () async {
+        await chitAt(DateTime(2026, 9, 13, 23, 59), 'The day before.');
+        await chitAt(DateTime(2026, 9, 17, 0, 1), 'The day after.');
+        final Chit inside = await chitAt(DateTime(2026, 9, 15, 12), 'Inside.');
+
+        expect(
+          await repo.watchDayRange(fromDay: 20260914, toDay: 20260916).first,
+          <Chit>[inside],
+        );
+      });
+
+      test('an empty window is empty', () async {
+        expect(
+          await repo.watchDayRange(fromDay: 20260914, toDay: 20260916).first,
+          isEmpty,
+        );
+      });
+
+      test('a save reaches a window that is already being watched', () async {
+        // The thread and the strip are two queries over one table (a cost
+        // ADR-024 accepts), and this is what stops that being two sources of
+        // truth: the write re-emits on both without anything keeping them in
+        // step.
+        final List<int> strip = <int>[];
+        final List<int> thread = <int>[];
+
+        final StreamSubscription<List<Chit>> onStrip = repo
+            .watchDayRange(fromDay: 20260914, toDay: 20260916)
+            .listen((List<Chit> chits) => strip.add(chits.length));
+        final StreamSubscription<List<Chit>> onThread = repo
+            .watchDay(20260916)
+            .listen((List<Chit> chits) => thread.add(chits.length));
+
+        await pumpEventQueue();
+        await chitAt(DateTime(2026, 9, 16, 15, 42), 'Saved.');
+        await pumpEventQueue();
+        await onStrip.cancel();
+        await onThread.cancel();
+
+        expect(strip, <int>[0, 1]);
+        expect(thread, <int>[0, 1]);
+      });
+
+      test('a chit in the window that the thread never sees is still on the '
+          'strip', () async {
+        // The whole reason the strip needs its own query: two of its three
+        // days are days the thread does not read at all.
+        final Chit yesterday = await chitAt(
+          DateTime(2026, 9, 15, 11),
+          'Yesterday.',
+        );
+
+        expect(await repo.watchDay(20260916).first, isEmpty);
+        expect(
+          await repo.watchDayRange(fromDay: 20260914, toDay: 20260916).first,
+          <Chit>[yesterday],
+        );
+      });
     });
 
     test('a save reaches a day that is already being watched', () async {

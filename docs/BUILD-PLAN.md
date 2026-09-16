@@ -38,9 +38,9 @@ passing that same object to `save()`. Re-capturing it on save would undo the dec
 
 ---
 
-## M2 — Today, text only
+## M2 — Today, text only ✅ done, 16 September 2026
 
-The first screen a person could use.
+The first screen a person could use, and the first one that is.
 
 **[TASKS.md](TASKS.md) is M2 cut into buildable groups**, with the five decisions it turns on
 already settled — the field does not autofocus (ADR-023), there is no settings control, and the
@@ -65,6 +65,21 @@ what order, and it is the one to work from.
 **Done when** a chit can be typed, saved, and found in the thread after a restart; the timeline
 updates the moment it is saved; the empty day looks empty; and an untouched chit shows neither
 Discard nor Save.
+
+**All four hold.** *What the milestone taught, which is the part worth keeping:*
+
+- **The prototype is a browser at a desk; the app is 11px at arm's length.** Three of M2's
+  records are reversals of something ported faithfully from v6 and then looked at: the drawn
+  caret (ADR-028), and the marker at now twice over (ADR-036). None would have been caught by
+  reading, and after ADR-031 none could be caught by a test. Budget a build and a look for
+  anything small and load-bearing.
+- **The specification led the prototype for the first time, and it worked.** ADR-024 replaced
+  the day arc in words with nothing drawn, and §4.1 turned out to be enough to build from.
+  What it could not settle was how wide a day should be and where the strip should rest —
+  those needed the screen in front of you, and became ADR-032.
+- **A screen that reads the clock twice is a screen that can show two days.** One
+  `todayProvider`, and at midnight it re-reads itself so everything derived from it turns over
+  together (ADR-033).
 
 The microphone is drawn now, not in M5, because BEHAVIOUR.md §3.2 makes it an equal and the design
 log warns about exactly how it stops being one — by drifting into a row of small grey icons.

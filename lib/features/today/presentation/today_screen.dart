@@ -7,14 +7,20 @@ import '../../../domain/models/chit.dart';
 import '../../composer/presentation/open_chit.dart';
 import '../application/today_controller.dart';
 import 'widgets/day_thread.dart';
+import 'widgets/timeline.dart';
 
 /// The home screen: the date, the timeline, the open chit, the thread.
 ///
-/// **The timeline is the one thing still missing** — group H, between the date
-/// and the slip. Everything else on BEHAVIOUR.md §4.1's page is here.
+/// The whole of BEHAVIOUR.md §4.1's page, as of M2 group H.
 ///
-/// The masthead is not: it belongs to the shell, above both tabs, so that it
-/// does not move when somebody switches between them.
+/// The masthead is not here: it belongs to the shell, above both tabs, so that
+/// it does not move when somebody switches between them.
+///
+/// **It is one `SliverToBoxAdapter` holding a `Column`, and not a list of
+/// slivers.** The page is one flow — a header, a strip, a slip and a thread —
+/// rather than a list of things, and building it as slivers bought nothing:
+/// the open chit is always there and the thread is a day's worth of rows. It
+/// also keeps semantics reachable, which a `SliverList` does not.
 class TodayScreen extends ConsumerWidget {
   /// Creates Today.
   const TodayScreen({super.key});
@@ -42,6 +48,12 @@ class TodayScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 const _DateLine(),
+                // The timeline sits directly under the date, and its own line
+                // is what divides the header from the content — which is why
+                // neither the date above nor the slip below draws a rule.
+                // v6 tightened both of these gaps from 32 to 24 (§6.3).
+                SizedBox(height: space.s5),
+                const Timeline(),
                 SizedBox(height: space.s5),
                 const OpenChit(),
                 // The thread has nothing to say until the first frame the

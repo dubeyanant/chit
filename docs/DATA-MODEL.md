@@ -211,10 +211,12 @@ disagree: they are not kept in step, they are the same data.
 small and pleasing property; the timeline covers three days and the thread covers one, so they
 cannot any more. That is a real cost of the decision and it is written in the ADR as one.
 
-As of M1 the DAO holds three: `watchDay`, `watchDaySummaries` and `watchArchive`. **M2 adds
-`watchDayRange(fromDay, toDay)`** for the timeline. Filtering the archive by date and searching
-on weather arrive with the screens that ask for them (M4, and the backlog) — a query with no
-caller is a query nobody has run.
+The DAO holds four. `watchDay`, `watchDaySummaries` and `watchArchive` arrived with M1;
+**`watchDayRange(fromDay, toDay)` arrived with M2 group H**, for the timeline. It reads
+**oldest first**, where `watchDay` reads newest first: a thread is read down and a strip is
+read along, so each query hands its screen the order it draws in. Filtering the archive by
+date and searching on weather arrive with the screens that ask for them (M4, and the
+backlog) — a query with no caller is a query nobody has run.
 
 Count-to-density (four steps, BEHAVIOUR.md §4.2) is *not* in the query. It is a design scale and lives
 in the presentation layer, where it can be re-tuned without a migration.

@@ -130,6 +130,78 @@ void main() {
     });
   });
 
+  group('the boundaries of a day (ADR-006)', () {
+    test('is midnight at the start of the day the moment belongs to', () {
+      expect(
+        Chit.startOfLocalDay(DateTime(2026, 9, 16, 15, 42, 7, 8, 9)),
+        DateTime(2026, 9, 16),
+      );
+    });
+
+    test('agrees with localDayOf, which is the whole reason it is here', () {
+      for (final DateTime when in <DateTime>[
+        DateTime(2026, 9, 16, 0, 0),
+        DateTime(2026, 9, 16, 12),
+        DateTime(2026, 9, 16, 23, 59, 59, 999),
+      ]) {
+        expect(
+          Chit.localDayOf(Chit.startOfLocalDay(when)),
+          Chit.localDayOf(when),
+          reason: 'the boundary of a day must belong to that day',
+        );
+      }
+    });
+
+    test(
+      'is the *first* instant of the day, not the last of the one before',
+      () {
+        final DateTime midnight = Chit.startOfLocalDay(
+          DateTime(2026, 9, 16, 4),
+        );
+        expect(Chit.localDayOf(midnight), 20260916);
+        expect(
+          Chit.localDayOf(midnight.subtract(const Duration(microseconds: 1))),
+          20260915,
+        );
+      },
+    );
+
+    group('offsetDays counts whole local days, not 24-hour blocks', () {
+      test('across a month', () {
+        expect(
+          Chit.startOfLocalDay(DateTime(2026, 10, 1, 9), offsetDays: -2),
+          DateTime(2026, 9, 29),
+        );
+      });
+
+      test('across a year', () {
+        expect(
+          Chit.startOfLocalDay(DateTime(2027, 1, 1, 9), offsetDays: -2),
+          DateTime(2026, 12, 30),
+        );
+        expect(
+          Chit.startOfLocalDay(DateTime(2026, 12, 31, 9), offsetDays: 1),
+          DateTime(2027),
+        );
+      });
+
+      test('across a leap day', () {
+        expect(
+          Chit.startOfLocalDay(DateTime(2028, 3, 1, 9), offsetDays: -1),
+          DateTime(2028, 2, 29),
+        );
+      });
+
+      test('an offset of zero is the plain boundary', () {
+        final DateTime when = DateTime(2026, 9, 16, 15, 42);
+        expect(
+          Chit.startOfLocalDay(when, offsetDays: 0),
+          Chit.startOfLocalDay(when),
+        );
+      });
+    });
+  });
+
   test(
     'the stamp is the three signals of §3.6 as the one row they are drawn as',
     () {

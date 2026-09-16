@@ -5,8 +5,8 @@ it was chosen over, and what it costs. Superseding a record means adding a new o
 editing the old one.
 
 Status of every record below: **accepted** — ADR-001 to ADR-020 on 14 September 2026, ADR-021
-to ADR-024 on 15 September 2026, ADR-025 to ADR-031 on 16 September 2026. Twenty-nine records,
-not thirty-one: **ADR-018 and ADR-030 have been merged away**, their numbers retired rather
+to ADR-024 on 15 September 2026, ADR-025 to ADR-036 on 16 September 2026. Thirty-four records,
+not thirty-six: **ADR-018 and ADR-030 have been merged away**, their numbers retired rather
 than reused, and the note below says where each one went.
 
 The records are in the order they were written, not in numerical order — ADR-013 and ADR-014
@@ -43,6 +43,11 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-028 | The caret is the platform's, and chit draws none | reverses group F's drawn caret; corrects ADR-027 |
 | ADR-029 | The prompt reads the stamp | extends §3.3 — which words, and what they may not do |
 | ADR-031 | No widget tests | the suite came out; a device and a guard test replace it. Absorbs ADR-030 |
+| ADR-032 | One day is one screen, and now rests in the middle of it | settles what ADR-024 left to the screen |
+| ADR-033 | Today re-reads the clock at midnight | one invalidation rolls the date, the thread and the strip together |
+| ADR-034 | A day passing is a haptic | the boundaries are unlabelled by design; this is how they are noticed |
+| ADR-035 | Days with nothing in them are not drawn | narrows ADR-024 — the query stays three days, the strip may be one |
+| ADR-036 | Now is a tick, not a dot | reverses v6's outline, and the disc that replaced it. No pulse |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
 row without a record.
@@ -1087,3 +1092,275 @@ README §10.3 lost eight suite rows and three support rows. M2 group I's accessi
 M7's floors pass are both **device passes** now rather than test-writing, and BUILD-PLAN.md says
 so. If this decision is ever reversed, reverse it as a new record and start by reading the
 costs above — they are the reason, and they did not stop being true.
+
+---
+
+## ADR-032 — One day is one screen, and now rests in the middle of it
+
+*16 September 2026. Settles the two things ADR-024 left to the screen: how wide three days
+are, and what "rests at now" means in pixels.*
+
+**Decision.** The timeline's content is **three viewport widths**, so one day occupies exactly
+the width the reader is looking at and scrolling back one screen is scrolling back one day.
+The strip's resting offset puts **now in the middle of the viewport and then clamps** it to the
+strip's own ends.
+
+**Over.** Two alternatives, and the second is the one that was nearly taken.
+
+- *A fixed number of pixels per hour.* Then the window is as wide as the handset makes it, a
+  small phone shows a day and a half and a large one shows two and a half, and "three days" is
+  a fact about the query rather than about anything the reader can see.
+- *Resting at `maxScrollExtent`*, which is simpler: the viewport is today, always. It is also
+  what the clamp gives for most of the day, so the two agree nearly all the time.
+
+**Why.**
+
+*One day per screen makes the window legible without a label.* §4.1 draws the day boundaries as
+small unlabelled marks — *there to be noticed, not read* — and that only works if the rhythm is
+already obvious. When a day is a screen, the boundary mark arrives at the edge of the viewport
+as you scroll, which is where a reader expects a day to end. At a fixed pixel rate the marks
+fall anywhere, and the strip needs the labels §4.1 refuses to give it.
+
+*It also makes the resting position computable rather than chosen.* Because the day is the
+viewport, "show today" and "scroll to the end" are the same instruction, and the clamp does it
+without the widget knowing which day it is on.
+
+*Centring is what makes the small hours work.* This is where it beats resting at the end. At
+15:42 the clamp wins and the viewport is today, with now 65% across it — the simpler rule and
+this one agree. At **00:20 they do not**: resting at the end would show a nearly empty strip
+with now pinned against the left edge and everything written yesterday just off-screen.
+Centring pulls back to show yesterday evening beside this morning, which is one continuous
+stretch of somebody's night. Those five hours are exactly what ADR-006 works hardest to protect
+and what the day arc could not draw at all, and it would be a poor result to place them
+honestly and then park the viewport where they cannot be seen.
+
+**Costs.**
+
+- **A day is not a fixed size**, so the same three chits are further apart on a tablet than on
+  a phone. Accepted: the strip is a rhythm signal rather than a chart, and nothing is read off
+  it by measuring.
+- **The rest of the day is drawn even though it has not happened.** At 09:00 two thirds of the
+  viewport is empty. That is honest — the day has not happened — but it does mean the strip
+  looks emptiest in the morning, when the app is most likely to be opened for the first time.
+- **Two rules where one would do.** Most of the day the clamp makes the centring invisible, so
+  a reader of the code sees a calculation that appears to do nothing. It is written down here
+  because the case it exists for is the one nobody tests by hand.
+- **Crowding is untouched by any of this.** ADR-024 left it open and it stays open: fifteen to
+  twenty marks across three screens is the thing to look at on a device, not to tune in advance.
+
+**Consequences.** `Timeline` is three `constraints.maxWidth` wide and its resting offset is
+`fraction × content − viewport / 2`, clamped. Saving scrolls to that same offset — an authored
+arrival, so `ChitMotion.travel` collapses it to a jump under reduced motion (§6.4). The scroll
+extents come out right for free: the strip cannot be pushed past today, and it stops two days
+back because there is no more content, so *scrollable back two days and no further* needed no
+code of its own.
+
+---
+
+## ADR-033 — Today re-reads the clock at midnight
+
+*16 September 2026. What `todayProvider` does when the day it was built for ends.*
+
+**Decision.** `todayProvider` schedules a timer for the next local midnight and invalidates
+itself when it fires. Everything on Today is derived from it — the date line, the thread's
+`localDay`, the timeline's three-day window — so one invalidation rolls the whole screen over
+together.
+
+**Over.** Leaving it, which is what M2 did up to group G and what nothing had yet noticed.
+
+**Why.** A journal is an app that gets left open. A phone put down at 23:50 and picked up at
+00:05 showed yesterday's date over yesterday's thread, and would go on showing it until
+something else happened to rebuild the screen. That was survivable while the screen was a date
+and a thread. It stops being survivable with the timeline: the window is three days ending at
+the day it was built for, so **the first chit of the new day would be saved outside the window
+it is drawn on** and would have no mark at all — `fractionOf` would answer null and ADR-024's
+*a mark that cannot be placed honestly is not drawn* would do exactly what it says.
+
+It belongs in `todayProvider` rather than in the timeline because the failure is not the
+timeline's. The date, the thread and the strip must agree about which day it is (that is why
+they read one provider and not three clocks), so they have to stop agreeing about *yesterday*
+at the same instant too.
+
+**Costs.**
+
+- **A timer per build of `todayProvider`.** It is cancelled in `onDispose`, and the provider is
+  built once per screen, so this is one pending timer while Today is alive.
+- **It is the one thing on this screen a test cannot drive.** A wall-clock wait is a wall-clock
+  wait; `FakeClock` cannot make it fire. What a test *can* do is the arithmetic and the effect,
+  and both are covered: `Chit.startOfLocalDay` says when the day ends, and
+  `timeline_providers_test.dart` invalidates the provider by hand and checks that the window
+  slid and the oldest day fell off. What is untested is that the timer is scheduled for the
+  right moment, which is why the boundary is computed by a named function rather than inline.
+- **It fires on the wall clock, not on the injected one.** A test that moved `FakeClock` across
+  midnight would not see a rollover, which is a place the fake and the real thing differ —
+  narrowly, and it is stated here rather than discovered.
+- **Nothing else ticks.** The ring at now does not creep along the strip minute by minute; it
+  is drawn where now was when the screen was built. A ring that moved would be a second ambient
+  loop nobody asked for, and the prototype's does not move either. It follows a save, because a
+  save rebuilds the strip anyway.
+
+**Consequences.** `today_controller.dart` imports `dart:async` and `Chit`. `Chit.startOfLocalDay`
+is new and sits beside `Chit.localDayOf` — ADR-006 owns where a day starts, and now owns both
+ends of it. A device left open across midnight is worth one line on PROGRESS.md's device
+checklist, because this is the class of thing that is only ever found by leaving a phone on a
+table.
+
+---
+
+## ADR-034 — A day passing is a haptic
+
+*16 September 2026. What the strip does when a boundary goes by under the reader's thumb.*
+
+**Decision.** Scrolling the timeline past a day boundary fires one
+`HapticFeedback.selectionClick()`. It is keyed to the **middle of the viewport** — the day the
+reader is looking at — and only for a scroll the reader is doing.
+
+**Over.** Nothing, which is what the strip had; and a haptic per *mark*, which is the other
+obvious place to put one.
+
+**Why.** The day boundaries are deliberately hard to read. §4.1 draws them as a small
+unlabelled mark and says so in as many words: *it is there to be noticed, not read.* That is
+the right call visually, and it leaves the strip with no way to tell you that you have just
+scrolled out of today and into yesterday — the marks look the same, the line looks the same,
+and the one thing that changed is the one thing the design refuses to spell out.
+
+A haptic says it in the channel that is free. It costs no ink, no label and no space, it cannot
+be mistaken for a control, and it is the same feedback a picker gives when a detent goes past —
+which is what a day boundary is.
+
+*Not per mark*, because a mark is a chit and a day with a dozen of them would turn a scroll
+into a rattle. The thing worth feeling is the unit the strip is made of.
+
+**Costs.**
+
+- **It is a sensory channel nothing else in the app uses.** The first haptic in chit arrives
+  here, so this record is also the decision that chit has haptics at all. A second one should be
+  argued for the same way rather than added because the first exists.
+- **It fires on a gesture, so it cannot help a reader who does not scroll.** Someone who never
+  touches the strip never learns the boundaries are there. Accepted: the strip is a glance
+  first and a thing to explore second.
+- **Nothing about the haptic itself is testable here.** A platform channel call has no
+  observable effect a `ProviderContainer` can see. What *is* tested is the thing it is keyed to
+  — `TimelineWindow.dayAt` — including that the answer changes exactly at a boundary, because a
+  boundary that answered the same on both sides would be a day passing in silence.
+- **Silence during a programmatic scroll is a rule that has to be remembered.** The scroll-to-now
+  after a save can cross a boundary, and buzzing then would be the app reporting its own
+  movement. `_settling` is the flag; it is a small piece of state and it exists for one reason.
+
+**Consequences.** `Timeline` listens to its own `ScrollController` and holds the last day under
+the centre. `TimelineWindow.dayAt(fraction)` is new and pure. BEHAVIOUR.md §4.1 says a day
+passing can be felt; DESIGN-SYSTEM.md §6.3 records the haptic beside the motion it is not.
+
+---
+
+## ADR-035 — Days with nothing in them are not drawn
+
+*16 September 2026. Narrows what ADR-024 draws, without narrowing what it asks for.*
+
+**Decision.** The timeline's **query** is always three days. What it **draws** begins at the day
+the oldest chit in that window falls on: leading days with nothing written in them are not drawn
+at all. With nothing in the window the strip is today alone, and does not scroll.
+
+Only the **leading** days go. A quiet day between two days that have something is still drawn,
+and still takes its full share of the strip.
+
+**Over.** Always drawing three days, which is what ADR-024 said and what shipped an hour
+earlier.
+
+**Why.** It was wrong on a handset, and the way it was wrong is worth keeping. Scrolled to the
+back-stop on a two-day-old install, the strip is a **bare line**: no marks, no boundary in view,
+and — by §4.1's own decision — no label saying which day it is. There is nothing on the screen at
+all. A signal that is blank is worse than one that is absent, because the reader has to work out
+whether it is empty or broken.
+
+It reads badly at the other end too. A first run drew three days of nothing and let the reader
+scroll through two of them, which is the app offering to show its own emptiness.
+
+**And the half of ADR-024's argument that mattered survives.** That record wanted three days so
+that *yesterday was quiet and today is not* is visible at a glance. Trimming only the leading
+days keeps exactly that: the moment there is anything older than yesterday, yesterday is drawn
+in full and its quietness is the thing you can see. What goes is the case where there is no older
+context for the quiet to be quiet *against* — and there, "yesterday was empty" is not a rhythm,
+it is an install date.
+
+**Costs.**
+
+- **The strip changes width as the app is used.** One screen on the first day, two on the
+  second, three from the third on. A reader who learns the gesture on day three would have found
+  nothing to scroll on day one. Accepted: there was nothing to scroll *to*.
+- **It contradicts ADR-024 as written**, which says the window spans today and the two days
+  before it, full stop. That record is not edited; this one narrows it, and BEHAVIOUR.md §4.1
+  now carries the qualification.
+- **A gap at the front cannot be seen.** If the oldest chit in the window is yesterday's, the day
+  before is simply not there, and there is no way to tell that apart from *the app did not exist
+  yet*. Both are true and neither is worth a label.
+- **The query is still three days wide, which looks wasteful.** It is not: narrowing the query
+  would mean a strip that can never grow backwards, because it would have stopped asking whether
+  there is anything back there.
+
+**Consequences.** `timelineQueryWindowProvider` is the three-day window the DAO is asked for;
+`timelineWindowProvider` is what is drawn, and it is `trimmedTo` the oldest chit. The two cannot
+be one provider — the drawn window depends on the answer to the query, and a provider that
+depended on its own result would not build. `TimelineWindow.days` became `maxDays`, and
+`dayCount` is what a strip is actually made of.
+
+---
+
+## ADR-036 — Now is a tick, not a dot
+
+*16 September 2026. Reverses the ring the prototype draws, after two builds on a handset.*
+
+**Decision.** Now is a **short vertical tick through the line** — 1.5px wide, 12px tall,
+`--seal`, straddling the line where a day boundary hangs below it. The word *now* stays above
+it. There is no ring, no disc, and **no pulse**.
+
+**Over.** v6's outline ring, and a filled disc. Both were built and looked at on a device; this
+record is what that cost.
+
+**Why.**
+
+*The outline failed first, and it failed on arithmetic.* §4.1 had a chit saved at the current
+time placing its mark **inside** the ring — *now, with something written in it*. At 11px across
+with a 7px square inside it, that is not one marker with something in it. It is two shapes
+drawn on top of each other at a size where neither can resolve, and it reads as an accident.
+
+*Filling the disc fixed that and cost more than it fixed.* A solid 11px circle in the one
+saturated colour in the app, sitting on a strip whose every other element is a hairline or a
+7px mark, is the loudest thing on the screen. The owner's words: *"the filled circle is taking
+too much attention."* It is also the screen README §1 describes as *blank and ready*.
+
+*A tick is the right shape for what it is.* Everything else on the strip is a position — a mark
+is where a chit was written, a boundary mark is where a day ended. Now is a position too, and a
+dot of any kind is an object. Drawing it as a tick puts it in the same family as the boundary
+below it and leaves the colour to carry the difference in meaning, which is ADR-022's whole
+argument: `--seal` marks what is live, and it does not need size as well.
+
+**What went with it.**
+
+- **The pulse.** It was a ring breathing off a ring, and there is nothing here to breathe any
+  more. Nothing on the strip animates now. `ChitMotion.loop` therefore has **no caller again** —
+  it had none between ADR-028 and this group — which does not touch ADR-027: that record is
+  about where a loop's period lives, not about how many loops exist. M5's record dot is its
+  first caller.
+- **§4.1's *now, with something written in it*.** A mark saved at this instant sits behind a
+  1.5px tick rather than under an 11px disc, so almost all of it is visible — more of it than
+  the filled disc allowed, less than the outline promised. The sentence is corrected in §4.1
+  rather than left standing.
+
+**Costs.**
+
+- **Three attempts for one 12px object**, and two of them reached a device. That is the cost of
+  ADR-031 arriving in the same milestone: there is no widget test that would have caught any of
+  this, and there is no widget test that could have. All three failures were failures of
+  *reading*, which is what the device checklist exists for.
+- **It is a departure from v6**, and the prototype is still the visual target. DESIGN-SYSTEM.md
+  §7 carries the list; this is on it.
+- **The accent is now carried by 18 square pixels.** If it turns out to be too quiet at arm's
+  length the answer is height or weight, not a return to a dot — that is the thing that was
+  tried twice.
+
+**Consequences.** `Timeline.ringSize`, `ringStroke`, `pulseScale` and `pulsePeriod` are gone;
+`nowStroke` and `nowHeight` replace them. `_NowRing` is `_NowMarker` and holds no state, no
+ticker and no `AnimationController`. DESIGN-SYSTEM.md §6.3's list of dimensions off the scale
+**returns to four** — the 11px ring was briefly the fifth and is not there any more — and §6.4's
+list of ambient loops loses the pulse at now.

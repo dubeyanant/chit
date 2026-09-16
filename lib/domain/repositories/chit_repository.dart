@@ -64,8 +64,17 @@ abstract interface class ChitRepository {
   /// One chit, or null. The editor of M6 opens on this.
   Future<Chit?> byId(String id);
 
-  /// One day's chits, newest first. Today's thread, and today's arc.
+  /// One day's chits, newest first. Today's thread.
   Stream<List<Chit>> watchDay(int localDay);
+
+  /// Every chit between [fromDay] and [toDay], inclusive, oldest first.
+  ///
+  /// The timeline's three days (ADR-024). It is a second read of rows the
+  /// thread already has for one of those days, which is a real cost of that
+  /// decision rather than an oversight — DATA-MODEL.md §4 says so. The two
+  /// still cannot disagree: both are streams off the same table, so a save
+  /// re-emits on both.
+  Stream<List<Chit>> watchDayRange({required int fromDay, required int toDay});
 
   /// How many chits each day between [fromDay] and [toDay] holds, inclusive.
   /// The calendar's density and its month summary, from one query.

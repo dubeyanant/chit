@@ -187,6 +187,13 @@ day should look empty (BEHAVIOUR.md §4.1).
   the thread rail. A dimension is a property of one component; a gap is a relationship between
   two, and relationships are what a scale exists to keep consistent.
 
+  *M2 group H added a fifth and then took it back.* The marker at now was v6's 11px ring, and it
+  spent two builds trying to be an object on the strip before ADR-036 made it a **tick**: 1.5px
+  wide — the field's caret weight — and `s3` tall, which is a step rather than a dimension. It is
+  the one thing on the strip in `--seal` (ADR-022), and it is findable among a day's worth of 7px
+  marks by being *taller and thinner* than they are rather than bigger. Both figures are asserted
+  in `test/core/theme/widget_constants_test.dart`.
+
   M2 group G put a fourth back: the 5px between a saved chit's stamp and its words is `s1`.
   It also **derived the thread's mark rather than placing it**. *The prototype drops the node
   19px from the top of a row, which is 7px into the row's content;* here it is centred on the
@@ -208,6 +215,11 @@ day should look empty (BEHAVIOUR.md §4.1).
   the open chit each start one step closer to what precedes them (32 → 24), and the **earlier**
   heading closes up by one (48 → 32). Nothing about the scale changed; four gaps changed which
   step they take.
+- **Haptics** — one, and it is the whole list. Scrolling the timeline past a day boundary gives
+  a `selectionClick` (ADR-034), which is a detent going by rather than an event happening. A
+  haptic is **not motion** and is not re-timed or removed by `prefers-reduced-motion`: §6.4's
+  rule is that reducing motion costs a user animation, not confirmation that their action
+  landed, and this is confirmation. A second haptic anywhere in the app needs its own argument.
 - **Radius** — 2px almost everywhere; paper has cut edges. Two exceptions, both v6 and both
   tokens (`ChitSpace.sheetRadius`, `ChitSpace.tileRadius`): the recording sheet's top corners at
   **8px** (14px in v5 — a phone-OS sheet radius on a surface that is meant to be torn paper),
@@ -264,13 +276,14 @@ day should look empty (BEHAVIOUR.md §4.1).
   **An ambient loop has a period, not a pace, and the period belongs to the thing that loops.**
   A loop's period is a constant on the widget that loops, the way 54px is a constant on the
   microphone, and `ChitMotion.loop` applies §6.4's rule to it rather than holding the number.
-  The loops §6.4 names are deliberately not rows above: the pulse at now runs at **5.2s**,
+  The loops §6.4 names are deliberately not rows above: the record dot runs at **1.2s**,
   which is longer than the prompt's 700ms without being slower motion, and one table holding
   both invites exactly that comparison. **ADR-027**.
 
   *The caret blink was the example that record was written from, and chit no longer draws a
-  caret — **ADR-028**. The rule stands and its first user is now M5's record dot; the loops
-  left to build are the pulse at now, the record dot and the live waveform.*
+  caret — **ADR-028**. The pulse at now was to have been the next, and **ADR-036** took the ring
+  it came off the strip entirely, so nothing on Today loops at all. The rule stands and has no
+  caller yet; the loops left to build are M5's record dot and its live waveform.*
 
   The staggered arrival (fade plus 6px rise, 55–60ms apart, capped) plays when a screen
   is first built and then sheds itself. Returning to a tab costs a 200ms fade and nothing
@@ -305,12 +318,20 @@ Enforced, and verified on every revision:
   in a product whose premise is several a day, so this is not a corner. PROGRESS.md open
   item 12 carries it; it wants a design answer, not a token nudge.
 
+- **Colour is never the only difference.** Found by M2 group I, by asserting the opposite and
+  watching it fail: **`--seal` is *less* contrasty on `--paper` than `--ink-faint` is** — 4.56:1
+  against 5.08:1. The accent reads as the accent because of its hue, and hue is exactly what a
+  signal may not rest on alone. So the timeline's tick at now is **taller and thinner** than the
+  chit marks around it (ADR-036), and the calendar's today is a ring where the other days are
+  fills: in both, the shape carries the meaning and the colour confirms it. A future mark that
+  matched its neighbours' shape and differed only in `--seal` would clear every ratio in
+  `contrast_test.dart` and still be wrong.
 - **Type** — functional text starts at **11.5px**. Quiet comes from weight and colour.
 - **Touch targets** — ≥44px, with no exceptions. The microphone is 54px, and its target is not
   reduced when the field has text in it.
 - **Focus** — every interactive element has a visible `:focus-visible` ring in `--seal`.
 - **Motion** — under `prefers-reduced-motion`, **movement collapses and feedback does not.**
-  Travel, zoom and every ambient loop stop outright: the caret blink, the pulse at now, the
+  Travel, zoom and every ambient loop stop outright: the caret blink, the
   breathing record dot, the live waveform. What survives is opacity and colour — arrivals
   become a plain fade going nowhere, the scrim still dims, buttons still respond. Reducing
   motion should cost a user animation, not confirmation that their action landed.

@@ -148,6 +148,12 @@ final class ChitRepositoryImpl implements ChitRepository {
       _dao.watchDay(localDay).map(_chitsOf);
 
   @override
+  Stream<List<Chit>> watchDayRange({
+    required int fromDay,
+    required int toDay,
+  }) => _dao.watchDayRange(fromDay: fromDay, toDay: toDay).map(_chitsOf);
+
+  @override
   Stream<List<DaySummary>> watchDaySummaries({
     required int fromDay,
     required int toDay,
