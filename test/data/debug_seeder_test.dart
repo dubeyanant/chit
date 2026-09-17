@@ -42,7 +42,12 @@ void main() {
     db = AppDatabase(NativeDatabase.memory());
     clock = FakeClock(afternoon);
     audio = AudioStore(Future<Directory>.value(documents));
-    seeder = DebugSeeder(dao: db.chitDao, audio: audio, clock: clock);
+    seeder = DebugSeeder(
+      dao: db.chitDao,
+      audio: audio,
+      clock: clock,
+      temp: Directory(p.join(root.path, 'cache')).create(),
+    );
     repo = ChitRepositoryImpl(dao: db.chitDao, audio: audio, clock: clock);
   });
 

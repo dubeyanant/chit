@@ -330,7 +330,7 @@ None of these break the invariant of §2, which is the part worth protecting.
 
 ## 7. Seed data for development
 
-A debug-only seeder behind a flag, writing chits across about six weeks so the calendar has
+A seeder behind a compile-time flag, writing chits across about six weeks so the calendar has
 something to shade and the archive has something to page. **It exists as of M4 group A** —
 `lib/data/dev/debug_seeder.dart`, owed since M2 as PROGRESS.md open item 10.
 
@@ -339,9 +339,16 @@ flutter run --dart-define=CHIT_SEED=seed     # writes the fixture; a second run 
 flutter run --dart-define=CHIT_SEED=clear    # removes exactly what was seeded
 ```
 
-Debug builds only: `main.dart` reads the flag behind `kDebugMode`, so a release build carries
-neither the branch nor the seeder. It runs off the critical path like the orphan sweep, and the
-console says what it did.
+**Any build mode, `--release` included**, as long as the define is given; a build that was not
+given it does not carry the branch. *It was gated on `kDebugMode` as well for one commit, and
+that cost a device pass: a handset run in release ignored the flag without a word.* The define
+is already the explicit act, and a second gate behind it protected nothing. It runs off the
+critical path like the orphan sweep, and the console says what it did — which means **watch
+the console**: an error there is the only place a seeder that fell over will say so.
+
+Its placeholder recordings are written to the app's cache directory — §5's `<app cache>`,
+where a real recording sits before Save — and moved by `AudioStore.keep` like any other.
+*`Directory.systemTemp` was tried first and is not writable on Android.*
 
 **Twenty chits, dated relative to the day it runs.** Yesterday and the day before hold five
 each — density step four on the calendar, and ten marks across two days on the timeline, which

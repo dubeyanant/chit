@@ -17,9 +17,13 @@ typedef SeedOutcome = ({int rows, int recordings});
 /// Twenty chits over six weeks, for looking at a calendar that would otherwise
 /// be looked at empty — **DATA-MODEL.md §7**.
 ///
-/// **Debug only, and behind a flag.** `main.dart` constructs this when
-/// `--dart-define=CHIT_SEED=seed` or `=clear` is passed to a debug build and
-/// never otherwise; a release build cannot reach it.
+/// **Behind a compile-time flag.** `main.dart` constructs this when
+/// `--dart-define=CHIT_SEED=seed` or `=clear` is given, in **any** build mode,
+/// and never otherwise. *It was gated on `kDebugMode` as well for one commit*,
+/// and that gate cost a whole device pass: a handset run in release — which is
+/// how M3 was signed off — ignored the flag without a word. The define is
+/// already an explicit act on the command line; a second gate behind it
+/// protected nothing and hid the first.
 ///
 /// **Every seeded id starts with [idPrefix]**, and that is the whole of how the
 /// rows are told apart from a person's own. Seeding is therefore idempotent —
@@ -41,7 +45,15 @@ typedef SeedOutcome = ({int rows, int recordings});
 /// placeholder makes a screen read as a demonstration, and would mislead here
 /// exactly as it did there.
 final class DebugSeeder {
-  /// A seeder over the DAO, the audio store and the clock.
+  /// A seeder over the DAO, the audio store, the clock, and the directory an
+  /// in-flight recording lives in before it is kept.
+  ///
+  /// [temp] is the app's cache directory on a handset — DATA-MODEL.md §5's
+  /// `<app cache>`, the same place a real recording sits between the sheet
+  /// and Save. *It was `Directory.systemTemp` for one commit*, which on
+  /// Android is a directory an app cannot write to, so the seeder wrote one
+  /// row and then threw on the first recording, off the critical path and
+  /// out of sight.
   ///
   // Assigned rather than initialising formals, for the reason
   // `ChitRepositoryImpl` gives: a named parameter cannot be private.
@@ -50,9 +62,11 @@ final class DebugSeeder {
     required ChitDao dao,
     required AudioStore audio,
     required Clock clock,
+    required Future<Directory> temp,
   }) : _dao = dao,
        _audio = audio,
-       _clock = clock;
+       _clock = clock,
+       _temp = temp;
 
   /// What every seeded id begins with.
   static const String idPrefix = 'seed-';
@@ -69,6 +83,7 @@ final class DebugSeeder {
   final ChitDao _dao;
   final AudioStore _audio;
   final Clock _clock;
+  final Future<Directory> _temp;
 
   /// Runs [seed] or [clear] for [mode] and says what happened, in one line
   /// for the console.
@@ -171,13 +186,16 @@ final class DebugSeeder {
   static String _idOf(int index) =>
       '$idPrefix${(index + 1).toString().padLeft(2, '0')}';
 
-  /// A few bytes in the system temp directory, for [AudioStore.keep] to move.
+  /// A few bytes in the cache directory, for [AudioStore.keep] to move.
   ///
   /// Not audio. It exists so that a seeded recording is a file the row can
   /// point at, which is what a real one is; the pill that will one day play
   /// it is M5's, and these rows are cleared before then.
-  static Future<String> _placeholderRecording(String id) async {
-    final File file = File(p.join(Directory.systemTemp.path, 'chit-$id.m4a'));
+  Future<String> _placeholderRecording(String id) async {
+    final Directory dir = await _temp;
+    if (!dir.existsSync()) await dir.create(recursive: true);
+
+    final File file = File(p.join(dir.path, 'chit-$id.m4a'));
     await file.writeAsString('seeded by DebugSeeder; not a recording');
     return file.path;
   }

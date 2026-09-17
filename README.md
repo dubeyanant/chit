@@ -334,7 +334,7 @@ dart run build_runner watch      # leave running while working
 flutter analyze                  # must be clean before a commit
 flutter test
 flutter run                      # an Android device or emulator
-flutter run --dart-define=CHIT_SEED=seed    # a debug build with six weeks of chits — DATA-MODEL.md §7
+flutter run --dart-define=CHIT_SEED=seed    # the same build with six weeks of chits — DATA-MODEL.md §7
 flutter run --dart-define=CHIT_SEED=clear   # and the same build with them taken off again
 ```
 

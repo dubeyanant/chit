@@ -392,7 +392,12 @@ Reached from the bottom tab bar.
 
   **The current month is drawn up to today and stops.** A month drawn to its end is a fortnight
   of empty tiles standing for days that have not happened, which reads as a fortnight of days
-  with nothing written in them. A past month draws in full.
+  with nothing written in them. A past month draws in full. **Days before today keep their
+  place whether or not anything was written in them** — a quiet fortnight is two rows with no
+  numbers, not two rows removed. The grid is a calendar, and the shape of a month only means
+  something if a tile's position does; today under Thursday in the third week says *the 17th*
+  before the number is read. (Asked on the first device pass, when a fresh install showed two
+  empty rows above the 17th.)
 
   **Today's ring sits on paper, not on the wash** — ADR-046. The ring is drawn at the tile's
   edge with a 2px strip of paper inside it, and today's density wash sits inside that. *v6 puts

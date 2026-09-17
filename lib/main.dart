@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/chit_app.dart';
@@ -82,16 +82,19 @@ Future<void> main() async {
   // costs the user (README §1).
   unawaited(container.read(chitRepositoryProvider).reconcileAudio());
 
-  // **The seeder**, debug builds only and only when asked for — DATA-MODEL.md
+  // **The seeder**, only when asked for on the command line — DATA-MODEL.md
   // §7. Off the critical path like the sweep above it: every screen is a
   // stream off the one table, so the rows appear as they land and nothing
-  // waits for them. `kDebugMode` is a compile-time constant, so the branch
-  // and the seeder behind it are not in a release build at all.
-  if (kDebugMode && _seedMode.isNotEmpty) {
+  // waits for them. The define is a compile-time constant, so a build that
+  // was not given it does not carry the branch. *There was a `kDebugMode`
+  // gate here as well for one commit; a release run ignored the flag without
+  // a word, and the define is already the explicit act.*
+  if (_seedMode.isNotEmpty) {
     final DebugSeeder seeder = DebugSeeder(
       dao: container.read(appDatabaseProvider).chitDao,
       audio: container.read(audioStoreProvider),
       clock: container.read(clockProvider),
+      temp: getTemporaryDirectory(),
     );
     unawaited(seeder.apply(_seedMode).then(debugPrint));
   }

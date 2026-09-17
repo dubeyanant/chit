@@ -268,9 +268,9 @@ flutter test
 flutter run                      # Android device or emulator
 ```
 
-To look at a calendar or a timeline with something in it, seed a debug build and clear it
-afterwards — `docs/DATA-MODEL.md` §7. Both are idempotent, and neither touches a chit a person
-wrote:
+To look at a calendar or a timeline with something in it, seed a build and clear it afterwards
+— `docs/DATA-MODEL.md` §7. The flag works in any build mode, both are idempotent, and neither
+touches a chit a person wrote. The console is the only place it reports:
 
 ```bash
 flutter run --dart-define=CHIT_SEED=seed

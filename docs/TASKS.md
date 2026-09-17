@@ -49,8 +49,10 @@ build can reach.*
       chevrons have somewhere to go.
 - [x] `ChitDao.rowsWithIdPrefix` and `deleteWithIdPrefix`. A seeded recording is a real file
       through `AudioStore.keep`, and `clear()` deletes it with the row.
-- [x] `main.dart` honours `--dart-define=CHIT_SEED=seed` and `=clear` in **debug only**, off
-      the critical path, and says what it did on the console.
+- [x] `main.dart` honours `--dart-define=CHIT_SEED=seed` and `=clear` in **any build mode**,
+      off the critical path, and says what it did on the console. *It was debug-only for one
+      commit, and a release run on the handset ignored it silently — the first thing group F
+      found.*
 - [x] `test/data/debug_seeder_test.dart` — idempotent, all four shapes present, clear removes
       exactly the seeded rows and files and leaves a written chit alone.
 

@@ -77,6 +77,15 @@ archive together — the suite holds that claim; the handset has not yet.
 The screen was built against `--dart-define=CHIT_SEED=seed`'s twenty chits, and **those rows
 are still to be cleared** off whichever handset runs the pass — TASKS.md group G.
 
+**The first look at it, 17 September, found two things before the pass proper began.** The
+seeder did nothing on the handset: it was gated on `kDebugMode` as well as on the define, and a
+release run ignored the flag without a word; and it wrote its placeholder recordings to
+`Directory.systemTemp`, which Android does not let an app write to. Both are fixed — the flag
+works in any build mode, and the files go to the app cache like a real recording. The same look
+raised the two empty rows above a fresh install's 17th; that is the grid keeping the month's
+geometry, and BEHAVIOUR.md §4.2 now says so. Today's ring on paper, on an empty tile, read as
+today.
+
 *Weather, the pin and motion are **real** as of 17 September — `OpenMeteoService` and
 `GeolocatorLocationService` replaced the two fixed fakes, which are deleted. Nothing above
 `main.dart` changed when they came out, which was the whole point of M2 group D.*
