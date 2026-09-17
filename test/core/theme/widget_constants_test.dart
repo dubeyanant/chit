@@ -1,4 +1,5 @@
 import 'package:chit/core/theme/chit_space.dart';
+import 'package:chit/features/calendar/presentation/widgets/month_grid.dart';
 import 'package:chit/features/today/application/timeline_provider.dart';
 import 'package:chit/features/today/presentation/widgets/timeline.dart';
 import 'package:chit/shared/widgets/perforated_edge.dart';
@@ -48,6 +49,17 @@ void main() {
       expect(ThreadNode.markSize, 7);
       expect(ThreadRail.thickness, 1);
     });
+
+    test(
+      "today's ring is a hairline with 2px of paper inside it — ADR-046",
+      () {
+        // The gap is what puts both edges of the ring on paper; a zero here is
+        // the ring back on the wash, and item 12's failure back with it.
+        expect(DayTile.ringWidth, 1);
+        expect(DayTile.todayRingGap, 2);
+        expect(DayTile.selectedScale, 1.06);
+      },
+    );
   });
 
   test('the rail is derived from the mark, never set beside it', () {

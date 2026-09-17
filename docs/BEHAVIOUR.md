@@ -394,9 +394,30 @@ Reached from the bottom tab bar.
   of empty tiles standing for days that have not happened, which reads as a fortnight of days
   with nothing written in them. A past month draws in full.
 
-- **Month summary** — e.g. *22 chits over eleven days*.
-- **The archive** — every day grouped newest-first, using the same thread treatment as Today.
-- Tapping a date filters the archive to that day; tapping again, or "Show every day", clears it.
+  **Today's ring sits on paper, not on the wash** — ADR-046. The ring is drawn at the tile's
+  edge with a 2px strip of paper inside it, and today's density wash sits inside that. *v6 puts
+  the ring directly on the wash,* where `--seal` fails §6.4's 3:1 floor from three chits
+  onwards; on paper it clears it every day, and today is a different *shape* from every other
+  day as well as a different colour, which §6.4 asks for outright. Today with nothing written
+  keeps its number in `--ink-faint`.
+
+  **The chevrons work.** The previous month is always there to go back to; the next chevron is
+  disabled at the current month — drawn faint, offering nothing — because there is nothing
+  further to draw. Changing the month clears any selected day.
+
+- **Month summary** — e.g. *22 chits over eleven days*, the count upright and the rest italic.
+  An empty month reads *Nothing written this month*.
+- **The archive** — every day grouped newest-first, using the same thread treatment as Today:
+  it is the same widget. Each day is headed *Today*, *Yesterday*, or its weekday and date —
+  *Friday 11 September*, with the year only when it is not this one — over a hairline, with its
+  count at the right. It is paged as the reader nears the end. **An archive with nothing in it
+  draws nothing**: a fresh install's calendar is the grid, today's ring and the summary line,
+  which already says the month is empty (the same reading of §4.1 the thread takes).
+- Tapping a date filters the archive to that day and frames the tile in ink; tapping again, or
+  **Show every day**, clears it. *Show every day* is the quiet button — Discard's weight — and
+  not v6's outlined bar: a fourth control weight for one control on one screen is a weight
+  nothing else would use. A filtered day that turns out to hold nothing reads *"Nothing written
+  that day."*
 
 **There is no legend.** *v5 carried one — `quiet ▪▪▪▪ full`.* Four swatches in a row explaining
 that more ink means more writing is a caption on something nobody misreads, and it competed

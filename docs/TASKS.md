@@ -85,26 +85,26 @@ bites.*
       grid, the summary and the archive** (the milestone's statement of done, as far as a test
       can hold it), selecting narrows and clearing widens, and navigating re-queries.
 
-## D. The screen ⬜
+## D. The screen ✅
 
-- [ ] `DayThread` and `ChitRow` move to `shared/widgets/day_thread.dart` — the archive is the
+- [x] `DayThread` and `ChitRow` move to `shared/widgets/day_thread.dart` — the archive is the
       second screen that wants them, which ARCHITECTURE.md §2 says is the moment.
-- [ ] `ChitType.dayHeading` and `ChitType.monthSummaryStrong`.
-- [ ] The month bar: the name, the year in `--ink-faint`, two chevrons at the 44px floor, the
+- [x] `ChitType.dayHeading` and `ChitType.monthSummaryStrong`.
+- [x] The month bar: the name, the year in `--ink-faint`, two chevrons at the 44px floor, the
       next one disabled at the current month.
-- [ ] The weekday row and the grid: `SliverGrid`, seven across, `s1` gaps (D3), a number only
+- [x] The weekday row and the grid: `SliverGrid`, seven across, `s1` gaps (D3), a number only
       where something was written, today always numbered and **ringed on paper** (D1), the
       selected tile framed in ink.
-- [ ] The summary — *22 chits over eleven days* — and the archive under it: a day heading, a
+- [x] The summary — *22 chits over eleven days* — and the archive under it: a day heading, a
       hairline fill, the count, and the same `DayThread` Today draws.
-- [ ] Filtering: a tile narrows the archive to that day, the same tile or **Show every day**
+- [x] Filtering: a tile narrows the archive to that day, the same tile or **Show every day**
       (D4) clears it. Paging as the reader nears the end.
-- [ ] `contrast_test.dart` — the ring's assertion rewritten for its new shape.
-- [ ] The placeholder line and the comment that promised M4 are deleted.
+- [x] `contrast_test.dart` — the ring's assertion rewritten for its new shape.
+- [x] The placeholder line and the comment that promised M4 are deleted.
 
-## E. The doc loop ⬜
+## E. The doc loop ✅
 
-- [ ] ADR-046. BEHAVIOUR.md §4.2, DESIGN-SYSTEM.md §6.2, §6.3, §6.4, ARCHITECTURE.md §2, §3
+- [x] ADR-046. BEHAVIOUR.md §4.2, DESIGN-SYSTEM.md §6.2, §6.3, §6.4, ARCHITECTURE.md §2, §3
       and a §4.3 for the calendar's data flow, DATA-MODEL.md §4 and §7, README §10, and
       PROGRESS.md — the status board, what is on a handset, the standing device list, the
       open items (10 and 12 close, 15 and 19 become lookable), and *Next*.

@@ -169,7 +169,10 @@ empty note — *"Nothing written yet today."*, *"Nothing written that day."* —
 speaking about a day rather than reporting one, and they are set a step below chit text in
 serif italic so they read as an aside. M2 group C added `emptyNote` to the scale for the
 second of them; it is `--ink-faint` where the month summary is `--ink-muted`, because an empty
-day should look empty (BEHAVIOUR.md §4.1).
+day should look empty (BEHAVIOUR.md §4.1). M4 added the summary's other half,
+`monthSummaryStrong` — *22 chits* set upright at 500 in `--ink`, in tabular figures because it
+counts — and `dayHeading`, the 16.5px upright serif over a day in the archive, which is the
+day-heading place the paragraph above already names.
 
 ### 6.3 Spacing, shape, motion
 
@@ -238,8 +241,18 @@ day should look empty (BEHAVIOUR.md §4.1).
 - **Radius** — 2px almost everywhere; paper has cut edges. Two exceptions, both v6 and both
   tokens (`ChitSpace.sheetRadius`, `ChitSpace.tileRadius`): the recording sheet's top corners at
   **8px** (14px in v5 — a phone-OS sheet radius on a surface that is meant to be torn paper),
-  and the calendar's day tiles at **4px**, which with a 5px gap (3px in v5) read as tiles
-  rather than as a mosaic.
+  and the calendar's day tiles at **4px**, which with a gap between them (5px in v6, 3px in
+  v5) read as tiles rather than as a mosaic.
+
+  **The gap between tiles is `s1`, not v6's 5px** — M4, and the rule at the head of this
+  section: a gap is a relationship and stays on the scale. It lives *inside* each cell, half on
+  each side, so the cell is the full seventh of the row and the tap target clears §6.4's 44px
+  on a handset where seven targets and six gaps could not both fit between the gutters; what
+  shrinks on a narrow screen is the tile that is drawn, never the one a finger can hit.
+  **Today's ring carries one dimension of its own**: the **2px** of paper between the ring
+  and the wash (ADR-046), a property of that one component and named where it lives,
+  `DayTile.todayRingGap`, with the assertion in `widget_constants_test.dart`. The list of four
+  dimensions still did not grow — this one is read by nothing but the tile.
 - **Elevation** — hairlines carry the structure. The open chit keeps its one faint shadow, but
   it is no longer doing the separating: `--slip` is bright enough in v6 that the slip reads as
   a surface on its own, and the shadow only seats it against the pad behind.
@@ -325,13 +338,16 @@ Enforced, and verified on every revision:
   The v6 washes were checked in full and all pass: Save's label is 10.85:1 on its 7% wash, and
   the calendar's numerals run 12.66:1 down to 5.99:1 across the four density steps. That last
   figure is why the near-white numeral is gone — see §6.1's note and BEHAVIOUR.md §4.2.
-  **One v6 pair does not clear its floor, and it is written down rather than waved through.**
-  Today's ring on the calendar is `--seal` against whatever density tile today happens to be.
-  A ring is a non-text UI component, so the floor is 3:1 rather than 4.5:1 — it holds on an
-  empty tile (4.56:1) and at one or two chits (3.97:1, 3.36:1), and it fails at three
-  (2.61:1) and at four or more (**1.88:1**). A day with three chits in it is an ordinary day
-  in a product whose premise is several a day, so this is not a corner. PROGRESS.md open
-  item 12 carries it; it wants a design answer, not a token nudge.
+  **One v6 pair did not clear its floor, and the answer was a shape — ADR-046.** Today's ring
+  on the calendar was `--seal` against whatever density tile today happened to be. A ring is a
+  non-text UI component, so the floor is 3:1 rather than 4.5:1 — it held on an empty tile
+  (4.56:1) and at one or two chits (3.97:1, 3.36:1), and failed at three (2.61:1) and at four
+  or more (**1.88:1**). A day with three chits in it is an ordinary day in a product whose
+  premise is several a day, so that was not a corner, and PROGRESS.md item 12 carried it for
+  two milestones rather than waving it through. M4 moved the ring: it now frames the tile at
+  its edge with 2px of paper inside it, so both of its edges meet `--paper` and the pair that
+  matters is 4.56:1 every day. `contrast_test.dart` asserts that pair, and keeps the four old
+  figures as the record of why the ring moved.
 
 - **Colour is never the only difference.** Found by M2 group I, by asserting the opposite and
   watching it fail: **`--seal` is *less* contrasty on `--paper` than `--ink-faint` is** — 4.56:1

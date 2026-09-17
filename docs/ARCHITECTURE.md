@@ -94,13 +94,13 @@ lib/
 │   ├── shell/                      bottom tab bar, the two tabs
 │   ├── today/
 │   │   ├── application/            today_controller.dart, timeline_provider.dart
-│   │   └── presentation/           today_screen.dart, widgets/{day_thread,timeline}.dart
+│   │   └── presentation/           today_screen.dart, widgets/timeline.dart
 │   ├── composer/
 │   │   ├── application/            composer_controller.dart, recording_controller.dart
 │   │   └── presentation/           open_chit.dart, recording_sheet.dart
 │   ├── calendar/
-│   │   ├── application/            month_provider.dart, archive_provider.dart
-│   │   └── presentation/           calendar_screen.dart, widgets/
+│   │   ├── application/            month_provider.dart (YearMonth, MonthShape), archive_provider.dart
+│   │   └── presentation/           calendar_screen.dart, widgets/{month_bar,month_grid,archive_day}.dart
 │   ├── editor/                     M6 — a saved chit, on its own screen (ADR-017)
 │   │   ├── application/            editor_controller.dart — dirty tracking, the save prompt
 │   │   └── presentation/           editor_screen.dart
@@ -112,6 +112,7 @@ lib/
     ├── slip.dart                   a chit surface, its tear edge and the pad behind it
     ├── perforated_edge.dart        holes in the surface beneath — see the design log
     ├── thread_rail.dart            the rail (ThreadRail) and the mark on it (ThreadNode)
+    ├── day_thread.dart             a day's rows over the rail (DayThread, ChitRow) — Today and the archive
     ├── ambient_stamp_row.dart      .open and .saved — §3.6's two weights, and the pin
     ├── motion_icon.dart            the three marks of ADR-039; stationary draws nothing
     ├── wordmark.dart               "chit चित्त", baseline-aligned
@@ -126,8 +127,10 @@ lives in that screen's `presentation/widgets/`, and moves out only when a second
 they draw and nothing else — `AmbientStampRow` takes an `AmbientStamp`, `Slip` takes a child —
 which is what lets a screen compose them without either of them knowing about the other. M2
 group C wrote the first four; `wordmark.dart` and `buttons.dart` arrived with the first-run
-screen (ADR-041), each **moved out of the one feature that used to own it** the moment a second
-feature wanted it, which is the rule above doing its job rather than an exception to it.
+screen (ADR-041), and `day_thread.dart` with M4's archive — each **moved out of the one feature
+that used to own it** the moment a second feature wanted it, which is the rule above doing its
+job rather than an exception to it. `DayThread` is the reason BEHAVIOUR.md §4.2's *the same
+thread treatment as Today* is true by construction: it is one widget, not two that look alike.
 
 `Slip` draws its own `PerforatedEdge`, because a slip and the tear that made it are one object
 rather than two a caller has to remember to assemble. `ThreadRail` is the opposite case and

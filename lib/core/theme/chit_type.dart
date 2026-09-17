@@ -48,6 +48,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.calendarDay,
     required this.calendarWeekday,
     required this.monthSummary,
+    required this.monthSummaryStrong,
+    required this.dayHeading,
   });
 
   /// The scale of DESIGN-SYSTEM.md §6.2, coloured from [colors].
@@ -259,6 +261,20 @@ final class ChitType extends ThemeExtension<ChitType> {
         color: colors.inkMuted,
         italic: true,
       ),
+      // "22 chits", the upright half of the summary. It carries a count, so
+      // it is set in tabular figures like everything else that counts.
+      monthSummaryStrong: _serif(
+        size: 15,
+        weight: 500,
+        color: colors.ink,
+        tabularFigures: true,
+      ),
+
+      // "Tuesday 15 September" over a day in the archive. The same size as
+      // chit text and the section label — one of the 16.5px places §6.2
+      // names — set upright in `--ink` because it is a heading and not an
+      // aside.
+      dayHeading: _serif(size: 16.5, weight: 400, color: colors.ink, height: 1),
     );
   }
 
@@ -472,8 +488,14 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// "M T W T F S S" over the month grid.
   final TextStyle calendarWeekday;
 
-  /// "22 chits over eleven days".
+  /// "over eleven days" — the italic half of the month summary.
   final TextStyle monthSummary;
+
+  /// "22 chits" — the upright half, and *Nothing written* on an empty month.
+  final TextStyle monthSummaryStrong;
+
+  /// "Tuesday 15 September", heading a day in the archive.
+  final TextStyle dayHeading;
 
   /// Every style in the scale, so the rules that govern all of them can be
   /// checked rather than trusted.
@@ -511,6 +533,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     calendarDay,
     calendarWeekday,
     monthSummary,
+    monthSummaryStrong,
+    dayHeading,
   ];
 
   @override
@@ -541,6 +565,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? calendarDay,
     TextStyle? calendarWeekday,
     TextStyle? monthSummary,
+    TextStyle? monthSummaryStrong,
+    TextStyle? dayHeading,
   }) {
     return ChitType(
       wordmark: wordmark ?? this.wordmark,
@@ -569,6 +595,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       calendarDay: calendarDay ?? this.calendarDay,
       calendarWeekday: calendarWeekday ?? this.calendarWeekday,
       monthSummary: monthSummary ?? this.monthSummary,
+      monthSummaryStrong: monthSummaryStrong ?? this.monthSummaryStrong,
+      dayHeading: dayHeading ?? this.dayHeading,
     );
   }
 
@@ -606,6 +634,12 @@ final class ChitType extends ThemeExtension<ChitType> {
         t,
       )!,
       monthSummary: TextStyle.lerp(monthSummary, other.monthSummary, t)!,
+      monthSummaryStrong: TextStyle.lerp(
+        monthSummaryStrong,
+        other.monthSummaryStrong,
+        t,
+      )!,
+      dayHeading: TextStyle.lerp(dayHeading, other.dayHeading, t)!,
     );
   }
 }

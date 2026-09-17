@@ -147,40 +147,37 @@ void main() {
       }
     });
 
-    test("today's ring fails its floor on a busy day — PROGRESS.md item 12", () {
-      // Not a passing test pretending to be one. A ring is a non-text UI
-      // component and needs 3:1; today is ringed in --seal over whatever
-      // density today happens to be, and it holds for an empty, one- and
-      // two-chit day and fails from three onwards.
-      //
-      // This is asserted rather than skipped so that the failure is a fact the
-      // build knows. **When it is fixed, this test fails** — which is the
-      // point: whoever fixes it is told to come back and rewrite the record.
+    test("today's ring sits on paper, so it clears its floor every day — "
+        'ADR-046', () {
+      // A ring is a non-text UI component and needs 3:1. *This test used to
+      // assert the failure* — --seal on the three- and four-chit washes
+      // measured 2.61:1 and 1.88:1, and PROGRESS.md item 12 carried it for
+      // two milestones. ADR-046 moved the ring off the tile: it frames the
+      // tile at its edge with a strip of paper inside it, so both edges of
+      // the ring meet --paper whatever density today carries, and the only
+      // pair that matters is this one.
       const double componentFloor = 3;
-      expect(
-        contrastRatio(colors.seal, colors.paper),
-        greaterThan(componentFloor),
-        reason: 'an empty tile: 4.56:1',
-      );
-      expect(
-        contrastRatio(colors.seal, densityTiles[0]),
-        greaterThan(componentFloor),
-        reason: 'one chit: 3.97:1',
-      );
-      expect(
-        contrastRatio(colors.seal, densityTiles[1]),
-        greaterThan(componentFloor),
-        reason: 'two chits: 3.36:1',
-      );
+      final double onPaper = contrastRatio(colors.seal, colors.paper);
+      expect(onPaper, greaterThan(componentFloor));
+      expect(onPaper, closeTo(4.56, 0.01));
+    });
+
+    test('and why it had to move: on the tile it fails from three chits', () {
+      // Kept as the record of the reason, not as a floor anything is held
+      // to. If a future design puts the ring back on the wash, these are the
+      // numbers it is choosing.
+      const double componentFloor = 3;
+      expect(contrastRatio(colors.seal, densityTiles[0]), closeTo(3.97, 0.01));
+      expect(contrastRatio(colors.seal, densityTiles[1]), closeTo(3.36, 0.01));
       expect(
         contrastRatio(colors.seal, densityTiles[2]),
         lessThan(componentFloor),
-        reason: 'three chits: 2.61:1 — open',
+        reason: 'three chits: 2.61:1',
       );
       expect(
         contrastRatio(colors.seal, densityTiles[3]),
         closeTo(1.88, 0.01),
-        reason: 'four or more: 1.88:1 — open',
+        reason: 'four or more: 1.88:1',
       );
     });
   });

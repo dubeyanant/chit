@@ -6,8 +6,8 @@ editing the old one.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
 at its head — ADR-001 to ADR-020 on 14 September 2026, ADR-021 to ADR-024 on 15 September 2026,
-ADR-025 to ADR-042 on 16 September 2026 and ADR-043 to ADR-045 on 17 September. Forty-two records, not
-forty-three: **ADR-018, ADR-026
+ADR-025 to ADR-042 on 16 September 2026 and ADR-043 to ADR-046 on 17 September. Forty-three records, not
+forty-four: **ADR-018, ADR-026
 and ADR-030 have been merged away**, their numbers retired rather than reused, and the note
 below says where each one went.
 
@@ -58,6 +58,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-043 | The weather mapping: a wind threshold, a trusted flag, and one word missing | windy at 25 km/h; m/s throughout; `is_day` trusted; snow has no word |
 | ADR-044 | The capture budget is twelve seconds, and a stale place beats no place | revises ADR-007 — nothing waits on a capture since ADR-042, and the pin was the cost |
 | ADR-045 | A reading stays good for five minutes | amends ADR-042 — a burst of chits costs one capture, not one each |
+| ADR-046 | Today's ring sits on paper, not on the tile | closes item 12 — a shape answer, not a token nudge |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
 row without a record.
@@ -1859,3 +1860,53 @@ job, because it is the thing that knows a reading has been *kept*. The composer'
 `_refreshAmbience` runs only on the stale path, and then does two jobs with one capture: it
 patches the row and becomes what the next chit previews. The freshness rule itself is an
 extension on the record, so it is pure and testable without a container.
+
+---
+
+## ADR-046 — Today's ring sits on paper, not on the tile
+
+*17 September 2026. M4 group D. Closes PROGRESS.md open item 12.*
+
+**Decision.** On the calendar, today's `--seal` ring is drawn **at the tile's edge with a 2px
+strip of paper inside it**, and the density wash sits inside that strip. Both edges of the ring
+meet `--paper`, whatever density today carries, so the pair that is measured is `--seal` on
+`--paper` — 4.56:1 — every day of the month.
+
+**Over.** The ring on the wash, as v6 draws it, which measures 2.61:1 against three chits and
+1.88:1 against four or more, under §6.4's 3:1 floor for a non-text component. And over two
+token answers: lightening the ring, which the design log's *one accent* rule refuses, and
+lightening the top two washes, which would collapse the four steps into three.
+
+**Why.**
+
+*Item 12 said in as many words that it wanted a shape, not a token.* Three chits is an ordinary
+day in an app whose premise is several a day, so a ring that fails from three onwards fails on
+most days that matter. The ring and the fill are the same lightness family on purpose
+(ADR-022); moving either one to rescue the pair breaks a decision that is right.
+
+*§6.4 already asks for this.* **Colour is never the only difference** — `--seal` is *less*
+contrasty on paper than `--ink-faint` is, so the accent has never carried hierarchy on contrast
+and has always needed a shape beside it. A ring around a wash and a ring around a strip of paper
+around a wash are two shapes, and the second is the one that also passes.
+
+*And it reads as a stamp.* A frame with a margin inside it is how a date is marked on paper —
+the thing chit is named after. The alternative, an offset ring floating outside the tile, spends
+three of the four pixels between tiles on a busy grid and reads as a focus ring.
+
+**Costs.**
+
+- **Today's wash is smaller than every other day's** by six pixels on each axis. On a 44px tile
+  that is a visible step down, and a reader could take it for a fainter day. The device pass
+  is where that gets judged, and TASKS.md group F asks exactly that question.
+- **Two pixels is a figure with no test behind it but arithmetic.** Wide enough to be paper at
+  arm's length on the reasoning that the perforation's 1.55px holes were not; whether it reads
+  is a handset question.
+- **`contrast_test.dart` no longer asserts a failure.** The test that carried item 12 for two
+  milestones is rewritten to assert the pair that now matters, and keeps the old numbers as
+  the record of why the ring moved.
+
+**Consequences.** `DayTile.todayRingGap` and `DayTile.ringWidth` in
+`features/calendar/presentation/widgets/month_grid.dart`, asserted in
+`widget_constants_test.dart`. §6.4's paragraph on the ring records the fix. The gap is a
+*dimension* in §6.3's sense — a property of one component, off the scale by design — and does
+not join the list of four, because it is named where it lives and nothing else reads it.

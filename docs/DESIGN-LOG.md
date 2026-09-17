@@ -84,6 +84,12 @@ better contrast: density is how much ink went down that day. The month stops at 
 same reason it is a shape at all — tiles for days that have not happened read as days with
 nothing written in them, which is a lie about the future.
 
+*And today's ring moved off the wash and onto paper in M4* (ADR-046). On the wash it failed its
+contrast floor from three chits onwards, and three chits is an ordinary day. The fix was not a
+lighter ring — one accent, and it means one thing — but a frame with a margin inside it, which
+is how a date is marked on paper anyway. It cost today's wash six pixels of size, and whether
+that reads as *today* or as *a fainter day* is a handset question.
+
 **The pin without a place name.** Knowing a location was captured is context. Naming it is
 noise, and a privacy surface with nothing to show for it.
 

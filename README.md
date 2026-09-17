@@ -232,8 +232,8 @@ one table, the DAO, and `ChitRepository` — the interface in `domain`, the impl
 `data`, and `main.dart` the one place the two are allowed to meet.
 
 `lib/shared/widgets/` is the chit vocabulary: the slip and its tear edge, the ambient stamp
-row and the three motion marks it can draw, the rail a day hangs off, the wordmark, and the two
-button weights of §6.1. They hold no state and read no provider — each takes what it
+row and the three motion marks it can draw, the rail a day hangs off and the day's thread over
+it, the wordmark, and the two button weights of §6.1. They hold no state and read no provider — each takes what it
 draws and nothing else, which is what lets a screen compose them freely.
 
 ### 10.3 The tests

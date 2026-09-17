@@ -151,7 +151,14 @@ The fakes come out.
   app has no such excuse.
 
 **Done when** saving a chit on Today changes the calendar density and the month total without a
-refresh, because both read the same stream.
+refresh, because both read the same stream — **and** the seeded rows that the screen was built
+against have come off the handset again.
+
+*Two things were added to the milestone when it was cut, on 17 September 2026.* DATA-MODEL.md
+§7's debug seeder comes **first**, because nothing about a calendar can be looked at empty and
+ADR-035 means an empty yesterday is not even drawn on Today; its rows are cleared as the last
+group. And PROGRESS.md item 12 — today's ring failing its contrast floor on a busy tile — is
+taken on here rather than deferred a third time, as ADR-046.
 
 Past chits stay non-interactive here. Saved chits **are** editable (ADR-014), the repository
 method exists from M1, and OPEN-QUESTIONS.md §8.1 is now settled (ADR-017) — but the editor is M6, and

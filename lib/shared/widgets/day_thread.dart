@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/extensions.dart';
-import '../../../../domain/models/chit.dart';
-import '../../../../shared/widgets/ambient_stamp_row.dart';
-import '../../../../shared/widgets/thread_rail.dart';
+import '../../core/extensions.dart';
+import '../../domain/models/chit.dart';
+import 'ambient_stamp_row.dart';
+import 'thread_rail.dart';
 
 /// A day's chits, hanging off one rail — README §2, BEHAVIOUR.md §4.1.
 ///
@@ -17,8 +17,11 @@ import '../../../../shared/widgets/thread_rail.dart';
 /// differ (*"Nothing written yet today."* against *"Nothing written that
 /// day."*) while everything here is the same on both.
 ///
-/// It lives under `today/` and M4's archive is the second screen that wants
-/// it; ARCHITECTURE.md §2 says that is when it moves to `shared/widgets`.
+/// *It lived under `today/` until M4's archive became the second screen that
+/// wanted it*, which is the moment ARCHITECTURE.md §2 says a widget moves
+/// here. BEHAVIOUR.md §4.2 asks for *the same thread treatment as Today* in
+/// as many words, and the way to make that true is one widget, not two that
+/// look alike.
 class DayThread extends StatelessWidget {
   /// The thread for [chits], newest first.
   const DayThread({required this.chits, super.key});

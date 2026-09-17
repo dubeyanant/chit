@@ -121,6 +121,7 @@ void main() {
         type.chitMeta,
         type.sheetTime,
         type.audioDuration,
+        type.monthSummaryStrong,
       ];
       for (final TextStyle style in counters) {
         expect(

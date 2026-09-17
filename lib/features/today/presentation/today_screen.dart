@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../../../core/extensions.dart';
 import '../../../domain/models/chit.dart';
+import '../../../shared/widgets/day_thread.dart';
 import '../../composer/presentation/open_chit.dart';
 import '../application/today_controller.dart';
-import 'widgets/day_thread.dart';
 import 'widgets/timeline.dart';
 
 /// The home screen: the date, the timeline, the open chit, the thread.

@@ -6,9 +6,10 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 17 September 2026, **with M4 cut and under way**. M3 is signed off on a
-handset; ambient capture is real. [TASKS.md](TASKS.md) now holds M4 — the calendar — in seven
-groups, the seeder first and the seeded rows' removal last.
+**Last updated:** 17 September 2026, **with M4 built and its device pass owed**. The calendar
+is written, tested and compiles into a debug APK, but **nobody has looked at it on a handset
+yet** — [TASKS.md](TASKS.md) groups F and G are the pass and the clean-up after it, and they
+are the two things standing between this and *done*.
 
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s table is the
 ledger of what is done. What belongs here is the present: where the build is, what the next
@@ -27,12 +28,13 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021, since **superseded by ADR-040** |
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
-| M4 — calendar | ⬜ | |
+| **M4** — calendar | 🔶 built, device pass owed | 17 Sep 2026. ADR-046. TASKS.md groups A–E done; F and G are the handset |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**327 tests, `flutter analyze` clean, `dart format` clean, debug and release APKs build.**
+**387 tests, `flutter analyze` clean, `dart format` clean, the debug APK builds.** The release
+APK has not been rebuilt since M3's sign-off.
 
 
 ---
@@ -59,8 +61,21 @@ thread under *earlier* with its count beside it, its mark appears on the strip, 
 chit opens stamped at that moment.
 
 Below the thread the चित्त mark closes the day. An empty day reads *"Nothing written yet
-today."* with no rail and no count. Tapping *calendar* cross-fades to a placeholder line that M4
-deletes.
+today."* with no rail and no count.
+
+**The calendar — built on 17 September and not yet seen on a handset.** Tapping *calendar*
+cross-fades to the month bar (*September 2026*, two chevrons, the next one faint at the current
+month), the weekday row, and the grid: a number only where something was written, four steps
+of ink, the month drawn up to today and no further, and **today ringed on paper** with a strip
+of paper between the ring and its wash (ADR-046). Under a hairline, *17 chits over seven days*
+when seeded; under that, the archive — every day newest first, headed *Today* / *Yesterday* /
+*Friday 11 September*, drawn by the same `DayThread` Today uses. A tile narrows the archive to
+its day and takes an ink frame; the same tile, or **Show every day**, widens it. Everything
+here is a stream off the one table, so a save on Today reaches the tile, the total and the
+archive together — the suite holds that claim; the handset has not yet.
+
+The screen was built against `--dart-define=CHIT_SEED=seed`'s twenty chits, and **those rows
+are still to be cleared** off whichever handset runs the pass — TASKS.md group G.
 
 *Weather, the pin and motion are **real** as of 17 September — `OpenMeteoService` and
 `GeolocatorLocationService` replaced the two fixed fakes, which are deleted. Nothing above
@@ -127,7 +142,8 @@ after the one that introduced them.
 
 *M3 added five rows and they are the ones with the least mileage on them.* The last three in
 particular were checked once, on one handset, on one evening in Mumbai — a walk outdoors and a
-long sitting have still never been tried.
+long sitting have still never been tried. **M4 added seven more, at the foot of the table, and
+not one of them has been run** — that is TASKS.md group F, and it is the next thing to do.
 
 | Check | Why it is here |
 |---|---|
@@ -158,17 +174,33 @@ long sitting have still never been tried.
 | The three marks read at 12px beside 11.5px text, and weigh what the pin weighs | ADR-039. They are strokes because an outline blobs at this size, and that judgement has not been checked by eye |
 | TalkBack / VoiceOver reads *Walking*, *Travelling*, *Flying* | §6.4 — the mark is the whole of the fact, not an adornment beside it |
 | The mark does not flicker between two states while a chit is open | The app captures at launch and at a stale save, never in between (ADR-042, ADR-045) |
+| **Today's ring reads as *today* on a five-chit tile, not as a fainter day** | **ADR-046, unseen.** The ring on paper costs today's wash six pixels of size, and whether that reads is the one thing the decision could not settle at a desk |
+| The four density steps tell apart one, two, three and five chits at arm's length | §4.2. The ratios are asserted; whether 6% and 12% *look* different on a handset in real light is not |
+| A tile takes a tap anywhere in its cell, and every cell clears 44px | §6.4, and §6.3's reason for putting the gap inside the cell rather than between them |
+| **Saving on Today changes the tile, the summary and the archive without a refresh** | BUILD-PLAN.md M4's statement of done. Held by `calendar_providers_test.dart`; a handset is where *without a refresh* is seen rather than inferred |
+| The previous chevron goes back a month and the archive still reads every day; the next one is faint and dead at the current month | §4.2. A disabled control drawn at 30% is a claim about legibility nobody has checked |
+| The archive pages in before the reader reaches the join | `CalendarScreen._pageAhead`, a number with nothing behind it but a guess at a screen's height |
+| `CHIT_SEED=clear` leaves exactly what was written by hand | DATA-MODEL.md §7. The suite proves it in memory; the handset is where a wrong prefix would cost somebody's chits |
 
 ---
 
-## Next: M4, group D
+## Next: M4, groups F and G — the handset
 
-**M4 is cut** — [TASKS.md](TASKS.md) has the seven groups and the five decisions they turn on.
-Group A, the seeder, is done: `--dart-define=CHIT_SEED=seed` puts six weeks of chits on a
-debug build and `=clear` takes them off, so the calendar is built against something rather than
-against nothing. Groups B and C — the month's arithmetic and the providers — are done and
-tested; group D is the screen itself. The last group, G, takes the seeded rows off the handset
-again.
+**Everything that can be done at a desk is done.** [TASKS.md](TASKS.md) groups A to E are
+ticked: the seeder, the month's arithmetic, the providers, the screen and the docs. What is
+left is the two groups only a phone can do, and they are written out as checklists there:
+
+1. **Group F** — `flutter run --dart-define=CHIT_SEED=seed`, then look. The grid as a shape,
+   today's ring on paper on a busy tile (ADR-046 — the one decision this session could not
+   settle at a desk), the chevrons, the summary's wording, filtering, the 44px floor, and the
+   milestone's statement of done: a save on Today reaching the calendar without a refresh.
+   It also finally puts open items 15 and 19 in front of somebody.
+2. **Group G** — `flutter run --dart-define=CHIT_SEED=clear`, and confirm the console says
+   twenty rows and four recordings went and that nothing written by hand did. Then M4 is
+   signed off here and in BUILD-PLAN.md.
+
+If the pass finds something, the shape of the answer is the one M3 used: fix it, record it as
+a numbered item below if it is accepted rather than fixed, and re-run the row it broke.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M4.
@@ -208,29 +240,12 @@ they are cited from other documents — so a closed item keeps its number and sh
     M4 group A. `flutter run --dart-define=CHIT_SEED=seed` writes twenty chits over six weeks,
     `=clear` takes them off again; DATA-MODEL.md §7 has the shape of the fixture.
 11. ~~Re-point `lib/core/theme/` at v6.~~ **Closed 15 Sep 2026.**
-12. ### ⬜ **Today's ring fails its contrast floor on a busy day.** Wants a design answer.
-
-    Today is ringed in `--seal` on the calendar; the tile under it is an ink wash whose strength
-    depends on how much was written that day. As a non-text UI component the ring needs 3:1:
-
-    | Tile | Ratio | |
-    |---|---|---|
-    | empty | 4.56:1 | passes |
-    | one chit | 3.97:1 | passes |
-    | two | 3.36:1 | passes |
-    | three | **2.61:1** | fails |
-    | four or more | **1.88:1** | fails |
-
-    Three chits is an ordinary day in an app whose premise is several a day, so this is not a
-    corner case. Do not fix it by nudging a token: the ring and the fill are the same lightness
-    family by design (ADR-022). It probably wants a different *shape* for today — and M2 group I
-    found the general form of that answer, which is §6.4's new **colour is never the only
-    difference**: `--seal` is *less* contrasty on paper than `--ink-faint` is (4.56:1 against
-    5.08:1), so the accent has never been carrying hierarchy on contrast anyway. It is M4's
-    problem.
-
-    The figures are asserted in `test/core/theme/contrast_test.dart`, **including the two that
-    fail**. Fixing this breaks that test, which is deliberate.
+12. ~~Today's ring fails its contrast floor on a busy day.~~ **Closed 17 September 2026 by
+    ADR-046**, with the shape answer the item asked for: the ring frames the tile with 2px of
+    paper inside it, so both edges meet `--paper` at 4.56:1 whatever today holds. The old
+    figures — 2.61:1 at three chits, 1.88:1 at four — stay in `contrast_test.dart` as the
+    record of why. **Whether the smaller wash reads as *today* is unseen**; it is the first row
+    M4 added to the device list.
 13. ~~`--hair-soft` has collapsed on a chit.~~ **Closed 15 Sep 2026** by M2 decision A4. It
     turned up a second thing worth keeping: **`--ink-faint` fails on any wash at all**, so
     Discard's label lifts to `--ink` while the control is held.
@@ -245,8 +260,9 @@ they are cited from other documents — so a closed item keeps its number and sh
 15. **Crowding on the timeline is half answered.** Chits written minutes apart **overlap**, and
     that reads as the burst §4.1 wants rather than as a smear — tried deliberately at the end of
     M2. What is still untried is the case ADR-024 actually worried about: fifteen to twenty marks
-    spread across three days, which is a different picture from four marks in an hour. The debug
-    seeder of item 10 is how to produce it on purpose, and that is the reason to write it.
+    spread across three days, which is a different picture from four marks in an hour. **The
+    seeder now produces it on purpose** — five marks on each of the two days before today,
+    including a six-minute pair — and TASKS.md group F is where it gets looked at.
 16. **What the strip says at its back-stop is now a smaller question than it was.** Two days back
     on a quiet day used to be a bare line with no mark, no boundary and — by §4.1's own decision —
     no label; ADR-035 removed most of that by not drawing empty leading days at all. What is left
@@ -268,6 +284,8 @@ they are cited from other documents — so a closed item keeps its number and sh
     a 1.22px stroke — that is reasoning, not evidence. The walking figure is the weakest of the
     three and the most likely to need redrawing; it is four strokes and a circle in a 14-unit
     box, and `design/chit-app-v6.html` is where to change it first. ADR-039 carries the cost.
+    **The seeder draws all three** — walking twice, travelling twice, flying once — so group F
+    is the first time anyone can look without taking a walk first.
 20. **`flying` will almost never fire, and that is expected rather than broken.** Most devices
     disable GPS in airplane mode, so there is no fix, so there is no speed. The state is correct
     when it does fire and it is cheap to keep. This is here so that a future session does not
