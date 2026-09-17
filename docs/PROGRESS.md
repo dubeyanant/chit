@@ -6,12 +6,9 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 17 September 2026, **at the end of M3 and after it was signed off on a
-handset**. Ambient capture is real: a fresh install asks for location behind a screen of its
-own, and a chit carries the actual weather and the fact of a place.
-
-**M4 has not been cut yet, deliberately.** TASKS.md still holds M3 and the next session is the
-one that replaces it.
+**Last updated:** 17 September 2026, **with M4 cut and under way**. M3 is signed off on a
+handset; ambient capture is real. [TASKS.md](TASKS.md) now holds M4 — the calendar — in seven
+groups, the seeder first and the seeded rows' removal last.
 
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s table is the
 ledger of what is done. What belongs here is the present: where the build is, what the next
@@ -164,17 +161,12 @@ long sitting have still never been tried.
 
 ---
 
-## Next: M4, which has not been cut yet
+## Next: M4, group A
 
-**M3 is done and signed off on a handset.** [BUILD-PLAN.md](BUILD-PLAN.md) M4 says what the
-calendar milestone is for; nobody has cut it into groups, and that is deliberate — the next
-session starts by reading BUILD-PLAN.md M4 and writing TASKS.md fresh.
-
-**One thing is worth doing first, before any calendar work**: DATA-MODEL.md §7's debug seeder,
-which is open item 10 and has now been owed for two milestones. The calendar's density, its
-month summary and the timeline's crowding all want several days of history, and ADR-035 means an
-empty yesterday is not even drawn — so without a seeder every one of them is looked at empty.
-It would also settle open item 15, which has been half-answered since M2.
+**M4 is cut** — [TASKS.md](TASKS.md) has the seven groups and the five decisions they turn on.
+Group A is the seeder of DATA-MODEL.md §7, open item 10, which comes before any calendar work
+because nothing about a calendar can be looked at empty. The last group, G, takes the seeded
+rows off the handset again.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M4.
