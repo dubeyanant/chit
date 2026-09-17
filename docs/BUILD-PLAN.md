@@ -138,7 +138,7 @@ The fakes come out.
 
 ---
 
-## M4 — Calendar
+## M4 — Calendar ✅ done, 17 September 2026
 
 - The month grid: a date carries a number only when something was written, density in four
   steps of ink, today ringed and always numbered, and the current month drawn up to today and
@@ -164,6 +164,24 @@ Past chits stay non-interactive here. Saved chits **are** editable (ADR-014), th
 method exists from M1, and OPEN-QUESTIONS.md §8.1 is now settled (ADR-017) — but the editor is M6, and
 until it exists there is no pointer affordance, no focus stop and no button semantics. The
 audio pill is still the only control in a row. The affordance and the editor arrive together.
+
+**Signed off on a handset on 17 September 2026**, on the fourth look, after three earlier ones
+had each sent something back to the desk. What it taught, beside M3's lesson that the standing
+device list is the only net for this class:
+
+- **Two of the four looks reversed a documented decision within a day of its being made.**
+  ADR-047 kept a quiet week between two written ones on purpose and ADR-048 removed it the same
+  afternoon; §4.2's paragraph on empty rows moved twice in two commits. A rule about what an
+  empty stretch means cannot be settled at a desk, because at a desk there is no empty stretch.
+- **A flicker is a wrong answer.** The grid went to null while the database answered, which
+  every doc had defended as *nothing drawn until the query answers* — and on a handset that
+  read as breakage, intermittently, because Drift's stream cache sometimes made the answer
+  instant (ADR-049). "Null until answered" is right once; after that the last answer is truer
+  than a blank.
+- **The fixture is part of the interface.** A seeded chit reading *"Nothing today."* was taken
+  for the app writing on an empty day. Sample copy that can be read as behaviour will be.
+- **Nothing a test could hold was wrong.** Four hundred green tests and six findings, every one
+  of them visual or temporal.
 
 ---
 

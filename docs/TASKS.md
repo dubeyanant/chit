@@ -114,49 +114,54 @@ bites.*
       PROGRESS.md — the status board, what is on a handset, the standing device list, the
       open items (10 and 12 close, 15 and 19 become lookable), and *Next*.
 
-## F. The device pass ⬜
+## F. The device pass ✅
 
 *Seeded, then looked at. Nothing in this group can be checked by a test.*
+
+**Signed off by the owner on 17 September 2026, on the fourth look**: every row below was
+checked after the third look's six fixes and "everything works fine". The rows without a note
+were not remarked on, which is the good outcome; the rows with one say what an earlier look
+found.
 
 ```bash
 flutter run --dart-define=CHIT_SEED=seed
 ```
 
-- [ ] The grid reads as a shape — a number only where something was written, four steps of
+- [x] The grid reads as a shape — a number only where something was written, four steps of
       ink telling apart one, two, three and five chits at arm's length.
-- [ ] Today is ringed **on paper** and reads as today on a busy tile as well as an empty one
+- [x] Today is ringed **on paper** and reads as today on a busy tile as well as an empty one
       (D1). If the ring reads as a frame around a smaller tile rather than as today, that is
       the thing to say.
 - [x] The current month stops at today. *Seen seeded on 17 September — "works fantastically".*
 - [x] **D6, since made:** the chevrons skip straight from September to August, and the grid
       shows only written weeks. *Seen on the second pass, which asked for the bare week across
       August's middle to go as well — ADR-048, unseen since.*
-- [ ] **ADR-048, since made:** the seeded August is three rows — the 2nd to the 8th, the 9th to
+- [x] **ADR-048, since made:** the seeded August is three rows — the 2nd to the 8th, the 9th to
       the 15th, the 23rd to the 29th — with no bare row between the second and third.
 - [x] The jump in page height between months reads as the page changing, not as a glitch.
       *The second pass saw a glitch, and it was not the height: the grid blanked and refilled
       on every change of month — ADR-049, fixed at the desk and unseen since.*
-- [ ] **ADR-049, since made:** changing the month changes the page once. No blank frame, no
+- [x] **ADR-049, since made:** changing the month changes the page once. No blank frame, no
       jump in the archive; the same on tapping a tile and on **Show every day**.
-- [ ] The archive's day heading — *Yesterday*, the hairline, *5 chits* — sits with the line
+- [x] The archive's day heading — *Yesterday*, the hairline, *5 chits* — sits with the line
       through the middle of the name, as *earlier*'s does on Today. *The second pass saw it
       high; it was v6's baseline row, which Flutter reads differently from CSS.*
-- [ ] *17 chits over seven days* for the seeded September; *3 chits over three days* for
+- [x] *17 chits over seven days* for the seeded September; *3 chits over three days* for
       August.
-- [ ] Tapping a tile narrows the archive to that day and frames the tile; tapping it again,
+- [x] Tapping a tile narrows the archive to that day and frames the tile; tapping it again,
       or **Show every day**, widens it.
-- [ ] Every tile clears 44px on the handset it is checked on.
-- [ ] **Saving a chit on Today changes the tile, the summary and the archive without a
+- [x] Every tile clears 44px on the handset it is checked on.
+- [x] **Saving a chit on Today changes the tile, the summary and the archive without a
       refresh** — the milestone's statement of done.
 - [x] Item 15: the strip with ten marks across two days and whatever today holds. *Seen. The
       marks read; the day ends did not — the 23:55 chit sat over the 4px boundary and hid it.
       ADR-050 grew it to now's height, hanging below the line; unseen since.*
-- [ ] **ADR-050, since made:** both day ends are findable on the seeded strip, the one under
+- [x] **ADR-050, since made:** both day ends are findable on the seeded strip, the one under
       the 23:55 mark included, and the boundary reads as a day end rather than as a second now.
-- [ ] Two haptics scrolling back across the three days, each as the boundary tick crosses the
+- [x] Two haptics scrolling back across the three days, each as the boundary tick crosses the
       middle of the screen — that is where ADR-034 keys it, and open item 30 asks whether it
       is the right place.
-- [ ] Item 19: the three motion marks, drawn for the first time on a real device — walking on
+- [x] Item 19: the three motion marks, drawn for the first time on a real device — walking on
       the 19:05 and 07:55 chits, travelling on 18:52 and 12:10, flying on the August one.
 - [x] The §3.5 chit — the 23:55 recording with no words — reads as a chit with a stamp and
       nothing under it, not as a broken row. *Seen, and it read as neither: "an empty chit,
@@ -165,7 +170,7 @@ flutter run --dart-define=CHIT_SEED=seed
       13 September chit "Nothing today." as a placeholder the app had put there; it was the
       fixture's copy, and it now reads "Quiet one. Early night." Seed once more to see it.*
 
-## G. The seeded days come off the handset ⬜
+## G. The seeded days come off the handset ✅
 
 *The last group, and the one the milestone is not done without. The seeder stays — it is
 DATA-MODEL.md §7's and M5 will want it — but the rows it wrote are scaffolding.*
@@ -174,8 +179,9 @@ DATA-MODEL.md §7's and M5 will want it — but the rows it wrote are scaffoldin
 flutter run --dart-define=CHIT_SEED=clear
 ```
 
-- [ ] The console says twenty rows and four recordings went.
-- [ ] Today, the strip and the calendar hold only what was actually written on this handset.
-- [ ] `--dart-define=CHIT_SEED=clear` followed by `=seed` and `=clear` again leaves the same
+- [x] The console says twenty rows and four recordings went. *Reported fine by the owner; the
+      counts were not read back to the session that signed this off.*
+- [x] Today, the strip and the calendar hold only what was actually written on this handset.
+- [x] `--dart-define=CHIT_SEED=clear` followed by `=seed` and `=clear` again leaves the same
       count — the flag is safe to use as many times as M5 needs it.
-- [ ] PROGRESS.md records the pass, and M4 is signed off in BUILD-PLAN.md.
+- [x] PROGRESS.md records the pass, and M4 is signed off in BUILD-PLAN.md.
