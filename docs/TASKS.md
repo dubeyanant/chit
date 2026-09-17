@@ -29,6 +29,7 @@ wants.
 | **D3** | **The grid gap is `s1`, not the prototype's 5px.** A gap is a relationship and CLAUDE.md §4.2 keeps every one on the scale even where v6's CSS does not | DESIGN-SYSTEM.md §6.3 |
 | **D4** | **"Show every day" is the quiet button**, the weight Discard has, and not v6's outlined bar. A fourth control weight for one control on one screen is a weight nobody else would use | BEHAVIOUR.md §4.2 |
 | **D5** | **An empty archive draws nothing**, and only a filtered day that turns out empty says *"Nothing written that day."* A fresh install's calendar is the grid, today's ring, and *Nothing written this month* — the same reading of §4.1 the thread takes | BEHAVIOUR.md §4.2 |
+| **D6** | **The calendar draws only where something was written.** Asked for on the first seeded device pass: quiet weeks at either end of a month collapse, and the chevrons land only on written months and are not drawn where there is nowhere to go. *Replaces the disabled next chevron of the first cut* | ADR-047 |
 
 ---
 
@@ -124,8 +125,12 @@ flutter run --dart-define=CHIT_SEED=seed
 - [ ] Today is ringed **on paper** and reads as today on a busy tile as well as an empty one
       (D1). If the ring reads as a frame around a smaller tile rather than as today, that is
       the thing to say.
-- [ ] The current month stops at today; the previous month draws in full; the next chevron is
-      disabled at the current month and the previous one goes back.
+- [x] The current month stops at today. *Seen seeded on 17 September — "works fantastically".*
+- [ ] **D6, since made:** a month shows only the weeks from its first written day to its last;
+      the previous chevron skips straight from September to August and is absent on April's
+      floor; the next chevron is absent at September; a fresh install has neither.
+- [ ] The jump in page height between a one-week month and a five-week one reads as the page
+      changing, not as a glitch (ADR-047's cost).
 - [ ] *17 chits over seven days* for the seeded September; *3 chits over three days* for
       August.
 - [ ] Tapping a tile narrows the archive to that day and frames the tile; tapping it again,

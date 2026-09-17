@@ -67,6 +67,128 @@ void main() {
     });
   });
 
+  group('the chevrons land only on written months — ADR-047', () {
+    // yyyymm, in no particular order, as the query would answer.
+    const List<int> written = <int>[202604, 202607, 202509, 202609];
+
+    test('previous is the nearest written month before', () {
+      expect(september.previousWrittenIn(written), const YearMonth(2026, 7));
+      expect(
+        const YearMonth(2026, 7).previousWrittenIn(written),
+        const YearMonth(2026, 4),
+      );
+      expect(
+        const YearMonth(2026, 4).previousWrittenIn(written),
+        const YearMonth(2025, 9),
+      );
+    });
+
+    test('previous is null at the floor', () {
+      expect(const YearMonth(2025, 9).previousWrittenIn(written), isNull);
+      expect(september.previousWrittenIn(const <int>[]), isNull);
+    });
+
+    test('next is the nearest written month after', () {
+      expect(
+        const YearMonth(2025, 9).nextWrittenIn(written, current: september),
+        const YearMonth(2026, 4),
+      );
+      expect(
+        const YearMonth(2026, 4).nextWrittenIn(written, current: september),
+        const YearMonth(2026, 7),
+      );
+    });
+
+    test(
+      'next lands on the current month whether or not it was written in',
+      () {
+        const List<int> withoutSeptember = <int>[202604, 202607];
+        expect(
+          const YearMonth(
+            2026,
+            7,
+          ).nextWrittenIn(withoutSeptember, current: september),
+          september,
+        );
+      },
+    );
+
+    test('next is null at the current month', () {
+      expect(september.nextWrittenIn(written, current: september), isNull);
+    });
+
+    test('code round-trips', () {
+      expect(september.code, 202609);
+      expect(YearMonth.fromCode(202609), september);
+      expect(YearMonth.fromCode(202512), const YearMonth(2025, 12));
+    });
+  });
+
+  group('quiet weeks at either end are not drawn — ADR-047', () {
+    List<int?> rowOf(MonthShape s, int index) => s.rows[index];
+
+    test('a fresh install draws only the week today is in', () {
+      // September 2026 starts on a Tuesday; the 17th is in the third week.
+      final MonthShape s = shape(september);
+      expect(s.rows, hasLength(1));
+      expect(rowOf(s, 0), <int?>[13, 14, 15, 16, 17, null, null]);
+    });
+
+    test('from the first written week to today', () {
+      final MonthShape s = shape(september, <DaySummary>[day(20260908, 1)]);
+      expect(s.rows, hasLength(2));
+      expect(rowOf(s, 0), <int?>[6, 7, 8, 9, 10, 11, 12]);
+      expect(rowOf(s, 1), <int?>[13, 14, 15, 16, 17, null, null]);
+    });
+
+    test('a quiet week between two written ones stays, and reads as quiet', () {
+      final MonthShape s = shape(september, <DaySummary>[day(20260901, 1)]);
+      expect(s.rows, hasLength(3));
+      expect(rowOf(s, 0), <int?>[null, null, 1, 2, 3, 4, 5]);
+      expect(rowOf(s, 1), <int?>[6, 7, 8, 9, 10, 11, 12]);
+      expect(rowOf(s, 2), <int?>[13, 14, 15, 16, 17, null, null]);
+    });
+
+    test('a past month trims both ends', () {
+      // August 2026 starts on a Saturday. Writes on the 20th and the 25th
+      // fall in its fourth and fifth weeks; the first three and the last go.
+      final MonthShape s = shape(const YearMonth(2026, 8), <DaySummary>[
+        day(20260820, 2),
+        day(20260825, 1),
+      ]);
+      expect(s.rows, hasLength(2));
+      expect(rowOf(s, 0), <int?>[16, 17, 18, 19, 20, 21, 22]);
+      expect(rowOf(s, 1), <int?>[23, 24, 25, 26, 27, 28, 29]);
+    });
+
+    test('a past month with one write is one week', () {
+      final MonthShape s = shape(const YearMonth(2026, 8), <DaySummary>[
+        day(20260831, 1),
+      ]);
+      expect(s.rows, <List<int?>>[
+        <int?>[30, 31, null, null, null, null, null],
+      ]);
+    });
+
+    test('a month with nothing in it and no today draws nothing', () {
+      expect(shape(const YearMonth(2026, 8)).rows, isEmpty);
+      expect(shape(const YearMonth(2026, 10)).rows, isEmpty);
+    });
+
+    test('the seeded September is three weeks, the first one full', () {
+      final MonthShape s = shape(september, <DaySummary>[
+        day(20260916, 5),
+        day(20260915, 5),
+        day(20260913, 1),
+        day(20260911, 2),
+        day(20260908, 1),
+        day(20260905, 3),
+      ]);
+      expect(s.rows, hasLength(3));
+      expect(rowOf(s, 0), <int?>[null, null, 1, 2, 3, 4, 5]);
+    });
+  });
+
   group('the current month is drawn up to today and stops', () {
     test('today is the last tile', () {
       final MonthShape s = shape(september);

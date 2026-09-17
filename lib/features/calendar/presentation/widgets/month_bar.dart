@@ -3,23 +3,25 @@ import 'package:flutter/material.dart';
 import '../../../../core/extensions.dart';
 import '../../application/month_provider.dart';
 
-/// *September 2026*, and the two chevrons — the head of the calendar.
+/// *September 2026*, and the chevrons — the head of the calendar.
 ///
 /// The name is set at the date line's size and weight, because DESIGN-SYSTEM.md
 /// §6.2 makes the two the same kind of thing: a label for what is below, not a
 /// masthead. The year sits beside it in `--ink-faint`, the way the weekday
 /// sits beside the date.
 ///
-/// **The next chevron is disabled at the current month** rather than hidden.
-/// A control that vanishes shifts the one beside it, and v6 draws both and
-/// disables one for the same reason. It is drawn at a third of its strength
-/// and carries no tap; §6.4's contrast floor does not reach a control that is
-/// not offering anything.
+/// **A chevron is drawn only when it has somewhere to go** — ADR-047. Each
+/// one lands on the nearest month with something written in it, so a month
+/// nobody can write in is never shown; with nothing earlier, and at the
+/// current month, that side is simply empty. *v6 draws both and disables
+/// one*, and so did this bar for one commit, until the first device pass saw
+/// an empty August with a dead chevron beside it. A control offering nothing
+/// is what §6.4 refuses, and a faint one is that with a claim about
+/// legibility on top.
 final class MonthBar extends StatelessWidget {
   /// The bar for [month].
   const MonthBar({
     required this.month,
-    required this.canGoForward,
     required this.onPrevious,
     required this.onNext,
     super.key,
@@ -28,14 +30,12 @@ final class MonthBar extends StatelessWidget {
   /// Which month is showing.
   final YearMonth month;
 
-  /// False at the current month, where there is nothing further to show.
-  final bool canGoForward;
+  /// To the nearest earlier written month. Null draws no chevron.
+  final VoidCallback? onPrevious;
 
-  /// One month back.
-  final VoidCallback onPrevious;
-
-  /// One month forward.
-  final VoidCallback onNext;
+  /// To the nearest later written month, or the current one. Null draws no
+  /// chevron.
+  final VoidCallback? onNext;
 
   @override
   Widget build(BuildContext context) {
@@ -62,16 +62,10 @@ final class MonthBar extends StatelessWidget {
             ),
           ),
         ),
-        _Chevron(
-          direction: TextDirection.rtl,
-          label: 'Previous month',
-          onTap: onPrevious,
-        ),
-        _Chevron(
-          direction: TextDirection.ltr,
-          label: 'Next month',
-          onTap: canGoForward ? onNext : null,
-        ),
+        if (onPrevious case final VoidCallback go)
+          _Chevron(pointsLeft: true, label: 'Previous month', onTap: go),
+        if (onNext case final VoidCallback go)
+          _Chevron(pointsLeft: false, label: 'Next month', onTap: go),
       ],
     );
   }
@@ -81,33 +75,24 @@ final class MonthBar extends StatelessWidget {
 /// exceptions, and sizing it to the target costs eight pixels of bar.
 class _Chevron extends StatelessWidget {
   const _Chevron({
-    required this.direction,
+    required this.pointsLeft,
     required this.label,
     required this.onTap,
   });
 
-  /// [TextDirection.rtl] points left, [TextDirection.ltr] right.
-  final TextDirection direction;
+  final bool pointsLeft;
   final String label;
-
-  /// Null disables it.
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
 
   /// v6 draws the glyph at 17px inside its 18-unit box.
   static const double _glyphSize = 17;
 
-  /// How faint a disabled chevron is drawn — v6's `opacity: .3`.
-  static const double _disabledStrength = 0.3;
-
   @override
   Widget build(BuildContext context) {
     final space = context.space;
-    final colors = context.colors;
-    final bool enabled = onTap != null;
 
     return Semantics(
       button: true,
-      enabled: enabled,
       label: label,
       child: GestureDetector(
         onTap: onTap,
@@ -118,10 +103,8 @@ class _Chevron extends StatelessWidget {
             child: CustomPaint(
               size: const Size.square(_glyphSize),
               painter: _ChevronPainter(
-                color: enabled
-                    ? colors.inkFaint
-                    : colors.inkFaint.withValues(alpha: _disabledStrength),
-                pointsLeft: direction == TextDirection.rtl,
+                color: context.colors.inkFaint,
+                pointsLeft: pointsLeft,
               ),
             ),
           ),

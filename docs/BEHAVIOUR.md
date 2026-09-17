@@ -392,12 +392,15 @@ Reached from the bottom tab bar.
 
   **The current month is drawn up to today and stops.** A month drawn to its end is a fortnight
   of empty tiles standing for days that have not happened, which reads as a fortnight of days
-  with nothing written in them. A past month draws in full. **Days before today keep their
-  place whether or not anything was written in them** — a quiet fortnight is two rows with no
-  numbers, not two rows removed. The grid is a calendar, and the shape of a month only means
-  something if a tile's position does; today under Thursday in the third week says *the 17th*
-  before the number is read. (Asked on the first device pass, when a fresh install showed two
-  empty rows above the 17th.)
+  with nothing written in them. A past month draws in full — **but only from the first week
+  with something in it to the last** (ADR-047). A week counts when a day of it was written in,
+  or is today; leading and trailing quiet weeks are not drawn, and a quiet week between two
+  written ones is, and reads as quiet — the rule ADR-035 already applies to the timeline's
+  days. Within a drawn week every day keeps its cell, numbered or bare, so a tile's column
+  still says its weekday: today under Thursday says *the 17th* before the number is read. *For
+  one commit this paragraph said the opposite — that a quiet fortnight before the first chit
+  was two rows with no numbers rather than two rows removed — and the first device pass, on a
+  fresh install with two empty rows above the 17th, asked why.*
 
   **Today's ring sits on paper, not on the wash** — ADR-046. The ring is drawn at the tile's
   edge with a 2px strip of paper inside it, and today's density wash sits inside that. *v6 puts
@@ -406,9 +409,14 @@ Reached from the bottom tab bar.
   day as well as a different colour, which §6.4 asks for outright. Today with nothing written
   keeps its number in `--ink-faint`.
 
-  **The chevrons work.** The previous month is always there to go back to; the next chevron is
-  disabled at the current month — drawn faint, offering nothing — because there is nothing
-  further to draw. Changing the month clears any selected day.
+  **The chevrons land only on months with something in them** (ADR-047). Previous goes to
+  the nearest earlier written month, skipping empty ones; next to the nearest later one, or back
+  to the current month, which counts whatever it holds because it is where the next chit goes.
+  **Where there is nowhere to go, no chevron is drawn** — a fresh install has neither. *v6 draws
+  both and disables one, and so did the app for one commit, until the first device pass landed
+  on an empty August with a dead chevron beside it.* It is not possible to go back in time and
+  write, so a month nobody can act on is never shown. Changing the month clears any selected
+  day.
 
 - **Month summary** — e.g. *22 chits over eleven days*, the count upright and the rest italic.
   An empty month reads *Nothing written this month*.

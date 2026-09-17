@@ -23,6 +23,9 @@ final class YearMonth {
   /// The month [when] falls in.
   factory YearMonth.of(DateTime when) => YearMonth(when.year, when.month);
 
+  /// The month a `yyyymm` names.
+  factory YearMonth.fromCode(int code) => YearMonth(code ~/ 100, code % 100);
+
   /// Four digits.
   final int year;
 
@@ -53,6 +56,42 @@ final class YearMonth {
   /// Whether this month ends before [other] begins.
   bool isBefore(YearMonth other) =>
       year < other.year || (year == other.year && month < other.month);
+
+  /// This month as `yyyymm` — the form `watchWrittenMonths` answers in.
+  int get code => year * 100 + month;
+
+  /// The nearest month before this one with something written in it, or null
+  /// when there is none — where the previous chevron goes (ADR-047).
+  ///
+  /// [written] is every written month as `yyyymm`, in any order.
+  YearMonth? previousWrittenIn(Iterable<int> written) {
+    int? best;
+    for (final int candidate in written) {
+      if (candidate < code && (best == null || candidate > best)) {
+        best = candidate;
+      }
+    }
+    return best == null ? null : YearMonth.fromCode(best);
+  }
+
+  /// The nearest month after this one worth landing on, or null when this is
+  /// [current] — where the next chevron goes (ADR-047).
+  ///
+  /// The current month always counts as written, whatever it holds: it is
+  /// where the next chit goes, and the way back to it must not depend on
+  /// whether one has been written yet today.
+  YearMonth? nextWrittenIn(
+    Iterable<int> written, {
+    required YearMonth current,
+  }) {
+    if (!isBefore(current)) return null;
+
+    int best = current.code;
+    for (final int candidate in written) {
+      if (candidate > code && candidate < best) best = candidate;
+    }
+    return YearMonth.fromCode(best);
+  }
 
   /// *September*, on its own. The year is drawn beside it in a quieter ink,
   /// so the two are separate strings rather than one.
@@ -131,6 +170,46 @@ final class MonthShape {
   /// `DateTime.weekday` runs Monday 1 to Sunday 7, so modulo seven turns
   /// Sunday into 0 and leaves the rest a day along.
   int get leadingBlanks => DateTime(month.year, month.month, 1).weekday % 7;
+
+  /// Seven cells across.
+  static const int columns = 7;
+
+  /// The rows the grid draws, each seven cells of a day number or null —
+  /// **from the first week with something in it to the last** (ADR-047).
+  ///
+  /// A week counts as having something in it when a day of it was written
+  /// in, or is today. Leading and trailing quiet weeks are not drawn at all;
+  /// a quiet week *between* two written weeks is, and reads as quiet — the
+  /// same rule ADR-035 applies to the timeline's days. Within a drawn row,
+  /// every day of the month up to [lastDrawnDay] has a cell, numbered or
+  /// bare, so a tile's column still says its weekday.
+  ///
+  /// Empty for a month with nothing in it and no today, which the chevrons
+  /// never land on.
+  List<List<int?>> get rows {
+    int? first;
+    int? last;
+    for (int day = 1; day <= lastDrawnDay; day++) {
+      if (countOf(day) > 0 || day == todayDay) {
+        first ??= day;
+        last = day;
+      }
+    }
+    if (first == null || last == null) return const <List<int?>>[];
+
+    int rowOf(int day) => (leadingBlanks + day - 1) ~/ columns;
+
+    return <List<int?>>[
+      for (int row = rowOf(first); row <= rowOf(last); row++)
+        <int?>[
+          for (int col = 0; col < columns; col++)
+            switch (row * columns + col - leadingBlanks + 1) {
+              final int day when day >= 1 && day <= lastDrawnDay => day,
+              _ => null,
+            },
+        ],
+    ];
+  }
 
   /// How many chits [day] holds. Zero for a day with nothing written, which
   /// is how a tile knows to carry no number.
@@ -238,6 +317,34 @@ final class MonthShape {
       'MonthShape($month, today: $todayDay, drawn to $lastDrawnDay, $_counts)';
 }
 
+/// Every month with a chit in it, as `yyyymm`, oldest first — what the
+/// chevrons step through (ADR-047).
+@riverpod
+Stream<List<int>> writtenMonths(Ref ref) =>
+    ref.watch(chitRepositoryProvider).watchWrittenMonths();
+
+/// Where the chevrons go from the visible month: the nearest written month
+/// either side, or null where there is none — and then no chevron is drawn.
+///
+/// The current month is always a destination whatever it holds, because it is
+/// where the next chit goes. Null on both sides until the query has answered,
+/// which draws no chevrons for a frame rather than two that go nowhere.
+typedef MonthNeighbours = ({YearMonth? previous, YearMonth? next});
+
+/// The two chevrons' destinations for the visible month.
+@riverpod
+MonthNeighbours monthNeighbours(Ref ref) {
+  final YearMonth month = ref.watch(visibleMonthProvider);
+  final YearMonth current = YearMonth.of(ref.watch(todayProvider));
+  final List<int>? written = ref.watch(writtenMonthsProvider).value;
+  if (written == null) return (previous: null, next: null);
+
+  return (
+    previous: month.previousWrittenIn(written),
+    next: month.nextWrittenIn(written, current: current),
+  );
+}
+
 /// Which month the calendar is showing, and the two chevrons.
 ///
 /// It opens on the month today falls in, and **re-reads that at midnight**
@@ -246,22 +353,39 @@ final class MonthShape {
 /// That also returns a reader who had gone back a few months to the current
 /// one, which is what they would want on a new day anyway.
 ///
-/// [next] never goes past the current month. There is nothing there to draw:
-/// a future month is a grid of days that have not happened, and BEHAVIOUR.md
-/// §4.2 will not even draw the rest of *this* one.
+/// **A chevron only ever lands on a month with something in it** — ADR-047.
+/// [previous] goes to the nearest written month before this one and [next] to
+/// the nearest after, or back to the current month, which counts whatever it
+/// holds. Neither does anything when there is nowhere to go; the bar draws no
+/// chevron for that side, so a month nobody can write in is never shown.
+/// *They stepped one calendar month at a time for one commit*, and the first
+/// device pass found an empty August with a dead chevron beside it.
 @riverpod
 class VisibleMonth extends _$VisibleMonth {
   @override
   YearMonth build() => YearMonth.of(ref.watch(todayProvider));
 
-  /// One month back. Always possible; the archive has no floor.
-  void previous() => state = state.previous;
+  // Both read the written months directly rather than [monthNeighboursProvider],
+  // which watches this notifier: a read from here back into it is a cycle,
+  // and Riverpod says so. The arithmetic is on YearMonth either way.
 
-  /// One month forward, and no further than the month today is in.
-  void next() {
-    final YearMonth current = YearMonth.of(ref.read(todayProvider));
-    if (state.isBefore(current)) state = state.next;
+  /// The nearest earlier month with something in it, if there is one.
+  void previous() {
+    final YearMonth? target = state.previousWrittenIn(_written);
+    if (target != null) state = target;
   }
+
+  /// The nearest later month with something in it, or the current month.
+  void next() {
+    final YearMonth? target = state.nextWrittenIn(
+      _written,
+      current: YearMonth.of(ref.read(todayProvider)),
+    );
+    if (target != null) state = target;
+  }
+
+  /// Nothing until the query has answered, which makes both moves no-ops.
+  List<int> get _written => ref.read(writtenMonthsProvider).value ?? const [];
 }
 
 /// How many chits each day of the visible month holds — one query for the

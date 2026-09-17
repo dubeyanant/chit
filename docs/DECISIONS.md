@@ -6,8 +6,8 @@ editing the old one.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
 at its head — ADR-001 to ADR-020 on 14 September 2026, ADR-021 to ADR-024 on 15 September 2026,
-ADR-025 to ADR-042 on 16 September 2026 and ADR-043 to ADR-046 on 17 September. Forty-three records, not
-forty-four: **ADR-018, ADR-026
+ADR-025 to ADR-042 on 16 September 2026 and ADR-043 to ADR-047 on 17 September. Forty-four records, not
+forty-five: **ADR-018, ADR-026
 and ADR-030 have been merged away**, their numbers retired rather than reused, and the note
 below says where each one went.
 
@@ -59,6 +59,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-044 | The capture budget is twelve seconds, and a stale place beats no place | revises ADR-007 — nothing waits on a capture since ADR-042, and the pin was the cost |
 | ADR-045 | A reading stays good for five minutes | amends ADR-042 — a burst of chits costs one capture, not one each |
 | ADR-046 | Today's ring sits on paper, not on the tile | closes item 12 — a shape answer, not a token nudge |
+| ADR-047 | The calendar draws only where something was written | quiet weeks at either end collapse; the chevrons skip empty months and vanish with nowhere to go |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
 row without a record.
@@ -1910,3 +1911,70 @@ three of the four pixels between tiles on a busy grid and reads as a focus ring.
 `widget_constants_test.dart`. §6.4's paragraph on the ring records the fix. The gap is a
 *dimension* in §6.3's sense — a property of one component, off the scale by design — and does
 not join the list of four, because it is named where it lives and nothing else reads it.
+
+---
+
+## ADR-047 — The calendar draws only where something was written: quiet weeks at either end collapse, and the chevrons skip empty months
+
+*17 September 2026. M4 group F — the first device pass, which asked for both.*
+
+**Decision.** Two things, one rule.
+
+1. **A month's grid runs from the first week with something in it to the last.** A week has
+   something in it when a day of it was written in, or is today. Leading and trailing quiet
+   weeks are not drawn; a quiet week *between* two written weeks is, and reads as quiet. Within
+   a drawn week every day of the month up to today has a cell, numbered or bare, so a tile's
+   column still says its weekday.
+2. **A chevron only ever lands on a month with something in it.** Previous goes to the nearest
+   earlier written month, next to the nearest later one or back to the current month — which
+   counts whatever it holds, because it is where the next chit goes. Where there is nowhere to
+   go, **no chevron is drawn** for that side.
+
+**Over.** The full month from its first week to today, and one calendar month per chevron with
+the next one disabled at the current month — which is v6, and which was built first. And over
+collapsing quiet weeks in the *middle* of a month too, which was not asked for and would put
+the 5th above the 19th with nothing to say a fortnight had passed.
+
+**Why.**
+
+*It is not possible to go back in time and write.* A past month with nothing in it is a screen
+nobody can act on, and a quiet fortnight before the first chit is two rows of tiles standing for
+days that will never hold anything. Both were seen on the first device pass: a fresh install
+showed two empty rows above the 17th, and the previous chevron landed on an August that was
+nothing but a bare grid with a dead chevron beside it. The reasoning that stops the current
+month at today — *tiles for days that have not happened read as days with nothing written in
+them* — applies just as well to weeks and months that have happened and will never be written
+in.
+
+*It is the rule the timeline already follows.* ADR-035 drops the leading empty days from the
+strip and keeps a quiet day between two written ones, for exactly this reason. A calendar that
+did the opposite would be two screens with two ideas of what an empty stretch means.
+
+*And a control with nowhere to go should not be there.* §6.4 refuses a control that does
+nothing; a faint one is that with a claim about legibility on top. Drawing the chevron only
+when it has a destination is the honest version, and it makes the empty-month case
+unreachable rather than merely disabled.
+
+**Costs.**
+
+- **The grid changes height as the reader navigates**, and the summary and archive under it
+  move with it. A month with one written week is one row tall; the next month may be five. On
+  a screen where the reader is comparing months that is a jump, and it has not been looked at.
+- **A month's shape is no longer comparable across months at a glance** — two rows in April and
+  five in May no longer mean May was fuller. The month summary carries that fact in words, and
+  the density steps carry it within a month.
+- **A new query**, `watchWrittenMonths`, and a fifth in the DAO. It is a `GROUP BY` over an
+  indexed column and runs once per screen; the cost is the row in DATA-MODEL.md §4, not the
+  round trip.
+- **The bar's chevrons appear and disappear**, which shifts nothing else — the name is on the
+  left and the chevrons hang off the right — but a reader who had a chevron under their thumb
+  a moment ago may find it gone after a save in a new month. That case is a chevron *appearing*
+  and is the good direction.
+
+**Consequences.** `MonthShape.rows` is the whole of rule 1 and `YearMonth.previousWrittenIn` /
+`nextWrittenIn` the whole of rule 2; both are plain arithmetic and tested without a widget.
+`monthNeighboursProvider` derives the two destinations for the bar, and `VisibleMonth` computes
+its own rather than reading it back — Riverpod treats a notifier reading a provider that watches
+it as a cycle, and says so. BEHAVIOUR.md §4.2 is corrected: *this document said, for one
+commit, that days before today keep their place whether or not anything was written in them.*
+They keep their place inside a drawn week; the week itself is only drawn if something is in it.

@@ -33,7 +33,7 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**387 tests, `flutter analyze` clean, `dart format` clean, the debug APK builds.** The release
+**404 tests, `flutter analyze` clean, `dart format` clean, the debug APK builds.** The release
 APK has not been rebuilt since M3's sign-off.
 
 
@@ -64,10 +64,11 @@ Below the thread the चित्त mark closes the day. An empty day reads *"N
 today."* with no rail and no count.
 
 **The calendar — built on 17 September and not yet seen on a handset.** Tapping *calendar*
-cross-fades to the month bar (*September 2026*, two chevrons, the next one faint at the current
-month), the weekday row, and the grid: a number only where something was written, four steps
-of ink, the month drawn up to today and no further, and **today ringed on paper** with a strip
-of paper between the ring and its wash (ADR-046). Under a hairline, *17 chits over seven days*
+cross-fades to the month bar (*September 2026*, and a chevron only where there is a written
+month to go to — ADR-047), the weekday row, and the grid: only the weeks from the first with
+something in it to the last, a number only where something was written, four steps of ink, the
+month drawn up to today and no further, and **today ringed on paper** with a strip of paper
+between the ring and its wash (ADR-046). Under a hairline, *17 chits over seven days*
 when seeded; under that, the archive — every day newest first, headed *Today* / *Yesterday* /
 *Friday 11 September*, drawn by the same `DayThread` Today uses. A tile narrows the archive to
 its day and takes an ink frame; the same tile, or **Show every day**, widens it. Everything
@@ -81,10 +82,15 @@ are still to be cleared** off whichever handset runs the pass — TASKS.md group
 seeder did nothing on the handset: it was gated on `kDebugMode` as well as on the define, and a
 release run ignored the flag without a word; and it wrote its placeholder recordings to
 `Directory.systemTemp`, which Android does not let an app write to. Both are fixed — the flag
-works in any build mode, and the files go to the app cache like a real recording. The same look
-raised the two empty rows above a fresh install's 17th; that is the grid keeping the month's
-geometry, and BEHAVIOUR.md §4.2 now says so. Today's ring on paper, on an empty tile, read as
-today.
+works in any build mode, and the files go to the app cache like a real recording. Today's ring
+on paper, on an empty tile, read as today.
+
+**The second look, seeded, found the current month working and asked for two changes**, both
+now made as ADR-047: the two empty weeks above a fresh install's 17th are gone — a month draws
+only from its first written week to its last — and the chevrons skip months with nothing in
+them and are not drawn at all where there is nowhere to go, so an empty August is never shown.
+*The paragraph in BEHAVIOUR.md §4.2 that defended the empty rows lasted one commit.* Neither
+change has been seen on the handset since it was made.
 
 *Weather, the pin and motion are **real** as of 17 September — `OpenMeteoService` and
 `GeolocatorLocationService` replaced the two fixed fakes, which are deleted. Nothing above
@@ -187,7 +193,8 @@ not one of them has been run** — that is TASKS.md group F, and it is the next 
 | The four density steps tell apart one, two, three and five chits at arm's length | §4.2. The ratios are asserted; whether 6% and 12% *look* different on a handset in real light is not |
 | A tile takes a tap anywhere in its cell, and every cell clears 44px | §6.4, and §6.3's reason for putting the gap inside the cell rather than between them |
 | **Saving on Today changes the tile, the summary and the archive without a refresh** | BUILD-PLAN.md M4's statement of done. Held by `calendar_providers_test.dart`; a handset is where *without a refresh* is seen rather than inferred |
-| The previous chevron goes back a month and the archive still reads every day; the next one is faint and dead at the current month | §4.2. A disabled control drawn at 30% is a claim about legibility nobody has checked |
+| The chevrons skip empty months, and **neither is drawn** on a fresh install or where there is nowhere to go; the grid shows only the weeks with something in them | **ADR-047, unseen since it was made.** The first pass saw the version it replaced — an empty August with a dead chevron, and two empty weeks above the 17th |
+| Navigating between a one-week month and a five-week month: the summary and archive jump with the grid's height | ADR-047's stated cost. Whether the jump reads as the page changing or as a glitch is a handset question |
 | The archive pages in before the reader reaches the join | `CalendarScreen._pageAhead`, a number with nothing behind it but a guess at a screen's height |
 | `CHIT_SEED=clear` leaves exactly what was written by hand | DATA-MODEL.md §7. The suite proves it in memory; the handset is where a wrong prefix would cost somebody's chits |
 

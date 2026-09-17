@@ -63,6 +63,11 @@ void main() {
       (List<ArchiveDay>? _, List<ArchiveDay>? _) {},
       fireImmediately: true,
     );
+    container.listen<MonthNeighbours>(
+      monthNeighboursProvider,
+      (MonthNeighbours? _, MonthNeighbours _) {},
+      fireImmediately: true,
+    );
   });
 
   tearDown(() async {
@@ -104,25 +109,88 @@ void main() {
       );
     });
 
-    test('goes back freely', () {
+    test('has nowhere to go on a fresh install, so draws no chevron', () async {
+      await pumpEventQueue();
+      expect(container.read(monthNeighboursProvider), (
+        previous: null,
+        next: null,
+      ));
+
       container.read(visibleMonthProvider.notifier)
         ..previous()
-        ..previous();
-      expect(container.read(visibleMonthProvider), const YearMonth(2026, 7));
+        ..next();
+      expect(container.read(visibleMonthProvider), const YearMonth(2026, 9));
     });
 
-    test('never goes past the current month', () {
+    test('goes back to the nearest written month, skipping empty ones —'
+        ' ADR-047', () async {
+      // July and April have chits; August, June and May do not. Stepping
+      // one calendar month at a time would land on an empty August with a
+      // dead chevron beside it, which is what the first device pass saw.
+      await chitAt(DateTime(2026, 7, 4, 9), 'July.');
+      await chitAt(DateTime(2026, 4, 20, 9), 'April.');
+      await pumpEventQueue();
+
       final VisibleMonth notifier = container.read(
         visibleMonthProvider.notifier,
       );
+      expect(container.read(monthNeighboursProvider), (
+        previous: const YearMonth(2026, 7),
+        next: null,
+      ));
+
+      notifier.previous();
+      expect(container.read(visibleMonthProvider), const YearMonth(2026, 7));
+      expect(container.read(monthNeighboursProvider), (
+        previous: const YearMonth(2026, 4),
+        next: const YearMonth(2026, 9),
+      ));
+
+      notifier.previous();
+      expect(container.read(visibleMonthProvider), const YearMonth(2026, 4));
+      expect(container.read(monthNeighboursProvider).previous, isNull);
+
+      // The floor: nothing earlier, so previous() is a no-op.
+      notifier.previous();
+      expect(container.read(visibleMonthProvider), const YearMonth(2026, 4));
+    });
+
+    test('comes forward the same way, and lands on the current month whether '
+        'or not it holds anything', () async {
+      await chitAt(DateTime(2026, 4, 20, 9), 'April.');
+      await chitAt(DateTime(2026, 7, 4, 9), 'July.');
+      await pumpEventQueue();
+
+      final VisibleMonth notifier = container.read(
+        visibleMonthProvider.notifier,
+      )..previous();
+      notifier.previous();
+      expect(container.read(visibleMonthProvider), const YearMonth(2026, 4));
+
+      notifier.next();
+      expect(container.read(visibleMonthProvider), const YearMonth(2026, 7));
+
+      // September has nothing written in it and is still where next() lands:
+      // it is today's month, and the way back to it cannot depend on a chit.
       notifier.next();
       expect(container.read(visibleMonthProvider), const YearMonth(2026, 9));
+      expect(container.read(monthNeighboursProvider).next, isNull);
 
-      notifier
-        ..previous()
-        ..next()
-        ..next();
+      notifier.next();
       expect(container.read(visibleMonthProvider), const YearMonth(2026, 9));
+    });
+
+    test('a save in a new month gives the chevron somewhere to go', () async {
+      await pumpEventQueue();
+      expect(container.read(monthNeighboursProvider).previous, isNull);
+
+      await chitAt(DateTime(2026, 8, 2, 9), 'August.');
+      await pumpEventQueue();
+
+      expect(
+        container.read(monthNeighboursProvider).previous,
+        const YearMonth(2026, 8),
+      );
     });
   });
 
@@ -229,14 +297,19 @@ void main() {
     });
 
     test('changing the month clears the selection', () async {
+      // Somewhere for previous() to go — a chevron only lands on a written
+      // month (ADR-047).
+      await chitAt(DateTime(2026, 8, 2, 9), 'August.');
       await chitAt(DateTime(2026, 9, 15, 9), 'Tuesday.');
+      await pumpEventQueue();
       container.read(selectedDayProvider.notifier).toggle(20260915);
       expect(container.read(selectedDayProvider), 20260915);
 
       container.read(visibleMonthProvider.notifier).previous();
 
+      expect(container.read(visibleMonthProvider), const YearMonth(2026, 8));
       expect(container.read(selectedDayProvider), isNull);
-      expect(await archive(), hasLength(1));
+      expect(await archive(), hasLength(2));
     });
 
     test('is paged, and a page more widens the query', () async {

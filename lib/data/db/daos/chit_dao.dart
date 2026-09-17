@@ -89,6 +89,28 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
     );
   }
 
+  /// Every month with at least one chit in it, as `yyyymm`, oldest first.
+  ///
+  /// What the calendar's chevrons step through (ADR-047): a month with
+  /// nothing in it is never landed on, so the answer to *where does previous
+  /// go* is the greatest of these below the visible month. `local_day / 100`
+  /// is integer division in SQLite, and the index on `local_day` serves it.
+  Stream<List<int>> watchWrittenMonths() {
+    const CustomExpression<int> month = CustomExpression<int>(
+      'local_day / 100',
+    );
+    final JoinedSelectStatement<$ChitsTable, ChitRow> query = selectOnly(chits)
+      ..addColumns(<Expression<Object>>[month])
+      ..groupBy(<Expression<Object>>[month])
+      ..orderBy(<OrderingTerm>[OrderingTerm.asc(month)]);
+
+    return query.watch().map(
+      (List<TypedResult> rows) => <int>[
+        for (final TypedResult row in rows) row.read(month)!,
+      ],
+    );
+  }
+
   /// Everything, newest day first and newest chit within a day first.
   ///
   /// Ordered on `localDay` and `createdAt`, never on `updatedAt`: editing a

@@ -8,6 +8,95 @@ part of 'month_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Every month with a chit in it, as `yyyymm`, oldest first — what the
+/// chevrons step through (ADR-047).
+
+@ProviderFor(writtenMonths)
+final writtenMonthsProvider = WrittenMonthsProvider._();
+
+/// Every month with a chit in it, as `yyyymm`, oldest first — what the
+/// chevrons step through (ADR-047).
+
+final class WrittenMonthsProvider
+    extends
+        $FunctionalProvider<AsyncValue<List<int>>, List<int>, Stream<List<int>>>
+    with $FutureModifier<List<int>>, $StreamProvider<List<int>> {
+  /// Every month with a chit in it, as `yyyymm`, oldest first — what the
+  /// chevrons step through (ADR-047).
+  WrittenMonthsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'writtenMonthsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$writtenMonthsHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<List<int>> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<int>> create(Ref ref) {
+    return writtenMonths(ref);
+  }
+}
+
+String _$writtenMonthsHash() => r'2a168052acb92914f227ee1afc404ec8a2974e06';
+
+/// The two chevrons' destinations for the visible month.
+
+@ProviderFor(monthNeighbours)
+final monthNeighboursProvider = MonthNeighboursProvider._();
+
+/// The two chevrons' destinations for the visible month.
+
+final class MonthNeighboursProvider
+    extends
+        $FunctionalProvider<MonthNeighbours, MonthNeighbours, MonthNeighbours>
+    with $Provider<MonthNeighbours> {
+  /// The two chevrons' destinations for the visible month.
+  MonthNeighboursProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'monthNeighboursProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$monthNeighboursHash();
+
+  @$internal
+  @override
+  $ProviderElement<MonthNeighbours> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  MonthNeighbours create(Ref ref) {
+    return monthNeighbours(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MonthNeighbours value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MonthNeighbours>(value),
+    );
+  }
+}
+
+String _$monthNeighboursHash() => r'01705e7e9b04da1bc1164c5efdac0bafd56a05df';
+
 /// Which month the calendar is showing, and the two chevrons.
 ///
 /// It opens on the month today falls in, and **re-reads that at midnight**
@@ -16,9 +105,13 @@ part of 'month_provider.dart';
 /// That also returns a reader who had gone back a few months to the current
 /// one, which is what they would want on a new day anyway.
 ///
-/// [next] never goes past the current month. There is nothing there to draw:
-/// a future month is a grid of days that have not happened, and BEHAVIOUR.md
-/// §4.2 will not even draw the rest of *this* one.
+/// **A chevron only ever lands on a month with something in it** — ADR-047.
+/// [previous] goes to the nearest written month before this one and [next] to
+/// the nearest after, or back to the current month, which counts whatever it
+/// holds. Neither does anything when there is nowhere to go; the bar draws no
+/// chevron for that side, so a month nobody can write in is never shown.
+/// *They stepped one calendar month at a time for one commit*, and the first
+/// device pass found an empty August with a dead chevron beside it.
 
 @ProviderFor(VisibleMonth)
 final visibleMonthProvider = VisibleMonthProvider._();
@@ -31,9 +124,13 @@ final visibleMonthProvider = VisibleMonthProvider._();
 /// That also returns a reader who had gone back a few months to the current
 /// one, which is what they would want on a new day anyway.
 ///
-/// [next] never goes past the current month. There is nothing there to draw:
-/// a future month is a grid of days that have not happened, and BEHAVIOUR.md
-/// §4.2 will not even draw the rest of *this* one.
+/// **A chevron only ever lands on a month with something in it** — ADR-047.
+/// [previous] goes to the nearest written month before this one and [next] to
+/// the nearest after, or back to the current month, which counts whatever it
+/// holds. Neither does anything when there is nowhere to go; the bar draws no
+/// chevron for that side, so a month nobody can write in is never shown.
+/// *They stepped one calendar month at a time for one commit*, and the first
+/// device pass found an empty August with a dead chevron beside it.
 final class VisibleMonthProvider
     extends $NotifierProvider<VisibleMonth, YearMonth> {
   /// Which month the calendar is showing, and the two chevrons.
@@ -44,9 +141,13 @@ final class VisibleMonthProvider
   /// That also returns a reader who had gone back a few months to the current
   /// one, which is what they would want on a new day anyway.
   ///
-  /// [next] never goes past the current month. There is nothing there to draw:
-  /// a future month is a grid of days that have not happened, and BEHAVIOUR.md
-  /// §4.2 will not even draw the rest of *this* one.
+  /// **A chevron only ever lands on a month with something in it** — ADR-047.
+  /// [previous] goes to the nearest written month before this one and [next] to
+  /// the nearest after, or back to the current month, which counts whatever it
+  /// holds. Neither does anything when there is nowhere to go; the bar draws no
+  /// chevron for that side, so a month nobody can write in is never shown.
+  /// *They stepped one calendar month at a time for one commit*, and the first
+  /// device pass found an empty August with a dead chevron beside it.
   VisibleMonthProvider._()
     : super(
         from: null,
@@ -74,7 +175,7 @@ final class VisibleMonthProvider
   }
 }
 
-String _$visibleMonthHash() => r'793a77b5a1e886366d00b51849d314fd482305ae';
+String _$visibleMonthHash() => r'6ae5978fa224c0cbfe7e6488b10da65ea4eaa362';
 
 /// Which month the calendar is showing, and the two chevrons.
 ///
@@ -84,9 +185,13 @@ String _$visibleMonthHash() => r'793a77b5a1e886366d00b51849d314fd482305ae';
 /// That also returns a reader who had gone back a few months to the current
 /// one, which is what they would want on a new day anyway.
 ///
-/// [next] never goes past the current month. There is nothing there to draw:
-/// a future month is a grid of days that have not happened, and BEHAVIOUR.md
-/// §4.2 will not even draw the rest of *this* one.
+/// **A chevron only ever lands on a month with something in it** — ADR-047.
+/// [previous] goes to the nearest written month before this one and [next] to
+/// the nearest after, or back to the current month, which counts whatever it
+/// holds. Neither does anything when there is nowhere to go; the bar draws no
+/// chevron for that side, so a month nobody can write in is never shown.
+/// *They stepped one calendar month at a time for one commit*, and the first
+/// device pass found an empty August with a dead chevron beside it.
 
 abstract class _$VisibleMonth extends $Notifier<YearMonth> {
   YearMonth build();

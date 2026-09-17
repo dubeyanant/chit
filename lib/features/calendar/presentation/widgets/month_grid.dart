@@ -52,21 +52,9 @@ final class MonthGrid extends StatelessWidget {
     'S',
   ];
 
-  static const int _columns = 7;
-
   @override
   Widget build(BuildContext context) {
     final space = context.space;
-
-    // Leading blanks, then the days that are drawn, then whatever pads the
-    // last row out to seven. A cell is either a day or nothing.
-    final List<int?> cells = <int?>[
-      for (int i = 0; i < shape.leadingBlanks; i++) null,
-      for (int day = 1; day <= shape.lastDrawnDay; day++) day,
-    ];
-    while (cells.length % _columns != 0) {
-      cells.add(null);
-    }
 
     return Column(
       children: <Widget>[
@@ -87,14 +75,17 @@ final class MonthGrid extends StatelessWidget {
             ),
           ),
         ),
-        for (int row = 0; row < cells.length ~/ _columns; row++)
+        // Only the weeks between the first and the last with something in
+        // them — the arithmetic decides which (ADR-047), and a cell is either
+        // a day or nothing.
+        for (final List<int?> row in shape.rows)
           Row(
             children: <Widget>[
-              for (int col = 0; col < _columns; col++)
+              for (final int? cell in row)
                 Expanded(
                   child: AspectRatio(
                     aspectRatio: 1,
-                    child: switch (cells[row * _columns + col]) {
+                    child: switch (cell) {
                       null => const SizedBox.shrink(),
                       final int day => DayTile(
                         day: day,

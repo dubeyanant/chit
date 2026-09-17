@@ -115,6 +115,10 @@ abstract interface class ChitRepository {
     required int toDay,
   });
 
+  /// Every month with at least one chit in it, as `yyyymm`, oldest first.
+  /// The calendar's chevrons step through these and nothing else (ADR-047).
+  Stream<List<int>> watchWrittenMonths();
+
   /// Everything, newest day first. The archive.
   Stream<List<Chit>> watchArchive({required int limit, int offset = 0});
 

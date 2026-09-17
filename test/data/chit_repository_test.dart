@@ -768,6 +768,25 @@ void main() {
       ]);
     });
 
+    test('written months are every month with a chit, oldest first', () async {
+      // ADR-047: what the chevrons step through. A month with nothing in it
+      // has no row, which is what keeps the calendar off it.
+      await chitAt(DateTime(2026, 9, 15, 9, 0), 'September.');
+      await chitAt(DateTime(2026, 9, 16, 9, 0), 'September again.');
+      await chitAt(DateTime(2026, 4, 20, 9, 0), 'April.');
+      await chitAt(DateTime(2025, 12, 31, 23, 59), 'Last year.');
+
+      expect(await repo.watchWrittenMonths().first, <int>[
+        202512,
+        202604,
+        202609,
+      ]);
+    });
+
+    test('written months is empty on a fresh install', () async {
+      expect(await repo.watchWrittenMonths().first, isEmpty);
+    });
+
     test('the archive reads newest day first, and pages', () async {
       final Chit oldest = await chitAt(DateTime(2026, 9, 14, 9, 0), 'One.');
       final Chit middle = await chitAt(DateTime(2026, 9, 15, 9, 0), 'Two.');

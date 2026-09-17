@@ -183,6 +183,9 @@ final class ChitRepositoryImpl implements ChitRepository {
   }) => _dao.watchDaySummaries(fromDay: fromDay, toDay: toDay);
 
   @override
+  Stream<List<int>> watchWrittenMonths() => _dao.watchWrittenMonths();
+
+  @override
   Stream<List<Chit>> watchArchive({required int limit, int offset = 0}) =>
       _dao.watchArchive(limit: limit, offset: offset).map(_chitsOf);
 

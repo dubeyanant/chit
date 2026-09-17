@@ -40,6 +40,7 @@ class CalendarScreen extends ConsumerWidget {
     final List<ArchiveDay>? days = ref.watch(archiveDaysProvider);
     final int? selected = ref.watch(selectedDayProvider);
     final int today = ref.watch(todayLocalDayProvider);
+    final MonthNeighbours neighbours = ref.watch(monthNeighboursProvider);
 
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
@@ -62,11 +63,14 @@ class CalendarScreen extends ConsumerWidget {
                   if (shape != null) ...<Widget>[
                     MonthBar(
                       month: shape.month,
-                      canGoForward: !shape.isCurrentMonth,
-                      onPrevious: ref
-                          .read(visibleMonthProvider.notifier)
-                          .previous,
-                      onNext: ref.read(visibleMonthProvider.notifier).next,
+                      // A chevron exists only where there is a month to go
+                      // to — ADR-047.
+                      onPrevious: neighbours.previous == null
+                          ? null
+                          : ref.read(visibleMonthProvider.notifier).previous,
+                      onNext: neighbours.next == null
+                          ? null
+                          : ref.read(visibleMonthProvider.notifier).next,
                     ),
                     // v6: the bar's padding is s5 above and s4 below.
                     SizedBox(height: space.s4),

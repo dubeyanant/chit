@@ -482,11 +482,15 @@ M4. *This section used to sketch two queries and a `selectedDateProvider`; the q
 days *today* — and neither touches the database more than once:
 
 ```
+                   writtenMonthsProvider ──► monthNeighboursProvider ──► (the bar's chevrons,
+                   (watchWrittenMonths,       (where previous and next     drawn only where
+                    yyyymm, ADR-047)           land, or null)              there is somewhere
+                                ▲                     ▲                    to go)
 todayProvider ──► visibleMonthProvider ──► monthSummariesProvider ──► monthShapeProvider
   (the clock,        (a notifier: the         (watchDaySummaries          (MonthShape: the
-   read once)         month shown; previous    over the month's           grid, the density
-                      always, next never       own days — one query       steps and the
-                      past the current)        for grid and summary)      summary, or null
+   read once)         month shown; each        over the month's           rows it draws, the
+                      chevron lands on the     own days — one query       density steps and
+                      nearest written month)   for grid and summary)      the summary, or null
                                 │                                          until answered)
                                 ▼
                         selectedDayProvider ──► archiveChitsProvider ──► archiveDaysProvider
@@ -503,7 +507,14 @@ today, how many are drawn and how dark each is have to live somewhere a test can
 grid is left with layout and taps. **The current month is drawn up to today and stops** is a
 property of that value, not of the widget — a future month has `lastDrawnDay` zero, so the
 arithmetic refuses what the chevrons already refuse. Count-to-density is a static on it, in
-the presentation layer, because it is a design scale and not a fact about the data.
+the presentation layer, because it is a design scale and not a fact about the data. **Which
+weeks are drawn is its `rows`** (ADR-047): from the first week with something in it to the
+last, so the grid has no arithmetic of its own to be wrong about.
+
+**`VisibleMonth` computes its own destinations rather than reading `monthNeighboursProvider`
+back.** That provider watches the notifier, and Riverpod treats a `ref.read` from a notifier's
+method into a provider that watches it as a cycle — it throws `CircularDependencyError` the
+first time a chevron is pressed. Both call the same two functions on `YearMonth`.
 
 **The selection resets by watching the month, not by being cleared.** `SelectedDay.build`
 reads `visibleMonthProvider` and returns null, so navigating anywhere drops it. A selection is a

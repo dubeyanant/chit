@@ -224,7 +224,8 @@ Every one of these lives in the DAO and returns a stream.
 | Calendar, the heat | `SELECT localDay, COUNT(*) WHERE localDay BETWEEN ? AND ? GROUP BY localDay` |
 | Calendar, the summary | the same rows: the total is their sum, the distinct-day count is how many there are |
 | Archive | `ORDER BY localDay DESC, createdAt DESC`, paged |
-| Archive, filtered | the same with `WHERE localDay = ?` |
+| Archive, filtered | `watchDay` — the thread's own query, because *one day's chits, newest first* is one question |
+| Calendar, the chevrons | `SELECT localDay / 100 GROUP BY localDay / 100` — every written month, so a chevron never lands on an empty one (ADR-047) |
 | Backlog: weather search | `WHERE weather = ?` — the index is already there |
 
 The calendar's density and its month summary read one query between them. *This used to say the
@@ -238,12 +239,14 @@ disagree: they are not kept in step, they are the same data.
 small and pleasing property; the timeline covers three days and the thread covers one, so they
 cannot any more. That is a real cost of the decision and it is written in the ADR as one.
 
-The DAO holds four. `watchDay`, `watchDaySummaries` and `watchArchive` arrived with M1;
+The DAO holds five. `watchDay`, `watchDaySummaries` and `watchArchive` arrived with M1;
 **`watchDayRange(fromDay, toDay)` arrived with M2 group H**, for the timeline. It reads
 **oldest first**, where `watchDay` reads newest first: a thread is read down and a strip is
-read along, so each query hands its screen the order it draws in. Filtering the archive by
-date and searching on weather arrive with the screens that ask for them (M4, and the
-backlog) — a query with no caller is a query nobody has run.
+read along, so each query hands its screen the order it draws in. **`watchWrittenMonths`
+arrived with M4** (ADR-047), a `GROUP BY` over the indexed `localDay` that answers `yyyymm`
+values, so the chevrons know where they may land. Filtering the archive by date turned out to
+need no query of its own — it is `watchDay`. Searching on weather arrives with the screen that
+asks for it (the backlog) — a query with no caller is a query nobody has run.
 
 Count-to-density (four steps, BEHAVIOUR.md §4.2) is *not* in the query. It is a design scale and lives
 in the presentation layer, where it can be re-tuned without a migration.
