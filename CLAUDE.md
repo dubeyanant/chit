@@ -268,6 +268,15 @@ flutter test
 flutter run                      # Android device or emulator
 ```
 
+To look at a calendar or a timeline with something in it, seed a debug build and clear it
+afterwards — `docs/DATA-MODEL.md` §7. Both are idempotent, and neither touches a chit a person
+wrote:
+
+```bash
+flutter run --dart-define=CHIT_SEED=seed
+flutter run --dart-define=CHIT_SEED=clear
+```
+
 When `AppDatabase.schemaVersion` changes, and only then:
 
 ```bash

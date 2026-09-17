@@ -32,26 +32,26 @@ wants.
 
 ---
 
-## A. The seeder — DATA-MODEL.md §7, open item 10 ⬜
+## A. The seeder — DATA-MODEL.md §7, open item 10 ✅
 
 *Twenty chits over six weeks, every one of them four mundane words, behind a flag no release
 build can reach.*
 
-- [ ] `lib/data/dev/debug_seeder.dart` — `DebugSeeder(dao, audio, clock)` with `seed()` and
+- [x] `lib/data/dev/debug_seeder.dart` — `DebugSeeder(dao, audio, clock)` with `seed()` and
       `clear()`. Rows are dated **relative to the day it runs** so the last three days are
       always the busy ones, and every id starts with `seed-` (D2).
-- [ ] The fixture covers all four shapes of README §5 — typed, transcript, transcript
+- [x] The fixture covers all four shapes of README §5 — typed, transcript, transcript
       corrected, and **a recording with `NULL` text** (§3.5) — plus every weather word, a
       chit with no fix, a chit with no weather, and the three motion marks so that item 19 can
       finally be looked at.
-- [ ] Two days with five chits each (density step four, and item 15's crowding on the strip),
+- [x] Two days with five chits each (density step four, and item 15's crowding on the strip),
       one with three, one with two, and singles, three of them in the previous month so the
       chevrons have somewhere to go.
-- [ ] `ChitDao.rowsWithIdPrefix` and `deleteWithIdPrefix`. A seeded recording is a real file
+- [x] `ChitDao.rowsWithIdPrefix` and `deleteWithIdPrefix`. A seeded recording is a real file
       through `AudioStore.keep`, and `clear()` deletes it with the row.
-- [ ] `main.dart` honours `--dart-define=CHIT_SEED=seed` and `=clear` in **debug only**, off
+- [x] `main.dart` honours `--dart-define=CHIT_SEED=seed` and `=clear` in **debug only**, off
       the critical path, and says what it did on the console.
-- [ ] `test/data/debug_seeder_test.dart` — idempotent, all four shapes present, clear removes
+- [x] `test/data/debug_seeder_test.dart` — idempotent, all four shapes present, clear removes
       exactly the seeded rows and files and leaves a written chit alone.
 
 ## B. The month's arithmetic ⬜

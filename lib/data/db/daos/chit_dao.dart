@@ -155,6 +155,27 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
     ),
   );
 
+  /// Every row whose id starts with [prefix], oldest first.
+  ///
+  /// The debug seeder's way of finding its own rows again (DATA-MODEL.md §7).
+  /// Nothing in the app proper calls it: a real chit's id is a UUID, and no
+  /// two of those share a prefix worth asking about.
+  Future<List<ChitRow>> rowsWithIdPrefix(String prefix) =>
+      (select(chits)
+            ..where(($ChitsTable t) => t.id.like('$prefix%'))
+            ..orderBy(<OrderClauseGenerator<$ChitsTable>>[
+              ($ChitsTable t) => OrderingTerm.asc(t.createdAt),
+            ]))
+          .get();
+
+  /// Deletes every row whose id starts with [prefix] and returns how many went.
+  ///
+  /// The other half of the seeder, and the only delete in the DAO. It removes
+  /// rows and nothing else — the recordings those rows pointed at are the
+  /// seeder's to delete first, because the DAO does not know where files live.
+  Future<int> deleteWithIdPrefix(String prefix) =>
+      (delete(chits)..where(($ChitsTable t) => t.id.like('$prefix%'))).go();
+
   /// Every audio path the database knows about. The half of the orphan sweep
   /// that answers "is this file still somebody's recording?" (ADR-008).
   Future<List<String>> audioPaths() async {

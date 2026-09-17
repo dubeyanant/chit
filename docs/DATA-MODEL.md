@@ -331,10 +331,38 @@ None of these break the invariant of §2, which is the part worth protecting.
 ## 7. Seed data for development
 
 A debug-only seeder behind a flag, writing chits across about six weeks so the calendar has
-something to shade and the archive has something to page.
+something to shade and the archive has something to page. **It exists as of M4 group A** —
+`lib/data/dev/debug_seeder.dart`, owed since M2 as PROGRESS.md open item 10.
+
+```bash
+flutter run --dart-define=CHIT_SEED=seed     # writes the fixture; a second run writes nothing
+flutter run --dart-define=CHIT_SEED=clear    # removes exactly what was seeded
+```
+
+Debug builds only: `main.dart` reads the flag behind `kDebugMode`, so a release build carries
+neither the branch nor the seeder. It runs off the critical path like the orphan sweep, and the
+console says what it did.
+
+**Twenty chits, dated relative to the day it runs.** Yesterday and the day before hold five
+each — density step four on the calendar, and ten marks across two days on the timeline, which
+is the crowding PROGRESS.md item 15 has wanted to look at since M2. Then a three, a two, and
+singles back to six weeks ago, three of them in the previous month so the chevrons have
+somewhere to go. Today is left alone: it belongs to whoever is holding the phone.
+
+**Every seeded id starts with `seed-`**, and that is the whole of how the rows are told apart
+from a person's own. Seeding is idempotent — a row whose id exists is skipped — and clearing
+deletes exactly the seeded rows and the recordings they point at, with no ledger, no preference
+and no column added for a tool. It writes through the DAO rather than the repository because
+the repository generates its ids; `localDay` still comes from `Chit.localDayOf`, so the pairing
+ADR-006 protects holds. A seeded recording is a real file placed by `AudioStore.keep`, so the
+row points at something the way a real one does; it is not audio, and these rows are cleared
+before M5 gives the pill anything to play.
 
 Sample text is four words and mundane — *"Train 20 late."* The design log is right that
 literary placeholder copy makes a screen read as a demonstration, and it will mislead us here
-exactly as it did there. A seeded day should cover all four shapes of §2 — and especially the
+exactly as it did there. The fixture covers all four shapes of §2 — and especially the
 recording with `NULL` text, because §3.5 is the state most likely to be forgotten until it
-appears in front of a user.
+appears in front of a user — plus every weather word, a chit with no fix, a chit with no
+weather, and each of the three motion marks. `test/data/debug_seeder_test.dart` holds all of
+that, and the two claims that fail quietly on a handset: that seeding twice doubles nothing,
+and that clearing leaves a chit somebody wrote alone.

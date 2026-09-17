@@ -161,12 +161,13 @@ long sitting have still never been tried.
 
 ---
 
-## Next: M4, group A
+## Next: M4, group B
 
 **M4 is cut** — [TASKS.md](TASKS.md) has the seven groups and the five decisions they turn on.
-Group A is the seeder of DATA-MODEL.md §7, open item 10, which comes before any calendar work
-because nothing about a calendar can be looked at empty. The last group, G, takes the seeded
-rows off the handset again.
+Group A, the seeder, is done: `--dart-define=CHIT_SEED=seed` puts six weeks of chits on a
+debug build and `=clear` takes them off, so the calendar is built against something rather than
+against nothing. Group B is the month's arithmetic. The last group, G, takes the seeded rows
+off the handset again.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M4.
@@ -202,10 +203,9 @@ they are cited from other documents — so a closed item keeps its number and sh
 9. **Nothing deletes a chit yet,** so the orphan sweep has little to collect. When a delete
    arrives it goes in the repository, removes the row and the file together, and gets its own
    test.
-10. **The debug seeder of DATA-MODEL.md §7 does not exist.** It is now worth more than it was:
-    the timeline and the calendar both want several days of history, and ADR-035 means an empty
-    yesterday is not even drawn. Worth writing at the start of M4, and it would have made M2
-    group H easier to look at.
+10. ~~The debug seeder of DATA-MODEL.md §7 does not exist.~~ **Closed 17 September 2026** by
+    M4 group A. `flutter run --dart-define=CHIT_SEED=seed` writes twenty chits over six weeks,
+    `=clear` takes them off again; DATA-MODEL.md §7 has the shape of the fixture.
 11. ~~Re-point `lib/core/theme/` at v6.~~ **Closed 15 Sep 2026.**
 12. ### ⬜ **Today's ring fails its contrast floor on a busy day.** Wants a design answer.
 
