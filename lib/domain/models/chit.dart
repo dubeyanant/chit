@@ -149,6 +149,15 @@ abstract class Chit with _$Chit {
   static DateTime startOfLocalDay(DateTime when, {int offsetDays = 0}) =>
       DateTime(when.year, when.month, when.day + offsetDays);
 
+  /// Midnight at the start of [localDay] — the inverse of [localDayOf].
+  ///
+  /// Here rather than in the calendar because the two have to agree about
+  /// what a `yyyymmdd` means, and they only do that reliably by being one
+  /// piece of arithmetic in one file. The calendar labels a day with it; the
+  /// row it labels was stamped by [localDayOf].
+  static DateTime dateOf(int localDay) =>
+      DateTime(localDay ~/ 10000, (localDay ~/ 100) % 100, localDay % 100);
+
   /// The signals of BEHAVIOUR.md §3.6, as the one row they are drawn as.
   ///
   /// [weather] and [motion] both travel here; only one of them is drawn, and

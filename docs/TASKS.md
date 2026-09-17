@@ -54,33 +54,33 @@ build can reach.*
 - [x] `test/data/debug_seeder_test.dart` — idempotent, all four shapes present, clear removes
       exactly the seeded rows and files and leaves a written chit alone.
 
-## B. The month's arithmetic ⬜
+## B. The month's arithmetic ✅
 
 *Everything about a month that a test can hold without a widget — ADR-031 applied where it
 bites.*
 
-- [ ] `YearMonth` — a year and a month, `previous`, `next`, `firstDay` / `lastDay` as
+- [x] `YearMonth` — a year and a month, `previous`, `next`, `firstDay` / `lastDay` as
       `yyyymmdd`, and the label *September 2026*.
-- [ ] `MonthShape` — leading blanks (Sunday first, as v6), **the current month drawn up to
+- [x] `MonthShape` — leading blanks (Sunday first, as v6), **the current month drawn up to
       today and no further**, a past month in full, the count per day, the density step
       (four, from `ChitColors.densitySteps`), and the summary in two parts so the strong half
       can be set upright.
-- [ ] Day counts in words — *eleven days*, *one day* — and the archive's day label: *Today*,
+- [x] Day counts in words — *eleven days*, *one day* — and the archive's day label: *Today*,
       *Yesterday*, then *Friday 11 September*, with the year only when it is not this one.
-- [ ] `Chit.dateOf(localDay)`, the inverse of `localDayOf`, beside it.
-- [ ] `test/features/calendar/month_shape_test.dart`.
+- [x] `Chit.dateOf(localDay)`, the inverse of `localDayOf`, beside it.
+- [x] `test/features/calendar/month_shape_test.dart`.
 
-## C. The providers ⬜
+## C. The providers ✅
 
-- [ ] `visibleMonthProvider` — a notifier off `todayProvider`; `previous()` always,
+- [x] `visibleMonthProvider` — a notifier off `todayProvider`; `previous()` always,
       `next()` never past the current month.
-- [ ] `monthSummariesProvider` — `watchDaySummaries` over the visible month, one query for
+- [x] `monthSummariesProvider` — `watchDaySummaries` over the visible month, one query for
       the grid and the summary (DATA-MODEL.md §4).
-- [ ] `monthShapeProvider` — the derived shape, null until the query has answered.
-- [ ] `selectedDayProvider` — toggles, and **resets when the month changes**.
-- [ ] `archivePagesProvider` and `archiveChitsProvider` — `watchDay` when a day is selected,
+- [x] `monthShapeProvider` — the derived shape, null until the query has answered.
+- [x] `selectedDayProvider` — toggles, and **resets when the month changes**.
+- [x] `archivePagesProvider` and `archiveChitsProvider` — `watchDay` when a day is selected,
       `watchArchive` paged otherwise; `archiveDaysProvider` groups them newest first.
-- [ ] `test/features/calendar/calendar_providers_test.dart` — on a bare `ProviderContainer`
+- [x] `test/features/calendar/calendar_providers_test.dart` — on a bare `ProviderContainer`
       with real Drift: the month asks for exactly its own days, **a save on Today reaches the
       grid, the summary and the archive** (the milestone's statement of done, as far as a test
       can hold it), selecting narrows and clearing widens, and navigating re-queries.

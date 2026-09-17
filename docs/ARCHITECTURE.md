@@ -164,10 +164,10 @@ decision is unchanged — nothing calls `DateTime.now()` — only its file path 
 | Kind | Example | Lifetime |
 |---|---|---|
 | Infrastructure | `routerProvider`, `appDatabaseProvider`, `chitRepositoryProvider`, the services | `@Riverpod(keepAlive: true)` |
-| Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `daySummariesProvider` | auto-disposed; Drift re-emits on subscribe |
-| The clock, once | `todayProvider`, `todayLocalDayProvider`, `timelineQueryWindowProvider` | auto-disposed; **one read of the clock per screen** — see below |
-| Derived | `timelineWindowProvider`, `monthHeatProvider` | auto-disposed; pure functions of the above |
-| Screen state | `composerControllerProvider`, `selectedDateProvider` | auto-disposed |
+| Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `monthSummariesProvider`, `archiveChitsProvider` | auto-disposed; Drift re-emits on subscribe |
+| The clock, once | `todayProvider`, `todayLocalDayProvider`, `timelineQueryWindowProvider`, `visibleMonthProvider` | auto-disposed; **one read of the clock per screen** — see below |
+| Derived | `timelineWindowProvider`, `monthShapeProvider`, `archiveDaysProvider`, `archiveLimitProvider` | auto-disposed; pure functions of the above |
+| Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider` | auto-disposed |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** That is
 the layer rule of §1, expressed as a lint you should notice yourself breaking.
@@ -471,17 +471,45 @@ construction. *The thread and the timeline read the same query until ADR-024; th
 covers three days now and the thread one, so they are `watchDay` and `watchDayRange`.* DESIGN-SYSTEM.md §7 requires that the two tabs never disagree; the prototype held them in
 step by hand, and here it is the only thing the architecture allows.
 
-### 4.6 Calendar queries
+### 4.6 The calendar is two chains off one reading of the day
 
-Two, both grouped on `localDay` (ADR-006):
+M4. *This section used to sketch two queries and a `selectedDateProvider`; the queries are
+`watchDaySummaries` and `watchArchive` from M1, and the rest is below.* Both chains start at
+`todayProvider` — the same instant Today is drawn for, so the two tabs cannot call different
+days *today* — and neither touches the database more than once:
 
-- `daySummaries(monthStart, monthEnd)` → `(localDay, count)` rows. The count maps to the four
-  density steps of BEHAVIOUR.md §4.2; the mapping is in the presentation layer, since it is a design
-  scale and not a fact about the data.
-- `chitsGroupedByDay(limit, offset)` → the archive, newest day first, paged.
+```
+todayProvider ──► visibleMonthProvider ──► monthSummariesProvider ──► monthShapeProvider
+  (the clock,        (a notifier: the         (watchDaySummaries          (MonthShape: the
+   read once)         month shown; previous    over the month's           grid, the density
+                      always, next never       own days — one query       steps and the
+                      past the current)        for grid and summary)      summary, or null
+                                │                                          until answered)
+                                ▼
+                        selectedDayProvider ──► archiveChitsProvider ──► archiveDaysProvider
+                        (a tile, or null;        (watchDay for a            (grouped by day,
+                         resets when the          selection, watchArchive    newest first)
+                         month changes)           paged otherwise)
+                                                        ▲
+                               archivePagesProvider ──► archiveLimitProvider
+```
 
-Selecting a date sets `selectedDateProvider`; the archive provider watches it and filters. No
-second source of data, no copy to keep in sync.
+**`MonthShape` is a plain value with no Flutter and no Riverpod in it**, for the reason
+`TimelineWindow` is: under a no-widget-test rule, where the first tile sits, which tile is
+today, how many are drawn and how dark each is have to live somewhere a test can reach. The
+grid is left with layout and taps. **The current month is drawn up to today and stops** is a
+property of that value, not of the widget — a future month has `lastDrawnDay` zero, so the
+arithmetic refuses what the chevrons already refuse. Count-to-density is a static on it, in
+the presentation layer, because it is a design scale and not a fact about the data.
+
+**The selection resets by watching the month, not by being cleared.** `SelectedDay.build`
+reads `visibleMonthProvider` and returns null, so navigating anywhere drops it. A selection is a
+tile on the grid being shown, and once that grid is another month's there is no tile for it to
+be — and this way nobody has to remember to clear it.
+
+**A filtered archive is `watchDay`** — the same query Today's thread runs. *One day's chits,
+newest first* is one question however it was asked, and a second query for it would be a
+second thing to keep in step. No second source of data, no copy to keep in sync.
 
 ---
 

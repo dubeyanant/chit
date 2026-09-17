@@ -161,13 +161,14 @@ long sitting have still never been tried.
 
 ---
 
-## Next: M4, group B
+## Next: M4, group D
 
 **M4 is cut** — [TASKS.md](TASKS.md) has the seven groups and the five decisions they turn on.
 Group A, the seeder, is done: `--dart-define=CHIT_SEED=seed` puts six weeks of chits on a
 debug build and `=clear` takes them off, so the calendar is built against something rather than
-against nothing. Group B is the month's arithmetic. The last group, G, takes the seeded rows
-off the handset again.
+against nothing. Groups B and C — the month's arithmetic and the providers — are done and
+tested; group D is the screen itself. The last group, G, takes the seeded rows off the handset
+again.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M4.
