@@ -6,10 +6,16 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 17 September 2026, **with M4 signed off on a handset**. The fourth seeded
-look checked the third look's six fixes and everything else in [TASKS.md](TASKS.md) groups F
-and G, and the owner's verdict was *everything works fine*; the seeded rows are cleared. **M5 —
-voice — is next**, and its first job is a new TASKS.md.
+**Last updated:** 17 September 2026, **with M5 under way — group A done**. M5's
+[TASKS.md](TASKS.md) was cut, in seven groups, and group A landed: the `AudioRecorder`
+interface in `domain`, `RecordAudioRecorder` over `record` in `data`, and the root wiring. The
+cut surfaced one risk no test can settle — whether Android lets `record` capture beside the
+recognition service — and it is open item 32, the first thing group G checks on a handset.
+Nothing has been run on a device this milestone yet.
+
+Earlier the same day, **M4 was signed off on a handset**. The fourth seeded look checked the
+third look's six fixes and everything else in M4's groups F and G, and the owner's verdict was
+*everything works fine*; the seeded rows are cleared.
 
 Several docs-only sessions the same day, all aimed at working-session context cost. CLAUDE.md
 gained §0.2 (an ADR is one short paragraph, no headed sections — edited in place on a later
@@ -45,31 +51,32 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
-| M5 — voice | ⬜ next | TASKS.md is still M4's; cutting M5's is the first job |
+| **M5** — voice | 🔨 in progress | 17 Sep 2026: TASKS.md cut, group A of seven done. ADR-052 |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**402 tests, `flutter analyze` clean, `dart format` clean, the debug APK builds.** The release
-APK has not been rebuilt since M3's sign-off.
+**410 tests, `flutter analyze` clean, `dart format` clean.** The debug APK was last built at
+M4's sign-off, before group A; the release APK has not been rebuilt since M3's sign-off.
 
 ---
 
-## Next: M5 — voice
+## Next: M5 — voice, group B
 
-**M4 is signed off** — here, in [TASKS.md](TASKS.md), and in
-[BUILD-PLAN.md](BUILD-PLAN.md). The next session:
+[TASKS.md](TASKS.md) is M5's and group A is ticked. The next session:
 
-1. **Cuts M5's TASKS.md**, replacing M4's wholesale as that file says it is. BUILD-PLAN.md M5
-   is the statement of done; the decisions it turns on are ADR-005 (`speech_to_text`), ADR-011
-   (the sheet is not a route), ADR-027 (the record dot is `ChitMotion.loop`'s first caller —
-   item 17), and §3.5, whose row the seeder already draws and item 31 says reads as empty until
-   the pill exists.
-2. **Seeds again when it needs to look at anything** — `flutter run --dart-define=CHIT_SEED=seed`
+1. **Builds group B**, the recogniser: the `SpeechRecognizer` interface, the one
+   `onDevice: true` call site (ADR-005), and the plugin's error codes mapped to the single
+   §3.5 branch. Its shape should mirror group A's — never throws, a fake refuses the same way.
+2. **Then group C**, the logic bare, before any widget: the recording controller, the append and
+   the origin slide in `ComposerController`, the two fakes in `test/support/`, and the tests.
+   Every rule in §3.4 and §3.5 passes before group D draws anything.
+3. **Takes the first build to a handset with item 32 in hand** — whether two plugins can share
+   the microphone decides the shape of everything after it, and it is a fact only a device can
+   give. Item 18 goes on the same walk.
+4. **Seeds when it needs to look at anything** — `flutter run --dart-define=CHIT_SEED=seed`
    is idempotent and `=clear` takes it off; both were exercised at the end of M4.
-3. **Checks item 18 against a real `Position` before believing anything else about motion**,
-   the first time a walk is taken with a build.
 
-The old *Next* is in git under `7df4153`; it was a list of rows to look at, and they were.
+The old *Next* is in git under `a5fbb19`; it said to cut TASKS.md, and it is cut.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M5.
@@ -245,3 +252,12 @@ they are cited from other documents — so a closed item keeps its number and sh
     is*, which is the honest verdict on the row as it stands: correct, and unexplained. The
     pill is M5's first job on the thread; nothing is drawn in its place now, because a
     placeholder for a control is a control that does nothing (§6.4).
+32. **Two plugins want one microphone, and nothing in the suite can say whether Android will
+    let them share it.** `speech_to_text` takes no file and no stream, so the only way to keep
+    the audio *and* recognise it is to run `record` and the recogniser at the same time
+    (TASKS.md D1). On Android the recognition service is another app's process, and since
+    Android 10 the platform silences the earlier of two ordinary captures — which would leave
+    the kept file silent while the transcript looks fine. iOS has no such rule. **Check it
+    first, in group G, by playing a take back**; if the file is silence, the fallback is a
+    decision for an ADR — recognition without a kept file, or a file without live words —
+    and not a fix to make on the spot.

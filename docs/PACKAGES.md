@@ -19,7 +19,7 @@ resolution, so the two can be compared.
 | `drift_flutter` | ✓ `^0.3.1` | opens the database with no async bootstrap; pulls `sqlite3_flutter_libs`, which is now inert — see below |
 | `go_router` | ✓ `^18.0.1` | the tab shell and routing (ADR-011) |
 | `freezed_annotation` | `^3.1.0` | immutable models: value equality, `copyWith`, and a private constructor that can assert its invariant |
-| `record` | ✓ `^7.1.1` | recording to a temp file |
+| `record` | ✓ `^7.1.1` | recording to a temp file — mono AAC in an `.m4a`, behind `RecordAudioRecorder` (ADR-052). It also owns the microphone permission ask |
 | `just_audio` | ✓ `^0.10.6` | playback behind the audio pill |
 | `speech_to_text` | ✓ `^7.4.0` | on-device transcription (ADR-005) |
 | `geolocator` | `^14.0.3` | the fix behind the pin — precise, falling back to coarse (ADR-016); also owns the location permission flow, and its **last known** fix is what the weather call uses so the two signals stay parallel (ADR-025). **Its `Position` also carries `speed`, `speedAccuracy` and `altitude`, which is the whole of motion capture** (ADR-037) — the reason chit needs no motion-sensor package and no second permission |

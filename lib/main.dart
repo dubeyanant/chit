@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/chit_app.dart';
 import 'core/clock.dart';
 import 'data/audio/audio_store.dart';
+import 'data/audio/record_audio_recorder.dart';
 import 'data/db/app_database.dart';
 import 'data/dev/debug_seeder.dart';
 import 'data/location/geolocator_location_service.dart';
@@ -17,6 +18,7 @@ import 'data/repositories/chit_repository_impl.dart';
 import 'data/weather/open_meteo_service.dart';
 import 'domain/repositories/chit_repository.dart';
 import 'domain/services/ambient_signals.dart';
+import 'domain/services/audio_recorder.dart';
 import 'domain/services/first_run_store.dart';
 import 'domain/services/location_service.dart';
 import 'domain/services/weather_service.dart';
@@ -73,6 +75,13 @@ Future<void> main() async {
           location: ref.watch(locationServiceProvider),
           client: http.Client(),
         ),
+      ),
+      // **The microphone** — M5 group A. Takes are written to the cache and
+      // timed on the app's one clock (ADR-012, ADR-052); `AudioStore` moves a
+      // kept take out of the cache on Save.
+      audioRecorderProvider.overrideWith(
+        (Ref ref) =>
+            RecordAudioRecorder.appCache(clock: ref.watch(clockProvider)),
       ),
     ],
   );

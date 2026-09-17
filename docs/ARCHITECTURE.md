@@ -46,7 +46,7 @@ lib/
 │   └── services/    interfaces only — speech, audio, weather, location, first-run, ambient capture and signals
 ├── data/
 │   ├── db/          the Drift database, table, DAO and migrations
-│   ├── audio/       AudioStore — temp → permanent, delete, orphan sweep
+│   ├── audio/       AudioStore — temp → permanent, delete, orphan sweep; the recorder over `record`
 │   ├── dev/         DebugSeeder — DATA-MODEL.md §7
 │   ├── weather/     Open-Meteo, mapped via domain/weather
 │   ├── location/    the fix, and the one ask

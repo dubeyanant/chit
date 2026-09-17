@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Forty-eight records, not fifty-one: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Forty-nine records, not fifty-two: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -69,6 +69,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-049 | The calendar holds its last answer while the next is in flight | a slow month over a blank one; the flicker on every change of month |
 | ADR-050 | A day boundary is the tick at now, hanging below the line | the same height and weight; `s1` hid behind a mark written near midnight |
 | ADR-051 | New ADRs are short | the template shrinks from here — CLAUDE.md §0.2 |
+| ADR-052 | The recorder times a take on the clock and reports a level, not decibels | M5 group A — the file is not opened until playback; the waveform draws a number |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -797,3 +798,20 @@ untouched old one — git is the archive for the rest. Cost: a short paragraph s
 alternatives considered, and DECISIONS.md is no longer the place to reconstruct *how* a decision
 was reached, only what was decided and the load-bearing why — that reconstruction now depends on
 git history for anything a paragraph dropped.
+
+---
+
+## ADR-052 — The recorder times a take on the clock and reports a level, not decibels
+
+`AudioRecorder.stop()` returns a `Recording` whose length is the injected clock's difference
+between start and stop, over reading the duration back from the file with `just_audio` — a
+decoder opened on the save path for one integer, when the file is not otherwise touched until
+playback, and a second thing that could fail between Stop & keep and the row. The same object
+carries the temp path, so `ComposerState`'s `audioTempPath` and `audioDuration` cannot be set
+apart. `levels` is a stream of 0-to-1, linear in decibels from a -60 dBFS floor to full scale,
+over passing the plugin's dBFS through — the waveform draws a number, and the scale it came off
+is the data layer's business, the way a speed's meaning is the ladder's and not geolocator's
+(ADR-037). Like every service in `domain`, it never throws: a refusal, a plugin failure and an
+empty take are `false` or `null`, because the sheet has one answer to all three. Cost: a
+length measured on the clock can be a few frames longer than the audio; the pill's figure is
+in whole seconds and does not show it.

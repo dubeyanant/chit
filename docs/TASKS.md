@@ -1,22 +1,24 @@
 # Tasks — the current milestone, broken down
 
-**M4 — Calendar.** What [BUILD-PLAN.md](BUILD-PLAN.md) M4 says is *done*, cut into groups that
+**M5 — Voice.** What [BUILD-PLAN.md](BUILD-PLAN.md) M5 says is *done*, cut into groups that
 can each be built, tested and committed on their own.
 
 This file holds **one milestone at a time** and is replaced wholesale when the next one starts.
 It is the working list; [PROGRESS.md](PROGRESS.md) is the handover.
 
-**Cut on 17 September 2026**, the day M3 was signed off. The order is deliberate and it turns
-on one thing PROGRESS.md has said for two milestones: **nothing about a calendar can be looked
-at empty.** The month grid, the summary and the archive all want several days of history, and
-ADR-035 means an empty yesterday is not even drawn on Today — so the seeder of DATA-MODEL.md §7
-comes *first*, the calendar is built against what it wrote, and the last group takes the
-seeded days off the handset again.
+**Cut on 17 September 2026**, the day M4 was signed off. The order is deliberate: the two
+platform seams come first (A, B), the milestone's logic is pulled out of the widget and tested
+bare (C) before anything is drawn (D, E, F), and the last group takes a build to a handset with
+the one thing no test can settle — whether two plugins can share one microphone (D1).
 
-**Deliberately not in M4:** the microphone and the audio pill (M5), opening a past chit (M6 —
-the rows stay non-interactive, no affordance, no focus stop), the archive's stagger on a
-re-render and every other motion in v6's calendar (M7), and the settings screen open item 22
-wants.
+Much of the ground is laid. The three packages have been pinned since M0a, `ComposerState` has
+carried `audioTempPath`, `audioDuration`, `isRecording` and `sttFailed` since M2, `Chit`
+enforces the audio invariants, `AudioStore` moves a temp file into place on Save, and the
+microphone has sat inert on the composer since M2. M5 is what happens when it is pressed.
+
+**Deliberately not in M5:** opening a past chit and its pill in the editor (M6), the pill's
+rise into the open chit and every other authored motion (M7), re-transcription (§8.2), and a
+settings screen from which a refused microphone could be reconsidered.
 
 ---
 
@@ -24,164 +26,125 @@ wants.
 
 | | Decision | Where |
 |---|---|---|
-| **D1** | **Today's ring sits on paper, not on the tile.** Open item 12: `--seal` fails 3:1 on the three- and four-chit washes. The answer is a *shape* rather than a token — the ring frames the tile at its edge with a strip of paper inside it, so both edges of the ring meet paper whatever density today carries | ADR-046 |
-| **D2** | **The seeder identifies its own rows.** Every seeded id carries a fixed prefix, so seeding twice writes nothing new and clearing deletes exactly what was seeded and nothing a person wrote. No ledger, no preference, no schema change | DATA-MODEL.md §7 |
-| **D3** | **The grid gap is `s1`, not the prototype's 5px.** A gap is a relationship and CLAUDE.md §4.2 keeps every one on the scale even where v6's CSS does not | DESIGN-SYSTEM.md §6.3 |
-| **D4** | **"Show every day" is the quiet button**, the weight Discard has, and not v6's outlined bar. A fourth control weight for one control on one screen is a weight nobody else would use | BEHAVIOUR.md §4.2 |
-| **D5** | **An empty archive draws nothing**, and only a filtered day that turns out empty says *"Nothing written that day."* A fresh install's calendar is the grid, today's ring, and *Nothing written this month* — the same reading of §4.1 the thread takes | BEHAVIOUR.md §4.2 |
-| **D6** | **The calendar draws only where something was written.** Asked for on the first seeded device pass: quiet weeks collapse, and the chevrons land only on written months and are not drawn where there is nowhere to go. *Replaces the disabled next chevron of the first cut.* The second pass narrowed the week rule: **every quiet week goes, the middle of a month included** | ADR-047, ADR-048 |
-| **D7** | **The calendar holds its last answer while the next is in flight.** The second pass saw the grid blank and refill on every change of month; the drawn month and the archive now keep the last answer until the new one arrives | ADR-049 |
-| **D8** | **A day boundary is the tick at now, hanging below the line.** The 4px mark hid behind a chit written near midnight; at now's height it clears the marks by more than a mark | ADR-050 |
+| **D1** | **Two plugins, one microphone.** `record` writes the file and `speech_to_text` listens, at the same time, because the recogniser takes no file and no stream. Whether Android lets a second capture run beside the recognition service is a fact about the platform, not the code — **it is the first thing group G checks, before anything else about voice is believed** | open item 32 |
+| **D2** | **Permission is asked at the first tap, never at first run.** A refusal does not open the sheet; the microphone explains once and stays available | BEHAVIOUR.md §4.4, ARCHITECTURE.md §6 |
+| **D3** | **A take's length is the clock's, start to stop, and never read from the file.** The file is not opened until playback | ADR-052 |
+| **D4** | **The recorder reports a level from 0 to 1, not decibels.** The waveform draws a number; the scale it came off is the data layer's | ADR-052 |
+| **D5** | **Three failures, one branch.** Heard nothing, on-device refused, no model — all `sttFailed`, all keep the audio | ADR-005, ARCHITECTURE.md §4.4 |
+| **D6** | **The pending transcript lives in the sheet's controller, not in `text`.** The field is written once, at Stop & keep, and never by the recogniser again | ARCHITECTURE.md §4.4, BEHAVIOUR.md §3.4.1 |
+| **D7** | **The record dot and the waveform are `ChitMotion.loop`'s first callers.** The dot's period is 1.2s and belongs to the dot; under reduced motion both draw at rest | ADR-027, DESIGN-SYSTEM.md §6.3 |
 
 ---
 
-## A. The seeder — DATA-MODEL.md §7, open item 10 ✅
+## A. Capture — the recorder over `record` ✅
 
-*Twenty chits over six weeks, every one of them four mundane words, behind a flag no release
-build can reach.*
+*A press on the microphone can produce a file. Nothing on screen yet.*
 
-- [x] `lib/data/dev/debug_seeder.dart` — `DebugSeeder(dao, audio, clock)` with `seed()` and
-      `clear()`. Rows are dated **relative to the day it runs** so the last three days are
-      always the busy ones, and every id starts with `seed-` (D2).
-- [x] The fixture covers all four shapes of README §5 — typed, transcript, transcript
-      corrected, and **a recording with `NULL` text** (§3.5) — plus every weather word, a
-      chit with no fix, a chit with no weather, and the three motion marks so that item 19 can
-      finally be looked at.
-- [x] Two days with five chits each (density step four, and item 15's crowding on the strip),
-      one with three, one with two, and singles, three of them in the previous month so the
-      chevrons have somewhere to go.
-- [x] `ChitDao.rowsWithIdPrefix` and `deleteWithIdPrefix`. A seeded recording is a real file
-      through `AudioStore.keep`, and `clear()` deletes it with the row.
-- [x] `main.dart` honours `--dart-define=CHIT_SEED=seed` and `=clear` in **any build mode**,
-      off the critical path, and says what it did on the console. *It was debug-only for one
-      commit, and a release run on the handset ignored it silently — the first thing group F
-      found.*
-- [x] `test/data/debug_seeder_test.dart` — idempotent, all four shapes present, clear removes
-      exactly the seeded rows and files and leaves a written chit alone.
+- [x] `domain/services/audio_recorder.dart` — the `AudioRecorder` interface: `requestPermission`,
+      `start`, `levels`, `stop`, `cancel`; `Recording`, a temp path and a length that cannot be
+      set apart; `audioRecorderProvider`, unimplemented in `domain` and overridden at the root.
+- [x] `data/audio/record_audio_recorder.dart` — over `record`. Mono AAC in an `.m4a`, the
+      extension `AudioStore` keeps. Never throws: a refusal, a plugin failure and an empty take
+      are `false` or `null`. Duration by the clock (D3); levels normalised (D4).
+- [x] `main.dart` supplies it beside the location service.
+- [x] `test/data/record_audio_recorder_test.dart` — the level arithmetic and the take's path.
 
-## B. The month's arithmetic ✅
+## B. Recognition — the recogniser over `speech_to_text`
 
-*Everything about a month that a test can hold without a widget — ADR-031 applied where it
-bites.*
+*Speech becomes words on the device. Nothing sent anywhere.*
 
-- [x] `YearMonth` — a year and a month, `previous`, `next`, `firstDay` / `lastDay` as
-      `yyyymmdd`, and the label *September 2026*.
-- [x] `MonthShape` — leading blanks (Sunday first, as v6), **the current month drawn up to
-      today and no further**, a past month in full, the count per day, the density step
-      (four, from `ChitColors.densitySteps`), and the summary in two parts so the strong half
-      can be set upright.
-- [x] Day counts in words — *eleven days*, *one day* — and the archive's day label: *Today*,
-      *Yesterday*, then *Friday 11 September*, with the year only when it is not this one.
-- [x] `Chit.dateOf(localDay)`, the inverse of `localDayOf`, beside it.
-- [x] `test/features/calendar/month_shape_test.dart`.
+- [ ] `domain/services/speech_recognizer.dart` — the `SpeechRecognizer` interface: `start`
+      returning a stream of partials, each carrying the committed words and the word still
+      pending (the lighter-ink word of §3.4), and `stop`. A result that never arrives is the
+      §3.5 branch, not an error.
+- [ ] `data/speech/on_device_speech_recognizer.dart` — `SpeechListenOptions(onDevice: true)` at
+      the one call site (ADR-005). Initialised once, lazily. The plugin's `error_no_match`,
+      `error_speech_timeout`, `error_language_unavailable` and `error_language_not_supported`
+      and an `initialize` that returns `false` all end the stream with nothing — D5.
+- [ ] `main.dart` supplies it.
+- [ ] A test for whatever pure mapping the implementation carries — the partial split, the
+      error-code table — and nothing that needs the plugin.
 
-## C. The providers ✅
+## C. The composer's voice flow — the logic, bare
 
-- [x] `visibleMonthProvider` — a notifier off `todayProvider`; `previous()` always,
-      `next()` never past the current month.
-- [x] `monthSummariesProvider` — `watchDaySummaries` over the visible month, one query for
-      the grid and the summary (DATA-MODEL.md §4).
-- [x] `drawnMonthProvider` — the derived shape, null until the query has first answered and the last answer after that (D7).
-- [x] `selectedDayProvider` — toggles, and **resets when the month changes**.
-- [x] `archivePagesProvider` and `archiveChitsProvider` — `watchDay` when a day is selected,
-      `watchArchive` paged otherwise; `archiveDaysProvider` groups them newest first.
-- [x] `test/features/calendar/calendar_providers_test.dart` — on a bare `ProviderContainer`
-      with real Drift: the month asks for exactly its own days, **a save on Today reaches the
-      grid, the summary and the archive** (the milestone's statement of done, as far as a test
-      can hold it), selecting narrows and clearing widens, and navigating re-queries.
+*Every rule in §3.4 and §3.5 has a passing test before a widget exists — ADR-031 doing its
+work.*
 
-## D. The screen ✅
+- [ ] `features/composer/application/recording_controller.dart` — the sheet's state: elapsed
+      time off the clock, the levels, the pending transcript (D6), and whether recognition has
+      given up. `start()` asks permission then starts both services; `stopAndKeep()` stops both
+      and hands `ComposerController` a `Recording` and a transcript or nothing; `cancel()`.
+- [ ] `ComposerController.keepRecording(Recording, String? transcript)` — appends the transcript
+      to the field with a space where the field already has words, sets `textOrigin` to
+      `transcript` on an empty field and `transcriptEdited` on one that had text; an empty or
+      absent transcript sets `sttFailed` and leaves the field alone; `audioTempPath` and
+      `audioDuration` are set together. The prompt is cancelled either way — the note occupies
+      its space (BEHAVIOUR.md §3.5).
+- [ ] The one-way slide: `edit` on `transcript` moves it to `transcriptEdited`; emptying the
+      field clears the origin as it does now; typing again after that is `typed`.
+- [ ] `discard` deletes the temp file through the recorder's store. `sttFailed` clears with it.
+- [ ] `microphoneRefused` — set once when permission is refused, so the composer can say so
+      beside the microphone (D2); cleared by Discard.
+- [ ] `test/support/fake_audio_recorder.dart` and `fake_speech_recognizer.dart` — hand-written,
+      and each refuses what the real one refuses: no permission, a take that wrote nothing, a
+      recogniser with no model. Their honesty is what makes the §3.5 tests mean anything.
+- [ ] `test/features/composer/recording_controller_test.dart`, and the voice cases added to
+      `composer_controller_test.dart`: transcript into an empty field, transcript after typed
+      text, the slide on the first keystroke, all three failures landing on `sttFailed` with the
+      audio kept, a chit saved with audio and no text reloading with its pill, Discard removing
+      the temp file.
 
-- [x] `DayThread` and `ChitRow` move to `shared/widgets/day_thread.dart` — the archive is the
-      second screen that wants them, which ARCHITECTURE.md §2 says is the moment.
-- [x] `ChitType.dayHeading` and `ChitType.monthSummaryStrong`.
-- [x] The month bar: the name, the year in `--ink-faint`, two chevrons at the 44px floor, the
-      next one disabled at the current month.
-- [x] The weekday row and the grid: `SliverGrid`, seven across, `s1` gaps (D3), a number only
-      where something was written, today always numbered and **ringed on paper** (D1), the
-      selected tile framed in ink.
-- [x] The summary — *22 chits over eleven days* — and the archive under it: a day heading, a
-      hairline fill, the count, and the same `DayThread` Today draws.
-- [x] Filtering: a tile narrows the archive to that day, the same tile or **Show every day**
-      (D4) clears it. Paging as the reader nears the end.
-- [x] `contrast_test.dart` — the ring's assertion rewritten for its new shape.
-- [x] The placeholder line and the comment that promised M4 are deleted.
+## D. The recording sheet
 
-## E. The doc loop ✅
+*The recording experience, drawn. v6 is the reference.*
 
-- [x] ADR-046. BEHAVIOUR.md §4.2, DESIGN-SYSTEM.md §6.2, §6.3, §6.4, ARCHITECTURE.md §2, §3
-      and a §4.3 for the calendar's data flow, DATA-MODEL.md §4 and §7, README §10, and
-      PROGRESS.md — the status board, what is on a handset, the standing device list, the
-      open items (10 and 12 close, 15 and 19 become lookable), and *Next*.
+- [ ] `features/composer/presentation/recording_sheet.dart` — a modal sheet, not a route
+      (ADR-011), raised by the microphone. The perforated top edge (`PerforatedEdge`), corners
+      at `ChitSpace.sheetRadius`, elapsed time in tabular figures, `LISTENING` in the one
+      uppercase (DESIGN-SYSTEM.md §6.2), the transcript with the pending word in lighter ink,
+      and one control: **Stop & keep**, at Save's weight.
+- [ ] The record dot in `--seal` (ADR-022), breathing on `ChitMotion.loop` at its own 1.2s (D7).
+- [ ] The live waveform off `levels`, also on `loop`; at rest under reduced motion.
+- [ ] The microphone's tap: `requestPermission` then `start`; a `false` from either leaves the
+      sheet closed and sets `microphoneRefused`.
+- [ ] Dismissing the sheet by drag or back is `cancel` — nothing kept, nothing written.
 
-## F. The device pass ✅
+## E. The audio pill and playback
 
-*Seeded, then looked at. Nothing in this group can be checked by a test.*
+*Open item 31 closes: a recording with no words reads as a recording.*
 
-**Signed off by the owner on 17 September 2026, on the fourth look**: every row below was
-checked after the third look's six fixes and "everything works fine". The rows without a note
-were not remarked on, which is the good outcome; the rows with one say what an earlier look
-found.
+- [ ] `shared/widgets/audio_pill.dart` — ink at rest, 3.5% wash, duration in `--ink-muted`
+      (§6.4's floor); the seal only while playing (ADR-022); the 0.99 press depress.
+- [ ] `domain/services/audio_player.dart` and `data/audio/just_audio_player.dart` — one player
+      provider so two pills never play at once; play, pause, the position for the playhead.
+- [ ] The pill on a chit in the thread and in the archive, and on the open chit once a take is
+      kept. A pill whose file has vanished is absent, not broken (ARCHITECTURE.md §6).
+- [ ] A test for the player's state around play, pause and end, through a fake.
 
-```bash
-flutter run --dart-define=CHIT_SEED=seed
-```
+## F. The settled microphone and the failure note
 
-- [x] The grid reads as a shape — a number only where something was written, four steps of
-      ink telling apart one, two, three and five chits at arm's length.
-- [x] Today is ringed **on paper** and reads as today on a busy tile as well as an empty one
-      (D1). If the ring reads as a frame around a smaller tile rather than as today, that is
-      the thing to say.
-- [x] The current month stops at today. *Seen seeded on 17 September — "works fantastically".*
-- [x] **D6, since made:** the chevrons skip straight from September to August, and the grid
-      shows only written weeks. *Seen on the second pass, which asked for the bare week across
-      August's middle to go as well — ADR-048, unseen since.*
-- [x] **ADR-048, since made:** the seeded August is three rows — the 2nd to the 8th, the 9th to
-      the 15th, the 23rd to the 29th — with no bare row between the second and third.
-- [x] The jump in page height between months reads as the page changing, not as a glitch.
-      *The second pass saw a glitch, and it was not the height: the grid blanked and refilled
-      on every change of month — ADR-049, fixed at the desk and unseen since.*
-- [x] **ADR-049, since made:** changing the month changes the page once. No blank frame, no
-      jump in the archive; the same on tapping a tile and on **Show every day**.
-- [x] The archive's day heading — *Yesterday*, the hairline, *5 chits* — sits with the line
-      through the middle of the name, as *earlier*'s does on Today. *The second pass saw it
-      high; it was v6's baseline row, which Flutter reads differently from CSS.*
-- [x] *17 chits over seven days* for the seeded September; *3 chits over three days* for
-      August.
-- [x] Tapping a tile narrows the archive to that day and frames the tile; tapping it again,
-      or **Show every day**, widens it.
-- [x] Every tile clears 44px on the handset it is checked on.
-- [x] **Saving a chit on Today changes the tile, the summary and the archive without a
-      refresh** — the milestone's statement of done.
-- [x] Item 15: the strip with ten marks across two days and whatever today holds. *Seen. The
-      marks read; the day ends did not — the 23:55 chit sat over the 4px boundary and hid it.
-      ADR-050 grew it to now's height, hanging below the line; unseen since.*
-- [x] **ADR-050, since made:** both day ends are findable on the seeded strip, the one under
-      the 23:55 mark included, and the boundary reads as a day end rather than as a second now.
-- [x] Two haptics scrolling back across the three days, each as the boundary tick crosses the
-      middle of the screen — that is where ADR-034 keys it, and open item 30 asks whether it
-      is the right place.
-- [x] Item 19: the three motion marks, drawn for the first time on a real device — walking on
-      the 19:05 and 07:55 chits, travelling on 18:52 and 12:10, flying on the August one.
-- [x] The §3.5 chit — the 23:55 recording with no words — reads as a chit with a stamp and
-      nothing under it, not as a broken row. *Seen, and it read as neither: "an empty chit,
-      not sure what it is". The pill that would explain it is M5's — open item 31.*
-- [x] No seeded row reads as the app writing on an empty day. *The second pass read the
-      13 September chit "Nothing today." as a placeholder the app had put there; it was the
-      fixture's copy, and it now reads "Quiet one. Early night." Seed once more to see it.*
+*Every state of the composer is drawn, and nothing on it is a control that does nothing.*
 
-## G. The seeded days come off the handset ✅
+- [ ] The microphone leaves the action row once a take is kept (BEHAVIOUR.md §4.1) — the pill
+      is where the recording now is.
+- [ ] The note *"Speech wasn't recognised. Your recording is kept."* beside the body when
+      `sttFailed`, in the prompt's place and never in the field.
+- [ ] The line beside the microphone when `microphoneRefused`, once (D2).
 
-*The last group, and the one the milestone is not done without. The seeder stays — it is
-DATA-MODEL.md §7's and M5 will want it — but the rows it wrote are scaffolding.*
+## G. Handset pass and sign-off
 
-```bash
-flutter run --dart-define=CHIT_SEED=clear
-```
+*What no test can settle.*
 
-- [x] The console says twenty rows and four recordings went. *Reported fine by the owner; the
-      counts were not read back to the session that signed this off.*
-- [x] Today, the strip and the calendar hold only what was actually written on this handset.
-- [x] `--dart-define=CHIT_SEED=clear` followed by `=seed` and `=clear` again leaves the same
-      count — the flag is safe to use as many times as M5 needs it.
-- [x] PROGRESS.md records the pass, and M4 is signed off in BUILD-PLAN.md.
+- [ ] **D1 first.** Record while recognising on Android and play the take back. If the file is
+      silence, stop and write the finding into PROGRESS.md before touching anything else: the
+      fallback is a decision, not a fix.
+- [ ] Item 18 against a real `Position`, since a walk is being taken anyway.
+- [ ] A typed chit recorded into, keeping both. A recording corrected before Save. A saved
+      recording replaying after a restart.
+- [ ] **The failure path on a phone with no on-device language model** — BUILD-PLAN.md M5 names
+      it the case most likely to reach a real user in India first. Then the other two routes.
+- [ ] A refused microphone: the sheet stays closed, the line shows once, the microphone stays.
+- [ ] Reduced motion on: the dot and the waveform at rest.
+- [ ] Seed, look at the 23:55 row of 15 September with its pill, clear.
+- [ ] Sign off in PROGRESS.md and BUILD-PLAN.md; close items 17 and 31; replace this file when
+      M6 starts.
