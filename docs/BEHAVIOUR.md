@@ -328,11 +328,13 @@ belongs to that morning, and the arc had nowhere to put it but the left edge, on
 Three full days also makes it a rhythm rather than a snapshot, which is what README §1 asks the
 signal to be. **ADR-024** has the argument and the costs.
 
-**A day ends with a small upward mark below the line.** No label, no date, no weekday — the mark
-and nothing else. It is there to be *noticed*, not read: someone who sees two of them is looking
-at three days and will know it without being told, and someone who never looks at them has lost
-nothing. Naming each day would turn a rhythm signal into a second calendar, and §4.2 is already
-that.
+**A day ends with a tick hanging below the line** — the tick at now's height and weight, in ink
+(ADR-050). No label, no date, no weekday — the mark and nothing else. It is there to be
+*noticed*, not read: someone who sees two of them is looking at three days and will know it
+without being told, and someone who never looks at them has lost nothing. Naming each day would
+turn a rhythm signal into a second calendar, and §4.2 is already that. *It was a small 4px mark
+for two milestones*, and the first strip with ten marks on it showed why that could not stay: a
+chit written near midnight sat over it and left half a pixel showing.
 
 **And a day passing can be felt.** Scrolling a boundary past the middle of the screen gives one
 small haptic, the way a picker does when a detent goes by (ADR-034). It is the same decision as
@@ -347,8 +349,9 @@ The timeline's marks are **ink**, not accent; only the marker at `now` is `--sea
 orange marks made every past moment look as live as the present one (ADR-022).
 
 That marker is a **short vertical tick through the line** — thin, and taller than a mark, so it
-reads as a position rather than as an object sitting on the strip. It is the same shape as the
-day boundary below the line, and the colour is the whole of the difference. *v6 draws a ring
+reads as a position rather than as an object sitting on the strip. It is the same tick as the
+day boundary — the same height and weight — and the difference is the colour and which side of
+the line it sits: through it for what is happening, under it for where a day ended. *v6 draws a ring
 here, and this section used to say a chit saved at the current time places its mark inside it —
 "now, with something written in it". At 11px on a handset the two read as separate shapes, and
 filling the ring to fix that made it the loudest thing on a quiet screen.* ADR-036 has both
@@ -392,15 +395,17 @@ Reached from the bottom tab bar.
 
   **The current month is drawn up to today and stops.** A month drawn to its end is a fortnight
   of empty tiles standing for days that have not happened, which reads as a fortnight of days
-  with nothing written in them. A past month draws in full — **but only from the first week
-  with something in it to the last** (ADR-047). A week counts when a day of it was written in,
-  or is today; leading and trailing quiet weeks are not drawn, and a quiet week between two
-  written ones is, and reads as quiet — the rule ADR-035 already applies to the timeline's
-  days. Within a drawn week every day keeps its cell, numbered or bare, so a tile's column
-  still says its weekday: today under Thursday says *the 17th* before the number is read. *For
-  one commit this paragraph said the opposite — that a quiet fortnight before the first chit
-  was two rows with no numbers rather than two rows removed — and the first device pass, on a
-  fresh install with two empty rows above the 17th, asked why.*
+  with nothing written in them. A past month draws in full — **but only the weeks with
+  something in them** (ADR-048). A week counts when a day of it was written in, or is today;
+  every other week is not drawn, wherever it falls in the month. Within a drawn week every day
+  keeps its cell, numbered or bare, so a tile's column still says its weekday: today under
+  Thursday says *the 17th* before the number is read. *This paragraph has moved twice in two
+  commits. It first said a quiet fortnight before the first chit was two rows with no numbers,
+  and the first device pass, on a fresh install with two empty rows above the 17th, asked why;
+  then it kept a quiet week between two written ones as the timeline keeps a quiet day
+  (ADR-047), and the second pass, looking at a bare row across the middle of August, asked for
+  that to go as well.* The strip and the grid now read an empty stretch differently, on
+  purpose: a day on the strip is a proportion of real time, a week on the grid is a row.
 
   **Today's ring sits on paper, not on the wash** — ADR-046. The ring is drawn at the tile's
   edge with a 2px strip of paper inside it, and today's density wash sits inside that. *v6 puts
@@ -416,7 +421,9 @@ Reached from the bottom tab bar.
   both and disables one, and so did the app for one commit, until the first device pass landed
   on an empty August with a dead chevron beside it.* It is not possible to go back in time and
   write, so a month nobody can act on is never shown. Changing the month clears any selected
-  day.
+  day. **The month on screen changes once, when the new one has answered** (ADR-049): the bar,
+  the grid and the summary keep drawing the last month until the next is ready, rather than
+  going blank for the frames a query takes — which the handset saw as a flicker.
 
 - **Month summary** — e.g. *22 chits over eleven days*, the count upright and the rest italic.
   An empty month reads *Nothing written this month*.

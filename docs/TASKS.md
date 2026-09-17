@@ -29,7 +29,9 @@ wants.
 | **D3** | **The grid gap is `s1`, not the prototype's 5px.** A gap is a relationship and CLAUDE.md §4.2 keeps every one on the scale even where v6's CSS does not | DESIGN-SYSTEM.md §6.3 |
 | **D4** | **"Show every day" is the quiet button**, the weight Discard has, and not v6's outlined bar. A fourth control weight for one control on one screen is a weight nobody else would use | BEHAVIOUR.md §4.2 |
 | **D5** | **An empty archive draws nothing**, and only a filtered day that turns out empty says *"Nothing written that day."* A fresh install's calendar is the grid, today's ring, and *Nothing written this month* — the same reading of §4.1 the thread takes | BEHAVIOUR.md §4.2 |
-| **D6** | **The calendar draws only where something was written.** Asked for on the first seeded device pass: quiet weeks at either end of a month collapse, and the chevrons land only on written months and are not drawn where there is nowhere to go. *Replaces the disabled next chevron of the first cut* | ADR-047 |
+| **D6** | **The calendar draws only where something was written.** Asked for on the first seeded device pass: quiet weeks collapse, and the chevrons land only on written months and are not drawn where there is nowhere to go. *Replaces the disabled next chevron of the first cut.* The second pass narrowed the week rule: **every quiet week goes, the middle of a month included** | ADR-047, ADR-048 |
+| **D7** | **The calendar holds its last answer while the next is in flight.** The second pass saw the grid blank and refill on every change of month; the drawn month and the archive now keep the last answer until the new one arrives | ADR-049 |
+| **D8** | **A day boundary is the tick at now, hanging below the line.** The 4px mark hid behind a chit written near midnight; at now's height it clears the marks by more than a mark | ADR-050 |
 
 ---
 
@@ -79,7 +81,7 @@ bites.*
       `next()` never past the current month.
 - [x] `monthSummariesProvider` — `watchDaySummaries` over the visible month, one query for
       the grid and the summary (DATA-MODEL.md §4).
-- [x] `monthShapeProvider` — the derived shape, null until the query has answered.
+- [x] `drawnMonthProvider` — the derived shape, null until the query has first answered and the last answer after that (D7).
 - [x] `selectedDayProvider` — toggles, and **resets when the month changes**.
 - [x] `archivePagesProvider` and `archiveChitsProvider` — `watchDay` when a day is selected,
       `watchArchive` paged otherwise; `archiveDaysProvider` groups them newest first.
@@ -126,11 +128,19 @@ flutter run --dart-define=CHIT_SEED=seed
       (D1). If the ring reads as a frame around a smaller tile rather than as today, that is
       the thing to say.
 - [x] The current month stops at today. *Seen seeded on 17 September — "works fantastically".*
-- [ ] **D6, since made:** a month shows only the weeks from its first written day to its last;
-      the previous chevron skips straight from September to August and is absent on April's
-      floor; the next chevron is absent at September; a fresh install has neither.
-- [ ] The jump in page height between a one-week month and a five-week one reads as the page
-      changing, not as a glitch (ADR-047's cost).
+- [x] **D6, since made:** the chevrons skip straight from September to August, and the grid
+      shows only written weeks. *Seen on the second pass, which asked for the bare week across
+      August's middle to go as well — ADR-048, unseen since.*
+- [ ] **ADR-048, since made:** the seeded August is three rows — the 2nd to the 8th, the 9th to
+      the 15th, the 23rd to the 29th — with no bare row between the second and third.
+- [x] The jump in page height between months reads as the page changing, not as a glitch.
+      *The second pass saw a glitch, and it was not the height: the grid blanked and refilled
+      on every change of month — ADR-049, fixed at the desk and unseen since.*
+- [ ] **ADR-049, since made:** changing the month changes the page once. No blank frame, no
+      jump in the archive; the same on tapping a tile and on **Show every day**.
+- [ ] The archive's day heading — *Yesterday*, the hairline, *5 chits* — sits with the line
+      through the middle of the name, as *earlier*'s does on Today. *The second pass saw it
+      high; it was v6's baseline row, which Flutter reads differently from CSS.*
 - [ ] *17 chits over seven days* for the seeded September; *3 chits over three days* for
       August.
 - [ ] Tapping a tile narrows the archive to that day and frames the tile; tapping it again,
@@ -138,11 +148,22 @@ flutter run --dart-define=CHIT_SEED=seed
 - [ ] Every tile clears 44px on the handset it is checked on.
 - [ ] **Saving a chit on Today changes the tile, the summary and the archive without a
       refresh** — the milestone's statement of done.
-- [ ] Item 15: the strip with ten marks across two days and whatever today holds.
+- [x] Item 15: the strip with ten marks across two days and whatever today holds. *Seen. The
+      marks read; the day ends did not — the 23:55 chit sat over the 4px boundary and hid it.
+      ADR-050 grew it to now's height, hanging below the line; unseen since.*
+- [ ] **ADR-050, since made:** both day ends are findable on the seeded strip, the one under
+      the 23:55 mark included, and the boundary reads as a day end rather than as a second now.
+- [ ] Two haptics scrolling back across the three days, each as the boundary tick crosses the
+      middle of the screen — that is where ADR-034 keys it, and open item 30 asks whether it
+      is the right place.
 - [ ] Item 19: the three motion marks, drawn for the first time on a real device — walking on
       the 19:05 and 07:55 chits, travelling on 18:52 and 12:10, flying on the August one.
-- [ ] The §3.5 chit — the 23:55 recording with no words — reads as a chit with a stamp and
-      nothing under it, not as a broken row.
+- [x] The §3.5 chit — the 23:55 recording with no words — reads as a chit with a stamp and
+      nothing under it, not as a broken row. *Seen, and it read as neither: "an empty chit,
+      not sure what it is". The pill that would explain it is M5's — open item 31.*
+- [x] No seeded row reads as the app writing on an empty day. *The second pass read the
+      13 September chit "Nothing today." as a placeholder the app had put there; it was the
+      fixture's copy, and it now reads "Quiet one. Early night." Seed once more to see it.*
 
 ## G. The seeded days come off the handset ⬜
 

@@ -134,9 +134,9 @@ final class TimelineWindow {
   ///
   /// [start] and [end] are not here: they are the strip's own ends, and a mark
   /// on top of an end is a mark saying what the edge already says.
-  /// BEHAVIOUR.md §4.1 draws each of these as a small upward mark below the
-  /// line, unlabelled — *someone who sees two of them is looking at three days
-  /// and will know it without being told.*
+  /// BEHAVIOUR.md §4.1 draws each of these as a tick hanging below the line,
+  /// unlabelled — *someone who sees two of them is looking at three days and
+  /// will know it without being told.*
   List<DateTime> get dayBoundaries => <DateTime>[
     for (int day = 1; day < dayCount; day++)
       Chit.startOfLocalDay(start, offsetDays: day),

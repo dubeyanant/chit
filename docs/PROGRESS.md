@@ -6,10 +6,12 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 17 September 2026, **with M4 built and its device pass owed**. The calendar
-is written, tested and compiles into a debug APK, but **nobody has looked at it on a handset
-yet** — [TASKS.md](TASKS.md) groups F and G are the pass and the clean-up after it, and they
-are the two things standing between this and *done*.
+**Last updated:** 17 September 2026, **with M4 built and two seeded looks at it taken**. The
+third look found six things and asked one question; the six are fixed at the desk as ADR-048
+to ADR-050 and three smaller corrections, **none of them seen on a handset since**, and the
+question — when exactly the haptic fires — is answered as open item 30. [TASKS.md](TASKS.md)
+group F is part-ticked and group G is untouched; together they are still what stands between
+this and *done*.
 
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s table is the
 ledger of what is done. What belongs here is the present: where the build is, what the next
@@ -28,12 +30,12 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M1** — the data spine | ✅ done | 15 Sep 2026. ADR-021, since **superseded by ADR-040** |
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
-| **M4** — calendar | 🔶 built, device pass owed | 17 Sep 2026. ADR-046. TASKS.md groups A–E done; F and G are the handset |
+| **M4** — calendar | 🔶 built, two looks taken, re-look owed | 17 Sep 2026. ADR-046 to ADR-050. TASKS.md groups A–E done; F part-ticked, G untouched |
 | M5 — voice | ⬜ | |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**404 tests, `flutter analyze` clean, `dart format` clean, the debug APK builds.** The release
+**408 tests, `flutter analyze` clean, `dart format` clean, the debug APK builds.** The release
 APK has not been rebuilt since M3's sign-off.
 
 
@@ -45,7 +47,8 @@ The masthead on `--paper`, a two-tab bar, and the whole of BEHAVIOUR.md §4.1.
 
 **The date**, one line: *Wednesday 16 September*. Under it **the timeline** — a hairline with a
 7px ink mark for every chit where its time actually falls, a short `--seal` tick at now with the
-word *now* over it, and a small tick below the line where one day ends and the next begins. One
+word *now* over it, and — since ADR-050, unseen — the same tick in ink hanging below the line
+where one day ends and the next begins. One
 day is one screen: it scrolls back a day at a time, rests with now in the middle of the
 viewport, and crossing a day boundary gives a small haptic. Days with nothing written in them
 are not drawn, so a quiet install opens on today alone and does not scroll at all. Nothing on it
@@ -63,10 +66,10 @@ chit opens stamped at that moment.
 Below the thread the चित्त mark closes the day. An empty day reads *"Nothing written yet
 today."* with no rail and no count.
 
-**The calendar — built on 17 September and not yet seen on a handset.** Tapping *calendar*
+**The calendar — built on 17 September and looked at twice, seeded.** Tapping *calendar*
 cross-fades to the month bar (*September 2026*, and a chevron only where there is a written
-month to go to — ADR-047), the weekday row, and the grid: only the weeks from the first with
-something in it to the last, a number only where something was written, four steps of ink, the
+month to go to — ADR-047), the weekday row, and the grid: only the weeks with something in
+them (ADR-048), a number only where something was written, four steps of ink, the
 month drawn up to today and no further, and **today ringed on paper** with a strip of paper
 between the ring and its wash (ADR-046). Under a hairline, *17 chits over seven days*
 when seeded; under that, the archive — every day newest first, headed *Today* / *Yesterday* /
@@ -89,8 +92,22 @@ on paper, on an empty tile, read as today.
 now made as ADR-047: the two empty weeks above a fresh install's 17th are gone — a month draws
 only from its first written week to its last — and the chevrons skip months with nothing in
 them and are not drawn at all where there is nowhere to go, so an empty August is never shown.
-*The paragraph in BEHAVIOUR.md §4.2 that defended the empty rows lasted one commit.* Neither
-change has been seen on the handset since it was made.
+*The paragraph in BEHAVIOUR.md §4.2 that defended the empty rows lasted one commit.*
+
+**The third look, seeded and later the same day, found six things and asked one question.** In
+the order they were reported: changing months flickered — the grid blanked and refilled for the
+frames a query took, and the archive jumped with it (ADR-049, the drawn month and the archive
+now hold their last answer); the bare week across August's middle, which ADR-047 had kept on
+purpose, was asked to go (ADR-048); the seeded chit reading *"Nothing today."* was read as the
+app putting a placeholder on an empty day, which it never does — the fixture's copy now reads
+*"Quiet one. Early night."*; the 23:55 chit with no words read as *an empty chit, not sure what
+it is* (item 31 — that is M5's pill missing, and the row is right); the archive's day heading
+sat with its hairline high, because v6's baseline row means something else in Flutter (it is
+centred now, as *earlier*'s is); and the day ends on the strip were hidden behind the marks
+written near midnight (ADR-050 — the boundary is now the tick at now's size, hanging below the
+line). The question was when the two haptics fire; item 30 has the answer and the choice it
+leaves. **Not one of the six fixes has been seen on a handset**, and TASKS.md group F lists each
+as a row to look at.
 
 *Weather, the pin and motion are **real** as of 17 September — `OpenMeteoService` and
 `GeolocatorLocationService` replaced the two fixed fakes, which are deleted. Nothing above
@@ -193,8 +210,12 @@ not one of them has been run** — that is TASKS.md group F, and it is the next 
 | The four density steps tell apart one, two, three and five chits at arm's length | §4.2. The ratios are asserted; whether 6% and 12% *look* different on a handset in real light is not |
 | A tile takes a tap anywhere in its cell, and every cell clears 44px | §6.4, and §6.3's reason for putting the gap inside the cell rather than between them |
 | **Saving on Today changes the tile, the summary and the archive without a refresh** | BUILD-PLAN.md M4's statement of done. Held by `calendar_providers_test.dart`; a handset is where *without a refresh* is seen rather than inferred |
-| The chevrons skip empty months, and **neither is drawn** on a fresh install or where there is nowhere to go; the grid shows only the weeks with something in them | **ADR-047, unseen since it was made.** The first pass saw the version it replaced — an empty August with a dead chevron, and two empty weeks above the 17th |
-| Navigating between a one-week month and a five-week month: the summary and archive jump with the grid's height | ADR-047's stated cost. Whether the jump reads as the page changing or as a glitch is a handset question |
+| The chevrons skip empty months, and **neither is drawn** on a fresh install or where there is nowhere to go | ADR-047. Seen on the third look and not remarked on, which is the good outcome |
+| The grid shows **only the weeks with something in them** — the seeded August is three rows with no bare row between the second and third | **ADR-048, unseen since it was made.** The third look saw the row ADR-047 kept and asked for it to go |
+| Changing the month changes the page **once** — no blank frame, no jump in the archive; the same on tapping a tile and on **Show every day** | **ADR-049, unseen since it was made.** The third look saw the blank-and-refill on every change of month, intermittently, which is Drift's stream cache deciding whether the answer was instant |
+| The archive's day heading sits with its hairline through the middle of the name, as *earlier*'s does | Seen high on the third look. It was v6's `align-items: baseline`, which Flutter reads as *top* for a box with no text; it is centred now, and the count leaves the prototype's baseline by a pixel or two for it |
+| **Both day ends are findable on a strip with ten marks on it**, the one under the 23:55 mark included, and the boundary reads as a day end rather than as a second now | **ADR-050, unseen since it was made.** The 4px mark hid behind a chit written near midnight; it is now's height, hanging below the line, and whether it reads is the next handset's question |
+| The seeded 13 September reads *"Quiet one. Early night."*, not *"Nothing today."* | The third look read the old copy as a placeholder the app had written on an empty day. It never does (§4.1); the fixture had to stop saying otherwise |
 | The archive pages in before the reader reaches the join | `CalendarScreen._pageAhead`, a number with nothing behind it but a guess at a screen's height |
 | `CHIT_SEED=clear` leaves exactly what was written by hand | DATA-MODEL.md §7. The suite proves it in memory; the handset is where a wrong prefix would cost somebody's chits |
 
@@ -202,15 +223,20 @@ not one of them has been run** — that is TASKS.md group F, and it is the next 
 
 ## Next: M4, groups F and G — the handset
 
-**Everything that can be done at a desk is done.** [TASKS.md](TASKS.md) groups A to E are
-ticked: the seeder, the month's arithmetic, the providers, the screen and the docs. What is
-left is the two groups only a phone can do, and they are written out as checklists there:
+**Everything that can be done at a desk is done, twice over.** [TASKS.md](TASKS.md) groups A
+to E are ticked, and the third look's six findings are fixed there too. What is left is the two
+groups only a phone can do, and they are written out as checklists there:
 
-1. **Group F** — `flutter run --dart-define=CHIT_SEED=seed`, then look. The grid as a shape,
-   today's ring on paper on a busy tile (ADR-046 — the one decision this session could not
-   settle at a desk), the chevrons, the summary's wording, filtering, the 44px floor, and the
-   milestone's statement of done: a save on Today reaching the calendar without a refresh.
-   It also finally puts open items 15 and 19 in front of somebody.
+1. **Group F, the re-look** — `flutter run --dart-define=CHIT_SEED=seed` (the fixture is
+   idempotent, but the 13 September row's copy changed: `=clear` first, then `=seed`, to see
+   the new words), then look at the six rows marked *since made*: no flicker on a change of
+   month or a tap on a tile (ADR-049), August as three rows with no bare one (ADR-048), the
+   heading's hairline centred, the day ends findable under the 23:55 mark (ADR-050), and the
+   seeded copy. Then the rows the third look did not get to: today's ring on paper on a busy
+   tile (ADR-046), the summary's wording, filtering, the 44px floor, item 19's motion marks,
+   and the milestone's statement of done — a save on Today reaching the calendar without a
+   refresh. And item 30 is a question for the thumb: is the middle of the screen where the
+   haptic should land?
 2. **Group G** — `flutter run --dart-define=CHIT_SEED=clear`, and confirm the console says
    twenty rows and four recordings went and that nothing written by hand did. Then M4 is
    signed off here and in BUILD-PLAN.md.
@@ -370,3 +396,25 @@ they are cited from other documents — so a closed item keeps its number and sh
     doing on the platform. **Untested against a real journey.** If it reads wrong, the honest
     fix is a shorter window for motion than for the other two rather than a shorter one for all
     three — the place and the weather are genuinely fine at five minutes.
+30. **The haptic fires when the boundary tick passes the middle of the screen, and the thumb
+    could not tell what it was marking.** Asked on the third look: *two vibrations, which is
+    correct, but I'm not sure exactly when.* The answer, re-derived from `Timeline._onScroll`
+    and `TimelineWindow.dayAt`: the strip is one screen per day, and the haptic fires at the
+    instant the day under the **middle** of the viewport changes — which is when the boundary
+    tick crosses the centre of the screen, half a screen into a scroll, and during a fling
+    rather than at its end. That is ADR-034 as written (*keyed to the middle — the day the
+    reader is looking at*) and it is the moment a picker clicks, but a picker also snaps and
+    the strip does not, so nothing visible coincides with the buzz. ADR-050's taller boundary
+    makes the tick easier to see at that instant, which may be enough. If it is not, the
+    honest alternative is to fire when a whole day comes into frame — the boundary reaching
+    the viewport's edge — and the reason ADR-034 did not is real: at rest the strip is clamped
+    with a boundary *on* the left edge, so an edge-keyed haptic fires on the first pixel of
+    every scroll back. Either way it is a decision for a thumb, not a desk; the strip is
+    unchanged until one is made.
+31. **A chit with a recording and no words reads as an empty chit, until M5.** The seeded
+    23:55 row on 15 September is §3.5's case — a recording in which nothing was recognised —
+    and it draws as a stamp with nothing under it, which is exactly what BEHAVIOUR.md says
+    until the audio pill exists. The third look read it as *an empty chit, not sure what it
+    is*, which is the honest verdict on the row as it stands: correct, and unexplained. The
+    pill is M5's first job on the thread; nothing is drawn in its place now, because a
+    placeholder for a control is a control that does nothing (§6.4).

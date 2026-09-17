@@ -135,11 +135,18 @@ Stream<List<Chit>> archiveChits(Ref ref) {
   return repo.watchArchive(limit: ref.watch(archiveLimitProvider));
 }
 
-/// The archive grouped into days, newest first — or null until the query has
-/// answered, for the reason [monthShapeProvider] is.
+/// The archive grouped into days, newest first — null until the query has
+/// first answered, and after that **the last answer, held while the next is
+/// in flight** (ADR-049), for the reasons [drawnMonthProvider] gives.
+///
+/// Three things swap the query under this — selecting a tile, clearing it,
+/// and changing the month, which clears it — and each of them blanked the
+/// archive for the frames the new query took until the hold was added.
 @riverpod
-List<ArchiveDay>? archiveDays(Ref ref) =>
-    switch (ref.watch(archiveChitsProvider)) {
-      AsyncData<List<Chit>>(:final List<Chit> value) => groupByDay(value),
-      _ => null,
-    };
+class ArchiveDays extends _$ArchiveDays {
+  @override
+  List<ArchiveDay>? build() => switch (ref.watch(archiveChitsProvider)) {
+    AsyncData<List<Chit>>(:final List<Chit> value) => groupByDay(value),
+    _ => stateOrNull,
+  };
+}

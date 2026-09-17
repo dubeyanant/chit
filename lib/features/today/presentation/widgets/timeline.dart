@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions.dart';
 import '../../../../core/theme/chit_motion.dart';
+import '../../../../core/theme/chit_space.dart';
 import '../../../../domain/models/chit.dart';
 import '../../application/timeline_provider.dart';
 import '../../application/today_controller.dart';
@@ -55,6 +56,28 @@ class Timeline extends ConsumerStatefulWidget {
   /// whole of the difference in shape between *what is happening* and *where a
   /// day ended*, and the rest of the difference is the colour.
   static const double nowHeight = 12;
+
+  /// How tall the mark where a day ends is — **the same as the tick at now**,
+  /// hanging from the line rather than through it (ADR-050).
+  ///
+  /// *It was `s1` for two milestones*, and at 4px it hid behind any mark within
+  /// a few minutes of midnight: a 7px mark reaches 3.5px below the line, which
+  /// left half a pixel of the boundary showing. At now's height it clears the
+  /// marks by more than a mark's worth, and it is one shape drawn in two
+  /// places rather than two shapes — through the line in `--seal` for what is
+  /// happening, below it in ink for where a day ended.
+  static const double boundaryHeight = nowHeight;
+
+  /// The boundary's stroke, the same as now's.
+  static const double boundaryStroke = nowStroke;
+
+  /// Where the strip's line sits, from the top of the widget: the cap's band
+  /// and half a tick, so the tick is centred on it.
+  ///
+  /// Derived rather than declared, and here rather than in the strip, because
+  /// the widget's height is derived from the same figure: the line, then the
+  /// boundary hanging under it, then a step of air.
+  static double lineTopFor(ChitSpace space) => space.s4 + (nowHeight - 1) / 2;
 
   @override
   ConsumerState<Timeline> createState() => _TimelineState();
@@ -217,7 +240,11 @@ class _TimelineState extends ConsumerState<Timeline> {
       label: 'When chits were written, over the last three days',
       child: ExcludeSemantics(
         child: SizedBox(
-          height: space.s4 + Timeline.nowHeight + space.s2,
+          height:
+              Timeline.lineTopFor(space) +
+              1 +
+              Timeline.boundaryHeight +
+              space.s2,
           child: LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               // One day is one screen, so the strip is as many screens wide
@@ -269,7 +296,7 @@ class _Strip extends StatelessWidget {
     // y is the cap's band plus half a tick. Derived rather than declared: the
     // tick is the tallest thing centred on the line, and if it changes height
     // the line should stay through its middle.
-    final double lineTop = space.s4 + (Timeline.nowHeight - 1) / 2;
+    final double lineTop = Timeline.lineTopFor(space);
     final double lineCentre = lineTop + 0.5;
 
     double? x(DateTime at) {
@@ -294,14 +321,14 @@ class _Strip extends StatelessWidget {
         // Where one day ends and the next begins — unlabelled, on purpose.
         // §4.1: it is there to be noticed, not read. Naming each day would
         // turn a rhythm signal into a second calendar, and §4.2 is already
-        // that.
+        // that. Now's height and weight, hanging from the line (ADR-050).
         for (final DateTime boundary in window.dayBoundaries)
           if (x(boundary) case final double at)
             Positioned(
-              left: at,
+              left: at - Timeline.boundaryStroke / 2,
               top: lineCentre,
-              width: 1,
-              height: space.s1,
+              width: Timeline.boundaryStroke,
+              height: Timeline.boundaryHeight,
               child: ColoredBox(color: colors.inkFaint),
             ),
 

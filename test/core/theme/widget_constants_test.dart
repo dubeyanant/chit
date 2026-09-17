@@ -94,15 +94,22 @@ void main() {
       expect(Timeline.nowStroke, 1.5);
     });
 
-    test('it straddles the line where a day boundary hangs below it', () {
-      // The whole of the difference in shape between *what is happening* and
-      // *where a day ended*; the rest of the difference is the colour. A now
-      // marker no taller than the boundary mark would need the colour to carry
-      // all of it.
+    test('a day boundary is the same tick, hanging below the line', () {
+      // ADR-050. One shape in two places: through the line in `--seal` for
+      // what is happening, below it in ink for where a day ended. The
+      // difference is position and colour, not size.
+      expect(Timeline.boundaryHeight, Timeline.nowHeight);
+      expect(Timeline.boundaryStroke, Timeline.nowStroke);
+    });
+
+    test('a mark on the line cannot hide a boundary', () {
+      // Why it grew from `s1`: a 7px mark reaches half its height below the
+      // line, and a 4px boundary under one written near midnight showed half
+      // a pixel. What hangs clear of the mark has to be at least a mark's
+      // worth, or it is findable only when nothing was written near it.
       expect(
-        Timeline.nowHeight / 2,
-        greaterThan(const ChitSpace.tokens().s1),
-        reason: 'it reaches further above the line than a boundary does below',
+        Timeline.boundaryHeight - Timeline.markSize / 2,
+        greaterThanOrEqualTo(Timeline.markSize),
       );
     });
 

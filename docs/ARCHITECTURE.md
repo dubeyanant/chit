@@ -169,7 +169,7 @@ decision is unchanged — nothing calls `DateTime.now()` — only its file path 
 | Infrastructure | `routerProvider`, `appDatabaseProvider`, `chitRepositoryProvider`, the services | `@Riverpod(keepAlive: true)` |
 | Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `monthSummariesProvider`, `archiveChitsProvider` | auto-disposed; Drift re-emits on subscribe |
 | The clock, once | `todayProvider`, `todayLocalDayProvider`, `timelineQueryWindowProvider`, `visibleMonthProvider` | auto-disposed; **one read of the clock per screen** — see below |
-| Derived | `timelineWindowProvider`, `monthShapeProvider`, `archiveDaysProvider`, `archiveLimitProvider` | auto-disposed; pure functions of the above |
+| Derived | `timelineWindowProvider`, `drawnMonthProvider`, `archiveDaysProvider`, `archiveLimitProvider` | auto-disposed; pure functions of the above — except that `drawnMonthProvider` and `archiveDaysProvider` are notifiers that **hold their last answer while the stream under them is loading** (ADR-049), so each is a function of its inputs and its own last output |
 | Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider` | auto-disposed |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** That is
@@ -486,17 +486,18 @@ days *today* — and neither touches the database more than once:
                    (watchWrittenMonths,       (where previous and next     drawn only where
                     yyyymm, ADR-047)           land, or null)              there is somewhere
                                 ▲                     ▲                    to go)
-todayProvider ──► visibleMonthProvider ──► monthSummariesProvider ──► monthShapeProvider
+todayProvider ──► visibleMonthProvider ──► monthSummariesProvider ──► drawnMonthProvider
   (the clock,        (a notifier: the         (watchDaySummaries          (MonthShape: the
-   read once)         month shown; each        over the month's           rows it draws, the
+   read once)         month asked for; each    over the month's           rows it draws, the
                       chevron lands on the     own days — one query       density steps and
-                      nearest written month)   for grid and summary)      the summary, or null
-                                │                                          until answered)
+                      nearest written month)   for grid and summary)      the summary; the last
+                                │                                          answer while the next
+                                │                                          is in flight, ADR-049)
                                 ▼
                         selectedDayProvider ──► archiveChitsProvider ──► archiveDaysProvider
                         (a tile, or null;        (watchDay for a            (grouped by day,
-                         resets when the          selection, watchArchive    newest first)
-                         month changes)           paged otherwise)
+                         resets when the          selection, watchArchive    newest first; held
+                         month changes)           paged otherwise)          the same way)
                                                         ▲
                                archivePagesProvider ──► archiveLimitProvider
 ```
@@ -508,8 +509,15 @@ grid is left with layout and taps. **The current month is drawn up to today and 
 property of that value, not of the widget — a future month has `lastDrawnDay` zero, so the
 arithmetic refuses what the chevrons already refuse. Count-to-density is a static on it, in
 the presentation layer, because it is a design scale and not a fact about the data. **Which
-weeks are drawn is its `rows`** (ADR-047): from the first week with something in it to the
-last, so the grid has no arithmetic of its own to be wrong about.
+weeks are drawn is its `rows`** (ADR-048): only the weeks with something in them, so the grid
+has no arithmetic of its own to be wrong about.
+
+**The drawn month lags the visible month by one answer, on purpose.** `visibleMonthProvider` is
+the month the reader asked for and `drawnMonthProvider` is the last one the database answered
+for; between a chevron tap and the answer they differ, and the bar takes its name from the
+second so that the name and the grid change together (ADR-049). `archiveDaysProvider` holds
+its last answer the same way. Both use `Notifier.stateOrNull` inside `build`, which Riverpod
+documents as the way to read the previous state there.
 
 **`VisibleMonth` computes its own destinations rather than reading `monthNeighboursProvider`
 back.** That provider watches the notifier, and Riverpod treats a `ref.read` from a notifier's

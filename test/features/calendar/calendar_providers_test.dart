@@ -54,7 +54,7 @@ void main() {
     // Held open for the life of the container, as the screen holds them. An
     // auto-dispose stream read once and dropped never gets to answer.
     container.listen<MonthShape?>(
-      monthShapeProvider,
+      drawnMonthProvider,
       (MonthShape? _, MonthShape? _) {},
       fireImmediately: true,
     );
@@ -89,7 +89,7 @@ void main() {
   // is a very long way from the one character that caused it.
   Future<MonthShape> month() async {
     await pumpEventQueue();
-    final MonthShape? shape = container.read(monthShapeProvider);
+    final MonthShape? shape = container.read(drawnMonthProvider);
     return shape!;
   }
 
@@ -224,9 +224,35 @@ void main() {
       expect(august.isCurrentMonth, isFalse);
     });
 
-    test('is null until the query has answered', () {
-      expect(container.read(monthShapeProvider), isNull);
+    test('is null until the query has first answered', () {
+      expect(container.read(drawnMonthProvider), isNull);
     });
+
+    test(
+      'holds the last month while the next is in flight — ADR-049',
+      () async {
+        // The handset saw the bar, the grid and the summary vanish for the
+        // frames a change of month took. September under its own name is a
+        // slow answer while August is fetched; a blank is a wrong one.
+        await chitAt(DateTime(2026, 8, 3, 9), 'August.');
+        await chitAt(DateTime(2026, 9, 5, 9), 'September.');
+        final MonthShape september = await month();
+        expect(september.month, const YearMonth(2026, 9));
+
+        container.read(visibleMonthProvider.notifier).previous();
+
+        expect(container.read(visibleMonthProvider), const YearMonth(2026, 8));
+        expect(
+          container.read(drawnMonthProvider),
+          september,
+          reason: 'the month asked for has moved; the month drawn has not yet',
+        );
+
+        final MonthShape august = await month();
+        expect(august.month, const YearMonth(2026, 8));
+        expect(august.total, 1);
+      },
+    );
   });
 
   test('one save reaches the grid, the summary and the archive', () async {
@@ -330,9 +356,28 @@ void main() {
       expect(loaded(await archive()), pageSize + 5);
     });
 
-    test('is null until the query has answered', () {
+    test('is null until the query has first answered', () {
       expect(container.read(archiveDaysProvider), isNull);
     });
+
+    test(
+      'holds the last answer while a selection is in flight — ADR-049',
+      () async {
+        await chitAt(DateTime(2026, 9, 11, 8), 'Friday.');
+        await chitAt(DateTime(2026, 9, 15, 9), 'Tuesday.');
+        final List<ArchiveDay> every = await archive();
+        expect(every, hasLength(2));
+
+        container.read(selectedDayProvider.notifier).toggle(20260915);
+
+        expect(
+          container.read(archiveDaysProvider),
+          every,
+          reason: 'the query has changed; the archive drawn has not yet',
+        );
+        expect(await archive(), hasLength(1));
+      },
+    );
   });
 
   test('the summary rows are DaySummary, one per written day', () async {

@@ -59,7 +59,10 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-044 | The capture budget is twelve seconds, and a stale place beats no place | revises ADR-007 — nothing waits on a capture since ADR-042, and the pin was the cost |
 | ADR-045 | A reading stays good for five minutes | amends ADR-042 — a burst of chits costs one capture, not one each |
 | ADR-046 | Today's ring sits on paper, not on the tile | closes item 12 — a shape answer, not a token nudge |
-| ADR-047 | The calendar draws only where something was written | quiet weeks at either end collapse; the chevrons skip empty months and vanish with nowhere to go |
+| ADR-047 | The calendar draws only where something was written | quiet weeks at either end collapse; the chevrons skip empty months and vanish with nowhere to go. **Rule 1 narrowed by ADR-048** |
+| ADR-048 | Every quiet week collapses, wherever it falls | narrows ADR-047 — a bare row across the middle of a month goes too |
+| ADR-049 | The calendar holds its last answer while the next is in flight | a slow month over a blank one; the flicker on every change of month |
+| ADR-050 | A day boundary is the tick at now, hanging below the line | the same height and weight; `s1` hid behind a mark written near midnight |
 
 `test/docs/readme_maps_everything_test.dart` fails if a record exists without a row above, or a
 row without a record.
@@ -1978,3 +1981,149 @@ its own rather than reading it back — Riverpod treats a notifier reading a pro
 it as a cycle, and says so. BEHAVIOUR.md §4.2 is corrected: *this document said, for one
 commit, that days before today keep their place whether or not anything was written in them.*
 They keep their place inside a drawn week; the week itself is only drawn if something is in it.
+
+---
+
+## ADR-048 — Every quiet week collapses, wherever it falls
+
+*17 September 2026. M4 group F — the second seeded device pass. Narrows ADR-047's rule 1.*
+
+**Decision.** A month's grid draws **only the weeks with something in them.** A week has
+something in it when a day of it was written in, or is today. A quiet week is not drawn
+whether it falls before the first written week, after the last, or between two of them. Within
+a drawn week every day of the month up to today keeps its cell, numbered or bare, so a tile's
+column still says its weekday.
+
+**Over.** ADR-047's rule as written: leading and trailing quiet weeks collapse and *a quiet week
+between two written weeks is drawn, and reads as quiet.* That record considered this exact
+narrowing and declined it — *not asked for, and it would put the 5th above the 19th with nothing
+to say a fortnight had passed.*
+
+**Why.**
+
+*It was asked for, on the next look.* The seeded August has writes on the 7th, the 13th and the
+28th, and under ADR-047 the week of the 16th was a bare row across the middle of the grid. The
+owner's words: *collapse the rows of weeks where no notes or chits were written.* A row of seven
+empty cells says nothing a reader wants — the month summary already says how many days were
+written in, and the numbers on the tiles say which.
+
+*The objection ADR-047 raised does not survive the numbers being on the tiles.* The 5th above
+the 19th is only ambiguous if the reader has to count rows to know a fortnight passed, and they
+do not: the 19 is printed. What the grid loses is a fixed calendar shape, and ADR-047 had
+already given that up at both ends.
+
+*It is one rule rather than two.* ADR-047 had a rule for the ends and an exception for the
+middle; this is the rule with the exception removed. The timeline keeps its own version of the
+exception — ADR-035 draws a quiet day between two written ones — and the two now differ, on
+purpose: a day on the strip is a proportion of real time and removing it would move every mark;
+a week on the grid is a row, and removing it moves nothing.
+
+**Costs.**
+
+- **A month is no longer a calendar shape.** Two rows may be a fortnight or four months of
+  nothing between them, and only the numbers say which. Accepted: the calendar is the shape of
+  what was written (§4.2), not a grid to be scanned.
+- **The grid's height changes with the writing rather than with the month**, which ADR-047
+  already accepted for the ends.
+- **The strip and the grid read an empty stretch differently.** Stated above and deliberate.
+
+**Consequences.** `MonthShape.rows` is the whole of it: the set of rows any written day or
+today falls in, in order. BEHAVIOUR.md §4.2 is corrected a second time in two commits, and says
+so. ADR-047's rule 2 — the chevrons — is untouched.
+
+---
+
+## ADR-049 — The calendar holds its last answer while the next is in flight
+
+*17 September 2026. M4 group F — the second seeded device pass.*
+
+**Decision.** The month the grid draws and the days the archive draws are **the last answer
+their query gave**, held until the next one arrives. They are null only before the first
+answer. `drawnMonthProvider` and `archiveDaysProvider` are notifiers that return their previous
+state while the stream under them is loading.
+
+**Over.** Null while any query is in flight — which is what shipped, and which the handset saw
+as a flicker: on every change of month the bar, the grid and the summary vanished for the frames
+Drift took to answer and came back, and the archive under them jumped up and back down. The same
+happened to the archive on every tap of a tile. It was smooth only when Drift still had the
+month's stream cached, which is why it was intermittent.
+
+Also over a cross-fade between the two, which would have been motion covering a gap rather than
+removing it.
+
+**Why.**
+
+*It is ADR-007's rule, read to its end.* The thread and the grid refuse to draw an empty state
+while the first answer is in flight, because *Nothing written* said about a month that was
+written in is a wrong answer rather than a slow one. A blank where a month was a frame ago is
+the same kind of wrong. September's grid under September's name is still true while August is
+being fetched; it is merely late.
+
+*The name and the grid must move together.* The bar takes its month from the drawn shape rather
+than from `visibleMonthProvider`, so the reader never sees August's name over September's
+tiles. The chevrons are computed off the visible month and may lead by a frame; nothing else
+depends on them.
+
+**Costs.**
+
+- **A stale frame is possible by design.** Between the tap and the answer the calendar shows the
+  month before, under its own name. On a handset Drift answers within a frame or two, and a
+  reader sees the page change once rather than blank and refill.
+- **`stateOrNull` is the seam**, and it is marked `@visibleForTesting` as well as `@protected`.
+  Riverpod documents it as the way to read the previous state inside `build`, and the analyzer
+  accepts it; if a future version withdraws it, the alternative is a family keyed by month.
+- **The two providers stop being pure functions of their inputs**, which ARCHITECTURE.md §3's
+  table said they were. They are pure functions of their inputs *and their last output*, and
+  the table is corrected.
+
+**Consequences.** `monthShapeProvider` became `DrawnMonth`, and `archiveDays` a notifier of the
+same name; the tests hold both claims on a bare `ProviderContainer` — navigate, read at once,
+the old month is still drawn; pump, the new one is.
+
+---
+
+## ADR-050 — A day boundary is the tick at now, hanging below the line
+
+*17 September 2026. M4 group F — the second seeded device pass, the first with ten marks on the
+strip.*
+
+**Decision.** The mark where one day ends and the next begins is drawn at **the tick at now's
+height and weight** — `s3` tall, 1.5px wide — hanging from the line rather than straddling it,
+in `--ink-faint`. The strip's own height is derived from it.
+
+**Over.** The 1px by `s1` mark that had hung there since ADR-024, and drawing the boundary
+straddling the line as now does.
+
+**Why.**
+
+*At 4px it hid behind the marks.* A 7px mark centred on the line reaches 3.5px below it, so a
+chit written within a few minutes of midnight — which the seeder puts there on purpose, at
+23:55 — covered all but half a pixel of the boundary. The owner saw the strip with ten marks on
+it and could not find the day ends: *sometimes it is hidden behind the chit display.* A signal
+that is only visible when nothing was written near it is a signal that fails exactly when a day
+is full.
+
+*It is now's shape, and that is right.* ADR-036 made now a tick because everything on the strip
+is a position, and a tick is what a position looks like. A boundary is a position too. One tick
+in two places — through the line in the accent for what is happening, under it in ink for where
+a day ended — is a smaller vocabulary than two ticks of different sizes, and the difference
+between them stays legible: colour, and which side of the line.
+
+*Hanging rather than straddling, for the same reason it grew.* A 12px boundary through the line
+would sit under the marks for its middle 7px and show 2.5px at each end. Hanging from the line,
+8.5px of it clear the marks — more than a mark's worth, which is what the constants test now
+asserts.
+
+**Costs.**
+
+- **The strip is six pixels taller** — the boundary reaches further below the line than the tick
+  at now did, and the step of air under it is kept. The slip sits that much lower, on a screen
+  v6 tightened the rhythm above.
+- **§4.1's *small* upward mark is no longer small.** The sentence is corrected rather than left
+  standing.
+- **Unseen.** Whether a 12px ink tick under the line reads as a boundary or as a second kind of
+  now is the next handset's question.
+
+**Consequences.** `Timeline.boundaryHeight` and `boundaryStroke`, both equal to now's;
+`Timeline.lineTopFor` puts the line's position in one place because the widget's height now
+depends on it. BEHAVIOUR.md §4.1 and DESIGN-SYSTEM.md §6.3 are corrected.

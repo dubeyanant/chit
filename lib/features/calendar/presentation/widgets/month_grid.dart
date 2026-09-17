@@ -75,9 +75,8 @@ final class MonthGrid extends StatelessWidget {
             ),
           ),
         ),
-        // Only the weeks between the first and the last with something in
-        // them — the arithmetic decides which (ADR-047), and a cell is either
-        // a day or nothing.
+        // Only the weeks with something in them — the arithmetic decides
+        // which (ADR-048), and a cell is either a day or nothing.
         for (final List<int?> row in shape.rows)
           Row(
             children: <Widget>[

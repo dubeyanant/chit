@@ -175,32 +175,30 @@ final class MonthShape {
   static const int columns = 7;
 
   /// The rows the grid draws, each seven cells of a day number or null —
-  /// **from the first week with something in it to the last** (ADR-047).
+  /// **only the weeks with something in them** (ADR-048).
   ///
   /// A week counts as having something in it when a day of it was written
-  /// in, or is today. Leading and trailing quiet weeks are not drawn at all;
-  /// a quiet week *between* two written weeks is, and reads as quiet — the
-  /// same rule ADR-035 applies to the timeline's days. Within a drawn row,
-  /// every day of the month up to [lastDrawnDay] has a cell, numbered or
-  /// bare, so a tile's column still says its weekday.
+  /// in, or is today. Every other week is left out, wherever it falls in the
+  /// month. *For one commit a quiet week between two written ones was kept
+  /// and read as quiet* (ADR-047), and the second seeded pass, looking at an
+  /// August with a bare row across its middle, asked for it to go. Within a
+  /// drawn row, every day of the month up to [lastDrawnDay] has a cell,
+  /// numbered or bare, so a tile's column still says its weekday.
   ///
   /// Empty for a month with nothing in it and no today, which the chevrons
   /// never land on.
   List<List<int?>> get rows {
-    int? first;
-    int? last;
-    for (int day = 1; day <= lastDrawnDay; day++) {
-      if (countOf(day) > 0 || day == todayDay) {
-        first ??= day;
-        last = day;
-      }
-    }
-    if (first == null || last == null) return const <List<int?>>[];
-
     int rowOf(int day) => (leadingBlanks + day - 1) ~/ columns;
 
+    // A set literal keeps insertion order, and the days ascend, so the rows
+    // come out in order without a sort.
+    final Set<int> drawn = <int>{
+      for (int day = 1; day <= lastDrawnDay; day++)
+        if (countOf(day) > 0 || day == todayDay) rowOf(day),
+    };
+
     return <List<int?>>[
-      for (int row = rowOf(first); row <= rowOf(last); row++)
+      for (final int row in drawn)
         <int?>[
           for (int col = 0; col < columns; col++)
             switch (row * columns + col - leadingBlanks + 1) {
@@ -403,26 +401,38 @@ Stream<List<DaySummary>> monthSummaries(Ref ref) {
       .watchDaySummaries(fromDay: month.firstDay, toDay: month.lastDay);
 }
 
-/// The visible month as the grid draws it, or **null until the query has
-/// answered**.
+/// The month the grid draws: the visible month once its query has answered,
+/// and **the last month that answered until then** — ADR-049. Null only
+/// before the first answer.
 ///
-/// Null rather than an empty shape, for the reason Today's thread waits for
-/// its first frame: an empty month drawn while the real one is in flight is
-/// *Nothing written this month* said about a month that was written in, which
-/// is a wrong answer rather than a slow one.
+/// Null rather than an empty shape at first, for the reason Today's thread
+/// waits for its first frame: an empty month drawn while the real one is in
+/// flight is *Nothing written this month* said about a month that was written
+/// in, which is a wrong answer rather than a slow one.
+///
+/// **And the last answer rather than null after that.** *For one commit this
+/// went back to null on every change of month*, and the handset saw it as a
+/// flicker: the bar, the grid and the summary vanished for the frames the
+/// query took and came back, and the archive under them jumped up and down
+/// with them. The month that was true a moment ago, under its own name, is a
+/// slow answer; a blank is a wrong one. The bar takes its name from this and
+/// not from [visibleMonthProvider], so the name and the grid change together.
 @riverpod
-MonthShape? monthShape(Ref ref) {
-  final List<DaySummary>? summaries = switch (ref.watch(
-    monthSummariesProvider,
-  )) {
-    AsyncData<List<DaySummary>>(:final List<DaySummary> value) => value,
-    _ => null,
-  };
-  if (summaries == null) return null;
+class DrawnMonth extends _$DrawnMonth {
+  @override
+  MonthShape? build() {
+    final List<DaySummary>? summaries = switch (ref.watch(
+      monthSummariesProvider,
+    )) {
+      AsyncData<List<DaySummary>>(:final List<DaySummary> value) => value,
+      _ => null,
+    };
+    if (summaries == null) return stateOrNull;
 
-  return MonthShape(
-    month: ref.watch(visibleMonthProvider),
-    today: ref.watch(todayProvider),
-    summaries: summaries,
-  );
+    return MonthShape(
+      month: ref.watch(visibleMonthProvider),
+      today: ref.watch(todayProvider),
+      summaries: summaries,
+    );
+  }
 }

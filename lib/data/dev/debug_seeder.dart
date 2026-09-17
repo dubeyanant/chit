@@ -274,7 +274,16 @@ final class DebugSeeder {
     _Seed(2, 9, 10, 'Train 20 late.', WeatherCondition.raining),
 
     // Singles and pairs back through the month.
-    _Seed(4, 22, 2, 'Nothing today.', WeatherCondition.raining, pinned: false),
+    // Not "Nothing today." — the second seeded pass read that row as the app
+    // putting a placeholder on an empty day, which it never does (§4.1).
+    _Seed(
+      4,
+      22,
+      2,
+      'Quiet one. Early night.',
+      WeatherCondition.raining,
+      pinned: false,
+    ),
     _Seed(
       6,
       8,

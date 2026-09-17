@@ -124,7 +124,7 @@ void main() {
     });
   });
 
-  group('quiet weeks at either end are not drawn — ADR-047', () {
+  group('only the weeks with something in them are drawn — ADR-048', () {
     List<int?> rowOf(MonthShape s, int index) => s.rows[index];
 
     test('a fresh install draws only the week today is in', () {
@@ -134,19 +134,37 @@ void main() {
       expect(rowOf(s, 0), <int?>[13, 14, 15, 16, 17, null, null]);
     });
 
-    test('from the first written week to today', () {
+    test('a written week and the week today is in', () {
       final MonthShape s = shape(september, <DaySummary>[day(20260908, 1)]);
       expect(s.rows, hasLength(2));
       expect(rowOf(s, 0), <int?>[6, 7, 8, 9, 10, 11, 12]);
       expect(rowOf(s, 1), <int?>[13, 14, 15, 16, 17, null, null]);
     });
 
-    test('a quiet week between two written ones stays, and reads as quiet', () {
+    test('a quiet week between two written ones is not drawn either', () {
+      // ADR-047 kept this row for one commit; the second seeded pass asked
+      // for it to go. The 5th sits above the 13th with the columns still
+      // saying which weekday each is.
       final MonthShape s = shape(september, <DaySummary>[day(20260901, 1)]);
-      expect(s.rows, hasLength(3));
+      expect(s.rows, hasLength(2));
       expect(rowOf(s, 0), <int?>[null, null, 1, 2, 3, 4, 5]);
-      expect(rowOf(s, 1), <int?>[6, 7, 8, 9, 10, 11, 12]);
-      expect(rowOf(s, 2), <int?>[13, 14, 15, 16, 17, null, null]);
+      expect(rowOf(s, 1), <int?>[13, 14, 15, 16, 17, null, null]);
+    });
+
+    test('the August the pass looked at: three written weeks, no bare row', () {
+      // Writes on the 7th, 13th and 28th of August 2026 — what the seeder
+      // puts there on 17 September. The week of the 16th to the 22nd was the
+      // bare row across the middle.
+      final MonthShape s = shape(const YearMonth(2026, 8), <DaySummary>[
+        day(20260807, 1),
+        day(20260813, 1),
+        day(20260828, 1),
+      ]);
+      expect(s.rows, <List<int?>>[
+        <int?>[2, 3, 4, 5, 6, 7, 8],
+        <int?>[9, 10, 11, 12, 13, 14, 15],
+        <int?>[23, 24, 25, 26, 27, 28, 29],
+      ]);
     });
 
     test('a past month trims both ends', () {

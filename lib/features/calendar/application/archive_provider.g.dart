@@ -266,25 +266,33 @@ final class ArchiveChitsProvider
 
 String _$archiveChitsHash() => r'd845f20195730b5072c5bd64feeee0a6b51c0372';
 
-/// The archive grouped into days, newest first — or null until the query has
-/// answered, for the reason [monthShapeProvider] is.
+/// The archive grouped into days, newest first — null until the query has
+/// first answered, and after that **the last answer, held while the next is
+/// in flight** (ADR-049), for the reasons [drawnMonthProvider] gives.
+///
+/// Three things swap the query under this — selecting a tile, clearing it,
+/// and changing the month, which clears it — and each of them blanked the
+/// archive for the frames the new query took until the hold was added.
 
-@ProviderFor(archiveDays)
+@ProviderFor(ArchiveDays)
 final archiveDaysProvider = ArchiveDaysProvider._();
 
-/// The archive grouped into days, newest first — or null until the query has
-/// answered, for the reason [monthShapeProvider] is.
-
+/// The archive grouped into days, newest first — null until the query has
+/// first answered, and after that **the last answer, held while the next is
+/// in flight** (ADR-049), for the reasons [drawnMonthProvider] gives.
+///
+/// Three things swap the query under this — selecting a tile, clearing it,
+/// and changing the month, which clears it — and each of them blanked the
+/// archive for the frames the new query took until the hold was added.
 final class ArchiveDaysProvider
-    extends
-        $FunctionalProvider<
-          List<ArchiveDay>?,
-          List<ArchiveDay>?,
-          List<ArchiveDay>?
-        >
-    with $Provider<List<ArchiveDay>?> {
-  /// The archive grouped into days, newest first — or null until the query has
-  /// answered, for the reason [monthShapeProvider] is.
+    extends $NotifierProvider<ArchiveDays, List<ArchiveDay>?> {
+  /// The archive grouped into days, newest first — null until the query has
+  /// first answered, and after that **the last answer, held while the next is
+  /// in flight** (ADR-049), for the reasons [drawnMonthProvider] gives.
+  ///
+  /// Three things swap the query under this — selecting a tile, clearing it,
+  /// and changing the month, which clears it — and each of them blanked the
+  /// archive for the frames the new query took until the hold was added.
   ArchiveDaysProvider._()
     : super(
         from: null,
@@ -301,14 +309,7 @@ final class ArchiveDaysProvider
 
   @$internal
   @override
-  $ProviderElement<List<ArchiveDay>?> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  List<ArchiveDay>? create(Ref ref) {
-    return archiveDays(ref);
-  }
+  ArchiveDays create() => ArchiveDays();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(List<ArchiveDay>? value) {
@@ -319,4 +320,30 @@ final class ArchiveDaysProvider
   }
 }
 
-String _$archiveDaysHash() => r'c410fc163ae2c8bf18c489f712b97c580a0d9b3a';
+String _$archiveDaysHash() => r'a547e67c2330a9c39d6884d987d01ccc6a294871';
+
+/// The archive grouped into days, newest first — null until the query has
+/// first answered, and after that **the last answer, held while the next is
+/// in flight** (ADR-049), for the reasons [drawnMonthProvider] gives.
+///
+/// Three things swap the query under this — selecting a tile, clearing it,
+/// and changing the month, which clears it — and each of them blanked the
+/// archive for the frames the new query took until the hold was added.
+
+abstract class _$ArchiveDays extends $Notifier<List<ArchiveDay>?> {
+  List<ArchiveDay>? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<List<ArchiveDay>?, List<ArchiveDay>?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<ArchiveDay>?, List<ArchiveDay>?>,
+              List<ArchiveDay>?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

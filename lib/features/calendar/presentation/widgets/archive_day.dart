@@ -13,6 +13,12 @@ import '../../application/archive_provider.dart';
 ///
 /// The heading is the day's name, a hairline running off to the right, and the
 /// count — the shape of Today's *earlier* row, with a date where the word was.
+///
+/// **The three are centred on one another, as *earlier*'s are.** *v6 sets this
+/// row on the baseline*, which in CSS puts the hairline on the text's baseline
+/// and in Flutter — where a box with no text in it has no baseline — put it at
+/// the top of the row, a few pixels above the middle of the name. The second
+/// seeded pass saw it sitting high and asked for it centred.
 final class ArchiveDayGroup extends StatelessWidget {
   /// The group for [day], labelled relative to [today].
   const ArchiveDayGroup({required this.day, required this.today, super.key});
@@ -35,8 +41,7 @@ final class ArchiveDayGroup extends StatelessWidget {
         Padding(
           padding: EdgeInsets.only(bottom: space.s1),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Semantics(
                 header: true,

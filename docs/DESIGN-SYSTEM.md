@@ -197,6 +197,14 @@ day-heading place the paragraph above already names.
   marks by being *taller and thinner* than they are rather than bigger. Both figures are asserted
   in `test/core/theme/widget_constants_test.dart`.
 
+  **The day boundary is the same tick, hanging below the line** (ADR-050) — `s3` by 1.5px in
+  `--ink-faint`, where the tick at now straddles the line in `--seal`. *It was 1px by `s1` for
+  two milestones*, and a 7px mark reaching 3.5px below the line covered all but half a pixel of
+  it: the first seeded strip, with a chit at 23:55, had no findable day end. At now's height
+  8.5px of it clears the marks, which the same test asserts as *at least a mark's worth*. One
+  tick in two places is a smaller vocabulary than two ticks of two sizes, and the strip is six
+  pixels taller for it.
+
   M2 group G put a fourth back: the 5px between a saved chit's stamp and its words is `s1`.
   It also **derived the thread's mark rather than placing it**. *The prototype drops the node
   19px from the top of a row, which is 7px into the row's content;* here it is centred on the

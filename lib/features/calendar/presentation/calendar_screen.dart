@@ -16,10 +16,12 @@ import 'widgets/month_grid.dart';
 /// with something in it, newest first. Tapping a tile narrows the archive to
 /// that day; the same tile again, or **Show every day**, widens it back.
 ///
-/// **Nothing is drawn until the queries answer.** A grid with no numbers and
-/// *Nothing written this month* under it, shown while the real month is in
-/// flight, is a wrong answer rather than a slow one — the same reading of
-/// ADR-007 the thread takes.
+/// **Nothing is drawn until the queries first answer, and after that the last
+/// answer holds while the next is in flight** (ADR-049). A grid with no
+/// numbers and *Nothing written this month* under it, shown while the real
+/// month is in flight, is a wrong answer rather than a slow one — the same
+/// reading of ADR-007 the thread takes. A blank where the grid was a frame
+/// ago is a flicker, which the handset saw on every change of month.
 ///
 /// There is no closing mark here. BEHAVIOUR.md §4.1 puts चित्त at the foot of
 /// Today alone; *v5 repeated it at the foot of the calendar too*, which turned
@@ -36,7 +38,7 @@ class CalendarScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final space = context.space;
 
-    final MonthShape? shape = ref.watch(monthShapeProvider);
+    final MonthShape? shape = ref.watch(drawnMonthProvider);
     final List<ArchiveDay>? days = ref.watch(archiveDaysProvider);
     final int? selected = ref.watch(selectedDayProvider);
     final int today = ref.watch(todayLocalDayProvider);

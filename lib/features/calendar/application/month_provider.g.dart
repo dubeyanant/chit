@@ -175,7 +175,7 @@ final class VisibleMonthProvider
   }
 }
 
-String _$visibleMonthHash() => r'6ae5978fa224c0cbfe7e6488b10da65ea4eaa362';
+String _$visibleMonthHash() => r'9a7ce3da527ad4a0dc53510142d6a8e81c778f9d';
 
 /// Which month the calendar is showing, and the two chevrons.
 ///
@@ -273,58 +273,77 @@ final class MonthSummariesProvider
 
 String _$monthSummariesHash() => r'8acdb70073daaf52106240f1d6ea035cfc3eed9b';
 
-/// The visible month as the grid draws it, or **null until the query has
-/// answered**.
+/// The month the grid draws: the visible month once its query has answered,
+/// and **the last month that answered until then** — ADR-049. Null only
+/// before the first answer.
 ///
-/// Null rather than an empty shape, for the reason Today's thread waits for
-/// its first frame: an empty month drawn while the real one is in flight is
-/// *Nothing written this month* said about a month that was written in, which
-/// is a wrong answer rather than a slow one.
-
-@ProviderFor(monthShape)
-final monthShapeProvider = MonthShapeProvider._();
-
-/// The visible month as the grid draws it, or **null until the query has
-/// answered**.
+/// Null rather than an empty shape at first, for the reason Today's thread
+/// waits for its first frame: an empty month drawn while the real one is in
+/// flight is *Nothing written this month* said about a month that was written
+/// in, which is a wrong answer rather than a slow one.
 ///
-/// Null rather than an empty shape, for the reason Today's thread waits for
-/// its first frame: an empty month drawn while the real one is in flight is
-/// *Nothing written this month* said about a month that was written in, which
-/// is a wrong answer rather than a slow one.
+/// **And the last answer rather than null after that.** *For one commit this
+/// went back to null on every change of month*, and the handset saw it as a
+/// flicker: the bar, the grid and the summary vanished for the frames the
+/// query took and came back, and the archive under them jumped up and down
+/// with them. The month that was true a moment ago, under its own name, is a
+/// slow answer; a blank is a wrong one. The bar takes its name from this and
+/// not from [visibleMonthProvider], so the name and the grid change together.
 
-final class MonthShapeProvider
-    extends $FunctionalProvider<MonthShape?, MonthShape?, MonthShape?>
-    with $Provider<MonthShape?> {
-  /// The visible month as the grid draws it, or **null until the query has
-  /// answered**.
+@ProviderFor(DrawnMonth)
+final drawnMonthProvider = DrawnMonthProvider._();
+
+/// The month the grid draws: the visible month once its query has answered,
+/// and **the last month that answered until then** — ADR-049. Null only
+/// before the first answer.
+///
+/// Null rather than an empty shape at first, for the reason Today's thread
+/// waits for its first frame: an empty month drawn while the real one is in
+/// flight is *Nothing written this month* said about a month that was written
+/// in, which is a wrong answer rather than a slow one.
+///
+/// **And the last answer rather than null after that.** *For one commit this
+/// went back to null on every change of month*, and the handset saw it as a
+/// flicker: the bar, the grid and the summary vanished for the frames the
+/// query took and came back, and the archive under them jumped up and down
+/// with them. The month that was true a moment ago, under its own name, is a
+/// slow answer; a blank is a wrong one. The bar takes its name from this and
+/// not from [visibleMonthProvider], so the name and the grid change together.
+final class DrawnMonthProvider
+    extends $NotifierProvider<DrawnMonth, MonthShape?> {
+  /// The month the grid draws: the visible month once its query has answered,
+  /// and **the last month that answered until then** — ADR-049. Null only
+  /// before the first answer.
   ///
-  /// Null rather than an empty shape, for the reason Today's thread waits for
-  /// its first frame: an empty month drawn while the real one is in flight is
-  /// *Nothing written this month* said about a month that was written in, which
-  /// is a wrong answer rather than a slow one.
-  MonthShapeProvider._()
+  /// Null rather than an empty shape at first, for the reason Today's thread
+  /// waits for its first frame: an empty month drawn while the real one is in
+  /// flight is *Nothing written this month* said about a month that was written
+  /// in, which is a wrong answer rather than a slow one.
+  ///
+  /// **And the last answer rather than null after that.** *For one commit this
+  /// went back to null on every change of month*, and the handset saw it as a
+  /// flicker: the bar, the grid and the summary vanished for the frames the
+  /// query took and came back, and the archive under them jumped up and down
+  /// with them. The month that was true a moment ago, under its own name, is a
+  /// slow answer; a blank is a wrong one. The bar takes its name from this and
+  /// not from [visibleMonthProvider], so the name and the grid change together.
+  DrawnMonthProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'monthShapeProvider',
+        name: r'drawnMonthProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$monthShapeHash();
+  String debugGetCreateSourceHash() => _$drawnMonthHash();
 
   @$internal
   @override
-  $ProviderElement<MonthShape?> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  MonthShape? create(Ref ref) {
-    return monthShape(ref);
-  }
+  DrawnMonth create() => DrawnMonth();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(MonthShape? value) {
@@ -335,4 +354,39 @@ final class MonthShapeProvider
   }
 }
 
-String _$monthShapeHash() => r'2de4b2ac8b7a2c4bec4713188204545040774093';
+String _$drawnMonthHash() => r'066c411dfaed1dedff56fc71e2b519d244dfa710';
+
+/// The month the grid draws: the visible month once its query has answered,
+/// and **the last month that answered until then** — ADR-049. Null only
+/// before the first answer.
+///
+/// Null rather than an empty shape at first, for the reason Today's thread
+/// waits for its first frame: an empty month drawn while the real one is in
+/// flight is *Nothing written this month* said about a month that was written
+/// in, which is a wrong answer rather than a slow one.
+///
+/// **And the last answer rather than null after that.** *For one commit this
+/// went back to null on every change of month*, and the handset saw it as a
+/// flicker: the bar, the grid and the summary vanished for the frames the
+/// query took and came back, and the archive under them jumped up and down
+/// with them. The month that was true a moment ago, under its own name, is a
+/// slow answer; a blank is a wrong one. The bar takes its name from this and
+/// not from [visibleMonthProvider], so the name and the grid change together.
+
+abstract class _$DrawnMonth extends $Notifier<MonthShape?> {
+  MonthShape? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<MonthShape?, MonthShape?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<MonthShape?, MonthShape?>,
+              MonthShape?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
