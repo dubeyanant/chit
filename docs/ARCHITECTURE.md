@@ -23,11 +23,10 @@ features
 - **`data`** — the implementations: Drift, the filesystem, the network, the platform plugins.
 - **`features`** — controllers and widgets, one folder per screen.
 
-The rule: **`features` never imports `data`.** A widget that needs a chit watches a controller;
-the controller depends on a repository *interface*; Riverpod supplies the implementation at the
-root. It is what lets a sync layer appear later (ADR-004) without a screen noticing, and — more
-immediately — it is the only way to test the §3.5 failure path, which needs a recognizer that
-can be told to hear nothing.
+The rule: **`features` never imports `data`.** A widget watches a controller; the controller
+depends on a repository *interface*; Riverpod supplies the implementation at the root — which
+is what lets §3.5's failure path be tested with a recognizer that can be told to hear nothing,
+and lets a sync layer appear later (ADR-004) without a screen noticing.
 
 ---
 
@@ -35,125 +34,52 @@ can be told to hear nothing.
 
 ```
 lib/
-├── main.dart                       runApp(ProviderScope(child: ChitApp()))
-│
-├── app/
-│   ├── chit_app.dart               MaterialApp.router, theme wiring
-│   └── router.dart                 go_router: shell + two tabs
-│
-├── core/
-│   ├── theme/
-│   │   ├── chit_colors.dart        ThemeExtension — DESIGN-SYSTEM.md §6.1 tokens
-│   │   ├── chit_type.dart          ThemeExtension — the three faces, the scale
-│   │   ├── chit_space.dart         4px scale, radii, the 26px gutter
-│   │   ├── chit_motion.dart        durations, curves, travel() vs fade()
-│   │   └── chit_theme.dart         assembles ThemeData from the above
-│   ├── clock.dart                  injected now (ADR-012), and clockProvider
-│   └── extensions.dart             BuildContext sugar for the extensions above
-│
+├── app/            the application root and router — go_router: shell + two tabs
+├── core/            the four ThemeExtensions of DESIGN-SYSTEM.md §6, the injected clock (ADR-012),
+│                     and the BuildContext sugar that reaches them
 ├── domain/
-│   ├── models/
-│   │   ├── chit.dart               freezed; the one-of invariant
-│   │   ├── ambient_stamp.dart      time + weather? + location? + motion?
-│   │   ├── weather_condition.dart  enum: raining | clear | overcast | windy | clearNight
-│   │   ├── motion_state.dart       enum: stationary | walking | traveling | flying (ADR-037)
-│   │   ├── day_summary.dart        localDay + count — feeds the calendar
-│   │   └── composer_state.dart     the open chit's state machine
-│   ├── prompts.dart                the five-second prompt of §3.3, chosen from the stamp
-│   ├── ambient/
-│   │   └── ambient_fact.dart       which one fact the stamp draws — the ladder (ADR-038)
-│   ├── motion/
-│   │   └── motion_ladder.dart      speed + accuracy + altitude → one of the four states
-│   ├── weather/
-│   │   └── wmo_mapping.dart        WMO code + is_day + wind → one of the five words
-│   ├── repositories/
-│   │   └── chit_repository.dart    interface
-│   └── services/
-│       ├── speech_recognizer.dart  interface (ADR-005)
-│       ├── audio_recorder.dart     interface
-│       ├── weather_service.dart    interface — no position argument (ADR-025)
-│       ├── location_service.dart   interface, GeoFix, and the permission ask (ADR-041)
-│       ├── first_run_store.dart    interface — the two flags an install remembers
-│       ├── ambient_capture.dart    the two in parallel under a timeout (ADR-007)
-│       └── ambient_signals.dart    holds the reading; launch and save (ADR-042)
-│
+│   ├── models/      Chit and its invariant, the stamp, the enums, composer state
+│   ├── ambient/     which one fact the stamp draws — the ladder (ADR-038)
+│   ├── motion/      speed + accuracy + altitude → one of the four states
+│   ├── weather/     WMO code + is_day + wind → one of the five words
+│   ├── repositories/   the ChitRepository interface
+│   └── services/    interfaces only — speech, audio, weather, location, first-run, ambient capture and signals
 ├── data/
-│   ├── db/
-│   │   ├── app_database.dart       Drift database + migrations
-│   │   ├── tables/chits_table.dart
-│   │   └── daos/chit_dao.dart
-│   ├── audio/audio_store.dart      temp → permanent, delete, orphan sweep
-│   ├── dev/debug_seeder.dart       DATA-MODEL.md §7 — twenty chits behind a debug flag
-│   ├── weather/open_meteo_service.dart      one call; maps via domain/weather
-│   ├── location/geolocator_location_service.dart  the fix, and the one ask
-│   ├── preferences/prefs_first_run_store.dart  shared_preferences (ADR-041)
-│   ├── speech/on_device_speech_recognizer.dart
-│   └── repositories/chit_repository_impl.dart
-│
-├── features/
-│   ├── shell/                      bottom tab bar, the two tabs
-│   ├── today/
-│   │   ├── application/            today_controller.dart, timeline_provider.dart
-│   │   └── presentation/           today_screen.dart, widgets/timeline.dart
-│   ├── composer/
-│   │   ├── application/            composer_controller.dart, recording_controller.dart
-│   │   └── presentation/           open_chit.dart, recording_sheet.dart
-│   ├── calendar/
-│   │   ├── application/            month_provider.dart (YearMonth, MonthShape), archive_provider.dart
-│   │   └── presentation/           calendar_screen.dart, widgets/{month_bar,month_grid,archive_day}.dart
-│   ├── editor/                     M6 — a saved chit, on its own screen (ADR-017)
-│   │   ├── application/            editor_controller.dart — dirty tracking, the save prompt
-│   │   └── presentation/           editor_screen.dart
-│   └── onboarding/                 the first-run screen, shown once (ADR-041)
-│       ├── application/            first_run_controller.dart
-│       └── presentation/           first_run_screen.dart
-│
-└── shared/widgets/
-    ├── slip.dart                   a chit surface, its tear edge and the pad behind it
-    ├── perforated_edge.dart        holes in the surface beneath — see the design log
-    ├── thread_rail.dart            the rail (ThreadRail) and the mark on it (ThreadNode)
-    ├── day_thread.dart             a day's rows over the rail (DayThread, ChitRow) — Today and the archive
-    ├── ambient_stamp_row.dart      .open and .saved — §3.6's two weights, and the pin
-    ├── motion_icon.dart            the three marks of ADR-039; stationary draws nothing
-    ├── wordmark.dart               "chit चित्त", baseline-aligned
-    ├── buttons.dart                the two weights of §6.1
-    └── audio_pill.dart
+│   ├── db/          the Drift database, table, DAO and migrations
+│   ├── audio/       AudioStore — temp → permanent, delete, orphan sweep
+│   ├── dev/         DebugSeeder — DATA-MODEL.md §7
+│   ├── weather/     Open-Meteo, mapped via domain/weather
+│   ├── location/    the fix, and the one ask
+│   ├── preferences/ shared_preferences (ADR-041)
+│   ├── speech/      the on-device recognizer
+│   └── repositories/   the ChitRepository implementation
+├── features/        one folder per screen — shell, today, composer, calendar, editor, onboarding —
+│                     each split application/ (controllers) and presentation/ (widgets)
+└── shared/widgets/  the chit vocabulary used by more than one feature
 ```
 
-`shared/widgets` holds the pieces used by more than one feature. A widget used by one screen
-lives in that screen's `presentation/widgets/`, and moves out only when a second screen wants it.
+`shared/widgets` holds pieces used by more than one feature; a widget used by one screen lives
+in that screen's `presentation/widgets/` until a second screen wants it.
 
-**These are the chit vocabulary, and they hold no state and read no provider.** They take what
-they draw and nothing else — `AmbientStampRow` takes an `AmbientStamp`, `Slip` takes a child —
-which is what lets a screen compose them without either of them knowing about the other. M2
-group C wrote the first four; `wordmark.dart` and `buttons.dart` arrived with the first-run
-screen (ADR-041), and `day_thread.dart` with M4's archive — each **moved out of the one feature
-that used to own it** the moment a second feature wanted it, which is the rule above doing its
-job rather than an exception to it. `DayThread` is the reason BEHAVIOUR.md §4.2's *the same
-thread treatment as Today* is true by construction: it is one widget, not two that look alike.
+**These are the chit vocabulary — no state, no provider, each takes only what it draws.**
+`AmbientStampRow` takes an `AmbientStamp`, `Slip` takes a child, which lets a screen compose them
+without either knowing about the other. `DayThread` is why BEHAVIOUR.md §4.2's *same thread
+treatment as Today* is true by construction — one widget, not two that look alike.
 
-`Slip` draws its own `PerforatedEdge`, because a slip and the tear that made it are one object
-rather than two a caller has to remember to assemble. `ThreadRail` is the opposite case and
-deliberately so: it draws the line and nothing else, and the thread's rows place their own
-`ThreadNode` over it — where a node falls depends on what the row says, which is the screen's
-business and not the rail's.
+`Slip` draws its own `PerforatedEdge`, since a slip and its tear are one object. `ThreadRail`
+draws only the line; each row places its own `ThreadNode` on it, because where a node falls is
+the row's business, not the rail's.
 
-As of M1, every file in `domain/models`, `domain/repositories`, `data/db` and `data/audio` above
-holds real code, along with `data/repositories/chit_repository_impl.dart`. `TextOrigin` lives in
-`models/chit.dart` rather than in a file of its own: it is half of the `text` / `textOrigin`
-pairing the chit's invariant is about, and splitting it from the assert that enforces it would
-gain a file and lose the connection.
+`TextOrigin` lives in `models/chit.dart`, not its own file — it is half of the invariant that
+file already asserts.
 
-**Every file above exists**, as of M0b. The ones a milestone has not reached yet hold a doc
-comment naming the milestone that fills them and nothing else. An empty named file is a
-stronger statement about where something belongs than an empty directory, and the cost of
-being wrong about a layer is paid at the moment the first line is written, not later.
+**Every file that belongs under a folder above exists**, even ahead of the milestone that fills
+it — which then holds a doc comment naming that milestone, nothing else. An empty named file
+says where something belongs; an empty directory does not.
 
-**`Clock` lives in `core`, not in `domain`.** ADR-012's prose says "a `Clock` from `domain`";
-the tree above has always said `core/clock.dart`, and that is where it is. `core` is imported
-by every layer and depends on none of them, which is exactly what an injected clock needs, and
-`domain` is for the vocabulary of the product rather than for the machinery under it. The ADR's
-decision is unchanged — nothing calls `DateTime.now()` — only its file path was wrong.
+**`Clock` lives in `core/clock.dart`, not `domain`** — `core` is imported by every layer and
+depends on none, which is what an injected clock needs. ADR-012's decision is unchanged; only
+its stated file path was.
 
 ---
 
@@ -172,21 +98,16 @@ decision is unchanged — nothing calls `DateTime.now()` — only its file path 
 | Derived | `timelineWindowProvider`, `drawnMonthProvider`, `archiveDaysProvider`, `archiveLimitProvider` | auto-disposed; pure functions of the above — except that `drawnMonthProvider` and `archiveDaysProvider` are notifiers that **hold their last answer while the stream under them is loading** (ADR-049), so each is a function of its inputs and its own last output |
 | Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider` | auto-disposed |
 
-**Widgets watch controllers and derived providers. Never a DAO, never the database.** That is
-the layer rule of §1, expressed as a lint you should notice yourself breaking.
+**Widgets watch controllers and derived providers. Never a DAO, never the database.** §1's layer
+rule, as a lint you should notice yourself breaking.
 
 **A screen reads the clock once, through a provider.** `todayProvider` is `clock.now()` and
-nothing else, and the date line and the thread both read it rather than each asking the clock.
-Two reads a millisecond apart are two different answers at midnight, and a screen showing one
-day's date above another day's chits is the failure ADR-006 exists to prevent, arriving by a
-different route. It also keeps the read count honest, which is the only thing that can catch a
-screen that stopped re-reading the clock at midnight (ADR-033).
+nothing else; the date line and the thread both read it rather than the clock directly, so two
+reads a millisecond apart can never disagree at midnight (ADR-006, ADR-033).
 
-**Where an infrastructure provider is declared follows from that rule.** `appDatabaseProvider`
-and `audioStoreProvider` are declared beside the things they build, in `data`, because only
-`data` and the root ever read them. `chitRepositoryProvider` cannot be: a controller in
-`features` has to watch it, and `features` may not import `data`. So it is declared beside its
-*interface* in `domain`, unimplemented —
+**Infrastructure providers are declared beside what they build**, except when `features` needs
+to watch one that `data` implements — `chitRepositoryProvider` is declared unimplemented beside
+its interface in `domain`:
 
 ```dart
 @Riverpod(keepAlive: true)
@@ -195,45 +116,27 @@ ChitRepository chitRepository(Ref ref) => throw UnimplementedError(
 );
 ```
 
-— and supplied in `main.dart`, which is the one place the two layers are allowed to meet. A test
-overrides the same seam, on a bare `ProviderContainer` and with real Drift in memory (ADR-031:
-there are no tests that pump a screen, so there is no second repository implementation to
-choose between). `domain` takes a dependency on `riverpod_annotation` for this; it is pure Dart
-and brings nothing from Flutter or `data` with it.
+`main.dart` supplies it — the one place the two layers meet. Tests override the same seam on a
+bare `ProviderContainer` with real Drift in memory (ADR-031: no widget-pumping tests, so no
+second repository implementation to choose between).
 
-### go_router and Riverpod take every responsibility they can
+**go_router owns navigation entirely** — the shell, both branches (ADR-011), paths, names,
+stacks. `ChitRoute` is the one destination list the tab bar is built from. The one hand-written
+piece, `BranchFade`, is written *into* go_router's `navigatorContainerBuilder` rather than
+around it.
 
-Neither is here to be a thin wrapper over something hand-rolled beside it. Where one of them
-already solves a problem, it solves it.
+**Riverpod owns everything that outlives a build, the router included** — ADR-001 makes it the
+only state mechanism, and a `GoRouter` in a `StatefulWidget` would put the one thing that must
+survive a rebuild in the one place that does not. `ChitApp` is a `ConsumerWidget` watching
+`routerProvider` and nothing else. The one exception is ADR-011's recording sheet: a modal
+sheet, not a route, because dismissing it is not a back navigation.
 
-**go_router owns navigation, entirely.** The shell and both branches (ADR-011), the paths, the
-route names, which branch is current, and each branch's stack. `ChitRoute` is the one list of
-destinations and the tab bar is built from it, so a destination cannot be added to the router
-and quietly miss its tab. Nothing navigates by assembling a path string. The one thing written
-by hand is `BranchFade`, and that is written *into* go_router's `navigatorContainerBuilder`
-extension point rather than around it — the package has no cross-fading container, and
-`StatefulShellRoute.indexedStack` swaps branches with nowhere to put §6.3's 220ms.
+**Startup is synchronous.** `drift_flutter`'s `driftDatabase(name: 'chit')` resolves its path
+lazily, so there is no async bootstrap and no loading state before the home screen — README §1's
+*opening the app costs nothing* is a startup requirement, not just a visual one.
 
-**Riverpod owns everything that outlives a build, including the router.** A `GoRouter` is state
-— it holds the navigation stack of every branch — so it lives in `routerProvider` and not in a
-`StatefulWidget`. ADR-001 says Riverpod is the only state mechanism in the app, and a router
-parked in a widget puts the one thing that must survive a rebuild in the one place that does
-not. It also keeps the router reachable by anything that later needs to redirect on what a
-provider knows. `ChitApp` is a `ConsumerWidget` that watches it and nothing else.
-
-**The one deliberate exception is ADR-011's**, and it stays: the recording sheet is a modal
-sheet rather than a route, because it belongs to the composer's state machine and dismissing it
-is not a back navigation. That is a decision with a record, not an oversight — reversing it
-means a new ADR.
-
-**Startup is synchronous.** `drift_flutter`'s `driftDatabase(name: 'chit')` resolves its own
-path lazily, so there is no async bootstrap and no loading state between launch and the home
-screen. README §1 — *opening the app costs nothing* — is a startup requirement as much as a
-visual one.
-
-**Tests override at the root.** `ProviderContainer(overrides: [...])` with an in-memory Drift
-database and fake services. No mocking framework; the interfaces in `domain` are small enough
-to implement by hand, and a hand-written fake is readable in six months.
+**Tests override at the root**, `ProviderContainer(overrides: [...])`, in-memory Drift and
+hand-written fakes. No mocking framework.
 
 ---
 
@@ -241,20 +144,17 @@ to implement by hand, and a hand-written fake is readable in six months.
 
 ### 4.1 The open chit is not a row
 
-BEHAVIOUR.md §3.1: opening the app six times leaves nothing behind. So the open chit lives entirely
-in `ComposerController`, never in the database, and there is no draft persistence. **Save chit**
-is the only thing that inserts.
+BEHAVIOUR.md §3.1: opening the app leaves nothing behind. The open chit lives entirely in
+`ComposerController`, never in the database — no draft persistence. **Save chit** is the only
+insert.
 
-**The controller is synchronous, and that is ADR-007 rather than a shortcut.** `build()` returns
-a `ComposerState`, never a `Future` of one: it takes the instant half of the stamp from
-`AmbientCapture.open()` and hands the slow half to `settle()`, which lands into the state
-whenever it lands, or never. A `FutureOr<ComposerState> build()` would give the open chit a
-loading state, and a loading state is a spinner whether or not one is drawn — *nothing about
-capture can delay the composer*.
+**The controller is synchronous** — `build()` returns a `ComposerState`, never a `Future` of
+one. It takes the instant half of the stamp from `AmbientCapture.open()` and hands the slow half
+to `settle()`, which lands whenever it lands, or never. A `FutureOr<ComposerState> build()`
+would give the open chit a loading state, and *nothing about capture may delay the composer*.
 
-**There is no mode.** BEHAVIOUR.md §3.2 makes the composer one surface — a live field with a
-microphone beside it — so `ComposerState` is a record of what the chit currently holds, not a
-union of which way in the user picked:
+**There is no mode** (§3.2: one surface, a live field with a microphone beside it) —
+`ComposerState` is a record of what the chit holds, not which way in the user picked:
 
 ```
 class ComposerState {
@@ -271,33 +171,27 @@ class ComposerState {
 bool get canSave => text.trim().isNotEmpty || audioTempPath != null;
 ```
 
-`canSave` is the whole of BEHAVIOUR.md §3.1 and §4.1: Discard and Save appear when it is true, and an
-untouched chit shows neither. The five-panel state machine the first version of this document
-described is gone with the modes.
+`canSave` is §3.1 and §4.1 in full: Discard and Save appear when it is true, and nothing
+otherwise.
 
-**What the transitions must preserve**, because each of these is a rule from §3.4 that is easy
-to break in a text controller:
+**What the transitions must preserve** (§3.4):
 
-- Keeping a recording **appends** its transcript to whatever is in the field; it never replaces
-  it. If the field was empty, `textOrigin` becomes `transcript`; if it already had typed text,
-  the result is `transcriptEdited`, because the words are now partly the user's.
-- Any subsequent keystroke on `transcript` moves it to `transcriptEdited`, once, and never back.
-- `audioTempPath` is set by recording and cleared only by Discard. No edit to `text` touches it.
-- The microphone is available on an empty chit and on a half-written one, and its target does
-  not shrink when text appears (DESIGN-SYSTEM.md §6.4). It is unavailable in exactly two cases: while
-  `isRecording`, and once `audioTempPath` is set — one row holds one recording, so a second
-  take would have to silently destroy the first. That is a v1 limit, and it should read as a
-  settled state rather than a broken button.
+- Keeping a recording **appends** its transcript to the field, never replaces it. Empty field →
+  `textOrigin` becomes `transcript`; typed text already there → `transcriptEdited`.
+- Any keystroke on `transcript` moves it to `transcriptEdited`, once, never back.
+- `audioTempPath` is set by recording and cleared only by Discard; editing `text` never touches
+  it.
+- The microphone is available on an empty or half-written chit, unavailable only while
+  `isRecording` or once `audioTempPath` is set — one row holds one recording, so a second take
+  would silently destroy the first (DESIGN-SYSTEM.md §6.4).
 
-`sttFailed` drives the note of §3.5 and nothing else. The note is a property of the state and
-never a value of `text` — which now matters more than it did, because `text` is bound to an
-editable field: a note written there is a note the user has to delete before they can write.
-Placeholder text has the same problem in a milder form and is the tempting shortcut here.
+`sttFailed` drives §3.5's note and nothing else — never a value of `text`, since `text` is bound
+to an editable field the user would have to clear a note out of.
 
-### 4.1a The timeline is three providers, and only one of them touches the database
+### 4.1a The timeline is three providers, and only one touches the database
 
 ADR-024, ADR-032, ADR-035. The strip is the one thing on Today whose shape depends on its own
-answer, so it is deliberately three steps rather than one:
+answer, so it is three steps rather than one:
 
 ```
 todayProvider ──► timelineQueryWindowProvider ──► timelineChitsProvider ──┐
@@ -310,176 +204,136 @@ todayProvider ──► timelineQueryWindowProvider ──► timelineChitsProvi
                                                oldest chit in it)
 ```
 
-**The query window and the drawn window cannot be one provider.** What is drawn depends on what
-came back, and what came back depends on what was asked for; a single provider would have to
-watch its own result. Splitting them also keeps the query honest: it stays three days wide
-however little is drawn, so the strip can grow backwards as soon as there is anything back
-there to grow into (ADR-035).
+**The query window and the drawn window cannot be one provider** — what is drawn depends on
+what came back, and what came back depends on what was asked for. Splitting them also keeps the
+query honest: it stays three days wide however little is drawn, so the strip can grow backwards
+the moment there is something to grow into (ADR-035).
 
-**`TimelineWindow` is a plain value with no Flutter and no Riverpod in it**, and every question
-about *where* is answered on it — `fractionOf`, `dayBoundaries`, `dayAt`, `trimmedTo`. That is
-ADR-031 applied where it bites: under a no-widget-test rule, correctness has to live somewhere
-a test can reach without building anything, so the widget is left with layout and gestures and
-nothing to be wrong about.
+**`TimelineWindow` is a plain value, no Flutter, no Riverpod** — `fractionOf`, `dayBoundaries`,
+`dayAt`, `trimmedTo` are all answered on it, so a no-widget-test rule (ADR-031) still has
+somewhere to check *where* without building anything.
 
-**The widget owns two pieces of state and no more**: the `ScrollController`, and which day was
-last under the middle of the viewport (for ADR-034's haptic). Resting at now is computed from
-the scroll position rather than stored, so nothing has to be invalidated when the window changes
-shape underneath it.
+**The widget owns two pieces of state only**: the `ScrollController`, and which day was last
+under the middle of the viewport (ADR-034's haptic). Resting at now is computed from scroll
+position, not stored.
 
 ### 4.2 Ambient capture
 
-`AmbientStamp` is resolved once, when the open chit is created, and held in `ComposerState`.
-Weather and location run in parallel behind timeouts (**12s is the ceiling** — ADR-044, which
-revised ADR-007's original 2s once ADR-042 meant nothing was waiting on a capture); the
-`Clock` is instant. Whatever has not arrived is `null`, and a null field simply is not drawn.
-Nothing here can block, spin, or fail a save (ADR-007).
+`AmbientStamp` is resolved once, when the open chit is created, held in `ComposerState`.
+Weather and location run in parallel behind a shared timeout — **12s** (ADR-044, revised from
+ADR-007's original 2s once ADR-042 meant nothing waits on a capture) — and the `Clock` is
+instant. Whatever has not arrived is `null` and simply is not drawn; nothing here can block,
+spin or fail a save (ADR-007).
 
-**There are three signals and still two calls — ADR-037.** Motion rides in on the position fix:
-`GeoFix` carries `speed`, `speedAccuracy` and `altitude` beside its coordinate, and
-`AmbientCapture` puts them through `domain/motion/motion_ladder.dart`, one pure function, to get
-a `MotionState`. So the parallel shape above is untouched, nothing waits longer, and motion
-costs no package and no second permission. The corollary is that a refused location costs the
-pin **and** the motion together, because they are one signal — the coupling ADR-025 went out of
-its way to avoid between location and *weather*, and the right one here.
+**Three signals, two calls — ADR-037.** Motion rides on the position fix: `GeoFix` carries
+`speed`, `speedAccuracy` and `altitude`, and `AmbientCapture` runs them through
+`domain/motion/motion_ladder.dart` for a `MotionState`. Motion costs no extra package or
+permission — but a refused location now costs the pin *and* motion together, since they are one
+signal.
 
-**Only one of weather and motion is ever drawn**, and `domain/ambient/ambient_fact.dart` ranks
-them (ADR-038). That is presentation logic living in `domain` on purpose: which fact is worth a
-chit is a product decision, and the widget only switches on the answer.
+**Only one of weather and motion is ever drawn**, ranked by `domain/ambient/ambient_fact.dart`
+(ADR-038) — presentation logic in `domain` on purpose, since which fact is worth a chit is a
+product decision.
 
-**`AmbientCapture` in `domain/services` is that paragraph, and it is the whole of it** — M2
-group D. Every line is a product rule rather than a network detail, which is why it sits in
-`domain` and why M3 changes only which implementations the two service providers resolve to.
-Three things about it are load-bearing:
+**`AmbientCapture` in `domain/services` is M2 group D, and every line in it is a product rule**,
+which is why M3 only changed which implementations the two service providers resolve to. Three
+things matter:
 
-- **The capture holds no clock.** `AmbientCapture.read()` answers the two services and nothing
-  else. A time is read where a time is used: by `ComposerController` for the preview on the
-  slip, and by its `save` for the value that goes into the row (ADR-040). *This used to be an
-  `open()`/`settle()` pair that carried a `capturedAt` through it.*
-- **Nothing here ever runs on a path the user is waiting on.** At launch it is fired from a
-  post-frame callback and never awaited; at save it runs behind a row that has already been
-  written. There is no third caller, and adding one is how the two-second timeout below becomes
-  visible to somebody.
-- **A signal that throws and a signal that hangs produce the same `null`.** This is the one
-  place the *fail loudly in development* rule of CLAUDE.md §4.1 is deliberately not applied:
-  to a screen that must not stall there is no useful difference between no network, no
-  permission and a service that fell over.
+- **It holds no clock.** `read()` answers the two services and nothing else; a time is read
+  where it is used — by the controller for the slip preview, by `save` for the row (ADR-040).
+- **Nothing here runs on a path the user waits on.** Launch fires it from a post-frame callback,
+  unawaited; save runs it behind a row already written.
+- **A throw and a hang both produce `null`.** The one deliberate exception to CLAUDE.md §4.1's
+  *fail loudly in development* — to a screen that must not stall, no permission and a fallen-over
+  service look the same.
 
-**Captured at launch, and at a save holding something stale — ADR-042, ADR-045.**
-`AmbientSignals` owns the *when* and holds the reading for the life of the process;
-`AmbientCapture` owns the *what*. There is no timer and no refresh on resume. *The composer used
-to drive a capture on every chit open,* which meant four taps of **Discard** made four network
-calls and four location fixes; *and then every save did,* which charged a burst of chits in one
-sitting for a GPS fix each. **A reading is good for five minutes**, and inside that a save asks
-for nothing — which is why `AmbientReading` carries a `readAt` and `AmbientSignals` holds a
-clock to stamp it.
+**Captured at launch, and at save only when stale — ADR-042, ADR-045.** `AmbientSignals` owns
+*when*, holding the reading for the process's life; `AmbientCapture` owns *what*. No timer, no
+refresh on resume. A reading is good for **five minutes** — `AmbientReading.readAt`, stamped by
+a clock `AmbientSignals` holds for that purpose — and inside that window a save asks for
+nothing.
 
-**The row is written first, and patched after only when it was stale.** A save inserts with
-whatever is held; if that reading had aged past five minutes it starts a fresh read beside the
-insert and corrects the row through `ChitRepository.updateAmbient` when it lands. That one
-capture does both jobs — it patches the row *and* becomes what the next chit previews.
-That method exists separately from `updateText` so that one rule is in the type rather than in
-somebody's memory: **the patch moves neither `createdAt` nor `updatedAt`** — moving the first
-would move the chit in the thread and, across a midnight, onto another day; moving the second
-would claim the user had edited something (ADR-014).
+**The row is written first, patched after only if stale.** A save inserts with whatever is
+held; if that reading is older than five minutes, a fresh read starts beside the insert and
+corrects the row through `updateAmbient` when it lands — one capture both patches the row and
+becomes the next chit's preview. `updateAmbient` is a separate method from `updateText` so one
+rule lives in the type: **the patch moves neither `createdAt` nor `updatedAt`** (ADR-014).
 
-**What is held is a preview; what a row carries is the record.** They differ on purpose, and the
-staleness lives on the screen rather than in the data: a phone open all day draws the launch
-weather on the open chit, and no chit is ever *recorded* with it.
+**What is held is a preview; what a row carries is the record.** A phone left open all day draws
+the launch weather on the open chit, but no chit is ever *recorded* with it.
 
-**Weather takes no position — ADR-025.** This document used to say the two signals run in
-parallel without saying how that was possible, given that Open-Meteo is a lookup by
-coordinates: the obvious `conditionAt(lat, lon)` would make weather wait on the fix, and
-ADR-016 made the fix the slow, precise one. `WeatherService.currentCondition()` therefore takes
-nothing, and M3's implementation uses the device's **last known** fix, which is cached and
-instant. The cost is that the condition can be for where you were rather than where you are.
+**Weather takes no position — ADR-025.** `WeatherService.currentCondition()` takes nothing,
+because a lookup by coordinates would make weather wait on the (slower, precise) location fix.
+M3 uses the device's last known fix — cached, instant — at the cost that the condition can be
+for where you were rather than where you are. `wmo_mapping.dart` turns the WMO code + `is_day` +
+wind speed into one of §3.6's five words, pure, in `domain`.
 
-Weather comes back from Open-Meteo as a WMO code; `wmo_mapping.dart` turns code + `is_day` +
-wind speed into one of the five words BEHAVIOUR.md §3.6 allows. That function is pure and lives in
-`domain` — it encodes a product decision, not a network detail.
-
-Location is asked for at **high accuracy, with the coarse fix accepted when that is all the
-user granted** (ADR-016). This corrects what this document used to say — *"`geolocator` at low
-accuracy"* — and the reason is OPEN-QUESTIONS.md §9's coarse place labels, which a neighbourhood-level fix
-cannot produce. Both outcomes are a successful capture and neither changes the UI: §3.6 shows a
-pin and never a name. A precise fix is the slower of the two, which is exactly what the timeout
-above is for.
+**Location is high accuracy, with the coarse fix accepted when that is all the user granted**
+(ADR-016) — a neighbourhood-level fix cannot produce OPEN-QUESTIONS.md §9's coarse place
+labels. Both outcomes are a successful capture; §3.6 shows a pin, never a name.
 
 ### 4.3 The five-second prompt
 
-The timer lives in `ComposerController`, not in the widget, so a rebuild does not restart it.
-First character cancels it; clearing the field starts it again. The 700ms appearance is
-`ChitMotion.fade` and therefore survives reduced motion, at 140ms — it is the whole event, and
-collapsing it would delete the behaviour rather than calm it. The five seconds are a product
-rule, not an animation, and never change: `ComposerController.idle`, not a pace.
+The timer lives in `ComposerController`, not the widget, so a rebuild does not restart it.
+First character cancels it; clearing the field restarts it. The 700ms appearance is
+`ChitMotion.fade` (140ms under reduced motion) — the whole event, not something to collapse
+further. The five seconds are a product rule, not a pace, and never change.
 
-**A rebuild is the thing this is defending against, and it is invisible when it fails.** The
-field is laid out again whenever the keyboard arrives or the action row grows by two controls,
-and a timer held in the widget would go back to five seconds each time — the prompt still
-appears, just later, and only sometimes. `ref.onDispose` cancels it; **Discard** arms it again,
-because **Discard** opens a chit that has just been opened (ADR-040).
+**A rebuild is exactly what this defends against**, and it fails invisibly: the field relays out
+whenever the keyboard arrives or the action row grows, and a widget-held timer would restart to
+five seconds each time. `ref.onDispose` cancels it; **Discard** arms it again, since Discard
+opens a freshly-opened chit (ADR-040).
 
-**It is drawn over the field, never into it.** `hintText` is the shortcut §4.1 warns about and
-it is wrong twice over: a hint is announced as a label on the field, and it arrives on
-Material's schedule rather than after five seconds. The overlay sits over the top of the
-field's own box, and because the field's first line starts at the top of that box the two set
-on one baseline. M5's §3.5 note lands in the same overlay, for the same reason.
+**Drawn over the field, never into it.** `hintText` is the tempting shortcut and wrong twice —
+announced as a label, and shown on Material's schedule rather than after five seconds. The
+overlay sits over the field's box, sharing its first baseline. M5's §3.5 note lands in the same
+overlay.
 
-**Nothing else is in that overlay.** An earlier version put a drawn blinking caret beside the
-prompt, the way the prototype does; ADR-028 took it out. The page opens blank and still, and
-the caret that appears on the first tap is the framework's.
+**Nothing else is in that overlay** — an earlier drawn blinking caret came out with ADR-028; the
+caret on first tap is the framework's.
 
-**Which words are offered is `Prompts.forStamp` — ADR-029**, a pure function in `domain` over
-the stamp the chit already holds. `ComposerState.prompt` is a getter over it rather than a
-stored field, so there is one answer and it cannot drift from the moment it is about; it
-changes once, if a launch capture lands (ADR-042) inside the five seconds. Nothing in there
-reads a clock: the prompt is chosen from the stamp on the slip, which is the preview, so the
-question asked is about **the moment you are sitting in** rather than the moment the row will
-later be stamped with (ADR-040).
+**Which words are offered is `Prompts.forStamp`** (ADR-029), pure, over the stamp already held.
+`ComposerState.prompt` is a getter, not a stored field, so it cannot drift from the moment it is
+about — it changes once if a launch capture lands within the five seconds (ADR-042), and it
+reads the stamp on the slip (the preview), never the clock, so the question is about *the moment
+you are sitting in* rather than the moment the row will later be stamped with (ADR-040).
 
 ### 4.4 Recording
 
 `AudioRecorder` writes to a temp file. `SpeechRecognizer` — on-device, `onDevice: true`, no
-network path at all (ADR-005) — streams partial results into a *pending* transcript held by the
-recording sheet, not into `text`. The sheet shows it accruing with the last word in lighter ink.
+network path (ADR-005) — streams partial results into a *pending* transcript held by the
+recording sheet, not `text`; the sheet shows it accruing, last word in lighter ink.
 
-On **Stop & keep**, the pending transcript is appended to the field under the rules in §4.1.
-An empty or absent transcript instead sets `sttFailed`, leaving the field untouched and the
-temp audio attached. Both outcomes keep the audio; that is the point of ADR-013.
+**Stop & keep** appends the pending transcript to the field under §4.1's rules. An empty or
+absent transcript sets `sttFailed` instead, leaving the field untouched and the audio attached —
+both outcomes keep the audio (ADR-013). Three causes all resolve to `sttFailed` — nothing heard,
+on-device recognition refused, no model for the language — and should share one branch; from the
+user's side they are the same event.
 
-Three things resolve to `sttFailed`, and the code should have one branch for all of them: the
-engine heard nothing usable, the platform refused on-device recognition, or the handset has no
-model for the language. From the user's side these are the same event.
+**Discard** deletes the temp file; nothing moves to permanent storage until Save (ADR-008).
 
-**Discard** deletes the temp file. Nothing moves to permanent storage until Save (ADR-008).
-
-Recording is available on a chit that already has text — that is the ordinary case of §4.1's
-append rule. It is available **once**: a row holds one `audioPath`, so a second take would have
-to destroy the first, and the microphone retires once `audioTempPath` is set rather than
-silently overwriting it (BEHAVIOUR.md §3.2).
+Recording is available on a chit that already has text (§4.1's append rule), and available
+**once** — a row holds one `audioPath`, so the microphone retires once `audioTempPath` is set
+rather than silently overwriting it (§3.2).
 
 ### 4.5 Save, and why the tabs cannot disagree
 
 `ChitRepository.save()` writes the row and, when there is a recording, moves the audio into
-place — one call, ordered so a failed file move does not leave a row pointing at nothing.
+place — one call, ordered so a failed file move never leaves a row pointing at nothing.
 
-`ChitRepository.updateText()` is the ADR-014 counterpart: it changes `text`, `textOrigin` and
-`updatedAt`, and it can change nothing else. `createdAt`, `localDay` and `audioPath` are not
-parameters, so an edit cannot move a chit in the thread, relight a calendar tile, or lose a
-recording.
+`updateText()` is the ADR-014 counterpart: it changes only `text`, `textOrigin` and `updatedAt`
+— `createdAt`, `localDay` and `audioPath` are not parameters, so an edit cannot move a chit in
+the thread, relight a calendar tile, or lose a recording.
 
-Everything downstream is a Drift stream. The thread, the timeline, the calendar density and the
-month total are four providers reading four queries, so a save updates them together by
-construction. *The thread and the timeline read the same query until ADR-024; the timeline
-covers three days now and the thread one, so they are `watchDay` and `watchDayRange`.* DESIGN-SYSTEM.md §7 requires that the two tabs never disagree; the prototype held them in
-step by hand, and here it is the only thing the architecture allows.
+Everything downstream is a Drift stream — the thread, the timeline, the calendar density and the
+month total are four providers over four queries, so one save updates them all by construction.
+DESIGN-SYSTEM.md §7 requires the two tabs never disagree; here it is the only thing the
+architecture allows.
 
 ### 4.6 The calendar is two chains off one reading of the day
 
-M4. *This section used to sketch two queries and a `selectedDateProvider`; the queries are
-`watchDaySummaries` and `watchArchive` from M1, and the rest is below.* Both chains start at
-`todayProvider` — the same instant Today is drawn for, so the two tabs cannot call different
-days *today* — and neither touches the database more than once:
+M4. Both chains start at `todayProvider` — so the two tabs cannot disagree about *today* — and
+neither touches the database more than once:
 
 ```
                    writtenMonthsProvider ──► monthNeighboursProvider ──► (the bar's chevrons,
@@ -502,65 +356,54 @@ todayProvider ──► visibleMonthProvider ──► monthSummariesProvider �
                                archivePagesProvider ──► archiveLimitProvider
 ```
 
-**`MonthShape` is a plain value with no Flutter and no Riverpod in it**, for the reason
-`TimelineWindow` is: under a no-widget-test rule, where the first tile sits, which tile is
-today, how many are drawn and how dark each is have to live somewhere a test can reach. The
-grid is left with layout and taps. **The current month is drawn up to today and stops** is a
-property of that value, not of the widget — a future month has `lastDrawnDay` zero, so the
-arithmetic refuses what the chevrons already refuse. Count-to-density is a static on it, in
-the presentation layer, because it is a design scale and not a fact about the data. **Which
-weeks are drawn is its `rows`** (ADR-048): only the weeks with something in them, so the grid
-has no arithmetic of its own to be wrong about.
+**`MonthShape` is a plain value, no Flutter, no Riverpod** — same reason as `TimelineWindow`:
+where the first tile sits, which tile is today, how many are drawn and how dark each is all
+have to live somewhere a no-widget-test suite can reach. **The current month draws up to today
+and stops** because a future month's `lastDrawnDay` is zero, not because the widget checked.
+Count-to-density is a static on it, in the presentation layer, since it is a design scale, not a
+data fact. **Which weeks are drawn is its `rows`** (ADR-048) — only the weeks with something in
+them.
 
 **The drawn month lags the visible month by one answer, on purpose.** `visibleMonthProvider` is
-the month the reader asked for and `drawnMonthProvider` is the last one the database answered
-for; between a chevron tap and the answer they differ, and the bar takes its name from the
-second so that the name and the grid change together (ADR-049). `archiveDaysProvider` holds
-its last answer the same way. Both use `Notifier.stateOrNull` inside `build`, which Riverpod
-documents as the way to read the previous state there.
+what the reader asked for; `drawnMonthProvider` is the last thing the database answered for.
+Between a chevron tap and the answer they differ, and the bar takes its name from the second so
+name and grid change together (ADR-049). `archiveDaysProvider` holds its last answer the same
+way, via `Notifier.stateOrNull`.
 
 **`VisibleMonth` computes its own destinations rather than reading `monthNeighboursProvider`
-back.** That provider watches the notifier, and Riverpod treats a `ref.read` from a notifier's
-method into a provider that watches it as a cycle — it throws `CircularDependencyError` the
-first time a chevron is pressed. Both call the same two functions on `YearMonth`.
+back** — that provider watches the notifier, and a `ref.read` from the notifier's own method
+into it is a cycle Riverpod throws on. Both call the same two `YearMonth` functions.
 
-**The selection resets by watching the month, not by being cleared.** `SelectedDay.build`
-reads `visibleMonthProvider` and returns null, so navigating anywhere drops it. A selection is a
-tile on the grid being shown, and once that grid is another month's there is no tile for it to
-be — and this way nobody has to remember to clear it.
+**The selection resets by watching the month, not by being cleared.** `SelectedDay.build` reads
+`visibleMonthProvider` and returns null on any change, so nobody has to remember to clear it.
 
-**A filtered archive is `watchDay`** — the same query Today's thread runs. *One day's chits,
-newest first* is one question however it was asked, and a second query for it would be a
-second thing to keep in step. No second source of data, no copy to keep in sync.
+**A filtered archive is `watchDay`** — the same query Today's thread runs. One question,
+however it was asked; no second source of data to keep in sync.
 
 ---
 
 ## 5. Theme and motion
 
-DESIGN-SYSTEM.md §6 becomes four `ThemeExtension`s (ADR-010). Two of them carry rules, not just values:
+DESIGN-SYSTEM.md §6 becomes four `ThemeExtension`s (ADR-010); two carry rules, not just values.
 
-**`ChitColors`** exposes `seal` and `sealInk` as separate members with doc comments stating the
-split — marks, fills, borders and icons take `seal`; anything read as words takes `sealInk`.
-The design log explains why (`seal` is 4.09:1 on a slip; text needs 4.5:1). *That figure was
-4.23:1 until v6 brightened `--slip`; the rule it justifies did not move.*
+**`ChitColors`** exposes `seal` and `sealInk` as separate members — marks, fills, borders and
+icons take `seal`; anything read as words takes `sealInk`, because `seal` is 4.09:1 on a slip
+and text needs 4.5:1.
 
-**`ChitMotion`** exposes two resolvers rather than a bag of durations:
+**`ChitMotion`** exposes two resolvers, not a bag of durations:
 
-```
+```dart
 Duration travel(Duration d)      // → Duration.zero when animations are disabled
 Duration fade(Duration d)        // → 140ms when animations are disabled
 Duration fadeArrival(Duration d) // → 220ms when animations are disabled
 ```
 
-Reduced motion is then a property of *which helper a widget reached for*, which is the
-distinction the design log insists on and the one a global duration override would erase. The
-fades are not passed through untouched: the design log re-times them to 140ms on transitions
-and 220ms on arrivals, so a fade still announces itself without carrying the house pace of an
-animation that is no longer moving.
-Ambient loops — the pulse at now, the record dot, the live waveform — take their period from
-`ChitMotion.loop`, which hands back `Duration.zero` under reduced motion: the signal to start
-no ticker at all and draw the thing at rest (ADR-027). *chit draws no caret of its own, so the
-caret blink §6.4 also names is the framework's — see PROGRESS.md open item 14.*
+Reduced motion is a property of *which helper a widget reached for* — a global duration
+override would erase that distinction. Fades are re-timed rather than passed through untouched,
+so a fade still announces itself without carrying the house pace of motion that is no longer
+moving. Ambient loops — the pulse at now, the record dot, the live waveform — take their period
+from `ChitMotion.loop`, which returns `Duration.zero` under reduced motion: no ticker, drawn at
+rest (ADR-027).
 
 ---
 
@@ -580,39 +423,29 @@ The general shape: **ambient signals fail silently, the user's content never fai
 
 ## 7. Testing
 
-**No widget tests** — ADR-031, and `test/docs/no_widget_tests_test.dart` fails if one appears.
-Nothing under `test/` builds a widget. **Anything that can only be seen on a screen is seen on a
-handset**, and what was seen is written into PROGRESS.md.
-
-That is a constraint on where behaviour lives, not only on the test folder: if a rule cannot be
-reached without a widget, the rule is in the wrong place, and the fix is to move it down into a
-controller or a pure function rather than to pump a tree to get at it.
+**No widget tests** (ADR-031) — `test/docs/no_widget_tests_test.dart` fails if one reappears.
+**Anything only visible on a screen is seen on a handset**, and written into PROGRESS.md. This
+is a constraint on where behaviour lives, not just on the test folder: a rule unreachable
+without a widget belongs in a controller or a pure function instead.
 
 What is tested:
 
-- **Repository and DAO** against `NativeDatabase.memory()` — the at-least-one invariant and the
-  `textOrigin` pairing, the `localDay` computation across a midnight and a timezone change, the
-  audio move-on-save and delete-on-discard, and that `updateText` leaves `createdAt`,
-  `localDay` and `audioPath` untouched. Plus the migration, against the snapshots committed in
-  `drift_schemas/`.
-- **Models**, where the invariant of §5 fails first — a chit that cannot be *built* — and again
-  at the table's check constraints, where it survives a release build with the asserts compiled
-  out.
-- **Controllers and services** on a bare `ProviderContainer`, with a fake clock and hand-written
-  fake services. The five-second timer; `canSave`; ADR-007's parallel capture and its timeouts;
-  and the transcript rules of §4.1 — append rather than replace, the one-way slide from
-  `transcript` to `transcriptEdited`, and all three routes to `sttFailed`.
+- **Repository and DAO**, against `NativeDatabase.memory()` — the at-least-one invariant, the
+  `textOrigin` pairing, `localDay` across a midnight and a timezone change, audio move-on-save
+  and delete-on-discard, `updateText` touching nothing else. Plus the migration, against the
+  snapshots in `drift_schemas/`.
+- **Models**, where §5's invariant fails first (a chit that cannot be *built*) and again at the
+  table's check constraints, which survive a release build with asserts compiled out.
+- **Controllers and services**, on a bare `ProviderContainer` with a fake clock and hand-written
+  fakes — the five-second timer, `canSave`, ADR-007's parallel capture and its timeouts, and
+  §4.1's transcript rules.
 - **Pure functions** — the prompt book, the WMO mapping, the count-to-density scale, the
-  timeline position for a time. Most of what used to be asserted through a screen belongs here,
-  and getting it here is the work.
-- **The accessibility floors of DESIGN-SYSTEM.md §6.4 as arithmetic, not as intentions.** The
-  contrast of every text token against every surface it is used on, including composited
-  translucent surfaces — which is where the audio pill's wash caught the design out, 7% seal in
-  v5 and 3.5% ink in v6, a failure either way. Contrast is a calculation over tokens and needs
-  no widget tree; the floors that *are* spatial — touch targets, semantics, heading order — are
-  a device pass instead.
-- **The rules about the rules** — README §10's map, the injected clock of ADR-012, and the
-  no-widget-test rule itself.
+  timeline position for a time.
+- **The accessibility floors of DESIGN-SYSTEM.md §6.4, as arithmetic** — contrast of every text
+  token against every surface, including composited translucent ones. The floors that *are*
+  spatial — touch targets, semantics, heading order — are a device pass instead.
+- **The rules about the rules** — the injected clock of ADR-012, the no-widget-test rule. Not
+  README §10's map or the ADR index; CLAUDE.md §4.2 says why there is no test for those.
 
 ---
 

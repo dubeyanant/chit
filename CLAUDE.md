@@ -8,8 +8,8 @@ Read this first. It is loaded into every Claude Code session automatically.
 
 **No change is finished until the documents that describe it are true again.**
 
-This is not a suggestion and it is not a final tidy-up pass. It applies to every commit,
-every session, and every change however small. A session that leaves the docs behind has
+This is not a suggestion and it is not a final tidy-up pass. It applies to 
+every session. A session that leaves the docs behind has
 left the next session with a lie, and the next session has no way to know which half to
 trust.
 
@@ -19,21 +19,20 @@ So, as part of the same change — never as a follow-up:
 |---|---|
 | finishes, starts, or alters a milestone | `docs/PROGRESS.md` — always. This one is never optional |
 | adds, removes or repins a package | `docs/PACKAGES.md` |
-| decides something that could reasonably have gone another way | `docs/DECISIONS.md` — a new ADR, never an edit to a settled one |
+| decides something that could reasonably have gone another way | `docs/DECISIONS.md` — a new ADR, edit a previous ADR if it is changed or superseded, and short (§0.2) |
 | changes how the app is put together | `docs/ARCHITECTURE.md` |
 | changes the schema, an invariant or a query | `docs/DATA-MODEL.md` |
 | changes what the app *does* | `docs/BEHAVIOUR.md` — §3, and §4 if a screen changed |
 | changes how it looks — a token, a face, a pace, a floor | `docs/DESIGN-SYSTEM.md` — §6 |
 | changes what chit *is*, or the shape of a chit | `README.md` — §1, §2, §5 |
-| adds a file, a document or an ADR | `README.md` §10, the map. There is a test for it |
+| adds a file, a document or an ADR | `README.md` §10, the map — by hand; §4.2 says why there is no test for it |
 | changes why the design is what it is | `docs/DESIGN-LOG.md` |
 | changes the order of work or what "done" means | `docs/BUILD-PLAN.md` |
 | changes how to work in this repo | this file |
 | **orphans a file** — a support file, an asset, a prototype, a fixture | **delete it, in this commit.** §0.1 below |
 
 **Contradicting a document is a change to it.** If the code has to depart from what a doc
-says, the doc gets corrected in the same change, with a line saying what it used to say and
-why it moved. Silently diverging is the one thing that is never acceptable.
+says, the doc gets corrected in the same change.
 
 **`docs/PROGRESS.md` is the handover.** It is the single place that answers "where are we and
 what is next". Update it at the end of every working session even when nothing else moved —
@@ -44,26 +43,19 @@ including when the session ended mid-milestone, in which case say exactly where 
 **A file that has stopped earning its place is deleted in the same change that stopped it
 earning it.** This is the other half of §0 and it is not a housekeeping pass somebody schedules
 later: a repository is read by whoever arrives next, and every file in it is a claim that it is
-worth reading. A superseded prototype, a scratch script, a support file whose last caller is
+worth reading. A superseded prototype, a scratch script, an ADR, a support file whose last caller is
 gone, a doc nobody has cited in three milestones — each one costs the next session time and
 context to rule out, and the cost is paid on every session, forever, by everyone.
 
-**Git is the archive. The working tree is not.** Nothing is ever lost by deleting a tracked
-file, so "keep it just in case" is never the reason — it is in the history, and the commit
-message says where to look. Superseded means deleted, not moved to `old/`, not renamed with a
+**Git is the archive. The working tree is not.** Don't even "keep it just in case." Superseded means deleted, not moved to `old/`, not renamed with a
 `_v2`, and not left in place with a comment saying it is dead.
 
 **Before every commit, ask what this change has orphaned**, and delete it in the same commit:
 
-- The file a deleted caller was the last user of — a test support file, a fake, a helper.
-- The asset, fixture, snapshot or prototype that the thing replacing it just superseded.
-- Anything written to the repository that was only ever scaffolding for the work itself —
-  scratch scripts, probe files, sample output, a `.gitkeep` in a folder that now has contents.
-- An empty directory left behind by any of the above.
-- **In the documents**, the same rule applies to prose: a paragraph describing what a milestone
-  *did* belongs in git, not in `docs/PROGRESS.md`. That file carries the present — where the
-  build is, what is next, what is known-wrong — and a session that appends to it instead of
-  replacing what is no longer true is doing the thing this rule forbids, in slow motion.
+- Code
+- The asset, fixture, snapshot or prototype
+- Anything written to the repository that was only ever scaffolding for the work itself
+- Docs
 
 What this rule does **not** licence: deleting something because it is merely old, unfamiliar or
 understood by somebody else. "Not earning its place" means nothing points at it and nothing
@@ -74,19 +66,44 @@ files, which are committed so a fresh clone runs without codegen.
 If a deletion is a judgement call rather than an orphan, it is a decision — **say what was
 deleted and why in the commit body**, which is where §5 says the reasoning goes.
 
+### 0.2 An ADR is one paragraph
+
+An ADR is **five to ten lines, shorter where possible, in a single paragraph** — no headed
+Decision / Over / Why / Costs sections. State what was decided, what it was chosen over, the
+reason or two that actually mattered, and a cost only when a reader must not forget it. On
+17 September 2026 this went further and, once, went backward in time: ADR-001 through ADR-050
+were rewritten to this form in the same change, the one exception to §0.3's going-forward-only
+rule, because the old five-section essay had become the largest single cost to a working
+session's context. Nothing any record *decided* changed — only the argument's texture did, and
+git holds the fuller version at the commit before.
+
+- **A change or a supersession still edits the ADR it affects, in place** — rewrite the
+  paragraph to the current truth and add a clause saying what it used to say. Git carries the
+  before; the file only has to carry the after. A wholly new decision still gets a new record,
+  indexed at the head of the file the same way as ever.
+- **One ADR can hold several related calls from the same session** — decide by whether a future
+  citation would ever want one without the others.
+
+### 0.3 Write it short
+
+Every word in a doc or a comment is a word a future session pays to read before it can act.
+State the fact and the reason it matters, once, and stop — no second example making the same
+point, no aside that isn't load-bearing. Shorter is better whenever it loses nothing a reader
+needs; a paragraph earns its length, it is not owed one. Applies wherever prose appears — every
+file under `docs/`, `README.md`, this file, and every comment in `lib/` and `test/` — and, like
+§0.2, to what gets written from here. Existing prose is not rewritten to meet it on its own —
+ADRs are the one exception, §0.2 — since §0.1 already said rewriting settled text for its own
+sake is not the job.
+
 ### The checklist to run before saying a piece of work is done
 
 1. `flutter analyze` is clean.
 2. `flutter test` passes.
 3. Every table above whose left column matches was acted on.
-4. **If a number, a name or a path changed, `grep` for the old one.** A figure corrected only
-   where the test pointed is a figure still wrong in three other files — that has happened
-   here once already, with `--seal`'s contrast ratio. The rule is only as good as the search.
-5. `docs/PROGRESS.md` reflects reality — the milestone state, what was just finished, what is
+4. `docs/PROGRESS.md` reflects reality — the milestone state, what was just finished, what is
    next, and any new open question.
-6. **§0.1 was run: what this change orphaned is deleted, in this commit.** `git status` shows
-   nothing untracked that should not be there, and nothing tracked that nothing points at.
-7. The change, its doc updates and its deletions are all in the same commit.
+5. **§0.1 was run: what this change orphaned is deleted, in this commit.**
+6. The change, its doc updates and its deletions are all in the same commit.
 
 ---
 
@@ -118,9 +135,7 @@ document, to be fixed rather than worked around.
 | `docs/OPEN-QUESTIONS.md` | **§8–§9** — what is not settled, and the feature backlog |
 | `design/chit-app-v6.html` | the interactive prototype — the visual target. Open in a browser |
 
-v6 is the only prototype. v4 and v5 were deleted on 16 September 2026 — they were superseded,
-and a superseded prototype sitting beside the live one is a second option nobody meant to
-offer. Both are in git if the *before* half of ADR-022 is ever wanted again.
+v6 is the only prototype.
 
 **Section numbers are global and stable.** §1 to §10 are numbered once across `README.md`,
 `BEHAVIOUR.md`, `DESIGN-SYSTEM.md` and `OPEN-QUESTIONS.md`; a section keeps its number wherever
@@ -136,9 +151,9 @@ the source depend on them.
 4. Read the parts of `README.md` that section points at.
 5. Do the work. Close the loop per §0.
 
-**`README.md` §0 says the same thing**, for anyone who arrives at the README first — a human,
-or an agent that does not load this file automatically. The two are deliberately redundant, so
-changing the reading order means changing both.
+**`README.md` §0 points here instead of restating this**, for anyone who arrives at the README
+first — a human, or an agent that does not load this file automatically. If the reading order
+changes here, check that README §0's pointer still lands in the right place.
 
 ## 4. How the code is written
 
@@ -227,6 +242,10 @@ codebase, because a principle nobody can fail is a principle nobody is following
 - **Tests override at the root**, with hand-written fakes and no mocking framework. A fake must
   refuse whatever the real one refuses; that is the Liskov rule above, and it is the only thing
   keeping a fake and the real implementation honest.
+- **No test cases for documents.** Nothing checks that README §10 lists every file or that
+  DECISIONS.md's ADR index is complete — that was `readme_maps_everything_test.dart`, deleted
+  17 September 2026 for the same reason §0.3 exists: it was more to read than the thing it
+  guarded was worth. Keep the map and the index true by hand, at the point in §0 that says to.
 - The prototype is the visual reference. When in doubt about a pixel, open it.
 
 ## 5. Commits

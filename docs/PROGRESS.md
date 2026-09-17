@@ -11,6 +11,22 @@ look checked the third look's six fixes and everything else in [TASKS.md](TASKS.
 and G, and the owner's verdict was *everything works fine*; the seeded rows are cleared. **M5 —
 voice — is next**, and its first job is a new TASKS.md.
 
+Several docs-only sessions the same day, all aimed at working-session context cost. CLAUDE.md
+gained §0.2 (an ADR is one short paragraph, no headed sections — edited in place on a later
+change or supersession rather than left beside a new record) and §0.3 (every doc and comment
+written short, going forward). README.md §0's restatement of CLAUDE.md §0/§0.1 was cut to a
+pointer. `test/docs/readme_maps_everything_test.dart` was deleted — README's file map and the
+ADR index are kept true by hand now, not by a test (CLAUDE.md §4.2); `no_widget_tests_test.dart`
+stays, since it guards ADR-031, not a document. Test count is 402. `docs/ARCHITECTURE.md` was
+rewritten for length (634→467 lines, its folder tree in §2 also collapsed to folders with no
+individual filenames) and `docs/BEHAVIOUR.md` likewise (507→398 lines) — every section number,
+table, ADR reference and ASCII mockup preserved throughout. PROGRESS.md itself dropped *What is
+on a handset today* and *The device is the other half of the suite*. Last, and the biggest
+single cut: **every ADR in DECISIONS.md was rewritten to §0.2's one-paragraph form**, including
+ADR-001 through ADR-050, the one retroactive exception to the going-forward-only rule — 2163
+lines fell to 799. What each record decided is unchanged; the fuller argument for any of them is
+in git history at the commit before this pass.
+
 **This file is not a history.** Git is the history, and [TASKS.md](TASKS.md)'s table is the
 ledger of what is done. What belongs here is the present: where the build is, what the next
 session picks up, what has been seen on a device, and what is known-wrong and unscheduled. A
@@ -33,196 +49,8 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**408 tests, `flutter analyze` clean, `dart format` clean, the debug APK builds.** The release
+**402 tests, `flutter analyze` clean, `dart format` clean, the debug APK builds.** The release
 APK has not been rebuilt since M3's sign-off.
-
-
----
-
-## What is on a handset today
-
-The masthead on `--paper`, a two-tab bar, and the whole of BEHAVIOUR.md §4.1.
-
-**The date**, one line: *Wednesday 16 September*. Under it **the timeline** — a hairline with a
-7px ink mark for every chit where its time actually falls, a short `--seal` tick at now with the
-word *now* over it, and the same tick in ink hanging below the line (ADR-050)
-where one day ends and the next begins. One
-day is one screen: it scrolls back a day at a time, rests with now in the middle of the
-viewport, and crossing a day boundary gives a small haptic. Days with nothing written in them
-are not drawn, so a quiet install opens on today alone and does not scroll at all. Nothing on it
-moves.
-
-**The open chit** — a slip with its tear edge and the pad behind it, its stamp reading
-`8:46 pm   raining   ⌖` spaced and never separated, a blank page, and a microphone leading the
-action row. **Nothing moves until you touch it** (ADR-028): no caret is drawn, and the one that
-arrives on the first tap is the platform's. Leave it five seconds and a prompt fades in —
-*"Rain tonight. How did the day go?"* — chosen from the stamp (ADR-029). Typing brings
-**Discard** and **Save chit**, and both work: Save writes the row, the chit drops into the
-thread under *earlier* with its count beside it, its mark appears on the strip, and a new blank
-chit opens stamped at that moment.
-
-Below the thread the चित्त mark closes the day. An empty day reads *"Nothing written yet
-today."* with no rail and no count.
-
-**The calendar — built on 17 September and signed off the same day, on the fourth seeded
-look.** Tapping *calendar*
-cross-fades to the month bar (*September 2026*, and a chevron only where there is a written
-month to go to — ADR-047), the weekday row, and the grid: only the weeks with something in
-them (ADR-048), a number only where something was written, four steps of ink, the
-month drawn up to today and no further, and **today ringed on paper** with a strip of paper
-between the ring and its wash (ADR-046). Under a hairline, *17 chits over seven days*
-when seeded; under that, the archive — every day newest first, headed *Today* / *Yesterday* /
-*Friday 11 September*, drawn by the same `DayThread` Today uses. A tile narrows the archive to
-its day and takes an ink frame; the same tile, or **Show every day**, widens it. Everything
-here is a stream off the one table, so a save on Today reaches the tile, the total and the
-archive together — the suite holds that claim, and the handset has now seen it.
-
-The screen was built against `--dart-define=CHIT_SEED=seed`'s twenty chits, and those rows
-came off again with `=clear` at the end of the pass — TASKS.md group G. What is on the handset
-is only what was written on it.
-
-**The first look at it, 17 September, found two things before the pass proper began.** The
-seeder did nothing on the handset: it was gated on `kDebugMode` as well as on the define, and a
-release run ignored the flag without a word; and it wrote its placeholder recordings to
-`Directory.systemTemp`, which Android does not let an app write to. Both are fixed — the flag
-works in any build mode, and the files go to the app cache like a real recording. Today's ring
-on paper, on an empty tile, read as today.
-
-**The second look, seeded, found the current month working and asked for two changes**, both
-now made as ADR-047: the two empty weeks above a fresh install's 17th are gone — a month draws
-only from its first written week to its last — and the chevrons skip months with nothing in
-them and are not drawn at all where there is nowhere to go, so an empty August is never shown.
-*The paragraph in BEHAVIOUR.md §4.2 that defended the empty rows lasted one commit.*
-
-**The third look, seeded and later the same day, found six things and asked one question.** In
-the order they were reported: changing months flickered — the grid blanked and refilled for the
-frames a query took, and the archive jumped with it (ADR-049, the drawn month and the archive
-now hold their last answer); the bare week across August's middle, which ADR-047 had kept on
-purpose, was asked to go (ADR-048); the seeded chit reading *"Nothing today."* was read as the
-app putting a placeholder on an empty day, which it never does — the fixture's copy now reads
-*"Quiet one. Early night."*; the 23:55 chit with no words read as *an empty chit, not sure what
-it is* (item 31 — that is M5's pill missing, and the row is right); the archive's day heading
-sat with its hairline high, because v6's baseline row means something else in Flutter (it is
-centred now, as *earlier*'s is); and the day ends on the strip were hidden behind the marks
-written near midnight (ADR-050 — the boundary is now the tick at now's size, hanging below the
-line). The question was when the two haptics fire; item 30 has the answer and the choice it
-leaves.
-
-**The fourth look, later still, checked all six and the rest of group F and G, and signed the
-milestone off** — *everything works fine*, including the clear. Nothing came back to the desk
-from it; the haptic stays keyed to the middle of the screen with the taller boundary tick
-(item 30, closed on that word).
-
-*Weather, the pin and motion are **real** as of 17 September — `OpenMeteoService` and
-`GeolocatorLocationService` replaced the two fixed fakes, which are deleted. Nothing above
-`main.dart` changed when they came out, which was the whole point of M2 group D.*
-
-**Signed off on a handset, 16 September**, at the end of the milestone: the palette, the slip,
-the field, the stamp, Discard, the prompt, the thread, saving — including a long chit — the
-strip's marks and their positions, horizontal scrolling and its back-stop, the day-boundary
-tick, the empty-day trim, the tick at now in its final form, the haptic, and save-scrolls-to-now.
-
-**And chits close together in time overlap on the strip rather than smearing**, which is what
-§4.1 asks for in as many words: *four chits in an hour look like a burst, because they are one.*
-That was tried on purpose and it reads. It is the first half of open item 15 — a dozen marks
-across three days is still untried.
-
-**The first-run screen**, shown once in the life of an install: the wordmark, a slip carrying
-what is captured and that none of it leaves the phone, **Allow** and **Not now**. Allow raises
-the system location dialog; Not now raises nothing. Neither is ever shown again (ADR-041).
-
-**Signed off on a handset in release, 17 September.** It asked for location once, the pin
-appeared, and the weather word was right for the actual sky — `GeolocatorLocationService`,
-`OpenMeteoService` and `WmoMapping` working end to end.
-
-**That pass found three things**, all now closed and all recorded rather than smoothed over: a
-release build that drew nothing (item 25), a permission dialog that never appeared (item 26),
-and a pin that never appeared (item 27). The fourth is accepted rather than fixed — `clear
-night` is drawn where a stock weather app says *partly cloudy* (item 28).
-
-### What ambient capture does, now that it is real
-
-A chit records the **weather** as one of five words, the **fact of a place** as a pin, and
-**what the phone was doing** — `stationary`, `walking`, `traveling` or `flying` (ADR-037), read
-off the speed of the same fix the pin uses. The stamp draws **one** ranked ambient fact rather
-than two (ADR-038): a motion icon displaces the weather word when it outranks it, and
-`stationary` draws nothing at all. The icon appears under saved chits in the thread as well,
-where the pin does not (ADR-039).
-
-**The ordinary chit is unchanged by all of it**, which is the claim the design rests on: at a
-desk in the rain the row reads `8:46 pm   raining   ⌖`, exactly as M2 left it.
-
-**A chit is stamped when it is saved** (ADR-040), so the stamp on the open chit is a *preview* —
-it shows when the chit was opened and does not tick. **Ambience is read at launch and at a save
-holding something over five minutes old** (ADR-042, ADR-045), so a burst of chits in one sitting
-costs one capture.
-
-`design/chit-app-v6.html` has the three motion marks and a **Motion** control in its tweaks
-panel. They were drawn there first and the app followed, which is the only reason they have a
-source — **open it in a browser before judging them in Flutter.**
-
----
-
-## The device is the other half of the suite
-
-ADR-031 removed the widget tests, so what is only ever visible on a screen is only checked by
-someone looking at one. **This list is the mitigation, and it is a weaker one than a test was**
-— it works only if it is actually run. M2 produced three reversals that nothing but a device
-would have caught (ADR-028, and ADR-036 twice), and M3 produced four more — a release build that
-drew nothing, a dialog that never appeared, a pin that never appeared, and a keyboard that never
-went down. **Not one of them was a test failure**, and that is the argument for this list.
-
-Everything on it was run at the end of M3 and passed. It stays because it is a **standing**
-list: these are the claims nothing else can hold, and they have to survive every milestone
-after the one that introduced them.
-
-*M3 added five rows and they are the ones with the least mileage on them.* The last three in
-particular were checked once, on one handset, on one evening in Mumbai — a walk outdoors and a
-long sitting have still never been tried. **M4 added thirteen more, at the foot of the table,
-over four looks** — the first two found the six things ADR-047 to ADR-050 answer, and the
-fourth ran every row and raised nothing.
-
-| Check | Why it is here |
-|---|---|
-| The keyboard does **not** come up on launch | ADR-023. Had a test; has none now |
-| Tapping the page raises the keyboard; tapping away puts it down | §3.2. Flutter leaves a mobile field focused on an outside tap, so this behaviour is ours rather than the platform's |
-| A chit sat on across a minute boundary saves at the time it was **saved** | **ADR-040, the reversal.** This row is the old one inverted — it used to read *opened*. A stamp taken at the wrong moment is still a plausible time, so a device is the only place it can be seen |
-| Discard, then read the stamp — it is the **new** time | The preview must not sit there showing a time that has passed (ADR-040) |
-| A phone left open across midnight rolls the date, the thread **and** the strip together | ADR-033. The one thing on this screen no test can drive |
-| The tear edge is holes in the pad, not a dotted border | DESIGN-LOG.md calls this load-bearing, and it is two characters of paint code from being wrong |
-| Switching tabs and back does not reset the field | ADR-011 — a fade, not a rebuild |
-| The microphone is still reachable and still an equal on a half-written chit | DESIGN-LOG.md's standing warning about it drifting into a toolbar of small grey icons |
-| Reduced motion on: the prompt still fades, the tab still cross-fades, the strip **jumps** to now rather than sliding | §6.4 — movement collapses and feedback does not |
-| Every target ≥44px | §6.4 |
-| The tick at now still reads as a position, not an object | ADR-036, and it took three attempts to get there |
-| The haptic fires once per day boundary, and is silent when a save scrolls the strip | ADR-034 |
-| Saving scrolls the strip to now, smoothly | §4.1 |
-| **A fresh install asks for location once; the second launch does not ask** | ADR-041 and ADR-016. A stale preference breaks this silently, and it is the first thing a new install sees |
-| Refusing leaves an app that works and says nothing about it | ADR-007. No pin, no motion, no placeholder, no apology |
-| The first-run screen reads as chit, not as a system prompt | It is the reason it exists instead of a bare dialog. Nothing on it is a new kind of object |
-| Nothing at launch delays the first paint | README §1, and why `prime()` runs from a post-frame callback and is never awaited |
-| **A release build renders at all** | It once did not, and the release `ErrorWidget` paints nothing legible — `flutter run --release` and the console is the only place a cause appears |
-| **The pin appears**, within about ten seconds of a cold launch | ADR-044. A GPS fix is not instant, and a stamp filling in late is ADR-007 behaving rather than stalling |
-| Location refused → no pin **and** no motion, and nothing says so | ADR-007, and ADR-037's one real coupling: they are a single signal |
-| A chit appears in the thread instantly on Save, with the network off | ADR-042 — the write is never behind a capture |
-| At a desk in the rain the stamp is byte-for-byte what M2 signed off | ADR-038's safety claim. If this moved, the ladder is wrong and everything after it is moot |
-| Five chits in one sitting cost **one** capture | ADR-045, and the only way to see it is a network or GPS indicator — the rows look identical either way |
-| **A walk outdoors produces the walking mark, in place of the weather word** | ADR-038 and ADR-039. **Never once seen** — the motion marks have not been drawn on a real device at all |
-| The three marks read at 12px beside 11.5px text, and weigh what the pin weighs | ADR-039. They are strokes because an outline blobs at this size, and that judgement has not been checked by eye |
-| TalkBack / VoiceOver reads *Walking*, *Travelling*, *Flying* | §6.4 — the mark is the whole of the fact, not an adornment beside it |
-| The mark does not flicker between two states while a chit is open | The app captures at launch and at a stale save, never in between (ADR-042, ADR-045) |
-| **Today's ring reads as *today* on a five-chit tile, not as a fainter day** | **ADR-046.** Seen on the fourth look and not remarked on. The ring on paper costs today's wash six pixels of size, and whether that reads is the one thing the decision could not settle at a desk |
-| The four density steps tell apart one, two, three and five chits at arm's length | §4.2. The ratios are asserted; the fourth look saw the steps and raised nothing |
-| A tile takes a tap anywhere in its cell, and every cell clears 44px | §6.4, and §6.3's reason for putting the gap inside the cell rather than between them |
-| **Saving on Today changes the tile, the summary and the archive without a refresh** | BUILD-PLAN.md M4's statement of done. Held by `calendar_providers_test.dart`; seen on the fourth look, 17 September |
-| The chevrons skip empty months, and **neither is drawn** on a fresh install or where there is nowhere to go | ADR-047. Seen on the third look and not remarked on, which is the good outcome |
-| The grid shows **only the weeks with something in them** — the seeded August is three rows with no bare row between the second and third | **ADR-048.** Seen on the fourth look, 17 September. The third look saw the row ADR-047 kept and asked for it to go |
-| Changing the month changes the page **once** — no blank frame, no jump in the archive; the same on tapping a tile and on **Show every day** | **ADR-049.** Seen on the fourth look, 17 September. The third look saw the blank-and-refill on every change of month, intermittently, which is Drift's stream cache deciding whether the answer was instant |
-| The archive's day heading sits with its hairline through the middle of the name, as *earlier*'s does | Seen high on the third look. It was v6's `align-items: baseline`, which Flutter reads as *top* for a box with no text; it is centred now, and the count leaves the prototype's baseline by a pixel or two for it |
-| **Both day ends are findable on a strip with ten marks on it**, the one under the 23:55 mark included, and the boundary reads as a day end rather than as a second now | **ADR-050.** Seen on the fourth look, 17 September, and not remarked on. The 4px mark had hidden behind a chit written near midnight; it is now's height, hanging below the line |
-| The seeded 13 September reads *"Quiet one. Early night."*, not *"Nothing today."* | The third look read the old copy as a placeholder the app had written on an empty day. It never does (§4.1); the fixture had to stop saying otherwise |
-| The archive pages in before the reader reaches the join | `CalendarScreen._pageAhead`, a number with nothing behind it but a guess at a screen's height |
-| `CHIT_SEED=clear` leaves exactly what was written by hand | DATA-MODEL.md §7. The suite proves it in memory; the handset is where a wrong prefix would cost somebody's chits |
 
 ---
 

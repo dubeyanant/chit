@@ -61,26 +61,12 @@ That is why the numbering here has gaps. It is not an omission:
 | **§9** | **Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
 | §10 | The map | this file |
 
-### The two standing rules
+### The standing rules
 
-**No change is finished until the documents that describe it are true again** — in the *same*
-change, never as a follow-up. Contradicting a document is a change to that document.
+Every change closes the loop on the docs it makes untrue, and nothing that has stopped earning
+its place gets committed. Both rules, in full, live in one place —
+[`CLAUDE.md`](CLAUDE.md) §0, §0.1 and §0.2 — and are not repeated here.
 
-That is what makes the reading order above work. A session that follows the rule leaves
-`PROGRESS.md` describing reality, so the next session starts from it without being told
-anything. A session that skips it leaves the next one with a lie and no way to tell which half
-to trust.
-
-**And nothing unnecessary gets committed.** A file that has stopped earning its place is
-deleted in the same change that stopped it earning it — the support file whose last caller is
-gone, the prototype something just superseded, the scratch script, the paragraph in
-`PROGRESS.md` describing what a milestone *did*. Git is the archive; the working tree is not,
-so nothing is lost by deleting and "keep it just in case" is never the reason. Every file here
-is a claim that it is worth reading, and a stale claim is paid for by every session that
-follows.
-
-[`CLAUDE.md`](CLAUDE.md) §0 and §0.1 have the full versions — which document to update for which
-kind of change, what counts as an orphan, and the checklist to run before calling anything done.
 If you are Claude Code, that file is already loaded: read `docs/PROGRESS.md` and start.
 
 ---
@@ -160,12 +146,8 @@ machine's words or the user's.
 ## 10. The map
 
 Everything in the repository and why it exists. Nothing here should be reachable only by `ls`:
-if a file matters, it has a line in this section.
-
-`test/docs/readme_maps_everything_test.dart` enforces that. It fails if a document, a
-prototype, or a top-level source directory exists without being named here, and if an ADR
-exists without a line in `DECISIONS.md`'s own index. An index nobody maintains is worse than no
-index, so this one is maintained by the build.
+if a file matters, it has a line in this section — kept true by discipline, not by a test
+(CLAUDE.md §4.2: no test cases for documents).
 
 ```
 chit/
@@ -193,7 +175,7 @@ chit/
 | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
 | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | **§6 and §7** — the palette, the three faces, the spacing, the motion, the accessibility floors, and the prototype | Drawing anything |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How it is put together — the three layers, the folder map, the Riverpod conventions, the data flow behaviour by behaviour | Adding a file and unsure where it goes |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | The ADRs — every choice, what it was chosen over, what it costs. Indexed at its head, with a note saying where the two retired numbers went | Before reversing something that looks arbitrary |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | The ADRs — every choice, what it was chosen over, what it costs. Indexed at its head, with a note saying where each retired number went | Before reversing something that looks arbitrary |
 | [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) | The schema, the invariants, the queries, and what a migration must preserve. §5 here is the product-level version of the same thing | M1, and any change to a row |
 | [`docs/PACKAGES.md`](docs/PACKAGES.md) | Every dependency, why it is there, what it was chosen over, and the platform configuration each implies | Before adding a package. Nothing enters `pubspec.yaml` without a line there |
 | [`docs/DESIGN-LOG.md`](docs/DESIGN-LOG.md) | Why the design is what it is — including the arguments that were made and lost | Before changing something in §4 or §6 that looks arbitrary. Most of it is load-bearing |
@@ -273,7 +255,6 @@ some of it was real and could not come back.
 | `test/features/today/timeline_providers_test.dart` | The seam between that arithmetic and the query under it, on a `ProviderContainer`: the strip asks for exactly the three days the window spans, it reads `todayProvider` rather than the clock a second time, and one save reaches both the strip and the thread — two queries over one table, and not two sources of truth |
 | `test/features/calendar/month_shape_test.dart` | **The arithmetic the month grid rests on** (BEHAVIOUR.md §4.2), with no widget near it: the grid starts on a Sunday, the current month is drawn up to today and stops while a past month draws in full, **only the weeks with something in them are drawn**, a quiet week between two written ones included in what goes, and the August the second pass looked at loses its bare middle row (ADR-048), the chevrons' destinations are the nearest written month either side or null at the floor and at the current month, a row outside the month is ignored rather than drawn on a wrong tile, density is four steps and four or more is the fourth, and the summary reads *22 chits over eleven days* and is singular twice for one chit on one day. Also the archive's day labels — *Today*, *Yesterday*, then the weekday and date with the year only when it is not this one — grouping by day, and that `Chit.dateOf` inverts `localDayOf` |
 | `test/features/calendar/calendar_providers_test.dart` | The calendar's wiring on a `ProviderContainer` over real Drift: the month asks for exactly its own days and re-queries when navigated, **the chevrons skip empty months and have nowhere to go on a fresh install** (ADR-047), next lands on the current month whether or not it was written in, a selected day narrows the archive to one query and the same tile or **Show every day** widens it, changing the month clears the selection, the archive pages, **the drawn month and the archive hold their last answer while the next is in flight** (ADR-049) — and **one save reaches the grid, the summary and the archive** with nothing keeping them in step, which is BUILD-PLAN.md M4's statement of done as far as a test can hold it |
-| `test/docs/readme_maps_everything_test.dart` | This section, and `DECISIONS.md`'s ADR index |
 | `test/docs/no_widget_tests_test.dart` | ADR-031, which is otherwise a rule in a file nobody has to read: no `testWidgets`, `pumpWidget` or `WidgetTester` anywhere under `test/`. The suite it replaced grew one reasonable-looking widget test at a time, which is how it would come back |
 | `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |
 | `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand. It also counts its reads, which is how ADR-021's *stamped when opened* is checked: when the clock was read is the thing that matters, and no assertion on the value can see it |
