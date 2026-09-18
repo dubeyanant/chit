@@ -329,9 +329,20 @@ class _CommitControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PrimaryButton(
-      label: 'Save',
-      onPressed: ref.read(composerControllerProvider.notifier).save,
+    // A `Row` with one `Expanded` child, not the button bare: the switcher
+    // above lays its child out loose, and a bare button loose is a button the
+    // width of its own label — *seen on a handset on 18 September 2026, a
+    // tall sliver reading "Save" beside a 54px microphone.* The row takes the
+    // width it is given and hands it on.
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: PrimaryButton(
+            label: 'Save',
+            onPressed: ref.read(composerControllerProvider.notifier).save,
+          ),
+        ),
+      ],
     );
   }
 }

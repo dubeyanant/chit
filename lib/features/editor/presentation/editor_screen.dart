@@ -309,15 +309,24 @@ class _ActionRow extends ConsumerWidget {
             reverseDuration: motion.fade(ChitPace.exit),
             switchInCurve: motion.curve,
             switchOutCurve: motion.curve,
+            // A `Row` with one `Expanded` child, not the button bare — the
+            // switcher lays its child out loose, and a bare button loose is
+            // the width of its label. Same fix as Today's Save, same day.
             child: state.canSave
-                ? PrimaryButton(
-                    label: 'Save',
-                    onPressed: () async {
-                      await ref
-                          .read(editorControllerProvider(id).notifier)
-                          .save();
-                      if (context.mounted) context.pop();
-                    },
+                ? Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: PrimaryButton(
+                          label: 'Save',
+                          onPressed: () async {
+                            await ref
+                                .read(editorControllerProvider(id).notifier)
+                                .save();
+                            if (context.mounted) context.pop();
+                          },
+                        ),
+                      ),
+                    ],
                   )
                 : const SizedBox.shrink(),
           ),
