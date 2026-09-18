@@ -290,7 +290,7 @@ class LiveWave extends ConsumerWidget {
 
 /// **Discard** and **Stop & keep** — the same two weights as the open chit.
 ///
-/// Two controls rather than the one TASKS.md group D listed: v6 draws both,
+/// Two controls rather than the one the milestone's handset pass listed: v6 draws both,
 /// and a sheet whose only way out is the one that commits leaves the drag
 /// gesture carrying a decision by itself.
 class _Actions extends ConsumerWidget {

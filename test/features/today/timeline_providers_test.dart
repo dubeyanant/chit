@@ -24,7 +24,7 @@ typedef Chits = AsyncValue<List<Chit>>;
 /// about wiring rather than about pixels: that the strip asks the repository
 /// for the three days the window says, that it reads `todayProvider` rather
 /// than the clock, and that a save arrives on it. What fifteen marks crowded
-/// into one strip *look* like is a device check, and PROGRESS.md carries it.
+/// into one strip *look* like is a device check, and OPEN-QUESTIONS.md carries it.
 ///
 /// The repository is the **real** one over a database in memory, which is what
 /// ADR-031 asks for when a test is about data. There is no second

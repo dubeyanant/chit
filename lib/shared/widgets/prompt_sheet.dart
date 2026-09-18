@@ -21,7 +21,7 @@ import 'perforated_edge.dart';
 /// answer `false`, for the reason the recording sheet treats them as a cancel:
 /// a dismissal nobody chose must land on the outcome that costs nothing.
 ///
-/// **It decides nothing** (TASKS.md D11). Whether to ask is the controller's;
+/// **It decides nothing**. Whether to ask is the controller's;
 /// this only asks. A modal sheet and not a route, like the recording sheet
 /// (ADR-011, ARCHITECTURE.md §3).
 Future<bool> showPromptSheet(

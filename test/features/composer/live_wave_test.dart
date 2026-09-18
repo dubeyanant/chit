@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// The arithmetic is here because it is the one thing about the sheet a test
 /// can hold: a bar that does not answer the level is a wave that says *it is
 /// hearing you* while hearing nothing. What it looks like moving is a handset
-/// job (TASKS.md group G).
+/// job (the milestone's handset pass).
 void main() {
   const int window = RecordingController.levelWindow;
 

@@ -53,7 +53,7 @@ abstract class ComposerState with _$ComposerState {
     /// Whether the recording sheet is up. **M5.**
     @Default(false) bool isRecording,
 
-    /// Whether the microphone has been refused — TASKS.md D2. **M5.**
+    /// Whether the microphone has been refused. **M5.**
     ///
     /// Set the first time permission is withheld, and cleared by a later tap
     /// that gets as far as recording, or by the save that opens a fresh chit.

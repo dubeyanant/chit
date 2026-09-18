@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// decided by counting has to be reachable without building a widget. What is
 /// tested here is where a mark lands and which three days are on screen; what
 /// it *looks* like when fifteen of them crowd into one strip is a person's job
-/// and `docs/PROGRESS.md` carries it.
+/// and `docs/OPEN-QUESTIONS.md` carries it.
 void main() {
   /// Wednesday 16 September 2026, 3:42pm — the afternoon the docs are written
   /// around.

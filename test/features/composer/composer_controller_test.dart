@@ -354,7 +354,7 @@ void main() {
       // `canSave` false is also what re-arms the five seconds. The timer
       // itself has never had a test — it would need `fake_async` as an
       // explicit dependency for the one claim — so this is the precondition,
-      // and the prompt coming back is on TASKS.md group G's handset pass.
+      // and the prompt coming back is on the milestone's handset pass's handset pass.
       expect(after.canSave, isFalse);
     });
 

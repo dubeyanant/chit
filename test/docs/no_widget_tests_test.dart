@@ -48,7 +48,7 @@ void main() {
       reason:
           'chit has no widget tests — CLAUDE.md §4.2 and ADR-031.\n\n'
           'A claim that can only be checked by pumping a screen is checked on a '
-          'device, and what was seen goes in docs/PROGRESS.md. If the claim '
+          'device, and what was seen goes in docs/OPEN-QUESTIONS.md. If the claim '
           'feels too important for that, it is usually a sign that the logic '
           'wants to come out of the widget and into something a '
           'ProviderContainer can drive.\n\n${offences.join('\n')}',

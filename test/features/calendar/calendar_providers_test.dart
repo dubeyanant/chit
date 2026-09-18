@@ -20,9 +20,9 @@ import '../../support/fake_clock.dart';
 /// memory — ADR-031. Every claim here is about wiring: which days the month
 /// asks for, that a selection narrows the archive to one query and clearing
 /// widens it back, that navigating re-queries, and above all **that one save
-/// reaches the grid, the summary and the archive** — which is BUILD-PLAN.md
-/// M4's statement of done, as far as a test can hold it. What a step-four tile
-/// *looks* like beside a step-one is a device check, and PROGRESS.md carries
+/// reaches the grid, the summary and the archive** — which was M4's statement
+/// of done, as far as a test can hold it. What a step-four tile
+/// *looks* like beside a step-one is a device check, and OPEN-QUESTIONS.md carries
 /// it.
 void main() {
   late Directory root;
@@ -255,7 +255,7 @@ void main() {
   });
 
   test('one save reaches the grid, the summary and the archive', () async {
-    // BUILD-PLAN.md M4: done when saving a chit on Today changes the
+    // M4: done when saving a chit on Today changes the
     // calendar density and the month total without a refresh, because both
     // read the same stream. Nothing here tells the calendar anything.
     expect((await month()).summary, ('Nothing written', ' this month'));

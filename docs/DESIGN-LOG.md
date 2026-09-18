@@ -33,7 +33,7 @@ whole metaphor rests on it.
 *In the app it is a painter that draws circles and nothing else* — M2 group C. It had a test
 asserting the negative half directly (no line, no rect, no path), which was the right shape for
 a claim this load-bearing and this easy to undo while tidying; **that test went with ADR-031's
-widget suite, and nothing replaced it.** It is a row in PROGRESS.md's device checklist now,
+widget suite, and nothing replaced it.** It is a row in a milestone's handset pass now,
 which is weaker, so read this paragraph before touching `perforated_edge.dart`: the dots are
 the colour of the surface *beneath* the slip, and a hairline tone makes it a dotted border
 instead — a different object, saying nothing about tearing.

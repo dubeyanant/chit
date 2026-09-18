@@ -259,7 +259,7 @@ class ComposerController extends _$ComposerController implements RecordingSink {
     if (!state.canSave) _armPrompt();
   }
 
-  /// Permission was withheld — TASKS.md D2.
+  /// Permission was withheld.
   ///
   /// The sheet does not open and the microphone does not move. It is the
   /// controller that records this rather than the widget so that the rule has

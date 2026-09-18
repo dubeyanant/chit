@@ -108,7 +108,7 @@ its stated file path was.
 | Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `monthSummariesProvider`, `archiveChitsProvider` | auto-disposed; Drift re-emits on subscribe |
 | The clock, once | `todayProvider`, `todayLocalDayProvider`, `timelineQueryWindowProvider`, `visibleMonthProvider` | auto-disposed; **one read of the clock per screen** — see below |
 | Derived | `timelineWindowProvider`, `drawnMonthProvider`, `archiveDaysProvider`, `archiveLimitProvider` | auto-disposed; pure functions of the above — except that `drawnMonthProvider` and `archiveDaysProvider` are notifiers that **hold their last answer while the stream under them is loading** (ADR-049), so each is a function of its inputs and its own last output |
-| Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider`, `editorControllerProvider(id)` | auto-disposed; the editor's is a family keyed by chit id, and every rule its screen draws is a getter on `EditorState` (TASKS.md D11) |
+| Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider`, `editorControllerProvider(id)` | auto-disposed; the editor's is a family keyed by chit id, and every rule its screen draws is a getter on `EditorState` |
 | A take | `recordingControllerProvider` | **`keepAlive`** — ADR-057. The one exception, because a take begins before the sheet exists and finishes after it has gone |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** §1's layer
@@ -467,7 +467,7 @@ The general shape: **ambient signals fail silently, the user's content never fai
 ## 7. Testing
 
 **No widget tests** (ADR-031) — `test/docs/no_widget_tests_test.dart` fails if one reappears.
-**Anything only visible on a screen is seen on a handset**, and written into PROGRESS.md. This
+**Anything only visible on a screen is seen on a handset**, and written into the commit. This
 is a constraint on where behaviour lives, not just on the test folder: a rule unreachable
 without a widget belongs in a controller or a pure function instead.
 

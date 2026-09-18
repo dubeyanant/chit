@@ -34,9 +34,9 @@ import '../application/editor_controller.dart';
 /// stamp the thread reads, because it is the same chit. **Nothing here can
 /// move the stamp** — `createdAt`, `localDay` and the three ambient fields are
 /// not parameters of anything this screen can call, which is the *no metadata*
-/// rule made structural rather than remembered (TASKS.md D4).
+/// rule made structural rather than remembered.
 ///
-/// **Every decision is the controller's** (D11): whether Save shows, whether
+/// **Every decision is the controller's**: whether Save shows, whether
 /// leaving asks. This screen reads getters and draws.
 class EditorScreen extends ConsumerWidget {
   /// The editor for the chit with this [id].
@@ -102,7 +102,7 @@ class EditorScreen extends ConsumerWidget {
 /// the system gesture ask** when something has changed, because a swipe or a
 /// glancing tap is not a decision (ADR-017). Either way, whether there *is*
 /// a change to lose is `EditorState.shouldPromptOnLeave`'s call, not this
-/// function's (TASKS.md D11). Whatever was staged is thrown away.
+/// function's. Whatever was staged is thrown away.
 Future<void> leaveEditor(
   BuildContext context,
   WidgetRef ref,
@@ -169,7 +169,7 @@ class _Editor extends ConsumerWidget {
                   // is the stored recording or a staged replacement, and the
                   // state knows which (ADR-008: relative for the first,
                   // absolute for the second). **Remove** stages; nothing
-                  // touches the file until Save (D6).
+                  // touches the file until Save.
                   if (state.hasAudio) ...<Widget>[
                     SizedBox(height: space.s4),
                     // **A staged replacement rises, the stored one does not**
@@ -276,7 +276,7 @@ class _FieldState extends ConsumerState<_Field> {
 }
 
 /// The microphone when there is no recording, **Cancel always**, and **Save
-/// chit** once there is something to save — TASKS.md D7, ADR-066.
+/// chit** once there is something to save, ADR-066.
 ///
 /// Cancel is always there because it is the way out, and a way out that
 /// appears only sometimes is a way out that has to be looked for. Save
@@ -391,9 +391,8 @@ class _MicrophoneNote extends StatelessWidget {
   }
 }
 
-/// **Delete this chit** — named in full, so it cannot be read as Discard
-/// (TASKS.md D8), and behind the prompt with no undo (D10). Closes open
-/// item 9.
+/// **Delete this chit** — named in full, so it cannot be read as Discard,
+/// and behind the prompt with no undo. Closes open item 9.
 class _DeleteControl extends ConsumerWidget {
   const _DeleteControl({required this.id});
 

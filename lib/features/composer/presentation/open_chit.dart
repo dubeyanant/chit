@@ -228,7 +228,7 @@ class _Ghost extends ConsumerWidget {
   }
 }
 
-/// The line beside a refused microphone, said once — TASKS.md D2.
+/// The line beside a refused microphone, said once.
 ///
 /// **Under the action row rather than next to the microphone itself.** Once
 /// the chit holds anything the row is microphone and Save, and there is no
@@ -368,7 +368,7 @@ class _OpenChitMicrophone extends ConsumerWidget {
   /// Ask, start, then raise the sheet — and on a refusal, none of the three.
   ///
   /// The refusal is already recorded by the time `start` answers `false`
-  /// (TASKS.md D2), so there is nothing to decide here: the sheet does not
+  ///, so there is nothing to decide here: the sheet does not
   /// open and the composer says so on its own.
   Future<void> _record(BuildContext context, WidgetRef ref) async {
     // The keyboard would otherwise sit under the sheet for the whole take.

@@ -80,7 +80,7 @@ void main() {
     test('it is overcast rather than raining', () {
       // Of the five words available, `overcast` is the only one that is not
       // actually false while it snows: the sky is closed. `raining` would put
-      // a wrong noun in somebody's own journal. PROGRESS.md carries this.
+      // a wrong noun in somebody's own journal. OPEN-QUESTIONS.md carries this.
       for (final int code in snow) {
         expect(at(code), WeatherCondition.overcast, reason: 'code $code');
       }

@@ -114,7 +114,7 @@ void main() {
     });
 
     test('a platform that will not begin is the same refusal', () async {
-      // TASKS.md D2 and ARCHITECTURE.md §6: a `false` from either half is one
+      // ADR-056 and ARCHITECTURE.md §6: a `false` from either half is one
       // event from the sheet's side, and the recorder already refuses to tell
       // them apart.
       final ProviderContainer container = containerOf();

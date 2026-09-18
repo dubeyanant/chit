@@ -71,7 +71,7 @@ class RecordingController extends _$RecordingController {
     return const RecordingState();
   }
 
-  /// The microphone's tap: permission, then both services — TASKS.md D2.
+  /// The microphone's tap: permission, then both services.
   ///
   /// `true` when the sheet should open. A `false` from either the ask or the
   /// start leaves it closed and marks the owner refused; they are one

@@ -200,7 +200,7 @@ void main() {
         'ADR-046', () {
       // A ring is a non-text UI component and needs 3:1. *This test used to
       // assert the failure* — --seal on the three- and four-chit washes
-      // measured 2.61:1 and 1.88:1, and PROGRESS.md item 12 carried it for
+      // measured 2.61:1 and 1.88:1, and OPEN-QUESTIONS.md item 12 carried it for
       // two milestones. ADR-046 moved the ring off the tile: it frames the
       // tile at its edge with a strip of paper inside it, so both edges of
       // the ring meet --paper whatever density today carries, and the only

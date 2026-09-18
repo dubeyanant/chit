@@ -383,7 +383,7 @@ Enforced, and verified on every revision:
   non-text UI component, so the floor is 3:1 rather than 4.5:1 — it held on an empty tile
   (4.56:1) and at one or two chits (3.97:1, 3.36:1), and failed at three (2.61:1) and at four
   or more (**1.88:1**). A day with three chits in it is an ordinary day in a product whose
-  premise is several a day, so that was not a corner, and PROGRESS.md item 12 carried it for
+  premise is several a day, so that was not a corner, and OPEN-QUESTIONS.md item 12 carried it for
   two milestones rather than waving it through. M4 moved the ring: it now frames the tile at
   its edge with 2px of paper inside it, so both of its edges meet `--paper` and the pair that
   matters is 4.56:1 every day. `contrast_test.dart` asserts that pair, and keeps the four old

@@ -27,7 +27,7 @@ mixin _$ComposerState {
 /// **M5; ADR-060 moved the clearing there when Discard went.**
  String? get audioTempPath;/// How long that recording runs. **M5.**
  Duration? get audioDuration;/// Whether the recording sheet is up. **M5.**
- bool get isRecording;/// Whether the microphone has been refused — TASKS.md D2. **M5.**
+ bool get isRecording;/// Whether the microphone has been refused. **M5.**
 ///
 /// Set the first time permission is withheld, and cleared by a later tap
 /// that gets as far as recording, or by the save that opens a fresh chit.
@@ -269,7 +269,7 @@ class _ComposerState extends ComposerState {
 @override final  Duration? audioDuration;
 /// Whether the recording sheet is up. **M5.**
 @override@JsonKey() final  bool isRecording;
-/// Whether the microphone has been refused — TASKS.md D2. **M5.**
+/// Whether the microphone has been refused. **M5.**
 ///
 /// Set the first time permission is withheld, and cleared by a later tap
 /// that gets as far as recording, or by the save that opens a fresh chit.

@@ -8,7 +8,7 @@ import '../../support/fake_audio_player.dart';
 ///
 /// Nothing here builds a widget. What is tested is what the pill *computes* —
 /// the figure, the playhead — and the rule the player exists for: two pills
-/// never sound at once. How it looks is a handset job (TASKS.md group G).
+/// never sound at once. How it looks is a handset job (the milestone's handset pass).
 void main() {
   group('the figure on a pill', () {
     test('is minutes and padded seconds', () {

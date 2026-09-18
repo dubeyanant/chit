@@ -319,7 +319,7 @@ void main() {
       expect(shape(september).summary, ('Nothing written', ' this month'));
     });
 
-    test('the seeded September reads as TASKS.md group F expects', () {
+    test('the seeded September reads as the handset pass expected', () {
       // Yesterday and the day before at five, a three, a two, and two
       // singles — DATA-MODEL.md §7.
       final MonthShape s = shape(september, <DaySummary>[

@@ -22,7 +22,7 @@ part 'editor_controller.g.dart';
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
 ///
-/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// **Everything done to the recording is staged**: `audio` is
 /// an [AudioEdit] that the repository applies at Save and that Cancel throws
 /// away. It cannot be otherwise — a chit with neither words nor a take is a
 /// row the database refuses — and it is what makes Cancel honest.
@@ -30,7 +30,7 @@ part 'editor_controller.g.dart';
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
 /// controller (ADR-057) nothing here outlives the screen. **Every decision the
-/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// screen draws is a getter on [EditorState]**, which is what
 /// lets ADR-031 hold: there is nothing here a test would need a widget for.
 @riverpod
 class EditorController extends _$EditorController implements RecordingSink {
@@ -53,7 +53,7 @@ class EditorController extends _$EditorController implements RecordingSink {
     _set(current.copyWith(text: text));
   }
 
-  /// **Remove**, on the editor's pill — staged (D6).
+  /// **Remove**, on the editor's pill — staged.
   ///
   /// The recording stops sounding, because the pill that could pause it is
   /// about to go. A replacement that was staged and never saved is a temp file
@@ -96,7 +96,7 @@ class EditorController extends _$EditorController implements RecordingSink {
     _set(current.copyWith(microphoneRefused: false));
   }
 
-  /// **Stop & keep** — the take is staged as a replacement (D6). A take that
+  /// **Stop & keep** — the take is staged as a replacement. A take that
   /// wrote nothing is nothing kept.
   @override
   void keepRecording(Recording? take) {

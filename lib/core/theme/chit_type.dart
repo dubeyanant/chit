@@ -405,7 +405,7 @@ final class ChitType extends ThemeExtension<ChitType> {
   final TextStyle date;
 
   /// The timeline's labels — whatever ends up marking where one day stops and
-  /// the next begins (ADR-024 leaves that to the screen; TASKS.md group H).
+  /// the next begins (ADR-024 leaves that to the screen; the milestone's handset pass).
   ///
   /// It carried "5 am" and "midnight" when the timeline was a one-day arc.
   final TextStyle timelineLabel;

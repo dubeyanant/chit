@@ -17,7 +17,6 @@ So, as part of the same change — never as a follow-up:
 
 | If the change… | Then update |
 |---|---|
-| finishes, starts, or alters a milestone | `docs/PROGRESS.md` — always. This one is never optional |
 | adds, removes or repins a package | `docs/PACKAGES.md` |
 | decides something that could reasonably have gone another way | `docs/DECISIONS.md` — a new ADR, edit a previous ADR if it is changed or superseded, and short (§0.2) |
 | changes how the app is put together | `docs/ARCHITECTURE.md` |
@@ -27,16 +26,19 @@ So, as part of the same change — never as a follow-up:
 | changes what chit *is*, or the shape of a chit | `README.md` — §1, §2, §5 |
 | adds a file, a document or an ADR | `README.md` §10, the map — by hand; §4.2 says why there is no test for it |
 | changes why the design is what it is | `docs/DESIGN-LOG.md` |
-| changes the order of work or what "done" means | `docs/BUILD-PLAN.md` |
+| settles, opens or closes something nobody has scheduled | `docs/OPEN-QUESTIONS.md` — its numbered items, which never get renumbered |
 | changes how to work in this repo | this file |
 | **orphans a file** — a support file, an asset, a prototype, a fixture | **delete it, in this commit.** §0.1 below |
 
 **Contradicting a document is a change to it.** If the code has to depart from what a doc
 says, the doc gets corrected in the same change.
 
-**`docs/PROGRESS.md` is the handover.** It is the single place that answers "where are we and
-what is next". Update it at the end of every working session even when nothing else moved —
-including when the session ended mid-milestone, in which case say exactly where it stopped.
+**There is no handover document, and that is deliberate.** v1 was signed off on
+18 September 2026 (ADR-073) and `PROGRESS.md`, `TASKS.md` and `BUILD-PLAN.md` were deleted with
+it: they tracked work in progress and there was none left to track. **What a session learns
+that a later one must know goes in `docs/OPEN-QUESTIONS.md`** — its numbered items are stable
+and cited from the source — **and what a session did goes in the commit body.** Git is the
+history; nothing in the working tree is.
 
 ### 0.1 The second standing rule — nothing unnecessary gets committed
 
@@ -100,8 +102,8 @@ sake is not the job.
 1. `flutter analyze` is clean.
 2. `flutter test` passes.
 3. Every table above whose left column matches was acted on.
-4. `docs/PROGRESS.md` reflects reality — the milestone state, what was just finished, what is
-   next, and any new open question.
+4. Anything a later session has to know that is not in the code went into
+   `docs/OPEN-QUESTIONS.md`, and what was done is in the commit body.
 5. **§0.1 was run: what this change orphaned is deleted, in this commit.**
 6. The change, its doc updates and its deletions are all in the same commit.
 
@@ -121,18 +123,15 @@ document, to be fixed rather than worked around.
 
 | File | Answers |
 |---|---|
-| `docs/PROGRESS.md` | **where we are right now, and what to do next** — start here |
-| `docs/TASKS.md` | **the current milestone, cut into buildable groups** — read it before writing code. One milestone at a time, replaced when the next starts |
-| `README.md` | what chit is (§1–§2), what a chit is (§5), and **§10 maps every file in the repository** |
+| `README.md` | **start here** — what chit is (§1–§2), what a chit is (§5), and **§10 maps every file in the repository** |
 | `docs/BEHAVIOUR.md` | **§3–§4** — the behaviour specification and the screens |
 | `docs/DESIGN-SYSTEM.md` | **§6–§7** — palette, type, spacing, motion, the accessibility floors, the prototype |
-| `docs/BUILD-PLAN.md` | the order it gets built in and what "done" means per milestone |
 | `docs/ARCHITECTURE.md` | how it is put together — layers, folders, providers, data flow |
 | `docs/DECISIONS.md` | the ADRs — why each choice was made and what it was chosen over. Indexed at its head |
 | `docs/DATA-MODEL.md` | schema, invariants, queries |
 | `docs/PACKAGES.md` | every dependency and why it is there |
 | `docs/DESIGN-LOG.md` | why the design is what it is |
-| `docs/OPEN-QUESTIONS.md` | **§8–§9** — what is not settled, and the feature backlog |
+| `docs/OPEN-QUESTIONS.md` | **§8–§9** — what is not settled and the feature backlog, **what comes after v1, and everything known and unscheduled** — read this second |
 | `design/chit-app-v6.html` | the interactive prototype — the visual target. Open in a browser |
 
 v6 is the only prototype.
@@ -145,11 +144,15 @@ the source depend on them.
 
 ## 3. Starting a session
 
-1. Read `docs/PROGRESS.md`. It names the current milestone and the next task.
-2. Read the milestone's section in `docs/BUILD-PLAN.md` for what "done" means.
-3. Read `docs/TASKS.md` for that milestone cut into groups, and the decisions it turns on.
-4. Read the parts of `README.md` that section points at.
-5. Do the work. Close the loop per §0.
+**v1 is finished and nothing is part-built** (ADR-073), so there is no next task waiting and no
+document that names one. A session starts from whatever is being asked for:
+
+1. Read `README.md` §0 for what chit is, and §10 for where everything lives.
+2. Read `docs/OPEN-QUESTIONS.md` — what is not settled, what comes after v1, and the numbered
+   items a session has to know before it changes anything near them.
+3. Read whichever of §3–§4 (behaviour), §6–§7 (design) or `ARCHITECTURE.md` the work touches,
+   and the ADRs it cites.
+4. Do the work. Close the loop per §0.
 
 **`README.md` §0 points here instead of restating this**, for anyone who arrives at the README
 first — a human, or an agent that does not load this file automatically. If the reading order
@@ -234,7 +237,8 @@ codebase, because a principle nobody can fail is a principle nobody is following
 - **No widget tests. Ever.** (ADR-031.) Nothing under `test/` may call
   `testWidgets`, `pumpWidget` or `WidgetTester`, and no test may build a widget in order to look
   at it. **A claim that can only be checked by pumping a screen is checked on a device instead**
-  — build it, look at it, and write what you saw into `docs/PROGRESS.md`. There is a test that
+  — build it, look at it, and write what you saw into the commit body, and into
+  `docs/OPEN-QUESTIONS.md` if a later session has to know it. There is a test that
   fails if a `testWidgets` reappears, so this is enforced rather than remembered.
 - **What is tested instead**, and where the effort goes now: pure functions, models and their
   invariants, the repository and the DAO against `NativeDatabase.memory()`, the migration

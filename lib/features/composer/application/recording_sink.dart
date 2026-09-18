@@ -12,7 +12,7 @@ import '../../../domain/services/audio_recorder.dart';
 /// Nothing here returns anything: the sheet does not wait on its owner.
 abstract interface class RecordingSink {
   /// Permission was withheld, or the platform refused to start. The sheet
-  /// does not open; the owner says so in its own way (TASKS.md D2, ADR-056).
+  /// does not open; the owner says so in its own way (, ADR-056).
   void microphoneWasRefused();
 
   /// The sheet is up and the microphone is live.

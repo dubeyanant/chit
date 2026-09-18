@@ -87,7 +87,7 @@ abstract final class WmoMapping {
   /// §3.6 has no word for it**, and of the five it may have, `overcast` is the
   /// only one that is not actually false during snowfall: the sky *is* closed.
   /// Calling it `raining` would put a wrong noun in somebody's own journal,
-  /// which is a worse failure than under-describing it. PROGRESS.md carries
+  /// which is a worse failure than under-describing it. OPEN-QUESTIONS.md carries
   /// this as an open item — a sixth word is the real answer, the day chit ships
   /// somewhere it snows.
   static const Set<int> _closed = <int>{

@@ -507,7 +507,7 @@ invariant, pure functions, controllers through a bare `ProviderContainer`, and t
 floors as arithmetic — a constraint on where behaviour lives, not just on the test folder. Cost,
 stated plainly: 251 tests became 164 then 171, and real coverage was lost — the field-focus rule
 (ADR-023) and the opened-vs-saved stamp timing (ADR-021) now have no automated guard, only
-PROGRESS.md's device checklist.
+a milestone's handset pass.
 
 ---
 
@@ -877,7 +877,7 @@ to fail apart from, and a take that wrote nothing is simply nothing kept.*
 
 ## ADR-055 — The sheet keeps both of v6's controls, and every other way out is a cancel
 
-The recording sheet carries **Discard and Stop & keep**, over TASKS.md group D's single control:
+The recording sheet carries **Discard and Stop & keep**, over the milestone's single control:
 v6 draws both, and a sheet whose only button commits leaves the drag gesture carrying a decision
 by itself — a person who opened the microphone by accident should be able to say so rather than
 having to guess that swiping down throws the take away. `showRecordingSheet` is what ends the

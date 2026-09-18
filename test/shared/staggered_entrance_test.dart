@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// **The arithmetic of the entrance, without building one** — ADR-031.
 ///
-/// What a stagger *looks* like is a handset's to say (TASKS.md D6). What it
+/// What a stagger *looks* like is a handset's to say. What it
 /// can be held to here is when each block starts, when the whole thing is
 /// over, and that DESIGN-SYSTEM.md §6.4's rule reaches it: under reduced
 /// motion the page arrives at once and goes nowhere.

@@ -331,7 +331,7 @@ None of these break the invariant of §2, which is the part worth protecting.
 
 A seeder behind a compile-time flag, writing chits across about six weeks so the calendar has
 something to shade and the archive has something to page. **It exists as of M4 group A** —
-`lib/data/dev/debug_seeder.dart`, owed since M2 as PROGRESS.md open item 10.
+`lib/data/dev/debug_seeder.dart`, owed since M2 as OPEN-QUESTIONS.md open item 10.
 
 ```bash
 flutter run --dart-define=CHIT_SEED=seed     # writes the fixture; a second run writes nothing
@@ -360,7 +360,7 @@ apart is open item 32.
 
 **Twenty chits, dated relative to the day it runs.** Yesterday and the day before hold five
 each — density step four on the calendar, and ten marks across two days on the timeline, which
-is the crowding PROGRESS.md item 15 has wanted to look at since M2. Then a three, a two, and
+is the crowding OPEN-QUESTIONS.md item 15 has wanted to look at since M2. Then a three, a two, and
 singles back to six weeks ago, three of them in the previous month so the chevrons have
 somewhere to go. Today is left alone: it belongs to whoever is holding the phone.
 

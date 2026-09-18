@@ -10,7 +10,7 @@ part 'editor_state.freezed.dart';
 /// [chit] is the row **as it was loaded** and never changes while the screen
 /// is open; [text] and [audio] are what the user has done to it since. Every
 /// rule the editor's controls turn on is a getter over those three, so it can
-/// be tested without a screen (ADR-031, TASKS.md D11): whether Save shows,
+/// be tested without a screen (ADR-031): whether Save shows,
 /// whether leaving asks, whether the chit would still be a chit.
 @freezed
 abstract class EditorState with _$EditorState {
@@ -27,7 +27,7 @@ abstract class EditorState with _$EditorState {
     /// The field's live content.
     required String text,
 
-    /// What has been done to the recording, **staged until Save** (D6).
+    /// What has been done to the recording, **staged until Save**.
     @Default(AudioEdit.keep()) AudioEdit audio,
 
     /// Whether the microphone has been refused on this screen — the same
@@ -72,7 +72,7 @@ abstract class EditorState with _$EditorState {
   /// to what Save would write. False once a removal leaves nothing behind.
   bool get holdsAnything => text.trim().isNotEmpty || hasAudio;
 
-  /// Whether **Save chit** is offered (D7): something has changed, and what
+  /// Whether **Save chit** is offered: something has changed, and what
   /// it would write is a chit. Cancel arrives with it and *Delete this chit*
   /// is there regardless, so an emptied chit is left with exactly those two.
   bool get canSave => isDirty && holdsAnything;

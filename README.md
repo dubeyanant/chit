@@ -15,16 +15,15 @@ chit is (§5), and §10 maps everything else. The behaviour specification, the d
 the open questions live in their own documents — they are still the design authority, they are
 just not all in one 500-line file.
 
-Read these four, in this order. It is about ten minutes and it is the whole context.
+Read these two, then whatever the work touches. **v1 is finished** (ADR-073), so there is no
+next task waiting: a session starts from what is being asked for.
 
 | # | Read | For |
 |---|---|---|
-| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, the next task, every open item. It is the present, not a log — git is the history. If you read one thing, read this |
-| 2 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the two standing rules below, the engineering principles, the commit format |
-| 3 | **[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md)** | What "done" means for the milestone `PROGRESS.md` just named |
-| 4 | **[`docs/TASKS.md`](docs/TASKS.md)** | That milestone cut into buildable groups, with the decisions it turns on already settled |
+| 1 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the two standing rules below, the engineering principles, the commit format |
+| 2 | **[`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md)** | **What is not settled, what comes after v1, and everything known and unscheduled.** The nearest thing to a plan the repository still has |
 
-Then read what that milestone points at, and open
+Then read whichever specification the work touches, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
@@ -33,10 +32,8 @@ Then read what that milestone points at, and open
 > on Today, on a scrolling timeline and in a calendar of the months written. **Voice is
 > recording and playback: there is no transcription** (ADR-058). A saved chit is opened by
 > holding it in the thread, and its words, its recording and the chit itself can all be changed
-> or destroyed. **There are no database migrations yet** (ADR-059) — see PROGRESS.md item 38
+> or destroyed. **There are no database migrations yet** (ADR-059) — see OPEN-QUESTIONS.md item 38
 > before installing it anywhere the chits would be missed.
->
-> This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
 ### Section numbers are stable, and global
 
@@ -67,7 +64,7 @@ Every change closes the loop on the docs it makes untrue, and nothing that has s
 its place gets committed. Both rules, in full, live in one place —
 [`CLAUDE.md`](CLAUDE.md) §0, §0.1 and §0.2 — and are not repeated here.
 
-If you are Claude Code, that file is already loaded: read `docs/PROGRESS.md` and start.
+If you are Claude Code, `CLAUDE.md` is already loaded: read `docs/OPEN-QUESTIONS.md` and start.
 
 ---
 
@@ -150,7 +147,7 @@ if a file matters, it has a line in this section — kept true by discipline, no
 chit/
 ├── README.md               this file — §0 says where to start, §10 is this map
 ├── CLAUDE.md               how to work here: the two standing rules, the principles, the commits
-├── docs/                   §10.1 — eleven documents, one question each
+├── docs/                   §10.1 — eight documents, one question each
 ├── lib/                    §10.2 — the Flutter source
 ├── test/                   §10.3 — what is enforced rather than intended
 ├── design/                 §10.4 — the prototype, and the visual target
@@ -164,10 +161,8 @@ chit/
 
 | File | Answers | Read it |
 |---|---|---|
-| [`docs/PROGRESS.md`](docs/PROGRESS.md) | **Where the build stands and what is next.** The status board, the next task, and every open item | First. Always |
-| [`CLAUDE.md`](CLAUDE.md) | How to work here — the two standing rules, the engineering principles, the commit format, the commands | Second, before writing anything |
-| [`docs/TASKS.md`](docs/TASKS.md) | **The current milestone, cut into groups that can each be built, tested and committed on their own.** Holds one milestone at a time and is replaced wholesale when the next starts; git keeps the history | Third, when you are about to write code |
-| [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) | The order it gets built in, what "done" means for the milestone that is open, and what the finished ones taught | Starting a milestone |
+| [`CLAUDE.md`](CLAUDE.md) | How to work here — the two standing rules, the engineering principles, the commit format, the commands | First, before writing anything |
+| [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) | **§8 and §9** — the questions still open, the feature backlog, what comes after v1, and the numbered items a session has to know. *It absorbed `PROGRESS.md`'s open items and `BUILD-PLAN.md`'s after-v1 list when those were deleted* | Second |
 | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
 | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | **§6 and §7** — the palette, the three faces, the spacing, the motion, the accessibility floors, and the prototype | Drawing anything |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How it is put together — the three layers, the folder map, the Riverpod conventions, the data flow behaviour by behaviour | Adding a file and unsure where it goes |
@@ -175,7 +170,6 @@ chit/
 | [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) | The schema, the invariants, the queries, and why there are no migrations (ADR-059). §5 here is the product-level version of the same thing | M1, and any change to a row |
 | [`docs/PACKAGES.md`](docs/PACKAGES.md) | Every dependency, why it is there, what it was chosen over, and the platform configuration each implies | Before adding a package. Nothing enters `pubspec.yaml` without a line there |
 | [`docs/DESIGN-LOG.md`](docs/DESIGN-LOG.md) | Why the design is what it is — including the arguments that were made and lost | Before changing something in §4 or §6 that looks arbitrary. Most of it is load-bearing |
-| [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) | **§8 and §9** — the questions still open, and the feature backlog | Deciding what comes after the current milestone |
 
 **The design authority is this file, `BEHAVIOUR.md` and `DESIGN-SYSTEM.md`** — §1 to §9 between
 them. Where any other document disagrees with those three, the disagreement is a bug in that
@@ -227,15 +221,14 @@ falling into the thread and a recording rising into the open chit (ADR-070); and
 *Friday 11 September* — so the archive's headings and the editor's cannot disagree.
 
 `lib/features/editor/` is M6: the editor screen above the tab shell (ADR-062) and the
-controller behind it, whose `EditorState` getters are every rule the screen draws (TASKS.md
-D11).
+controller behind it, whose `EditorState` getters are every rule the screen draws (ADR-031).
 
 ### 10.3 The tests
 
 What is enforced rather than intended. `flutter test`.
 
 **There are no widget tests, and there will not be** — ADR-031. Nothing here builds a widget;
-what can only be seen on a screen is seen on a handset, and written up in PROGRESS.md. Eight
+what can only be seen on a screen is seen on a handset, and written up in the commit. Eight
 suites and three support files were deleted on 16 September 2026 when that was decided, taking
 the count from 251 tests to 171 — 164, plus the seven that came back as arithmetic the moment
 somebody looked at whether they had ever needed a widget. The ADR lists what was lost, because
@@ -259,7 +252,7 @@ some of it was real and could not come back.
 | `test/domain/services/ambient_capture_test.dart` | ADR-007, clause by clause: the two signals go out **in parallel** rather than one after the other, each under its own timeout, and **a signal that does not arrive is null** — whether it hung, threw, or simply had nothing to say. Since ADR-040 the time is no longer part of it; what is left is the half with the failure modes |
 | `test/domain/services/ambient_signals_test.dart` | **ADR-042, by counting.** *Captured twice and never in between* is invisible when it is wrong — an implementation that polled would pass every assertion about values in this repository and show up only as battery on somebody's phone. So this counts how many times the services were asked: reading the held value asks nothing, `prime` asks once, `refresh` asks again and replaces rather than merges |
 | `test/features/composer/composer_controller_test.dart` | **ADR-040's reversal**, which fails silently — a stamp taken at the wrong moment is still a plausible time, and only a clock moved across the save can tell. The row carries the save time and not the open time; a chit opened at 23:58 and saved at 00:05 lands on the *new* day; and ADR-042's half: the save returns without waiting on a capture that never comes back, and the patch that follows moves neither `createdAt` nor `updatedAt`. **Since M5 it also carries §3.4**: **Remove** deleting the temp take and leaving the words alone (ADR-060), a recording with no words saving and coming back as a chit, and the take stopping when Save moves its file — while a chit playing in the thread is left alone |
-| `test/features/editor/editor_controller_test.dart` | **The editor's rules, held to their meaning without a screen** (ADR-031, TASKS.md D11). Dirty is *differs from what was loaded* — a character typed and deleted, or a trailing space the save would trim, is not a change; Save needs a change *and* a chit to write, so emptying a text-only chit withholds it while still raising the leave prompt; a save moves `updatedAt` and nothing about the moment; and the **null that means the row has gone**, which is why the screen pops rather than drawing an empty slip. **Since group E it holds the voice too**: Remove stages and touches no file, a kept take is staged and the pill plays it from its temp path, a take recorded and removed again is no change, abandoning discards the temp and leaves the row alone, and a save moves a replacement in or deletes a removal — stopping the player first. And delete: the row, the recording, a staged take and the player all go, and unsaved words with them |
+| `test/features/editor/editor_controller_test.dart` | **The editor's rules, held to their meaning without a screen** (ADR-031). Dirty is *differs from what was loaded* — a character typed and deleted, or a trailing space the save would trim, is not a change; Save needs a change *and* a chit to write, so emptying a text-only chit withholds it while still raising the leave prompt; a save moves `updatedAt` and nothing about the moment; and the **null that means the row has gone**, which is why the screen pops rather than drawing an empty slip. **Since group E it holds the voice too**: Remove stages and touches no file, a kept take is staged and the pill plays it from its temp path, a take recorded and removed again is no change, abandoning discards the temp and leaves the row alone, and a save moves a replacement in or deletes a removal — stopping the player first. And delete: the row, the recording, a staged take and the player all go, and unsaved words with them |
 | `test/shared/day_label_test.dart` | *Today*, *Yesterday*, then the weekday and date — with the year only when it is not this one. It moved out of `ArchiveDay` when the editor's header wanted the same phrase, so it now guards both callers |
 | `test/shared/staggered_entrance_test.dart` | **The arithmetic of a page's entrance** (ADR-031): the first block starts at once, each one after it a step later, and the wait stops growing at the cap — which is what keeps a thirty-chit day an entrance rather than a queue. Then the run's length, that an empty list takes no time so a run cannot shed itself before its content arrives, and §6.4 reaching it — under reduced motion every block starts together and the page still fades in at 220ms |
 | `test/features/composer/audio_pill_test.dart` | ADR-031 again: what the pill *computes*, never how it looks. The figure, and a playhead that lights nothing at the start, half the bars halfway, everything at the end, and does not run off the end of the list when `just_audio` reports a position past the duration or a row has lost its length. Then the rule the one player exists for — a second pill takes the first one off, a pause keeps its playhead, a vanished file leaves the player silent, and the end is silence rather than a full playhead |
@@ -273,7 +266,7 @@ some of it was real and could not come back.
 | `test/features/today/timeline_window_test.dart` | **The arithmetic the timeline rests on** (ADR-024): the window is three whole local days ending at the next midnight, an hour is the same width wherever it falls, and a moment outside it is `null` rather than clamped — which is the day arc's bug, where a chit at 00:20 and one at 5:00 landed on the same pixel. Also that the window slides at midnight, and that a chit falls off the far end when it does |
 | `test/features/today/timeline_providers_test.dart` | The seam between that arithmetic and the query under it, on a `ProviderContainer`: the strip asks for exactly the three days the window spans, it reads `todayProvider` rather than the clock a second time, and one save reaches both the strip and the thread — two queries over one table, and not two sources of truth |
 | `test/features/calendar/month_shape_test.dart` | **The arithmetic the month grid rests on** (BEHAVIOUR.md §4.2), with no widget near it: the grid starts on a Sunday, the current month is drawn up to today and stops while a past month draws in full, **only the weeks with something in them are drawn**, a quiet week between two written ones included in what goes, and the August the second pass looked at loses its bare middle row (ADR-048), the chevrons' destinations are the nearest written month either side or null at the floor and at the current month, a row outside the month is ignored rather than drawn on a wrong tile, density is four steps and four or more is the fourth, and the summary reads *22 chits over eleven days* and is singular twice for one chit on one day. Also the archive's day labels — *Today*, *Yesterday*, then the weekday and date with the year only when it is not this one — grouping by day, and that `Chit.dateOf` inverts `localDayOf` |
-| `test/features/calendar/calendar_providers_test.dart` | The calendar's wiring on a `ProviderContainer` over real Drift: the month asks for exactly its own days and re-queries when navigated, **the chevrons skip empty months and have nowhere to go on a fresh install** (ADR-047), next lands on the current month whether or not it was written in, a selected day narrows the archive to one query and the same tile or **Show every day** widens it, changing the month clears the selection, the archive pages, **the drawn month and the archive hold their last answer while the next is in flight** (ADR-049) — and **one save reaches the grid, the summary and the archive** with nothing keeping them in step, which is BUILD-PLAN.md M4's statement of done as far as a test can hold it |
+| `test/features/calendar/calendar_providers_test.dart` | The calendar's wiring on a `ProviderContainer` over real Drift: the month asks for exactly its own days and re-queries when navigated, **the chevrons skip empty months and have nowhere to go on a fresh install** (ADR-047), next lands on the current month whether or not it was written in, a selected day narrows the archive to one query and the same tile or **Show every day** widens it, changing the month clears the selection, the archive pages, **the drawn month and the archive hold their last answer while the next is in flight** (ADR-049) — and **one save reaches the grid, the summary and the archive** with nothing keeping them in step, which is OPEN-QUESTIONS.md M4's statement of done as far as a test can hold it |
 | `test/docs/no_widget_tests_test.dart` | ADR-031, which is otherwise a rule in a file nobody has to read: no `testWidgets`, `pumpWidget` or `WidgetTester` anywhere under `test/`. The suite it replaced grew one reasonable-looking widget test at a time, which is how it would come back |
 | `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |
 | `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand. It also counts its reads, which is how ADR-021's *stamped when opened* is checked: when the clock was read is the thing that matters, and no assertion on the value can see it |
@@ -320,7 +313,7 @@ variable rather than static cuts, and what it costs — weight has to be applied
 | [`pubspec.yaml`](pubspec.yaml) | Dependencies and the font declarations. Every entry is justified in [`docs/PACKAGES.md`](docs/PACKAGES.md) |
 | `android/app/src/main/AndroidManifest.xml` | `RECORD_AUDIO`, both location permissions (ADR-016) and `INTERNET`. *It also carried a `<queries>` intent for `android.speech.RecognitionService`, which went with transcription — ADR-058.* |
 | `android/app/build.gradle.kts` | `minSdk 24` — `record_android`'s floor, the highest of any plugin — and the `com.infiniteants.chit` application id |
-| `android/gradle.properties` | `kotlin.incremental=false`. Without it every plugin's Kotlin compile fails to close its caches on Windows; `docs/PROGRESS.md` has the detail |
+| `android/gradle.properties` | `kotlin.incremental=false`. Without it every plugin's Kotlin compile fails to close its caches on Windows; `docs/OPEN-QUESTIONS.md` has the detail |
 | `ios/Runner/Info.plist` | The microphone and location usage strings — the only copy in the app the design never sees, so they are written in chit's voice |
 
 Android and iOS only — ADR-019. The desktop scaffolds went in M0a; `web/` is kept because

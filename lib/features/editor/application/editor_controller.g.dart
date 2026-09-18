@@ -20,7 +20,7 @@ part of 'editor_controller.dart';
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
 ///
-/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// **Everything done to the recording is staged**: `audio` is
 /// an [AudioEdit] that the repository applies at Save and that Cancel throws
 /// away. It cannot be otherwise — a chit with neither words nor a take is a
 /// row the database refuses — and it is what makes Cancel honest.
@@ -28,7 +28,7 @@ part of 'editor_controller.dart';
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
 /// controller (ADR-057) nothing here outlives the screen. **Every decision the
-/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// screen draws is a getter on [EditorState]**, which is what
 /// lets ADR-031 hold: there is nothing here a test would need a widget for.
 
 @ProviderFor(EditorController)
@@ -46,7 +46,7 @@ final editorControllerProvider = EditorControllerFamily._();
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
 ///
-/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// **Everything done to the recording is staged**: `audio` is
 /// an [AudioEdit] that the repository applies at Save and that Cancel throws
 /// away. It cannot be otherwise — a chit with neither words nor a take is a
 /// row the database refuses — and it is what makes Cancel honest.
@@ -54,7 +54,7 @@ final editorControllerProvider = EditorControllerFamily._();
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
 /// controller (ADR-057) nothing here outlives the screen. **Every decision the
-/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// screen draws is a getter on [EditorState]**, which is what
 /// lets ADR-031 hold: there is nothing here a test would need a widget for.
 final class EditorControllerProvider
     extends $AsyncNotifierProvider<EditorController, EditorState?> {
@@ -70,7 +70,7 @@ final class EditorControllerProvider
   /// nothing — an id can outlive its row across a delete, and a blank screen
   /// with a back arrow is a dead end that says nothing about why.
   ///
-  /// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+  /// **Everything done to the recording is staged**: `audio` is
   /// an [AudioEdit] that the repository applies at Save and that Cancel throws
   /// away. It cannot be otherwise — a chit with neither words nor a take is a
   /// row the database refuses — and it is what makes Cancel honest.
@@ -78,7 +78,7 @@ final class EditorControllerProvider
   /// Keyed by id so two chits opened in one session are two states, and
   /// auto-disposed so leaving the screen forgets it: unlike the recording
   /// controller (ADR-057) nothing here outlives the screen. **Every decision the
-  /// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+  /// screen draws is a getter on [EditorState]**, which is what
   /// lets ADR-031 hold: there is nothing here a test would need a widget for.
   EditorControllerProvider._({
     required EditorControllerFamily super.from,
@@ -130,7 +130,7 @@ String _$editorControllerHash() => r'a3ebcb2c53b2536878e1535d6e1ed048f86b8c6c';
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
 ///
-/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// **Everything done to the recording is staged**: `audio` is
 /// an [AudioEdit] that the repository applies at Save and that Cancel throws
 /// away. It cannot be otherwise — a chit with neither words nor a take is a
 /// row the database refuses — and it is what makes Cancel honest.
@@ -138,7 +138,7 @@ String _$editorControllerHash() => r'a3ebcb2c53b2536878e1535d6e1ed048f86b8c6c';
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
 /// controller (ADR-057) nothing here outlives the screen. **Every decision the
-/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// screen draws is a getter on [EditorState]**, which is what
 /// lets ADR-031 hold: there is nothing here a test would need a widget for.
 
 final class EditorControllerFamily extends $Family
@@ -171,7 +171,7 @@ final class EditorControllerFamily extends $Family
   /// nothing — an id can outlive its row across a delete, and a blank screen
   /// with a back arrow is a dead end that says nothing about why.
   ///
-  /// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+  /// **Everything done to the recording is staged**: `audio` is
   /// an [AudioEdit] that the repository applies at Save and that Cancel throws
   /// away. It cannot be otherwise — a chit with neither words nor a take is a
   /// row the database refuses — and it is what makes Cancel honest.
@@ -179,7 +179,7 @@ final class EditorControllerFamily extends $Family
   /// Keyed by id so two chits opened in one session are two states, and
   /// auto-disposed so leaving the screen forgets it: unlike the recording
   /// controller (ADR-057) nothing here outlives the screen. **Every decision the
-  /// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+  /// screen draws is a getter on [EditorState]**, which is what
   /// lets ADR-031 hold: there is nothing here a test would need a widget for.
 
   EditorControllerProvider call(String id) =>
@@ -201,7 +201,7 @@ final class EditorControllerFamily extends $Family
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
 ///
-/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// **Everything done to the recording is staged**: `audio` is
 /// an [AudioEdit] that the repository applies at Save and that Cancel throws
 /// away. It cannot be otherwise — a chit with neither words nor a take is a
 /// row the database refuses — and it is what makes Cancel honest.
@@ -209,7 +209,7 @@ final class EditorControllerFamily extends $Family
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
 /// controller (ADR-057) nothing here outlives the screen. **Every decision the
-/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// screen draws is a getter on [EditorState]**, which is what
 /// lets ADR-031 hold: there is nothing here a test would need a widget for.
 
 abstract class _$EditorController extends $AsyncNotifier<EditorState?> {

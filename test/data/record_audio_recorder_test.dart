@@ -9,7 +9,7 @@ import 'package:path/path.dart' as p;
 ///
 /// The plugin cannot run here, so what is tested is the arithmetic the
 /// waveform depends on and the naming the store depends on. The rest is a
-/// handset job, and TASKS.md group G says which.
+/// handset job, and the milestone's handset pass says which.
 void main() {
   group('the level the waveform draws', () {
     test('full scale is one and the silence floor is zero', () {

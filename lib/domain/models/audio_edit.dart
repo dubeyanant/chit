@@ -2,7 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'audio_edit.freezed.dart';
 
-/// What an edit does to a chit's recording — **ADR-063**, TASKS.md D5, D6.
+/// What an edit does to a chit's recording — **ADR-063**.
 ///
 /// A sealed union rather than two nullable parameters, so that *leave it
 /// alone*, *take it away* and *put this one there instead* cannot be confused
