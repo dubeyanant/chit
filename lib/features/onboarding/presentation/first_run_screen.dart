@@ -57,10 +57,14 @@ final class FirstRunScreen extends ConsumerWidget {
 class _Tips extends StatelessWidget {
   const _Tips();
 
+  /// **Three lines, and it stays three** (ADR-076, open item 44). The screen
+  /// does not scroll and has about 65dp of slack on an 800dp handset, so a
+  /// fourth clips on a shorter one — ADR-086 bought the tag line by tightening
+  /// the microphone line rather than by adding to them.
   static const List<String> _lines = <String>[
     'The page is always open — write, then Save.',
     'Or tap the microphone and speak; a recording is kept, not transcribed.',
-    'Hold a chit to open it again.',
+    'Hold a chit to open it; write @a_name or #a_topic to find it again.',
   ];
 
   @override

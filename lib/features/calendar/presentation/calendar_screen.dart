@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions.dart';
+import '../../../shared/day_group.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/day_group_view.dart';
 import '../../../shared/widgets/staggered_entrance.dart';
 import '../../today/application/today_controller.dart';
 import '../application/archive_provider.dart';
 import '../application/month_provider.dart';
-import 'widgets/archive_day.dart';
 import 'widgets/month_bar.dart';
 import 'widgets/month_grid.dart';
 
@@ -19,7 +20,7 @@ class CalendarScreen extends ConsumerWidget {
     final space = context.space;
 
     final MonthShape? shape = ref.watch(drawnMonthProvider);
-    final List<ArchiveDay>? days = ref.watch(archiveDaysProvider);
+    final List<DayGroup>? days = ref.watch(archiveDaysProvider);
     final int? selected = ref.watch(selectedDayProvider);
     final int today = ref.watch(todayLocalDayProvider);
     final MonthNeighbours neighbours = ref.watch(monthNeighboursProvider);
@@ -67,11 +68,11 @@ class CalendarScreen extends ConsumerWidget {
             sliver: SliverList.builder(
               itemCount: days.length,
               itemBuilder: (BuildContext context, int index) {
-                final ArchiveDay day = days[index];
+                final DayGroup day = days[index];
                 return Padding(
                   key: ValueKey<int>(day.localDay),
                   padding: EdgeInsets.only(top: space.s6),
-                  child: ArchiveDayGroup(day: day, today: today),
+                  child: DayGroupView(day: day, today: today),
                 );
               },
             ),

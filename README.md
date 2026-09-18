@@ -103,18 +103,20 @@ lib/
 ├── core/       the design system, the clock, the BuildContext accessors
 ├── domain/     models and interfaces. Pure Dart; imports neither of the two below
 ├── data/       the implementations: Drift, files, network, platform plugins
-├── features/   one per screen — shell, today, composer, calendar, editor, onboarding
+├── features/   one per screen — shell, today, composer, calendar, find, editor, onboarding
 └── shared/     widgets used by more than one feature
 ```
 
 `lib/core/theme/` is §6 as four `ThemeExtension`s, reached through `context.colors`, `.type`,
 `.space` and `.motion` — four accessors rather than one, so a widget that needs a colour cannot
 reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's words (ADR-082) —
-pure, so the widget that draws them holds no grammar. `lib/shared/widgets/` is the chit vocabulary:
+pure, so the widget that draws them holds no grammar, and `lib/domain/find/` says which axis a tag
+is found on. `lib/domain/find_line.dart` holds the two books find opens with — the house lines and
+the hints (ADR-086). `lib/shared/widgets/` is the chit vocabulary:
 the slip and its tear edge, the chit's own body text, the stamp
-row and its motion marks, the rail and the thread over it, the wordmark, the heading row both tabs
-hang their title in, the two button weights, the microphone, the pill, the prompt sheet, `Arrival`,
-`StaggeredEntrance` and `FocusRing`.
+row and its motion marks, the rail and the thread over it, a day's heading and its group, the
+wordmark, the heading row the tabs hang their title in, the two button weights, the microphone, the
+pill, the prompt sheet, `Arrival`, `StaggeredEntrance` and `FocusRing`.
 
 **Tests.** `flutter test`. **There are no widget tests, and there will not be** (ADR-031) — what can
 only be seen on a screen is seen on a handset and written into the commit. Suites sit beside what

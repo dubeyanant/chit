@@ -118,10 +118,13 @@ no tag, `@anant.` tags the name and leaves the full stop, `@anant's` leaves the 
 trailing underscore falls outside rather than drawing as a space nobody can see. Any script — a
 Devanagari matra is a combining mark and belongs to the word it sits on.
 
-**Nothing here is tappable, and the raw text is what is stored.** A tap on the thread still does
-nothing and the row is still opened by holding it (§4.1), so this is how a chit *reads* and not yet
-a way in — that is backlog item 8, and this is the half of it that is decided. **The editor shows
-the words as they were typed**, underscores and sigils and all, because that is what an edit edits.
+**A tag is tapped, and the row it sits in is still held** (ADR-086). Tapping `@anant` or `#rent`
+anywhere a saved chit is drawn opens find on that tag — **switching tab if it has to**, and
+**unwinding to find's root and re-entering** rather than stacking, so back walks *find → that axis
+→ that tag* however you arrived and tapping tag after tag never piles a stack up. **It is the one
+tap in a thread that does anything**; everything that is not a tag still does nothing, and the row
+is still opened by holding it (§4.1). **The editor shows the words as they were typed**, underscores
+and sigils and all, because that is what an edit edits — and the raw text is what is stored.
 
 ## 4. Screens
 
@@ -192,7 +195,8 @@ back gesture all cancel, so nothing is kept and the take is deleted (ADR-055).
 chit's tear edge and two answers. **The first says what to expect** (ADR-074) — that the page is
 always open and a few words then **Save** make a chit; that the microphone speaks one instead and
 the take is kept rather than transcribed; and that a chit is opened again by **holding** it, the one
-gesture nothing on a screen can advertise. **The second asks**: a chit is stamped with the time and
+gesture nothing on a screen can advertise, **the same line carrying the `@` and `#` syntax**, which
+is the other thing a screen cannot show you (ADR-086). **The second asks**: a chit is stamped with the time and
 — if you let it — the weather, whether you were moving, and that a place was recorded; it never
 shows where, and none of it leaves the phone. **The wordmark is centred here and nowhere else**, and
 **the screen does not scroll** — the copy is cut until it fits, a first screen that slides under the
@@ -241,3 +245,50 @@ withholds Save, leaving Cancel and *Delete this chit* — the honest pair.
 screen, and a step of the scale away from Save rather than an inch from it. It is named in full so
 it cannot be read as Discard. It asks, and **there is no undo** (ADR-064) — there is no trash and no
 backend, and the prompt is the whole of the protection.
+
+**4.6 Find.** The third tab, and the way back to a chit you cannot date. **Three screens deep, and
+each one is a route** (ADR-084), so the system back walks up a level rather than out of the tab.
+
+*The first screen.* A line at the top, **the same all day and different tomorrow** — usually one of
+forty-five house lines, and **every fourth day a hint instead** (ADR-086) about something the app
+does and does not otherwise say: the tag syntax, that an underscore in a tag reads as a space, that
+the question on an empty chit is a different one every time. **A hint lives here rather than under
+the thing it describes** — a caption that never goes away is chrome on the sparest screens in the
+app, while one that comes round twice a week is read once and then recognised.
+
+Then, at the **bottom right**, four words: `weather`, `motion`, `people`, `topics`. The words are
+one touch target apart, with the same space under the last as between any two, so the column reads
+as a rhythm rather than a list.
+
+**Only an axis that goes somewhere is drawn** (ADR-085) — a word nobody has written anything under
+is not offered, the same argument §4.1 makes against a control that does nothing. A new install
+shows one or two words and earns the rest. An app with nothing in it at all says *Nothing to look
+through yet.* **While the chits are still arriving, nothing is drawn but the line**: an empty
+column is a different answer, and showing it first is a frame of the wrong one.
+
+**This is the one surface in the app that is not left-aligned** (ADR-084). Everything else hangs off
+the left gutter; find's column is flush *right*, because it is a set of targets rather than a
+reading surface, and the right edge is where a right thumb already is. **The lines are house lines,
+not quotations** — nothing is attributed, a misattribution being a defect that ships and cannot be
+checked from inside the app.
+
+*The second screen.* One axis' values, **no quote**, the same right-flush column. `weather` and
+`motion` read **alphabetically**, both being short lists a reader already knows the whole of, where
+alphabetical is what lets a word be *found*. `people` and `topics` read **most written first**, both
+growing without limit, so the useful ones rise; **a tie breaks alphabetically**, or two tags written
+once each would swap places on every save. A topic keeps its `#`, as it does on a chit (§3.7).
+
+**A value is drawn only if something carries it** — a sky nobody wrote under is not offered, and
+`stationary` is never offered because it is never drawn (§3.6.1). **An axis with nothing on it is
+not reachable from the screen above** (ADR-085), so its one-line note is a backstop for a chit
+deleted while the screen is open, not something a reader is meant to arrive at.
+
+*Where the column sits.* **At the bottom while it fits, and from the top once it does not**
+(ADR-084) — measured against the handset, not guessed at a count, because five weathers fit anywhere
+and a year of tags fits nowhere. A list that has overflowed must start at the top, or its first
+row — the one written most — would open off the top of the screen.
+
+*The third screen.* Every chit carrying that value, headed by the value, grouped by day
+newest-first in the same thread Today and the archive use — so a chit is opened by holding it here
+too. **One value at a time**: find is a way *to* a chit, not a query builder, and two values at once
+is the question nobody asked on the way in.

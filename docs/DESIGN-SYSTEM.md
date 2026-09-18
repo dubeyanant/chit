@@ -94,6 +94,12 @@ keeps its `#`**: the slope is a difference §6.4 accepts on its own, and colour 
 needs the glyph beside it. Newsreader ships a true italic (`Newsreader-Italic-VF`), so the slope is
 drawn rather than sheared.
 
+**`filterWord` is find's column** (ADR-084) — 16.5px Hanken in `--ink`, each word its own
+`minTouchTarget` row. **It is the one thing in the app set flush right**: everything else hangs off
+the left gutter, and this column is a set of targets rather than prose, sitting where a right thumb
+already is. **`quote` is the line above it** — 15px serif italic in `--ink-faint`, §6.2's voice for
+an aside, which is what a line nobody signed is.
+
 ### 6.3 Spacing, shape, motion
 
 **Spacing — 4px base:** 4 / 8 / 12 / 16 / 24 / 32 / 48 / 72. Page gutter 26px. **Every gap and
@@ -190,6 +196,6 @@ there it explains why the list changed.
 
 `design/chit-app-v6.html` was the visual target through v1 and was deleted once the app was the
 better reference. **The number is not reused**, being cited elsewhere. One requirement outlived it
-and is still binding: **the two tabs never disagree** — the thread, the timeline, the calendar
-density and the month total are four readings of one table, kept in step by being the same data
-rather than by being synchronised (ARCHITECTURE.md §3).
+and is still binding: **the tabs never disagree** — the thread, the timeline, the calendar
+density, the month total and find's rows are readings of one table, kept in step by being the same
+data rather than by being synchronised (ARCHITECTURE.md §3).
