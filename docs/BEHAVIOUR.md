@@ -8,11 +8,12 @@ where another document disagrees, that document is wrong.
 
 **3.1 A chit exists once it is saved.** Opening the app presents a new chit for today; it becomes a
 record on **Save**, and opening it six times leaves nothing behind. **A chit is stamped when it is
-saved** (ADR-040), so it is always filed on the day it was written; the stamp on the open chit is a
-**preview**, and it does not tick. **There is no Discard** (ADR-060) — the words are cleared by
+saved** (ADR-040), so it is always filed on the day it was written; **the open chit shows no time at
+all** (ADR-080), a clock drawn before the stamp exists being a preview of a number it cannot
+promise. **There is no Discard** (ADR-060) — the words are cleared by
 selecting them, the recording by **Remove** on the pill. **Saving never waits**: the row is written
-at once with what is in hand, and a reading older than **five minutes** is refreshed behind the save
-and the chit corrected a moment later; inside five minutes nothing is asked, a burst of chits in one
+at once with what is in hand, and a reading older than **one minute** is refreshed behind the save
+and the chit corrected a moment later; inside the minute nothing is asked, a burst of chits in one
 sitting being one moment (ADR-042, ADR-045).
 
 **3.2 One surface, two ways in.** The field is live the moment the chit opens, with a **microphone**
@@ -47,7 +48,8 @@ a chit says in words was typed by a person.
 **3.5 — retired.** *When transcription fails, the voice survives alone.* Gone with transcription
 itself (ADR-058). **The number is not reused** — it is cited from other documents and from git.
 
-**3.6 Ambient capture.** The time shows as `3:42 pm`; weather as one of five words — `raining`,
+**3.6 Ambient capture.** The time shows as `3:42 pm` **on a saved chit and nowhere else**
+(ADR-080); weather as one of five words — `raining`,
 `clear`, `overcast`, `windy`, `clear night`; **motion as one of three, in the same voice** —
 `walking`, `travelling`, `flying` (ADR-039, an icon until 078 — the enum stays `traveling`, the
 word is British like the rest of the copy); and **location is not drawn at all** (ADR-066), though
@@ -66,20 +68,60 @@ having one, so a word on two out of twelve carries real information.
 **never drawn** — stored, and that is all. **A chit written at a desk in the rain reads
 `3:42 pm  raining`**: a motion only *displaces* the weather, and only when the phone was moving.
 
+**The open chit fills that slot or says `writing`** (ADR-080). It carries no time, so the fact is
+the whole line and an empty line would move the field under the thumb the moment weather landed;
+`writing` is the present tense of what the slip is doing, in the same lowercase single word the
+facts speak in. A phone that refused location never leaves it — honest, that being the whole of what
+the chit can say about where it is.
+
+**A chit that has been edited says so, and does not say when.** `edited` follows the fact —
+`3:42 pm  raining  edited` — reaching the three-item ceiling and never passing it, because the
+question a thread answers is *which of these did I go back to*, not *at what hour*. The time on the
+row stays the one the chit was written at: **an edit never moves the stamp** (§4.5). It is drawn
+wherever a saved chit is — the thread, the archive and the editor's own slip.
+
 **3.6.2 What the motion states mean.** Four, and no more (ADR-037), read from the speed on the
 position fix — so motion costs no second permission, and a refused location costs the fix and the
 motion together. `stationary` (still, or a reading noisier than the speed it carries) draws nothing.
 **A speed the platform reported without an error beside it is still a speed** (ADR-078): Android
 sends 0.0 for an accuracy it does not have, and reading that as noise is what kept a train at
 `stationary`. **No `running`, no `cycling`** — speed cannot tell a cyclist at 20 km/h from traffic
-at the same speed. **A motion that did not arrive is not drawn.**
+at the same speed. **A motion that did not arrive is not drawn.** **`flying` will almost never
+fire, and that is not a bug to fix** — most devices disable GPS in airplane mode, so there is no
+fix and no speed; a barometer is the honest route if it ever matters.
 
 **3.6.3 When capture happens.** At launch, and at a save holding something stale (ADR-042,
-ADR-045); no polling, no refresh on resume. Five minutes is set by the **place**, not the weather,
+ADR-045); no polling, no refresh on resume. **One minute** is set by the **place**, not the weather,
 so the preview can be hours old on a phone left open all day — but **no chit is ever recorded with
 it**, saving re-reading, so the staleness is on the screen and never in the data. **Permission is
 asked once, on first run** (ADR-041); a refusal means quieter chits, and nothing in the UI mentions
 it.
+
+**A reading landing mid-chit changes the facts and nothing else** (ADR-081). The launch capture
+finishes seconds after the app opens, which is squarely inside the time somebody spends writing
+their first sentence: it moves the word on the stamp, and it leaves the text, the kept take and the
+hour the chit was opened exactly where they were.
+
+**3.7 Tags are written into the words** (ADR-082). **`@somebody` is a person and `#something` is a
+topic**, marked while typing and drawn on the saved chit: **a person loses its `@` and is set in
+italic**, a **topic keeps its `#` and is set in `--ink-faint`**. Italic is difference enough for a
+name; a topic's only other difference would be colour, which §6.4 forbids a signal to rest on
+alone, so its sigil stays and carries the rest.
+
+**An underscore inside a tag is a space** — `@anant_dubey` is written with the underscore and reads
+*anant dubey*, because a tag has to survive being one word while typing and be two when read. A run
+of them is still one space. **The whole tag counts as one thing**, matched regardless of case and
+of whether it was spelt with underscores or not, which is what a search would count later.
+
+**A tag starts at a word start and ends on a letter, a digit or a mark.** `work@example.com` carries
+no tag, `@anant.` tags the name and leaves the full stop, `@anant's` leaves the possessive, and a
+trailing underscore falls outside rather than drawing as a space nobody can see. Any script — a
+Devanagari matra is a combining mark and belongs to the word it sits on.
+
+**Nothing here is tappable, and the raw text is what is stored.** A tap on the thread still does
+nothing and the row is still opened by holding it (§4.1), so this is how a chit *reads* and not yet
+a way in — that is backlog item 8, and this is the half of it that is decided. **The editor shows
+the words as they were typed**, underscores and sigils and all, because that is what an edit edits.
 
 ## 4. Screens
 
@@ -172,7 +214,8 @@ somewhere you came into. **The slip fills the screen** (ADR-066): the saved stam
 
 **Nothing on this screen can move the stamp** — not the time, the day, the weather, the place or the
 motion. An edit changes what the chit says, never when or where it was written, and **a chit whose
-row has gone leaves the screen** rather than drawing an empty slip.
+row has gone leaves the screen** rather than drawing an empty slip. What an edit does add is the
+word `edited` (§3.6.1), which appears on the slip the moment Save returns.
 
 **Save appears once something has changed** — *changed* meaning *differs from what was loaded*, so a
 character typed and deleted, or a trailing space the save would trim, is not a change; it is

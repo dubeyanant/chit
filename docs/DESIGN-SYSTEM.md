@@ -71,10 +71,12 @@ anybody needs pronounced at them.
 
 **Uppercase appears in one place: `LISTENING`** on the recording sheet — a state, shown while a
 thing is happening, which should read as a signal rather than as words. The ambient stamp is
-lowercase everywhere, in the same words and case on the open chit and in the thread, the open chit
-being distinguished by being *brighter* rather than by speaking differently; its facts are **spaced
+lowercase everywhere, in the same words and case wherever a word appears twice, the open chit being
+distinguished by being *brighter* rather than by speaking differently; **it is the one place that
+carries no time** (ADR-080), so it is one word where the thread is two. Its facts are **spaced
 apart, not strung on middle dots**, three items at 11px with a separator between each being five
-things to read where there are three. Anything that counts or keeps time is **tabular** — a running
+things to read where there are three — and three is the ceiling, which `edited` reaches and nothing
+may pass. Anything that counts or keeps time is **tabular** — a running
 timer whose digits change width reads as unstable.
 
 **The date is a label, not a masthead**: weekday and date on one 26px line, the weekday italic in
@@ -84,6 +86,13 @@ starts reading as a page rather than a column; everything that is not the date, 
 wordmark is 16.5px. **15px is the exception, and it is one voice rather than a size** — the month
 summary and the empty notes are the app speaking *about* a day rather than reporting one, set a step
 below chit text in serif italic so they read as an aside.
+
+**A tag is chit text differing in exactly one way** (ADR-082, BEHAVIOUR §3.7). `chitPerson` is
+`chitText` in the real italic face — same size, weight, colour and line — and `chitTopic` is
+`chitText` in `--ink-faint`, same everything else. **That is why a person drops its `@` and a topic
+keeps its `#`**: the slope is a difference §6.4 accepts on its own, and colour is not, so the topic
+needs the glyph beside it. Newsreader ships a true italic (`Newsreader-Italic-VF`), so the slope is
+drawn rather than sheared.
 
 ### 6.3 Spacing, shape, motion
 

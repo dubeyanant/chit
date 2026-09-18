@@ -19,7 +19,8 @@ lib/
 ├── app/       the root and the router — go_router: shell + two tabs
 ├── core/      the four ThemeExtensions of §6, the injected clock, the BuildContext sugar
 ├── domain/    models/ (Chit and its invariant, the stamp, the enums, the screen states, the
-│              sealed AudioEdit) · ambient/ · motion/ · weather/ · repositories/ · services/
+│              sealed AudioEdit) · ambient/ · motion/ · weather/ · tags/ (the sealed ChitSpan
+│              and its grammar) · repositories/ · services/
 ├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
 │              weather/ · location/ · preferences/ · repositories/
 ├── features/  shell, today, composer, calendar, editor, onboarding
@@ -99,7 +100,7 @@ arrived is null, and nothing here can block, spin or fail a save. Motion rides o
 which fact is worth a chit is a product decision. **`AmbientCapture` holds no clock** — a time is
 read where it is used. **A throw and a hang both produce `null`**, the one deliberate exception to
 *fail loudly in development*. **`AmbientSignals` owns *when*, `AmbientCapture` owns *what***: a
-reading is good for five minutes, the row is written first and patched only if stale, and
+reading is good for one minute, the row is written first and patched only if stale, and
 `updateAmbient` is a separate method so one rule lives in the type — **the patch moves neither
 `createdAt` nor `updatedAt`**.
 

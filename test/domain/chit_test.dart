@@ -179,4 +179,17 @@ void main() {
   test('a chit with no fix has no location, and nothing to draw', () {
     expect(chit().stamp.hasLocation, isFalse);
   });
+
+  group('wasEdited is what draws the word — §3.6.1', () {
+    test('a chit nobody has touched carries the two instants equal', () {
+      expect(chit().wasEdited, isFalse);
+    });
+
+    test('an edit a moment later already counts', () {
+      expect(
+        chit().copyWith(updatedAt: when.add(const Duration(seconds: 1))),
+        isA<Chit>().having((Chit c) => c.wasEdited, 'wasEdited', isTrue),
+      );
+    });
+  });
 }

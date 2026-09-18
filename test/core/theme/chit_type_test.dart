@@ -147,5 +147,34 @@ void main() {
         expect(style.color, isNot(colors.seal));
       }
     });
+
+    group('a tag is the body text, differing in one way each — §6.4', () {
+      test('a person differs by slope, which colour cannot be blamed for', () {
+        expect(type.chitPerson.fontStyle, FontStyle.italic);
+        expect(type.chitText.fontStyle, FontStyle.normal);
+
+        expect(type.chitPerson.color, type.chitText.color);
+        expect(type.chitPerson.fontSize, type.chitText.fontSize);
+        expect(type.chitPerson.fontWeight, type.chitText.fontWeight);
+      });
+
+      test('a topic differs by colour alone, so its sigil is drawn', () {
+        expect(type.chitTopic.color, colors.inkFaint);
+        expect(type.chitTopic.color, isNot(type.chitText.color));
+
+        expect(
+          type.chitTopic.fontStyle,
+          type.chitText.fontStyle,
+          reason: 'the # is the second difference — ChitBody draws it',
+        );
+        expect(type.chitTopic.fontSize, type.chitText.fontSize);
+        expect(type.chitTopic.fontWeight, type.chitText.fontWeight);
+      });
+
+      test('both sit on the line the body text sits on', () {
+        expect(type.chitPerson.height, type.chitText.height);
+        expect(type.chitTopic.height, type.chitText.height);
+      });
+    });
   });
 }

@@ -109,7 +109,9 @@ lib/
 
 `lib/core/theme/` is §6 as four `ThemeExtension`s, reached through `context.colors`, `.type`,
 `.space` and `.motion` — four accessors rather than one, so a widget that needs a colour cannot
-reach motion. `lib/shared/widgets/` is the chit vocabulary: the slip and its tear edge, the stamp
+reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's words (ADR-082) —
+pure, so the widget that draws them holds no grammar. `lib/shared/widgets/` is the chit vocabulary:
+the slip and its tear edge, the chit's own body text, the stamp
 row and its motion marks, the rail and the thread over it, the wordmark, the heading row both tabs
 hang their title in, the two button weights, the microphone, the pill, the prompt sheet, `Arrival`,
 `StaggeredEntrance` and `FocusRing`.
