@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Sixty-eight records, not seventy-one: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty-nine records, not seventy-two: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -89,6 +89,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-069 | Press feedback is one widget, and the depress is a token | M7 group A — `Pressable`; the tab bar's ripple goes. **Reversed by ADR-070**, which deletes the widget and the tokens |
 | ADR-070 | No press feedback; a row's box is always there; the strip arrives by scrolling | the owner's second look at M7 — three calls, and the middle one is why a recording in the thread would not play |
 | ADR-071 | Nothing answers a press; the strip jumps; a thread outlives its empty day | the owner's third look at M7 — the last wash goes, ADR-024's scroll is reversed, and the first chit of a day gets its arrival |
+| ADR-072 | Three bugs from the fourth look, and the one shape behind two of them | a stale playhead, a strip drawn before it rested, and a thread rebuilt because a list was matched by position |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -1200,3 +1201,26 @@ and the second did not. Chosen over giving the thread a flag from the screen, wh
 the question of what is new somewhere that cannot answer it. Cost: §6.1's pressed rows are now
 prototype-only like the hover rows above them, and a control with a slow callback has nothing at
 all to say it heard the tap — the owner accepted that twice.
+
+---
+
+## ADR-072 — Three bugs from the fourth look, and the one shape behind two of them
+
+The owner's fourth handset look, 18 September 2026. **A pill coming back inherited the last
+one's playhead**: while the next file loads, `just_audio`'s position stream still answers with
+the one that is leaving, and that figure landing on the pill arriving is a playhead that starts
+halfway — after which `_onPosition`'s backwards guard (which exists so a short take's wave
+cannot snap backwards) holds it there until the sound catches up. Position reports are ignored
+while a source is being swapped, and `just_audio_player_test.dart` blocks a load and speaks for
+the old file to hold it. **The strip is not drawn until it has rested**: where it rests is a
+function of the viewport, so the first frame lays it out at nought — the oldest day, two screens
+from where it belongs — and the frame after jumps, which is a handful of marks skating across
+and reads as a fault. A frame of bare line nobody sees is the better trade, and it is what was
+left of ADR-071's *the strip never travels*. **The thread is keyed**, because the day's first
+save takes the empty note out of the list above it, every child below shifts up a place, and a
+list matched by position hands the thread's slot to a widget of another type and builds it again
+from nothing — so the thread forgot what it had drawn and the day's first chit arrived without
+its arrival. Chosen over making the note always present, which hides the sharper rule: **a list
+whose children come and go is matched by key or it is not matched at all**, which is the same
+shape as ADR-070's wrapper that came and went. Cost: two of the three can only be checked on a
+device (ADR-031), and they are the first three lines of M7's pass.

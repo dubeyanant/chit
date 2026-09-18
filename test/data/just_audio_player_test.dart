@@ -109,6 +109,45 @@ void main() {
     expect(platform.loaded, hasLength(1), reason: 'resumed, not started over');
   });
 
+  test('a pill coming back does not inherit the last one\'s playhead', () async {
+    // **The wave that would not move.** While the next file loads, the
+    // position stream still answers with the one that is leaving; that figure
+    // landing on the pill arriving is a playhead that starts halfway, and
+    // `_onPosition`'s backwards guard then holds it there until the sound
+    // catches up. Seen on a handset as a frozen wave over a recording that was
+    // audibly running.
+    await player.play(id: 'a', path: path('a.m4a'));
+    await pumpEventQueue();
+    platform.player.emitPositionOf(const Duration(seconds: 2));
+    await pumpEventQueue();
+    // Ranges, not equalities: the plugin interpolates the playhead from the
+    // wall clock between platform events, so an exact figure is a test that
+    // fails on a loaded machine and proves nothing extra on a quiet one.
+    expect(
+      seen.last.position,
+      greaterThanOrEqualTo(const Duration(seconds: 2)),
+      reason: 'a is 2s in',
+    );
+
+    platform.player.blockLoad();
+    unawaited(player.play(id: 'b', path: path('b.m4a')));
+    await pumpEventQueue();
+
+    // The old file, still talking, while the new one is on its way in.
+    platform.player.emitPositionOf(const Duration(seconds: 2));
+    await pumpEventQueue();
+
+    platform.player.unblockLoad();
+    await pumpEventQueue();
+
+    expect(seen.last.holds('b'), isTrue);
+    expect(
+      seen.last.position,
+      lessThan(const Duration(seconds: 1)),
+      reason: 'b starts at its own beginning, not two seconds into a',
+    );
+  });
+
   test('a file that is not there leaves the player silent', () async {
     await player.play(id: 'gone', path: path('gone.m4a'));
     await pumpEventQueue();
@@ -135,10 +174,13 @@ final class _FakeJustAudio extends JustAudioPlatform {
   /// it was the sound of the first tap after launch.
   int platformInits = 0;
 
+  /// The one native player, for a test that has to talk to it directly.
+  late _FakePlatformPlayer player;
+
   @override
   Future<AudioPlayerPlatform> init(InitRequest request) async {
     platformInits++;
-    final _FakePlatformPlayer player = _FakePlatformPlayer(request.id, loaded);
+    player = _FakePlatformPlayer(request.id, loaded);
     _players[request.id] = player;
     return player;
   }
@@ -177,6 +219,24 @@ final class _FakePlatformPlayer extends AudioPlayerPlatform {
   ProcessingStateMessage _state = ProcessingStateMessage.idle;
   Duration _position = Duration.zero;
   Completer<void>? _sounding;
+  Completer<void>? _loadGate;
+
+  /// Holds the next [load] open, so a test can let the file that is leaving
+  /// say something while the next one is on its way in. The real platform
+  /// takes a handful of frames to open a file and does exactly this.
+  void blockLoad() => _loadGate ??= Completer<void>();
+
+  /// Lets it through.
+  void unblockLoad() {
+    _loadGate?.complete();
+    _loadGate = null;
+  }
+
+  /// Reports [at] as the playhead, without anything having moved.
+  void emitPositionOf(Duration at) {
+    _position = at;
+    _emit();
+  }
 
   @override
   Stream<PlaybackEventMessage> get playbackEventMessageStream => _events.stream;
@@ -206,6 +266,11 @@ final class _FakePlatformPlayer extends AudioPlayerPlatform {
         request.audioSourceMessage as ConcatenatingAudioSourceMessage;
     final UriAudioSourceMessage source =
         playlist.children.first as UriAudioSourceMessage;
+    // Held open before anything changes, so that while a test blocks the load
+    // the platform still reports the file that is leaving — which is the race
+    // the real one has.
+    if (_loadGate case final Completer<void> gate) await gate.future;
+
     _loaded.add(source.uri);
     _state = ProcessingStateMessage.loading;
     _emit();

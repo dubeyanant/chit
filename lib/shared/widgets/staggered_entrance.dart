@@ -133,6 +133,10 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
       final Duration at = StaggeredEntrance.delayFor(index, motion: motion);
       entering.add(
         _Entering(
+          // The wrapper takes the child's identity, so a keyed block keeps it
+          // while the entrance is still running and is not rebuilt from
+          // nothing when the list around it changes shape.
+          key: child.key,
           run: run,
           begin: at.inMicroseconds / total,
           end: (at + arrival).inMicroseconds / total,
@@ -182,6 +186,7 @@ class _Entering extends StatelessWidget {
     required Curve curve,
     required this.rise,
     required this.child,
+    super.key,
   }) : _window = Interval(
          begin.clamp(0, 1),
          // A block whose window is a point — one that arrived after the run

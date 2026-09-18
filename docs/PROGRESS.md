@@ -10,8 +10,9 @@ and from TASKS.md, on the owner's instruction: what each milestone built is in g
 settled is in DECISIONS.md, and what it taught is in BUILD-PLAN.md's one list of lessons.
 
 **Last updated:** 18 September 2026. **M0 to M6 are done and signed off on a handset. M7 —
-motion and the floors — is cut into five groups in [TASKS.md](TASKS.md); A to D are built and
-committed. Only E is left, and E is the device pass that signs v1 off.**
+motion and the floors — is built in full; its device pass is four looks in and has three checks
+left**, all of them fixes from the fourth look that only a handset can confirm ([TASKS.md](TASKS.md)
+group E). When those three pass, v1 is done.
 
 ---
 
@@ -25,9 +26,9 @@ committed. Only E is left, and E is the device pass that signs v1 off.**
 | M4 — calendar | ✅ done | 17 Sep 2026 |
 | M5 — voice | ✅ done | 18 Sep 2026. No transcription (ADR-058), no migrations (ADR-059) |
 | M6 — the chit editor | ✅ done | 18 Sep 2026. Its last three handset checks are carried into M7's device pass (ADR-067) |
-| **M7 — motion and the floors** | 🔨 in progress | five groups, **A to D done**; E is the device pass. ADR-068 to ADR-071 |
+| **M7 — motion and the floors** | 🔨 in progress | **A to D done, E all but three checks**; four handset looks in. ADR-068 to ADR-072 |
 
-**505 tests, `flutter analyze` clean, `dart format` clean.** Schema is v1 and there are no
+**506 tests, `flutter analyze` clean, `dart format` clean.** Schema is v1 and there are no
 migrations — an install carrying an older shape is reinstalled (ADR-059, open item 38).
 
 **Both APKs build**, release included. The release APK is a 59 MB fat APK across three ABIs, of
@@ -36,14 +37,23 @@ which one device's share is about 22 MB; nothing about shipping is decided, so n
 
 ---
 
-## Next: M7 group E — the device pass, and then v1 is done
+## Next: three checks, and then v1 is done
 
-**Everything M7 builds is built.** What is left is a handset and a checklist: TASKS.md group E,
-which is the whole of the sign-off. M7 is mostly a device pass by design (BUILD-PLAN.md M7), so
-**write what the handset showed into this file as it is seen**, not at the end. **Read
-BUILD-PLAN.md's lessons first** — three of them were paid for again this session.
+**The fourth look closed all of group E but three**, and those three are the fixes it produced
+(ADR-072). None of them can be checked without a device (ADR-031):
 
-### What three handset looks cost, and what they taught
+1. **A pill played, left for another, and come back to** — its wave runs from the start with the
+   sound rather than sitting where it was left.
+2. **The strip never skates** — the timeline is at today from the first frame you see, on launch
+   and after a save.
+3. **The first chit written after opening the app arrives like every other**, including the
+   first on an empty day.
+
+When those pass: sign M7 off in BUILD-PLAN.md with what it taught, mark v1 done here, and
+replace TASKS.md. **Read BUILD-PLAN.md's lessons first** — three of them were paid for again in
+this milestone.
+
+### What four handset looks cost, and what they taught
 
 **The press feedback was built and then removed, over three looks.** First the wash was called
 artificial, so it went; then the depress; then the chit row's wash, the last one left. There is
@@ -76,10 +86,18 @@ is mounted on an empty day now, drawing nothing.
 comment in `AudioPill` had claimed for two milestones. §6.4 makes no exceptions, so the pill
 carries a minimum height, and the test says which way the arithmetic actually goes.
 
-**The lesson, three times over this milestone:** *a wrapper that comes and goes is a rebuild.*
-`Arrival`, `FocusRing` and the row all stay in the tree and change only what they draw. It
-belongs in BUILD-PLAN.md's list when M7 is signed off, with *a comment is not a measurement*
-beside it.
+**The fourth look found three more**, all fixed (ADR-072). A pill returned to inherited the
+playhead of the one before it, because the position stream goes on answering for the file that
+is leaving and the backwards guard then pins that figure until the sound catches up. The strip
+skated for a frame, because where it rests cannot be known until it has been laid out — it is
+not drawn until it has rested now. And the day's first chit still arrived without its arrival,
+because the empty note leaving the list above the thread shifted every child up a place and an
+unkeyed list handed the thread's slot to another type, rebuilding it from nothing.
+
+**The lesson, four times over this milestone, in two shapes:** *a wrapper that comes and goes is
+a rebuild*, and *a list whose children come and go is matched by key or not at all.* `Arrival`,
+`FocusRing`, the row and now the thread are all written to it. Both belong in BUILD-PLAN.md's
+list when M7 is signed off, with *a comment is not a measurement* beside them.
 
 ---
 

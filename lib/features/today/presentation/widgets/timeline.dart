@@ -98,6 +98,16 @@ class _TimelineState extends ConsumerState<Timeline> {
   /// reporting its own movement.
   bool _settling = false;
 
+  /// Whether the strip has been put at now at least once.
+  ///
+  /// **The strip is not drawn until it has.** Where it rests is a function of
+  /// the viewport, so it cannot be known until the strip has been laid out —
+  /// which means the first frame lays it out at nought, showing the oldest day
+  /// two screens from where it belongs, and the frame after it jumps. That
+  /// flash is a handful of marks skating across the strip and it reads as a
+  /// fault (ADR-071). A frame of bare line nobody sees is the better trade.
+  bool _rested = false;
+
   @override
   void initState() {
     super.initState();
@@ -172,7 +182,11 @@ class _TimelineState extends ConsumerState<Timeline> {
   /// there is no viewport until the strip has been laid out once.
   void _restAtNow() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scroll.hasClients) return;
+      if (!mounted) return;
+      // Set before the clients check, so a strip that somehow never gets a
+      // scroll position is still drawn rather than hidden for good.
+      if (!_rested) setState(() => _rested = true);
+      if (!_scroll.hasClients) return;
 
       final double target = _restingOffset(_scroll.position);
 
@@ -234,17 +248,24 @@ class _TimelineState extends ConsumerState<Timeline> {
               // as the window has days — one, two or three (ADR-032, ADR-035).
               final double content = constraints.maxWidth * window.dayCount;
 
-              return SingleChildScrollView(
-                controller: _scroll,
-                scrollDirection: Axis.horizontal,
-                physics: const ClampingScrollPhysics(),
-                child: SizedBox(
-                  width: content,
-                  child: _Strip(
-                    window: window,
-                    now: now,
-                    chits: chits,
+              // Laid out either way, so the resting offset is computable; drawn
+              // only once it has been computed. The wrapper is always here and
+              // only its opacity changes — a wrapper that comes and goes is a
+              // rebuild (ADR-070).
+              return Opacity(
+                opacity: _rested ? 1 : 0,
+                child: SingleChildScrollView(
+                  controller: _scroll,
+                  scrollDirection: Axis.horizontal,
+                  physics: const ClampingScrollPhysics(),
+                  child: SizedBox(
                     width: content,
+                    child: _Strip(
+                      window: window,
+                      now: now,
+                      chits: chits,
+                      width: content,
+                    ),
                   ),
                 ),
               );

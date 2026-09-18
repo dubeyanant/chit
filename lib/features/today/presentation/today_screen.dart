@@ -79,15 +79,19 @@ class TodayScreen extends ConsumerWidget {
                 ...switch (chits) {
                   AsyncData<List<Chit>>(:final List<Chit> value) => <Widget>[
                     _EarlierHeading(count: value.length),
-                    if (value.isEmpty) const _EmptyNote(),
+                    if (value.isEmpty) const _EmptyNote(key: ValueKey('none')),
                     // **The thread is mounted even on an empty day**, where it
-                    // draws nothing. It has to be: it tells a row that was
-                    // just written from one that was already there by
-                    // remembering what it drew last time, and a thread that
-                    // appeared *with* the day's first chit would have no last
-                    // time — so the first chit of every day arrived without
-                    // its arrival, and the second did not (ADR-071).
-                    DayThread(chits: value),
+                    // draws nothing, and **it is keyed**. It tells a row that
+                    // was just written from one that was already there by
+                    // remembering what it drew last time, so it has to survive
+                    // the day's first save — and without a key it did not: the
+                    // note above it leaves on that save, every child below
+                    // shifts up a place, and a list matched by position hands
+                    // the thread's slot to a widget of another type and builds
+                    // it again from nothing. A thread that has just been built
+                    // has no last time, so the first chit of a day arrived
+                    // without its arrival and the second did not (ADR-071).
+                    DayThread(key: const ValueKey('thread'), chits: value),
                   ],
                   _ => const <Widget>[],
                 },
@@ -185,7 +189,7 @@ class _EarlierHeading extends StatelessWidget {
 /// and no invitation: an empty day looks empty, and the thing that invites is
 /// the open chit above it.
 class _EmptyNote extends StatelessWidget {
-  const _EmptyNote();
+  const _EmptyNote({super.key});
 
   @override
   Widget build(BuildContext context) {

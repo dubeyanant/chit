@@ -10,14 +10,13 @@ It is the working list; [PROGRESS.md](PROGRESS.md) is the handover.
 pace table and the three authored moments) and §6.4 (the floors). What already exists:
 `ChitMotion` carries the five paces, `fade`/`travel`/`loop` collapse under reduced motion and
 `chit_motion_test.dart` holds the re-timing floors; `BranchFade` gives a returning tab its
-200ms fade; the timeline scrolls to now; the record dot loops through `ChitMotion.loop`; the
-prompt and Save fade. What M7 adds is the depress, the stagger, the two authored arrivals,
-focus rings, and the audit.
+200ms fade; the timeline rests at now; the record dot loops through `ChitMotion.loop`; the
+prompt and Save fade. What M7 adds is the stagger, the two authored arrivals, focus rings and
+the audit — *and a depress, which the owner had it take back out again.*
 
-**Commits.** M7 was to be one commit at group E; on 18 September 2026 the owner asked for the
-work so far to be committed so the session could be resumed later. **A to C are committed
-together**; D and E follow the same way — a commit when the owner asks for one, not one per
-group.
+**Commits.** M7 was to be one commit at group E; the owner asked instead for the work to be
+committed as it went, so the session could be picked up later. A commit when the owner asks for
+one, not one per group.
 
 **Deliberately not in M7:** anything from OPEN-QUESTIONS.md §9, migrations (open item 38), a
 settings screen (item 22), the type comparison (item 1). M7 changes no schema and no behaviour;
@@ -30,7 +29,7 @@ it changes how the existing behaviour arrives.
 | | Decision | Where |
 |---|---|---|
 | **D1** | **Reduced motion is one flag, already resolved.** `context.motion.reduceMotion` comes from `MediaQuery.disableAnimationsOf`; every new animation reads `context.motion` and nothing else, and no widget checks the platform itself | ADR-020, §6.4 |
-| **D2** | ~~Press feedback is one widget and the depress is a token.~~ **There is no press feedback.** The owner took the wash off, then the depress; `Pressable` and both depress tokens are deleted and every control is a plain tap. The chit row keeps its hold wash, drawn on a box that is always in the tree — swapping the box in on press rebuilt the subtree and cost the audio pill its recogniser | ADR-069, **ADR-070** |
+| **D2** | ~~Press feedback is one widget and the depress is a token.~~ **There is no press feedback anywhere.** The owner took the wash off, then the depress, then the chit row's wash; `Pressable` and both depress tokens are deleted, four wash tokens with them, and every control is a plain tap. A held row is answered by the phone's tick | ADR-069, **ADR-070**, **ADR-071** |
 | **D3** | **The stagger runs on a screen's first build only, and sheds itself.** One widget in `shared/widgets/` owns it; a tab regaining visibility gets `BranchFade` and nothing more; the archive re-runs it only when a tapped date rebuilds the list. The delay per row and the cap are pure functions. *The step is a `ChitMotion` token and the cap is the widget's — a count of children is not a duration, which is §6.3's own rule about where a loop's period lives* | §6.3 |
 | **D4** | **The two authored arrivals travel from where they came from**: a saved chit falls down into the thread, a kept recording rises up into the open chit. Both are `ChitPace.arrival` and both become a plain 220ms fade under reduced motion (`ChitMotion.fade` already does this) | §6.3, ADR-020 |
 | **D5** | **Focus rings are `--seal`, drawn by `FocusableActionDetector`, and only on keyboard or switch focus** — never on touch. One decoration in `shared/widgets/`, used by every control | §6.4 |
@@ -53,7 +52,7 @@ tab bar off Material's `InkWell` and two bugs it flushed out.*
 - [x] Docs: DESIGN-SYSTEM.md §6.1's wash table and §6.3's press row; README.md §10; ADR-069
       marked superseded and ADR-070 written.
 
-## B. The staggered entrance ✅ built, uncommitted
+## B. The staggered entrance ✅ done
 
 - [x] `StaggeredEntrance` in `shared/widgets/`: fade plus a 6px rise per child,
       `ChitMotion.staggerStep` apart, capped at `StaggeredEntrance.cap`; plays on first build,
@@ -72,7 +71,7 @@ tab bar off Material's `InkWell` and two bugs it flushed out.*
 - [x] Docs: DESIGN-SYSTEM.md §6.3's stagger paragraph; README.md §10; D3 above, for where the
       cap lives.
 
-## C. The two authored arrivals ✅ built, uncommitted
+## C. The two authored arrivals ✅ done
 
 - [x] `shared/widgets/arrival.dart` — one widget for both moments: it comes in from an offset,
       settles at nothing, plays once and sheds. **`play` is read at mount and never again**, and
@@ -91,7 +90,7 @@ tab bar off Material's `InkWell` and two bugs it flushed out.*
       *reads* as one movement, which is group E's.
 - [x] Docs: DESIGN-SYSTEM.md §6.3's authored-arrival paragraph; README.md §10.
 
-## D. The floors ✅ built, uncommitted
+## D. The floors ✅ done
 
 - [x] **Targets, and one was under.** `s3` around an 18px wave is **42px**, not the 44 a comment
       in `AudioPill` had claimed for two milestones, and §6.4 makes no exceptions — the pill
@@ -114,37 +113,31 @@ tab bar off Material's `InkWell` and two bugs it flushed out.*
 *What no test can settle. Seed first — `flutter run --dart-define=CHIT_SEED=seed`, `=clear`
 after. Write what was seen into PROGRESS.md as it is seen.*
 
-- [ ] The editor's pill sits between the stamp and the words, Remove beside it, on a stored
-      recording and on a staged replacement alike.
-- [ ] A chit opens on a hold, not a tap — the wash on touch, gone on a scroll, a tick as it
-      opens. A tap on the row does nothing; a tap on its pill still plays.
-- [ ] **The first tap after launch makes a sound**, and two recordings on Today: tap one, then
-      the other while the first sounds. The second lights with the pause glyph, and the next tap
-      pauses it. *Both halves of this were broken once — the pause-not-stop fix is the second.*
-- [ ] **No press effect anywhere** (ADR-070, ADR-071) — no colour and no movement on any
-      control, the chit row included. Whether that reads as responsive or as dead is the one
-      thing removing it might have cost.
-- [ ] The stagger on Today's first build, reading as one movement; a tab switch costing a fade
-      and nothing more; the archive re-staggering on a tapped date and not on a scroll, with the
-      month grid above it holding still while it does.
-- [ ] **The timeline does not move of its own accord** (ADR-071): it is at now when the screen
-      opens and at now after a save, and it never travels there. The entrance leaves it alone
-      too. This is the glitch the second and third looks both found.
-- [ ] **The first chit of a day falls in like any other** (ADR-071) — write on an empty day and
-      then write again, and the two should arrive the same way.
-- [ ] Every target hit with a thumb, **the audio pill especially**: it was two pixels under the
-      floor and is held to 44px now, so it should feel no different and miss no taps.
-- [ ] A chit falling into the thread and the strip scrolling to now; a recording rising into
-      the open chit.
-- [ ] **Reduced motion on, the whole app**: nothing travels, every fade survives, the prompt
-      still appears, the wave is a ragged static row, the record dot is still, every wash still
-      shows.
-- [ ] **A screen reader, the whole app** (TalkBack): every screen in reading order, every
-      control announced with what it does, headings never skipping, nothing announced that is
-      decoration.
-- [ ] The microphone with text in the field, still 54px and still opening the sheet.
-- [ ] **A keyboard or a switch**, if one can be attached: every control takes focus, shows a
-      `--seal` ring, and answers Enter. Nothing moves when the ring arrives.
+**The fourth look closed all but three.** Those three are fixed (ADR-072) and none of them can
+be checked without a device (ADR-031), so they are the pass that is left:
+
+- [ ] **A pill played, left for another, and come back to.** Its wave runs from the start with
+      the sound, rather than sitting where it was left until the recording catches up to it.
+- [ ] **The strip never skates.** Open the app and watch the timeline: it is at today from the
+      first thing you see, with no marks sliding across for a frame. Then save a chit and watch
+      it again.
+- [ ] **The first chit written after opening the app falls in like every other one** — including
+      the first one written on a day that had nothing on it.
+
+Passed on the fourth look, 18 September 2026, and not to be re-checked unless something near
+them moves:
+
+- [x] The editor's pill above the words, Remove beside it, stored and staged alike.
+- [x] A chit opens on a hold; a tap on the row does nothing and a tap on its pill still plays.
+- [x] The first tap after launch makes a sound; a second pill lights and pauses.
+- [x] No press effect anywhere, and it does not read as dead.
+- [x] The stagger on Today, the tab switch costing a fade, the archive re-staggering on a
+      tapped date with the month grid holding still.
+- [x] A chit falling into the thread; a recording rising into the open chit.
+- [x] Reduced motion, the whole app: nothing travels, every fade survives.
+- [x] A screen reader, the whole app.
+- [x] Every target hit with a thumb, the pill and the microphone included.
+
 - [ ] Then: BUILD-PLAN.md M7 signed off with what it taught; PROGRESS.md marks v1 done; this
       file is replaced by whatever comes after v1 — or by nothing.
 
