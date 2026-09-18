@@ -28,12 +28,13 @@ Then read what that milestone points at, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
-> **Status:** in build, and **M7 — motion and the floors — is under way**, the last milestone of
-> v1, on top of six signed off on a handset. A chit can be typed or spoken, carries the time,
-> the weather and what the phone was doing, and is read back on Today, on a scrolling timeline
-> and in a calendar of the months written. **Voice is recording and playback: there is no
-> transcription** (ADR-058). A saved chit is opened by holding it in the thread, and its words,
-> its recording and the chit itself can all be changed or destroyed.
+> **Status: v1 is done** — seven milestones, all signed off on a handset (ADR-073). A chit can be
+> typed or spoken, carries the time, the weather and what the phone was doing, and is read back
+> on Today, on a scrolling timeline and in a calendar of the months written. **Voice is
+> recording and playback: there is no transcription** (ADR-058). A saved chit is opened by
+> holding it in the thread, and its words, its recording and the chit itself can all be changed
+> or destroyed. **There are no database migrations yet** (ADR-059) — see PROGRESS.md item 38
+> before installing it anywhere the chits would be missed.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 

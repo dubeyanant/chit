@@ -60,7 +60,7 @@ Read before writing a fake, and before fixing anything a device turns up.
 
 ---
 
-## M7 — Motion and the floors
+## M7 — Motion and the floors ✅ done, 18 September 2026
 
 Polish, done deliberately and once. Last, so that every surface it touches already exists.
 
@@ -84,8 +84,25 @@ stagger reads as one movement — are a person with a handset, because there are
 to cover them and goldens are not coming back. Write what you saw into PROGRESS.md as you go: a
 floors pass nobody recorded is a floors pass nobody can trust the next time round.
 
-`docs/TASKS.md` carries the cut, in five groups, and the decisions it turns on. **M7 is the last
+`docs/TASKS.md` carries the cut, in five groups, and the decisions it turns on. **M7 was the last
 milestone of v1.**
+
+**Signed off on a handset on 18 September 2026, on the fifth look — and v1 with it** (ADR-073).
+It took more looks than any milestone before it, and almost none of them were about motion: the
+press feedback it built was removed again over three of them, and what the other two found were
+a recording that could not be played, a strip that skated for a frame, and a chit that arrived
+without its arrival. What it taught, beside the list above:
+
+- **A wrapper that comes and goes is a rebuild**, and **a list whose children come and go is
+  matched by key or it is not matched at all.** Three handset bugs in one milestone, all the
+  same shape: a `DecoratedBox` added on press disposed a gesture recogniser mid-tap, and an
+  unkeyed list handed a stateful child's slot to a widget of another type.
+- **A comment is not a measurement.** A control sat two pixels under the touch floor for two
+  milestones behind a comment claiming it was exactly on it. The assertion that would have
+  caught it took one line.
+- **Polish is where the owner's taste arrives, and it arrives late.** Every visual decision M7
+  made about press feedback was reversed by somebody holding the phone. Build it, show it, and
+  expect to take it out.
 
 ---
 

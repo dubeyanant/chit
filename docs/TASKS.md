@@ -113,15 +113,15 @@ tab bar off Material's `InkWell` and two bugs it flushed out.*
 *What no test can settle. Seed first — `flutter run --dart-define=CHIT_SEED=seed`, `=clear`
 after. Write what was seen into PROGRESS.md as it is seen.*
 
-**The fourth look closed all but three.** Those three are fixed (ADR-072) and none of them can
-be checked without a device (ADR-031), so they are the pass that is left:
+**The fifth look closed the last three** (ADR-072), and M7 is signed off with them — v1 with it
+(ADR-073):
 
-- [ ] **A pill played, left for another, and come back to.** Its wave runs from the start with
+- [x] **A pill played, left for another, and come back to.** Its wave runs from the start with
       the sound, rather than sitting where it was left until the recording catches up to it.
-- [ ] **The strip never skates.** Open the app and watch the timeline: it is at today from the
+- [x] **The strip never skates.** Open the app and watch the timeline: it is at today from the
       first thing you see, with no marks sliding across for a frame. Then save a chit and watch
       it again.
-- [ ] **The first chit written after opening the app falls in like every other one** — including
+- [x] **The first chit written after opening the app falls in like every other one** — including
       the first one written on a day that had nothing on it.
 
 Passed on the fourth look, 18 September 2026, and not to be re-checked unless something near
@@ -138,7 +138,7 @@ them moves:
 - [x] A screen reader, the whole app.
 - [x] Every target hit with a thumb, the pill and the microphone included.
 
-- [ ] Then: BUILD-PLAN.md M7 signed off with what it taught; PROGRESS.md marks v1 done; this
+- [x] Then: BUILD-PLAN.md M7 signed off with what it taught; PROGRESS.md marks v1 done; this
       file is replaced by whatever comes after v1 — or by nothing.
 
 **This file is replaced when the next milestone starts** (CLAUDE.md §2).

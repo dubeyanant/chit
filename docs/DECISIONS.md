@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Sixty-nine records, not seventy-two: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Seventy records, not seventy-three: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -90,6 +90,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-070 | No press feedback; a row's box is always there; the strip arrives by scrolling | the owner's second look at M7 — three calls, and the middle one is why a recording in the thread would not play |
 | ADR-071 | Nothing answers a press; the strip jumps; a thread outlives its empty day | the owner's third look at M7 — the last wash goes, ADR-024's scroll is reversed, and the first chit of a day gets its arrival |
 | ADR-072 | Three bugs from the fourth look, and the one shape behind two of them | a stale playhead, a strip drawn before it rested, and a thread rebuilt because a list was matched by position |
+| ADR-073 | v1 is done, and what building it taught | M7 signed off 18 Sep 2026, and v1 with it — the four lessons, and what v1 does not have |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -1224,3 +1225,26 @@ its arrival. Chosen over making the note always present, which hides the sharper
 whose children come and go is matched by key or it is not matched at all**, which is the same
 shape as ADR-070's wrapper that came and went. Cost: two of the three can only be checked on a
 device (ADR-031), and they are the first three lines of M7's pass.
+
+---
+
+## ADR-073 — v1 is done, and what building it taught
+
+**M7 signed off on a handset on 18 September 2026, on the fifth look, and v1 with it** — seven
+milestones, from an empty scaffold to an app that takes a chit typed or spoken, stamps it with
+the moment, and reads it back on a day, a strip and a calendar. Recorded here rather than only
+in the build plan because the plan is a document about work in progress and this is a fact about
+the product. The four things the milestones taught that were not obvious at the start, and that
+cost the most to learn: **a feature can be built correctly and still be the wrong feature**
+(transcription passed every test it had and recognised nothing on a real microphone, ADR-058);
+**a fake can be more honest than the thing it stands in for, and either way a test on it proves
+only what the harness allows** (`FakeAudioPlayer` took a second pill over a first correctly while
+the real adapter did not, which is why `just_audio_player_test.dart` puts a fake *under* the
+plugin); **a wrapper that comes and goes is a rebuild, and a list whose children come and go is
+matched by key or not at all** (three separate handset bugs, ADR-070 and ADR-072, including a
+recording that could not be played at all); and **an affordance on a scrolling surface is decided
+by a thumb, not at a desk** (ADR-061's tap became a hold after one day of use, and every piece of
+press feedback the app had was built and then removed over three looks, ADR-069 to ADR-071).
+Cost, stated plainly: there are no database migrations (ADR-059, and the trigger to bring them
+back is the first install whose chits anyone would miss), no export, no settings screen, and the
+motion thresholds have never been walked or driven.

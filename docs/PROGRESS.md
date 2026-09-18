@@ -1,7 +1,8 @@
 # Progress
 
 **Where the build is, and what to do next.** This is the handover: a session that has read only
-this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
+this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work. **Right now it says
+there is nothing to pick up** — v1 is finished.
 
 Updated at the end of every working session, per CLAUDE.md §0 and §0.1 — including sessions
 that ended mid-milestone. **This file is not a history.** Git is the history; what belongs here
@@ -9,10 +10,10 @@ is the present. On 18 September 2026 everything before M7 was cut from it, from 
 and from TASKS.md, on the owner's instruction: what each milestone built is in git, what it
 settled is in DECISIONS.md, and what it taught is in BUILD-PLAN.md's one list of lessons.
 
-**Last updated:** 18 September 2026. **M0 to M6 are done and signed off on a handset. M7 —
-motion and the floors — is built in full; its device pass is four looks in and has three checks
-left**, all of them fixes from the fourth look that only a handset can confirm ([TASKS.md](TASKS.md)
-group E). When those three pass, v1 is done.
+**Last updated:** 18 September 2026. **v1 is done.** All seven milestones are built and signed
+off on a handset, M7 on the fifth look (ADR-073). Nothing is in progress and there is no next
+task until somebody chooses one — [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) and the *After v1* list
+in [BUILD-PLAN.md](BUILD-PLAN.md) are where the candidates are.
 
 ---
 
@@ -26,7 +27,8 @@ group E). When those three pass, v1 is done.
 | M4 — calendar | ✅ done | 17 Sep 2026 |
 | M5 — voice | ✅ done | 18 Sep 2026. No transcription (ADR-058), no migrations (ADR-059) |
 | M6 — the chit editor | ✅ done | 18 Sep 2026. Its last three handset checks are carried into M7's device pass (ADR-067) |
-| **M7 — motion and the floors** | 🔨 in progress | **A to D done, E all but three checks**; four handset looks in. ADR-068 to ADR-072 |
+| **M7 — motion and the floors** | ✅ done | 18 Sep 2026, on the fifth look. ADR-068 to ADR-072 |
+| **v1** | ✅ **done** | 18 Sep 2026 — ADR-073 carries the sign-off and what it taught |
 
 **506 tests, `flutter analyze` clean, `dart format` clean.** Schema is v1 and there are no
 migrations — an install carrying an older shape is reinstalled (ADR-059, open item 38).
@@ -37,23 +39,15 @@ which one device's share is about 22 MB; nothing about shipping is decided, so n
 
 ---
 
-## Next: three checks, and then v1 is done
+## Next: nothing is scheduled
 
-**The fourth look closed all of group E but three**, and those three are the fixes it produced
-(ADR-072). None of them can be checked without a device (ADR-031):
+v1 is finished and nothing is part-built. Whatever comes next is a choice, not a continuation —
+BUILD-PLAN.md's *After v1* list and OPEN-QUESTIONS.md §8 and §9 are the candidates, and the open
+items below are what a next session has to know either way. **Item 38, the missing migrations,
+is the one with a deadline**: it stops being the right call the first time chit is installed
+somewhere its chits would be missed.
 
-1. **A pill played, left for another, and come back to** — its wave runs from the start with the
-   sound rather than sitting where it was left.
-2. **The strip never skates** — the timeline is at today from the first frame you see, on launch
-   and after a save.
-3. **The first chit written after opening the app arrives like every other**, including the
-   first on an empty day.
-
-When those pass: sign M7 off in BUILD-PLAN.md with what it taught, mark v1 done here, and
-replace TASKS.md. **Read BUILD-PLAN.md's lessons first** — three of them were paid for again in
-this milestone.
-
-### What four handset looks cost, and what they taught
+### What M7's five handset looks cost, and what they taught
 
 **The press feedback was built and then removed, over three looks.** First the wash was called
 artificial, so it went; then the depress; then the chit row's wash, the last one left. There is
@@ -86,8 +80,8 @@ is mounted on an empty day now, drawing nothing.
 comment in `AudioPill` had claimed for two milestones. §6.4 makes no exceptions, so the pill
 carries a minimum height, and the test says which way the arithmetic actually goes.
 
-**The fourth look found three more**, all fixed (ADR-072). A pill returned to inherited the
-playhead of the one before it, because the position stream goes on answering for the file that
+**The fourth look found three more**, all fixed (ADR-072) and all confirmed on the fifth. A pill
+returned to inherited the playhead of the one before it, because the position stream goes on answering for the file that
 is leaving and the backwards guard then pins that figure until the sound catches up. The strip
 skated for a frame, because where it rests cannot be known until it has been laid out — it is
 not drawn until it has rested now. And the day's first chit still arrived without its arrival,
@@ -97,7 +91,7 @@ unkeyed list handed the thread's slot to another type, rebuilding it from nothin
 **The lesson, four times over this milestone, in two shapes:** *a wrapper that comes and goes is
 a rebuild*, and *a list whose children come and go is matched by key or not at all.* `Arrival`,
 `FocusRing`, the row and now the thread are all written to it. Both belong in BUILD-PLAN.md's
-list when M7 is signed off, with *a comment is not a measurement* beside them.
+list, and they are: BUILD-PLAN.md M7 carries them with *a comment is not a measurement*.
 
 ---
 
