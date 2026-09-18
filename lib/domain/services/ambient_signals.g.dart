@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'ambient_signals.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(AmbientSignals)
 final ambientSignalsProvider = AmbientSignalsProvider._();
@@ -23,6 +32,7 @@ final class AmbientSignalsProvider
   @override
   AmbientSignals create() => AmbientSignals();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AmbientReading value) {
     return $ProviderOverride(
       origin: this,

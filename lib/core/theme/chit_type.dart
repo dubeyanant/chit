@@ -6,7 +6,6 @@ import 'chit_colors.dart';
 final class ChitType extends ThemeExtension<ChitType> {
   const ChitType({
     required this.wordmark,
-    required this.devanagariMark,
     required this.closingMark,
     required this.weekday,
     required this.date,
@@ -35,14 +34,12 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   factory ChitType.tokens(ChitColors colors) {
     return ChitType(
-      wordmark: _serif(
-        size: 16.5,
+      wordmark: _deva(
+        size: wordmarkSize,
         weight: 400,
         color: colors.inkMuted,
         height: 1,
       ),
-      devanagariMark: _deva(size: 11.5, color: colors.inkFaint, height: 1),
-
       closingMark: _deva(
         size: 13,
         color: colors.inkFaint.withValues(alpha: closingMarkStrength),
@@ -193,6 +190,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     );
   }
 
+  static const double wordmarkSize = 19;
+
   static const double closingMarkStrength = 0.5;
 
   static const String serifFamily = 'Newsreader';
@@ -290,8 +289,6 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   final TextStyle wordmark;
 
-  final TextStyle devanagariMark;
-
   final TextStyle closingMark;
 
   final TextStyle weekday;
@@ -342,7 +339,6 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   Iterable<TextStyle> get styles => <TextStyle>[
     wordmark,
-    devanagariMark,
     closingMark,
     weekday,
     date,
@@ -372,7 +368,6 @@ final class ChitType extends ThemeExtension<ChitType> {
   @override
   ChitType copyWith({
     TextStyle? wordmark,
-    TextStyle? devanagariMark,
     TextStyle? closingMark,
     TextStyle? weekday,
     TextStyle? date,
@@ -400,7 +395,6 @@ final class ChitType extends ThemeExtension<ChitType> {
   }) {
     return ChitType(
       wordmark: wordmark ?? this.wordmark,
-      devanagariMark: devanagariMark ?? this.devanagariMark,
       closingMark: closingMark ?? this.closingMark,
       weekday: weekday ?? this.weekday,
       date: date ?? this.date,
@@ -433,7 +427,6 @@ final class ChitType extends ThemeExtension<ChitType> {
     if (other == null) return this;
     return ChitType(
       wordmark: TextStyle.lerp(wordmark, other.wordmark, t)!,
-      devanagariMark: TextStyle.lerp(devanagariMark, other.devanagariMark, t)!,
       closingMark: TextStyle.lerp(closingMark, other.closingMark, t)!,
       weekday: TextStyle.lerp(weekday, other.weekday, t)!,
       date: TextStyle.lerp(date, other.date, t)!,

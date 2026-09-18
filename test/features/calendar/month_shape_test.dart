@@ -1,7 +1,7 @@
-import 'package:chit/domain/models/chit.dart';
-import 'package:chit/domain/models/day_summary.dart';
-import 'package:chit/features/calendar/application/archive_provider.dart';
-import 'package:chit/features/calendar/application/month_provider.dart';
+import 'package:chitta/domain/models/chit.dart';
+import 'package:chitta/domain/models/day_summary.dart';
+import 'package:chitta/features/calendar/application/archive_provider.dart';
+import 'package:chitta/features/calendar/application/month_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

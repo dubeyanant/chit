@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:chit/domain/services/audio_recorder.dart';
+import 'package:chitta/domain/services/audio_recorder.dart';
 
 final class FakeAudioRecorder implements AudioRecorder {
   bool permitted = true;

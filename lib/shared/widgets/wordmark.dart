@@ -7,22 +7,11 @@ final class Wordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final type = context.type;
-
     return Semantics(
       header: true,
-      label: 'chit',
+      label: 'Chitta',
       excludeSemantics: true,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: <Widget>[
-          Text('chit', style: type.wordmark),
-          SizedBox(width: context.space.s2),
-          Text('चित्त', style: type.devanagariMark),
-        ],
-      ),
+      child: Text('चित्त', style: context.type.wordmark),
     );
   }
 }

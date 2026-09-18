@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Chit</string>
+	<string>Chitta</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>chit</string>
+	<string>Chitta</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -25,11 +25,11 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<!-- README 3.4 / 3.6. These three strings are the only copy in the app the
-	     design never sees, so they are written in chit's own voice. -->
+	     design never sees, so they are written in Chitta's own voice. -->
 	<key>NSMicrophoneUsageDescription</key>
-	<string>chit records a chit when you tap the microphone. The recording is kept on this phone and stays attached to what you wrote.</string>
+	<string>Chitta records a chit when you tap the microphone. The recording is kept on this phone and stays attached to what you wrote.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>chit notes that you were somewhere when you wrote, so a chit carries where it came from. It never shows the place by name.</string>
+	<string>Chitta notes that you were somewhere when you wrote, so a chit carries where it came from. It never shows the place by name.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

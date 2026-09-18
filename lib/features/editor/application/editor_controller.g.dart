@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'editor_controller.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(EditorController)
 final editorControllerProvider = EditorControllerFamily._();

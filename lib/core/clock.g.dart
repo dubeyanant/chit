@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'clock.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(clock)
 final clockProvider = ClockProvider._();
@@ -29,6 +38,7 @@ final class ClockProvider extends $FunctionalProvider<Clock, Clock, Clock>
     return clock(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(Clock value) {
     return $ProviderOverride(
       origin: this,

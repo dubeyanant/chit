@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'timeline_provider.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(timelineQueryWindow)
 final timelineQueryWindowProvider = TimelineQueryWindowProvider._();
@@ -30,6 +39,7 @@ final class TimelineQueryWindowProvider
     return timelineQueryWindow(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(TimelineWindow value) {
     return $ProviderOverride(
       origin: this,
@@ -71,6 +81,7 @@ final class TimelineNowProvider
     return timelineNow(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(DateTime value) {
     return $ProviderOverride(
       origin: this,
@@ -149,6 +160,7 @@ final class TimelineWindowProvider
     return timelineWindow(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(TimelineWindow value) {
     return $ProviderOverride(
       origin: this,

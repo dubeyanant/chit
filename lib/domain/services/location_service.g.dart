@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'location_service.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(locationService)
 final locationServiceProvider = LocationServiceProvider._();
@@ -31,6 +40,7 @@ final class LocationServiceProvider
     return locationService(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(LocationService value) {
     return $ProviderOverride(
       origin: this,

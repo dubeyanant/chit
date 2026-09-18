@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:chit/core/theme/chit_colors.dart';
+import 'package:chitta/core/theme/chit_colors.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/contrast.dart';

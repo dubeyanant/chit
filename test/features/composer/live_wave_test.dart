@@ -1,5 +1,5 @@
-import 'package:chit/features/composer/application/recording_controller.dart';
-import 'package:chit/features/composer/presentation/recording_sheet.dart';
+import 'package:chitta/features/composer/application/recording_controller.dart';
+import 'package:chitta/features/composer/presentation/recording_sheet.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

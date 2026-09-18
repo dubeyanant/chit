@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'weather_service.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(weatherService)
 final weatherServiceProvider = WeatherServiceProvider._();
@@ -30,6 +39,7 @@ final class WeatherServiceProvider
     return weatherService(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(WeatherService value) {
     return $ProviderOverride(
       origin: this,

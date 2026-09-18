@@ -1,11 +1,11 @@
-import 'package:chit/core/theme/chit_space.dart';
-import 'package:chit/features/calendar/presentation/widgets/month_grid.dart';
-import 'package:chit/features/today/application/timeline_provider.dart';
-import 'package:chit/features/today/presentation/widgets/timeline.dart';
-import 'package:chit/shared/widgets/focus_ring.dart';
-import 'package:chit/shared/widgets/microphone.dart';
-import 'package:chit/shared/widgets/perforated_edge.dart';
-import 'package:chit/shared/widgets/thread_rail.dart';
+import 'package:chitta/core/theme/chit_space.dart';
+import 'package:chitta/features/calendar/presentation/widgets/month_grid.dart';
+import 'package:chitta/features/today/application/timeline_provider.dart';
+import 'package:chitta/features/today/presentation/widgets/timeline.dart';
+import 'package:chitta/shared/widgets/focus_ring.dart';
+import 'package:chitta/shared/widgets/microphone.dart';
+import 'package:chitta/shared/widgets/perforated_edge.dart';
+import 'package:chitta/shared/widgets/thread_rail.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

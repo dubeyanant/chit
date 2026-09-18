@@ -1,5 +1,5 @@
-import 'package:chit/domain/models/motion_state.dart';
-import 'package:chit/domain/motion/motion_ladder.dart';
+import 'package:chitta/domain/models/motion_state.dart';
+import 'package:chitta/domain/motion/motion_ladder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

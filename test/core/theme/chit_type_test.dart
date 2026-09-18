@@ -1,5 +1,5 @@
-import 'package:chit/core/theme/chit_colors.dart';
-import 'package:chit/core/theme/chit_type.dart';
+import 'package:chitta/core/theme/chit_colors.dart';
+import 'package:chitta/core/theme/chit_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -82,23 +82,18 @@ void main() {
       }
     });
 
-    test('the चित्त mark is the only thing set in Devanagari', () {
+    test('चित्त is the only word set in Devanagari', () {
       final Iterable<TextStyle> deva = type.styles.where(
         (TextStyle s) => s.fontFamily == ChitType.devanagariFamily,
       );
-      expect(deva, hasLength(2));
       expect(
         deva,
-        unorderedEquals(<TextStyle>[type.devanagariMark, type.closingMark]),
+        unorderedEquals(<TextStyle>[type.wordmark, type.closingMark]),
       );
     });
 
-    test('the closing mark is the larger and the quieter of the two', () {
-      expect(
-        type.closingMark.fontSize,
-        greaterThan(type.devanagariMark.fontSize!),
-      );
-      expect(type.closingMark.color!.a, lessThan(type.devanagariMark.color!.a));
+    test('the closing mark is drawn at part strength', () {
+      expect(type.closingMark.color!.a, lessThan(colors.inkFaint.a));
     });
   });
 

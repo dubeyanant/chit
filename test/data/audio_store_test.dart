@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:chit/data/audio/audio_store.dart';
+import 'package:chitta/data/audio/audio_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 

@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'first_run_store.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(firstRunStore)
 final firstRunStoreProvider = FirstRunStoreProvider._();
@@ -30,6 +39,7 @@ final class FirstRunStoreProvider
     return firstRunStore(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(FirstRunStore value) {
     return $ProviderOverride(
       origin: this,

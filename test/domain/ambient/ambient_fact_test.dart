@@ -1,7 +1,7 @@
-import 'package:chit/domain/ambient/ambient_fact.dart';
-import 'package:chit/domain/models/ambient_stamp.dart';
-import 'package:chit/domain/models/motion_state.dart';
-import 'package:chit/domain/models/weather_condition.dart';
+import 'package:chitta/domain/ambient/ambient_fact.dart';
+import 'package:chitta/domain/models/ambient_stamp.dart';
+import 'package:chitta/domain/models/motion_state.dart';
+import 'package:chitta/domain/models/weather_condition.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

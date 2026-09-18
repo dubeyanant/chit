@@ -1,4 +1,4 @@
-package com.infiniteants.chit
+package com.infiniteants.chitta
 
 import io.flutter.embedding.android.FlutterActivity
 

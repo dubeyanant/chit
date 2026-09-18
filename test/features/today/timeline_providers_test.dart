@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:chit/core/clock.dart';
-import 'package:chit/data/audio/audio_store.dart';
-import 'package:chit/data/db/app_database.dart';
-import 'package:chit/data/repositories/chit_repository_impl.dart';
-import 'package:chit/domain/models/ambient_stamp.dart';
-import 'package:chit/domain/models/chit.dart';
-import 'package:chit/domain/repositories/chit_repository.dart';
-import 'package:chit/features/today/application/timeline_provider.dart';
-import 'package:chit/features/today/application/today_controller.dart';
+import 'package:chitta/core/clock.dart';
+import 'package:chitta/data/audio/audio_store.dart';
+import 'package:chitta/data/db/app_database.dart';
+import 'package:chitta/data/repositories/chit_repository_impl.dart';
+import 'package:chitta/domain/models/ambient_stamp.dart';
+import 'package:chitta/domain/models/chit.dart';
+import 'package:chitta/domain/repositories/chit_repository.dart';
+import 'package:chitta/features/today/application/timeline_provider.dart';
+import 'package:chitta/features/today/application/today_controller.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

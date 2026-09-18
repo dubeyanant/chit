@@ -1,4 +1,4 @@
-# Working on chit
+# Working on Chitta
 
 Read this first. It is loaded into every Claude Code session automatically.
 
@@ -116,9 +116,11 @@ exist, the interfaces in `domain` earning their place because tests are the seco
 **DRY, but only for knowledge** — two lines that look alike but change for different reasons are not
 duplication; extract a rule, never a coincidence. **Fail loudly in development, degrade quietly in
 production**: `assert` for what must never happen, a null and an undrawn element for a signal that
-did not arrive (ADR-007). **Name things as the README names them** — a chit is a `Chit`, and the
-blank one at the top of Today is the *open chit*, not a draft or a note; a synonym is a bug in the
-making.
+did not arrive (ADR-007). **Name things as the README names them** — the app is **चित्त** on screen
+and **Chitta** to the phone, one entry is a **chit**, a `Chit`, and the blank one at the top of Today
+is the *open chit*, not a draft or a note; a synonym is a bug in the making. The Dart package and
+both bundle ids are `chitta`; the `Chit` classes, the Drift file, the preference keys and the repo
+directory stay `chit` (ADR-074).
 
 ### 4.2 The specific rules
 
@@ -179,7 +181,7 @@ Both seed flags work in any build mode, are idempotent, and never touch a chit a
 console is the only place they report.
 
 **There are no migrations** (ADR-059). `schemaVersion` stays 1, changing a table changes the schema,
-and an install carrying the old shape is **reinstalled**. That holds only while chit has no data
+and an install carrying the old shape is **reinstalled**. That holds only while Chitta has no data
 anybody would miss; `docs/DATA-MODEL.md` §5 says what comes back when it does.
 
 Windows: `flutter pub get` warns unless **Developer Mode** is enabled — plugin builds need symlink

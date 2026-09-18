@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'month_provider.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(writtenMonths)
 final writtenMonthsProvider = WrittenMonthsProvider._();
@@ -65,6 +74,7 @@ final class MonthNeighboursProvider
     return monthNeighbours(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(MonthNeighbours value) {
     return $ProviderOverride(
       origin: this,
@@ -98,6 +108,7 @@ final class VisibleMonthProvider
   @override
   VisibleMonth create() => VisibleMonth();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(YearMonth value) {
     return $ProviderOverride(
       origin: this,
@@ -188,6 +199,7 @@ final class DrawnMonthProvider
   @override
   DrawnMonth create() => DrawnMonth();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(MonthShape? value) {
     return $ProviderOverride(
       origin: this,

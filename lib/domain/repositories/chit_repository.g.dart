@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'chit_repository.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(chitRepository)
 final chitRepositoryProvider = ChitRepositoryProvider._();
@@ -30,6 +39,7 @@ final class ChitRepositoryProvider
     return chitRepository(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(ChitRepository value) {
     return $ProviderOverride(
       origin: this,

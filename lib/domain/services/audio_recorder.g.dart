@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'audio_recorder.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(audioRecorder)
 final audioRecorderProvider = AudioRecorderProvider._();
@@ -30,6 +39,7 @@ final class AudioRecorderProvider
     return audioRecorder(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AudioRecorder value) {
     return $ProviderOverride(
       origin: this,

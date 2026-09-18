@@ -50,17 +50,24 @@ either. A control's answer is the thing it does, and a held row is answered by t
 at even 4% — so wherever a tinted surface appears, the text on it goes up with it. Any new tinted
 surface inherits that, and §6.4 makes no exception for a surface that is brief.
 
+**The launcher icon shares the ground and nothing else** — an opening quote on `--paper`, drawn as
+artwork rather than assembled from tokens (ADR-075), so that the icon and the first screen it opens
+are one colour.
+
 ### 6.2 Typography
 
 **Newsreader** is the writing voice — dates, entry text, section labels, tab labels. **Hanken
-Grotesk** is UI metadata, stamps and buttons. **Noto Serif Devanagari** is the चित्त mark and nothing
-else. Section labels are lowercase serif italic with a hairline running off to the right.
+Grotesk** is UI metadata, stamps and buttons. **Noto Serif Devanagari** is the word चित्त — the
+wordmark, and the mark closing Today — and nothing else. Section labels are lowercase serif italic with a hairline running off to the right.
 
-**The चित्त mark is two styles, because it does two jobs**: 11.5px in `--ink-faint` beside the
-wordmark, where it is a name, and 13px at half that strength at the foot of Today, where it is a
-full stop on the day — larger so it is noticed, quieter so it is not read. It is the one place a
+**The wordmark is चित्त and nothing beside it** — 19px in `--ink-muted` (ADR-074). **19, not 16.5**:
+Devanagari sets visibly smaller than Latin at a given size, so the size that carries a masthead here
+was read off a handset rather than computed. **The same word closes Today** at 13px and half
+`--ink-faint` — a full stop on the day, quieter so it is not read twice. That is the one place a
 colour token is used at part strength, allowed because the mark is decoration and excluded from
-semantics, so §6.4's floor for *functional* text does not reach it.
+semantics, so §6.4's floor for *functional* text does not reach it. **The wordmark reads as
+*Chitta* to a screen reader** and the closing mark is excluded outright, neither being a word
+anybody needs pronounced at them.
 
 **Uppercase appears in one place: `LISTENING`** on the recording sheet — a state, shown while a
 thing is happening, which should read as a signal rather than as words. The ambient stamp is
@@ -73,10 +80,10 @@ timer whose digits change width reads as unstable.
 **The date is a label, not a masthead**: weekday and date on one 26px line, the weekday italic in
 `--ink-faint` and the date in `--ink`, a display-to-body ratio of 1.58× over 16.5px entry text. The
 open chit's field is **17.5px**, where a line inside the slip holds about 40 characters and a serif
-starts reading as a page rather than a column; everything that is not the date or the field is
-16.5px. **15px is the exception, and it is one voice rather than a size** — the month summary and
-the empty notes are the app speaking *about* a day rather than reporting one, set a step below chit
-text in serif italic so they read as an aside.
+starts reading as a page rather than a column; everything that is not the date, the field or the
+wordmark is 16.5px. **15px is the exception, and it is one voice rather than a size** — the month
+summary and the empty notes are the app speaking *about* a day rather than reporting one, set a step
+below chit text in serif italic so they read as an aside.
 
 ### 6.3 Spacing, shape, motion
 

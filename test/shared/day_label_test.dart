@@ -1,5 +1,5 @@
-import 'package:chit/domain/models/chit.dart';
-import 'package:chit/shared/day_label.dart';
+import 'package:chitta/domain/models/chit.dart';
+import 'package:chitta/shared/day_label.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
