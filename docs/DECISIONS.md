@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-two records, not fifty-five: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Fifty-three records, not fifty-six: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -73,6 +73,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-053 | The recogniser streams a split transcript, has no error table, and waits one beat | M5 group B — §3.4's lighter word is in the data; any error is §3.5; Stop & keep waits 900 ms for the last word |
 | ADR-054 | A kept take can be words with no file, and Discard lets it go through the repository | M5 group C — the two plugins fail apart; one door owns the temp file; the wave is a window of levels, **amended in group D from the single level it first held** |
 | ADR-055 | The sheet keeps both of v6's controls, and every other way out is a cancel | M5 group D — Discard beside Stop & keep; one path ends the take; a scrim token that is meant to fail |
+| ADR-056 | §3.5's note is a block above the field, and a refusal names the OS | M5 group F — it takes the prompt's turn, not its overlay; the phone's settings are the only way back |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -884,3 +885,22 @@ the work run on: `recordingControllerProvider` is auto-disposed, so the words wo
 in the app's own ground reads as another surface where this one reads as the page going away; it
 is the one colour in the palette *meant* to fail §6.4, at 2.07:1. Cost: a beat of latency on the
 one control that commits, with nothing on screen saying why.
+
+---
+
+## ADR-056 — §3.5's note is a block above the field, and a refusal names the OS
+
+Two placements from M5 group F. The note *"Speech wasn't recognised. Your recording is kept."*
+is its own block between the stamp and the page, as v6 draws it — over the prompt's overlay,
+which ARCHITECTURE.md §4.3 had said it would share. In the overlay it would have to disappear at
+the first keystroke, while the recording it explains is still kept and still unrecognised; a
+block survives whatever is typed under it. What the note does take from the prompt is its
+*turn* — `_armPrompt` refuses to fire while `sttFailed`, so the two never stack, which is all
+TASKS.md meant by *in the prompt's place*. The refused-microphone line sits **under the action
+row** rather than beside the microphone: once the chit holds anything the row is microphone,
+Discard and Save, and a line that had to move when a word was typed is worse than one below the
+row it explains. It reads *"The microphone isn't allowed. You can turn it on in your phone's
+settings."* and **names the OS on purpose** — ADR-041 spends the app's one dialog on location and
+never asks again, so until there is a settings screen (open item 22) the phone's own is the only
+way back, and a line that stated the state without the way out would leave it to be guessed at.
+Both are `ChitType.failNote`, and neither animates: M5 defers every authored arrival to M7.

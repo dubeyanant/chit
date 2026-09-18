@@ -391,10 +391,13 @@ Enforced, and verified on every revision:
   reduced when the field has text in it.
 - **Focus** — every interactive element has a visible `:focus-visible` ring in `--seal`.
 - **Motion** — under `prefers-reduced-motion`, **movement collapses and feedback does not.**
-  Travel, zoom and every ambient loop stop outright: the caret blink, the
-  breathing record dot, the live waveform. What survives is opacity and colour — arrivals
-  become a plain fade going nowhere, the scrim still dims, buttons still respond. Reducing
-  motion should cost a user animation, not confirmation that their action landed.
+  Travel, zoom and every ambient loop stop outright: the caret blink, the breathing record dot.
+  **The live waveform stops too, and it is not a loop** — it is twenty levels the microphone
+  reported (§6.3, ADR-054), and it freezes at v6's fixed heights rather than going on answering
+  a voice, because a wave that moves with a voice is still a wave that moves. *This line used to
+  file it under the loops.* What survives is opacity and colour — arrivals become a plain fade
+  going nowhere, the scrim still dims, buttons still respond. Reducing motion should cost a user
+  animation, not confirmation that their action landed.
 
   **A loop stops at rest, not at nothing.** Zero is the signal to start no ticker and draw the
   thing still — a mark that stops by disappearing has taken the signal away along with the

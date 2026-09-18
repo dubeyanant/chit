@@ -135,16 +135,20 @@ work.*
 - [x] `test/features/composer/audio_pill_test.dart` — the player's state around play, pause and
       end through a fake, and the playhead arithmetic.
 
-## F. The settled microphone and the failure note
+## F. The settled microphone and the failure note ✅
 
 *Every state of the composer is drawn, and nothing on it is a control that does nothing.*
 
 - [x] The microphone leaves the action row once a take is kept (BEHAVIOUR.md §4.1) — the pill
       is where the recording now is. **Done in group D**, because a microphone that stayed
       beside the pill would silently replace the take.
-- [ ] The note *"Speech wasn't recognised. Your recording is kept."* beside the body when
-      `sttFailed`, in the prompt's place and never in the field.
-- [ ] The line beside the microphone when `microphoneRefused`, once (D2).
+- [x] The note *"Speech wasn't recognised. Your recording is kept."* beside the body when
+      `sttFailed` — a block above the page, not the prompt's overlay, and never in the field.
+      It takes the prompt's *turn* rather than its position (ADR-056).
+- [x] The line when `microphoneRefused`, once (D2) — *"The microphone isn't allowed. You can
+      turn it on in your phone's settings."*, under the action row rather than beside the
+      microphone, and naming the OS because open item 22 says there is nowhere else to send
+      anybody (ADR-056).
 
 ## G. Handset pass and sign-off
 

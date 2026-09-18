@@ -170,6 +170,7 @@ class ComposerState {
   AmbientStamp  stamp;
   bool          isRecording;   // the sheet is up
   bool          sttFailed;     // drives the §3.5 note, and nothing else
+  bool          microphoneRefused; // drives the line under the action row
   bool          showPrompt;    // the five seconds of §3.3 have run
 }
 
@@ -291,11 +292,12 @@ opens a freshly-opened chit (ADR-040).
 
 **Drawn over the field, never into it.** `hintText` is the tempting shortcut and wrong twice —
 announced as a label, and shown on Material's schedule rather than after five seconds. The
-overlay sits over the field's box, sharing its first baseline. M5's §3.5 note lands in the same
-overlay.
+overlay sits over the field's box, sharing its first baseline.
 
 **Nothing else is in that overlay** — an earlier drawn blinking caret came out with ADR-028; the
-caret on first tap is the framework's.
+caret on first tap is the framework's, and **§3.5's note is a block above the field rather than a
+second thing in here** (ADR-056). It takes the prompt's *turn*, not its position: `_armPrompt`
+will not raise one while `sttFailed`, so the two never stack.
 
 **Which words are offered is `Prompts.forStamp`** (ADR-029), pure, over the stamp already held.
 `ComposerState.prompt` is a getter, not a stored field, so it cannot drift from the moment it is

@@ -57,6 +57,12 @@ already in the field.
 the first. The text stays editable; only the recording is settled. Discarding the chit clears
 it.
 
+**A refused microphone raises nothing and explains once.** The sheet does not open, the
+microphone stays where it is and stays tappable, and the line *"The microphone isn't allowed.
+You can turn it on in your phone's settings."* appears under the action row. It names the
+phone's settings because ADR-041 spends the app's one permission dialog on location and never
+asks again, so that is the only way back until there is a settings screen of our own.
+
 ### 3.3 The prompt waits five seconds
 
 The writing area opens blank. If nothing is written after **5 seconds**, a prompt fades in over
@@ -109,8 +115,11 @@ nothing is written into the field** — nothing partial, approximate or placehol
 automatically.
 
 The field stays empty and the user's: they can type anything, or save with no text at all. The
-open chit carries the line *"Speech wasn't recognised. Your recording is kept."*, set beside the
-body rather than written into it — an explanation of state, never saved as content.
+open chit carries the line *"Speech wasn't recognised. Your recording is kept."* between the pill
+and the page — beside the body rather than written into it, an explanation of state and never
+saved as content. It stays while they type (ADR-056): the recording is still kept and still
+unrecognised, so the explanation outlives the first keystroke. **Discard clears it**, along with
+the recording it is about.
 
 A garbled transcript is worse than none: unsearchable, a misrepresentation of what was said, and
 indistinguishable in the archive from a real record. In the archive, a chit with audio and no

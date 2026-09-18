@@ -6,10 +6,11 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026, **with M5 under way — groups A to E done, and voice on
-screen for the first time**. The two platform seams (A, B), the logic bare and tested before a
-widget existed (C), and now the recording sheet (D) and the audio pill with playback (E).
-**A debug APK builds.** Nothing has been run on a device this milestone.
+**Last updated:** 18 September 2026, **with M5 under way — groups A to F done. Everything voice
+does is built; only the handset pass is left.** The two platform seams (A, B), the logic bare and
+tested before a widget existed (C), the recording sheet (D), the pill with playback (E) and the
+two notes (F). **A debug APK builds.** Nothing has been run on a device this milestone, which is
+group G and is now the whole of what M5 has left.
 
 **Group D — the sheet.** A modal, not a route (ADR-011): the tear edge, `LISTENING` beside the
 record dot, the elapsed figure, the live wave, the transcript with its pending word in
@@ -36,14 +37,16 @@ recording with no words now reads as a recording. *The pill's own bars are v6's 
 not this recording's envelope* — decoding a file to draw a control 18px tall, for chits that
 never stored levels, buys nothing; what the bars carry is the playhead.
 
-**The microphone retires once a take is kept**, which is group F's first bullet pulled forward:
-§3.2 says a chit holds one recording, and a microphone left beside the pill would have replaced
-it silently.
-
-**What group F still owes, and it matters for a handset pass:** the §3.5 note and the line beside
-a refused microphone are both unwritten, so **a refused microphone currently shows nothing at
-all** and a take that heard nothing explains itself only by the pill. Neither is a defect in
-what was built; both are text that has not been added yet.
+**Group F — the two notes, and nothing on the composer is now a state without a word for it.**
+The microphone retires once a take is kept (it went in with group D; §3.2 says a chit holds one
+recording, and a microphone left beside the pill would have replaced it silently). §3.5's note
+is **a block above the page rather than the prompt's overlay**, which ARCHITECTURE.md had said it
+would share: in the overlay it would vanish at the first keystroke while the recording it
+explains is still kept and still unrecognised. It takes the prompt's *turn* instead — the
+controller refuses to raise one while `sttFailed`. And a refused microphone now says *"The
+microphone isn't allowed. You can turn it on in your phone's settings."* under the action row,
+**naming the OS on purpose**, because ADR-041 spends the app's one dialog on location and open
+item 22 says there is nowhere else to send anybody. **ADR-056.**
 
 Two risks no test can settle, both for group G. Item 32 — whether Android lets `record` capture
 beside the recognition service. **Item 33** — the platform ends a recognition session on its own
@@ -87,7 +90,7 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
-| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A to E of seven done — voice is on screen. ADR-052 to ADR-055 |
+| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A to F of seven done — only the handset pass is left. ADR-052 to ADR-056 |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
@@ -96,32 +99,32 @@ groups D and E and not put on a phone; the release APK has not been rebuilt sinc
 
 ---
 
-## Next: M5 — voice, group F, then the handset
+## Next: M5 — voice, group G. The handset, and nothing else
 
-[TASKS.md](TASKS.md) is M5's and groups A to E are ticked; F's first bullet went with group D.
-The next session:
+[TASKS.md](TASKS.md) is M5's and groups A to F are ticked. **There is no more code to write
+before a device sees this**, and seven of the eight things still open can only be settled by
+one. The order matters:
 
-1. **Finishes group F**, which is two pieces of text and nothing else. The §3.5 note —
-   *"Speech wasn't recognised. Your recording is kept."* — beside the body when `sttFailed`, in
-   the prompt's place and never in the field; `_Ghost` in `open_chit.dart` is the overlay it
-   belongs in, and `ComposerController._armPrompt` already refuses to raise the prompt over it.
-   Then the line beside the microphone when `microphoneRefused`, said once. **Until both exist a
-   refusal shows nothing at all**, so this comes before the walk rather than after it.
-2. **Then group G, and D1 first.** Record while recognising on a real handset and play the take
-   back. If the file is silence, stop and write the finding here before touching anything else —
-   the fallback is a decision, not a fix (item 32). **Item 33 on the same take**: record for two
-   minutes with a pause in the middle and see where the transcript stops. Item 18 goes on the
-   same walk.
-3. **Looks at what only a device can show.** Whether the wave answers a voice at all — it is
-   drawn from real `record` amplitudes now, and nothing in the suite can say whether those read
-   as a wave or as noise. The beat the sheet holds on Stop & keep. Reduced motion, where the dot
-   rests and the wave freezes at v6's fixed heights.
-4. **Seeds to look at a pill in the thread** — `flutter run --dart-define=CHIT_SEED=seed`, then
+1. **D1 first, before anything else about voice is believed.** Record while recognising on a
+   real Android handset and play the take back. If the file is silence, **stop** and write the
+   finding here before touching anything: the fallback — recognition without a kept file, or a
+   file without live words — is a decision for an ADR, not a fix to make on the spot (item 32).
+2. **Item 33 on the same take.** Record for two minutes with a natural pause in the middle and
+   see where the transcript stops. No re-listen loop was built, because the seam between two
+   sessions is where words get duplicated or dropped.
+3. **Then the rest of group G's list**, and item 18 on the same walk since one is being taken.
+4. **What only a device can show, beyond the list.** Whether the wave answers a voice at all —
+   it is drawn from real `record` amplitudes and nothing in the suite can say whether those read
+   as a wave or as noise (item 34). The beat the sheet holds on Stop & keep (item 35). Reduced
+   motion, where the dot rests and the wave freezes at v6's fixed heights.
+5. **Seeds to look at a pill in the thread** — `flutter run --dart-define=CHIT_SEED=seed`, then
    the 23:55 row of 15 September, which is §3.5's recording with no words and the row item 31
    was about. `=clear` takes it off.
 
-The old *Next* is in git under `893402e`; it said to build group D and then E, and both are
-built.
+**The questions M5 cannot be signed off with open are items 32, 33, 34, 35 and 36**, and every
+one of them is a fact about a phone rather than a choice anybody can make at a desk.
+
+The old *Next* is in git under `ce65bbb`; it said to finish group F, and group F is finished.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M5.
@@ -318,3 +321,30 @@ they are cited from other documents — so a closed item keeps its number and sh
     honest fix is restarting the listen on the `done` status while the take is still running —
     which is a decision for an ADR, since the seam between two sessions is where words get
     duplicated or dropped.
+34. **Nobody knows whether the live wave answers a voice or just pins at the top.**
+    `RecordAudioRecorder.levelOf` maps dBFS to 0–1 linearly from a **-60 dBFS floor**, and that
+    floor is arithmetic rather than a measurement — no microphone has ever fed it. If a normal
+    speaking voice sits around -15 dBFS the whole wave lives in its top quarter and reads as
+    twenty bars at full height, which says nothing; if the plugin's `Amplitude.current` is
+    already normalised on one platform and raw dBFS on the other, the two handsets draw
+    different waves from the same voice. **Check it in group G by watching the sheet while
+    speaking normally and while nearly silent.** If it pins, the fix is the floor — raising it
+    toward -40 compresses the useful range into the visible one — and it is one constant with a
+    test beside it (`record_audio_recorder_test.dart`).
+35. **Stop & keep holds the sheet for up to 900ms and nothing on screen says why.** ADR-053
+    waits for the recogniser's last word, which is the one most likely to be wrong; ADR-055
+    keeps the sheet up while it happens because closing first drops the take. Usually it is far
+    less than 900ms — the plugin promotes a partial at 450ms — but nobody has felt it. **If it
+    reads as lag**, the honest options are a shorter grace, or the state line changing from
+    `LISTENING` to something while it finishes, which is a word and not a spinner.
+36. **Two plugins may want two permissions, and the second could arrive mid-take.** `record`
+    asks for the microphone when the microphone is tapped (D2), and then the recogniser's
+    `initialize()` runs *after* the take has started. On iOS speech recognition is a separate
+    permission from the microphone, so a first run could raise a system dialog **over the
+    recording sheet while it is recording**; on Android the recognition service may ask for
+    nothing at all. Both usage strings are in the Info.plist already (PACKAGES.md), so this is
+    about *when* the dialog appears rather than whether it can. **Check it on a fresh install in
+    group G.** If a dialog lands mid-take the fix is to initialise the recogniser before
+    starting the recorder, so any ask happens before the sheet opens — which is a change to
+    `RecordingController.start`'s order and to ADR-053's *lazily, once*, and is a decision
+    rather than a patch.
