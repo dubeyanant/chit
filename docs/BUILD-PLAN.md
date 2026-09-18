@@ -61,12 +61,12 @@ what order, and it is the one to work from.
   **microphone** in its final position and at its final size — present and inert until M5.
   `design/chit-app-v6.html` is the reference; the composer there is the target.
 - The five-second prompt; `canSave`; Discard and Save appearing only once the chit holds
-  something.
+  something. *Discard left this row in M6 group A — ADR-060.*
 - The ambient stamp reads a real clock; weather and location are fakes returning fixed values.
 
 **Done when** a chit can be typed, saved, and found in the thread after a restart; the timeline
 updates the moment it is saved; the empty day looks empty; and an untouched chit shows neither
-Discard nor Save.
+Discard nor Save — *only the microphone, since ADR-060*.
 
 **All four hold.** *What the milestone taught, which is the part worth keeping:*
 

@@ -124,7 +124,7 @@ final class RecordAudioRecorder implements AudioRecorder {
   /// Where a take begun at [startedAt] is written.
   ///
   /// The name is the clock's, so two takes cannot collide and no id is spent
-  /// on a file that Discard may delete. The extension is the one
+  /// on a file that may never be kept. The extension is the one
   /// `AudioStore` keeps.
   static String tempPathFor(Directory temp, DateTime startedAt) =>
       p.join(temp.path, 'take-${startedAt.microsecondsSinceEpoch}.m4a');

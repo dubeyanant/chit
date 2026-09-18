@@ -138,16 +138,18 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   /// The microphone under a finger — 10%.
   static const double micPressedWash = 0.10;
 
-  /// **Discard** under a finger — 6%.
+  /// **The quiet button** under a finger — 6%. The recording sheet's Discard,
+  /// **Remove** on a pill, and *Show every day*. *Named for the open chit's
+  /// Discard, which was its first user and is gone* (ADR-060).
   ///
   /// v6 pressed it in [hairSoft], which measures 1.0145:1 on [slip] and is in
-  /// practice not drawn at all; this measures 1.17:1. Discard is the quietest
-  /// of the three controls, so it is the quietest of the washes — but a press
+  /// practice not drawn at all; this measures 1.17:1. It is the quietest of
+  /// the controls, so it is the quietest of the washes — but a press
   /// that shows nothing reads as a control that did nothing, and under reduced
   /// motion, where the depress is gone (DESIGN-SYSTEM.md §6.4), this wash is
   /// the *only* acknowledgement the press produces.
   ///
-  /// **The label lifts to [ink] while it is held.** Discard's label is
+  /// **The label lifts to [ink] while it is held.** The quiet label is
   /// [inkFaint], which clears the floor on a bare chit at 4.56:1 and falls
   /// under it on any wash at all — 4.12:1 at even 4%. The prototype already
   /// brightens the label on hover for the same reason, so this is that rule

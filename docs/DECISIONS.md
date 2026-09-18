@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-six records, not fifty-nine: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Fifty-seven records, not sixty: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -71,12 +71,13 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-051 | New ADRs are short | the template shrinks from here — CLAUDE.md §0.2 |
 | ADR-052 | The recorder times a take on the clock and reports a level, not decibels | M5 group A — the file is not opened until playback; the waveform draws a number |
 | ADR-053 | ~~The recogniser streams a split transcript~~ | **removed by ADR-058** with the recogniser it describes |
-| ADR-054 | Discard lets a take go through the repository, and the wave is a window of levels | M5 group C — one door owns the temp file; the wave is twenty levels, **amended in group D from the single level it first held** |
+| ADR-054 | A take goes through the repository, and the wave is a window of levels | M5 group C — one door owns the temp file; the wave is twenty levels, **amended in group D from the single level it first held** |
 | ADR-055 | The sheet keeps both of v6's controls, and every other way out is a cancel | M5 group D — Discard beside Stop & keep; one path ends the take; a scrim token that is meant to fail |
 | ADR-056 | A refusal names the OS | M5 group F — the phone's settings are the only way back. *Its §3.5 half went with ADR-058* |
 | ADR-057 | The recording controller is the one screen controller that is kept alive | a take outlives the sheet; auto-disposed it was collected mid-`start` and no sheet ever opened |
 | ADR-058 | Transcription is removed, and a chit's words are always typed | the whole feature, not a flag; `textOrigin` goes with it |
 | ADR-059 | There are no migrations while there is nothing to migrate | `schemaVersion` pinned at 1; an old install is reinstalled. **Reverses the moment chit holds data somebody would miss** |
+| ADR-060 | The open chit's Discard goes; a recording is dropped from its pill | M6 group A — Discard's last unique job was the take, and the take is on the pill. The sheet's Discard stays |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -197,7 +198,7 @@ weather, which is correct behaviour, not a gap to fill with a placeholder.
 
 Recordings are written to `<app documents>/audio/<chit-id>.m4a`, with only the relative path
 stored in the database; a recording writes to a temp file, moved into place on Save and deleted
-on Discard — over storing audio as a BLOB in SQLite. Multi-megabyte blobs bloat the database file
+when the take is dropped — over storing audio as a BLOB in SQLite. Multi-megabyte blobs bloat the database file
 and slow every backup and migration for no benefit, since only `just_audio` ever needs the bytes;
 a relative path matters because iOS's app container path changes between installs, and an
 absolute path saved today is dead after the next update. Deleting a chit deletes its file, and a
@@ -834,9 +835,11 @@ stays because ADR-054 and ADR-055 cite it.
 
 ---
 
-## ADR-054 — Discard lets a take go through the repository, and the wave is a window of levels
+## ADR-054 — A take goes through the repository, and the wave is a window of levels
 
-**Discard deletes the temp file through `ChitRepository.discardTemp`**, over a method on
+**The temp file is deleted through `ChitRepository.discardTemp`** — *by Discard when this was
+written, and since ADR-060 by the sheet's Discard and by Remove on the open chit's pill* — over
+a method on
 `AudioRecorder` or a direct call to `AudioStore`: `features` cannot reach `data` at all
 (ARCHITECTURE.md §1), and `save` already takes a temp path *in*, so one door owns the file's
 whole lifetime instead of two. `RecordingState` holds **the last twenty levels, one per bar of
@@ -876,7 +879,7 @@ one control that commits, with nothing on screen saying why.
 ## ADR-056 — A refused microphone names the OS
 
 The line sits **under the action row** rather than beside the microphone: once the chit holds
-anything the row is microphone, Discard and Save, and a line that had to move when a word was
+anything the row is microphone and Save, and a line that had to move when a word was
 typed is worse than one below the row it explains. It reads *"The microphone isn't allowed. You
 can turn it on in your phone's settings."* and **names the OS on purpose** — ADR-041 spends the
 app's one dialog on location and never asks again, so until there is a settings screen (open
@@ -942,3 +945,25 @@ first install that is not a development one cannot receive a schema change witho
 everything**, so this reverses the moment chit holds anything somebody would miss — open item 38
 carries the trigger, and DATA-MODEL.md §6 keeps the four rules the harness taught rather than
 leaving them in git, because the expensive part was never the code.
+
+---
+
+## ADR-060 — The open chit's Discard goes; a recording is dropped from its pill
+
+**Discard leaves the open chit's action row**, and **Remove** appears beside the audio pill
+instead — over keeping a control that cleared the whole page. Discard did two things: it emptied
+the field, which selecting the words already does and does more precisely, and it deleted a kept
+take, which was the only thing nothing else could do; a control whose one remaining job belongs
+somewhere more obvious is better placed there than kept for the shape of the row. Remove acts on
+the recording and not on the chit, so it sits at the end of the pill's row and leaves the words
+exactly as they are — the converse of Stop & keep leaving the field alone. Three consequences
+worth not rediscovering: the microphone comes back when a take is removed, so recording again is
+how you get a different take rather than a second control that would silently overwrite the
+first; the stamp does **not** move, because this is the same chit one part lighter rather than a
+fresh one, which is what Discard used to do and why ADR-021 once cared; and `microphoneRefused`
+lost its only clearer, so it now clears on the next take that gets as far as the sheet and on
+the save that opens a fresh chit. **The recording sheet's Discard is a different control and
+stays** (ADR-055) — the word means *throw away the take in progress*, which still happens. Cost:
+emptying a half-written chit is now two gestures rather than one, and nobody has felt that on a
+handset; if it reads badly the honest answer is a clear affordance on the field, not Discard
+back in the row.

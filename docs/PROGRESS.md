@@ -6,11 +6,29 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M5 — voice — is done and signed off on a handset.** A
-chit can now be spoken as well as typed: the microphone opens a recording sheet, the take is
-attached to the open chit, and it plays back from a pill on Today, in the calendar's archive and
-on the open chit itself. **Next is M6, the chit editor** — and its first job is cutting
-[TASKS.md](TASKS.md), which still holds M5's groups.
+**Last updated:** 18 September 2026. **M6 — the chit editor — is under way; group A is done.**
+[TASKS.md](TASKS.md) is cut for it, in seven groups, and the cut is **wider than
+[BUILD-PLAN.md](BUILD-PLAN.md) M6 as written** — the owner asked for three things the plan did
+not have. A chit's recording becomes removable and replaceable, which **reverses ADR-014's
+second half**; a chit can be deleted, which closes open item 9; and **the open chit's Discard is
+gone**, which was group A. Read TASKS.md's decision table D1–D12 before writing any of the rest;
+it is where the session's answers live.
+
+**Group A is committed.** Today's action row is the microphone and Save, and a kept take is
+dropped by **Remove** beside the pill (ADR-060) — one control that the editor will reuse, rather
+than a Discard on one screen and something else on the other. `ComposerController.discard()` is
+`removeTake()`; it leaves the words alone, does not re-take the stamp, and re-arms the prompt on
+a chit it empties. The recording sheet keeps its own Discard (ADR-055); the word means *throw
+away the take in progress* and that still happens. **Nobody has looked at any of this on a
+handset** — group G.
+
+**Next is group B**: the chit row becomes a tap target on Today *and* in the archive, and the
+editor screen arrives above the tab shell as somewhere to read a chit. `lib/features/editor/`
+still holds the two placeholder files M1 left there.
+
+*M5 — voice — was signed off on a handset earlier the same day.* A chit can be spoken as well as
+typed: the microphone opens a recording sheet, the take is attached to the open chit, and it
+plays back from a pill on Today, in the calendar's archive and on the open chit itself.
 
 **Voice is recording and playback. There is no transcription** (ADR-058): it was built, taken to
 a handset, recognised nothing, and removed — the cost ADR-005 had stated two milestones earlier.
@@ -64,10 +82,10 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
 | **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
-| **M6** — the chit editor | 🔜 next | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017). TASKS.md is cut for it first |
+| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A done**. ADR-017, ADR-060 onward. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
 | M7 — motion and the floors | ⬜ | |
 
-**441 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
+**444 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
 anything the app still does.* **Schema is v1 again and there are no migrations** — an install
 carrying an older shape is reinstalled.
@@ -81,34 +99,37 @@ bundle of item 6 is the only part chit chose. Nothing about shipping has been de
 
 ---
 
-## Next: M6 — the chit editor
+## Next: M6 group B — the affordance and the route
 
-**M5 is signed off and nothing is half-built.** [BUILD-PLAN.md](BUILD-PLAN.md) M6 is the next
-milestone and [TASKS.md](TASKS.md) still holds M5's groups — **cut M6 into groups and replace
-that file first** (CLAUDE.md §2). The session that does:
+**Group A is done and nothing is half-built.** [TASKS.md](TASKS.md) is the working list; its
+**D1–D12 table is where this milestone's answers live** and is worth reading before the code.
+The session that picks up group B:
 
-1. **Reads BUILD-PLAN.md M6 and ADR-017.** The editor is a screen, and leaving it with unsaved
-   changes asks. *The prompt is as much the point of the milestone as the editor is*: discarding
-   an open chit needs no confirmation and gets none (§3.1), and discarding an edit to a **record**
-   does.
-2. **Knows what M2 and M4 have been holding back.** A chit in the thread has no pointer, no focus
-   stop and no button semantics, on Today and in the archive both, because until now there was
-   nowhere for a tap to go. All of that arrives with the screen it leads to, in one change —
-   `DayThread`'s `ChitRow` is the one widget, so both screens gain it together.
-3. **Calls `ChitRepository.updateText()` at last.** It has existed since M1 precisely so this
-   milestone does not have to grow one in a hurry, and it takes `text` and `updatedAt` and
-   nothing else — an edit provably cannot move a chit in the thread, relight a calendar tile, or
-   lose a recording. There is already a test proving it.
-4. **Leaves the audio alone.** No control offers to remove or replace it — not disabled, not
-   present (ADR-014). Editing changes what the chit says, never what was said.
-5. **Reads the four lessons in BUILD-PLAN.md M5 before writing a fake.** Two of M5's four handset
+1. **Makes `ChitRow` a button** — pointer, focus stop, button semantics and the tap — on Today
+   **and** in the archive, in one change. One widget, so both screens gain it together; this is
+   what M2 and M4 have been holding back.
+2. **Leaves the door open for `@person` and `#hashtag`** (D12, OPEN-QUESTIONS.md §9 item 8). A
+   `TapGestureRecognizer` on a `TextSpan` beats an ancestor's tap, so the row can be a button
+   and still carry links later. A comment at the `Text` that becomes a `Text.rich`, and nothing
+   in the schema.
+3. **Puts the editor above the tab shell** (D3), not inside a branch — one task with one way
+   out, so a tab change cannot strand a half-typed edit.
+4. **Draws it read-only first**: back arrow and the chit's day, then the slip with the saved
+   stamp, the text and the pill. `ChitRepository.byId` has existed since M1 for exactly this.
+5. **Does not touch the stamp, ever** (D4). `createdAt`, `localDay` and the three ambient
+   fields are not parameters of anything the editor can call — that is the owner's *no metadata*
+   rule made structural rather than remembered.
+6. **Reads BUILD-PLAN.md M5's four lessons before writing a fake.** Two of M5's four handset
    bugs were a fake or its harness behaving better than the real thing.
 
-**Seed before looking at anything** — `flutter run --dart-define=CHIT_SEED=seed`, and `=clear`
-afterwards. There are no migrations now (ADR-059), so **a schema change means uninstalling the
-app**, and the seeded rows go with it.
+**Two things group A left for the device, not for a test** (ADR-031): that a row of microphone
+and Save reads as complete without Discard, and that Remove beside the pill is findable. Both
+are on group G's list.
 
-The old *Next* is in git under `ca43d1b`; it said to take M5 to a handset, and M5 is signed off.
+**M6 changes no schema**, so unlike ADR-059's usual cost nobody has to uninstall. Seed before
+looking at anything — `flutter run --dart-define=CHIT_SEED=seed`, `=clear` after.
+
+The old *Next* is in git under `0e7914a`; it said to cut TASKS.md for M6, and TASKS.md is cut.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M6.

@@ -59,6 +59,10 @@ class OpenChit extends ConsumerWidget {
               id: Playback.openChit,
               path: state.audioTempPath!,
               duration: state.audioDuration ?? Duration.zero,
+              // ADR-060: the only way a kept take goes, now that Discard has.
+              onRemove: ref
+                  .read(composerControllerProvider.notifier)
+                  .removeTake,
             ),
           ],
           SizedBox(height: space.s4),
@@ -103,9 +107,9 @@ class _FieldState extends ConsumerState<_Field> {
 
   @override
   Widget build(BuildContext context) {
-    // The controller is the source of truth and this field mirrors it, so that
-    // Discard can empty the page. Typing does not loop back: by the time this
-    // fires the two already agree.
+    // The controller is the source of truth and this field mirrors it, so
+    // that a save can empty the page. Typing does not loop back: by the time
+    // this fires the two already agree.
     ref.listen(composerControllerProvider.select((ComposerState s) => s.text), (
       String? _,
       String next,
@@ -156,7 +160,7 @@ class _FieldState extends ConsumerState<_Field> {
               // `onTapOutside` rather than a `GestureDetector` around the
               // screen: a detector would have to be told about every control
               // it must not swallow, and this already knows what *outside*
-              // means. Taps on Discard, Save and the microphone still land —
+              // means. Taps on Save and the microphone still land —
               // the region reports the tap, it does not eat it.
               onTapOutside: (PointerDownEvent _) =>
                   FocusManager.instance.primaryFocus?.unfocus(),
@@ -198,7 +202,7 @@ class _Ghost extends ConsumerWidget {
     final ComposerState state = ref.watch(composerControllerProvider);
     final motion = context.motion;
 
-    // A fade and no rise, the same call group E made for Discard and Save: the
+    // A fade and no rise, the same call group E made for the action row: the
     // prototype lifts this 2px as it arrives, and §6.3's table gives the
     // prompt a pace of its own rather than filing it under authored arrival.
     // **It survives reduced motion at 140ms** — the appearance is the whole
@@ -220,8 +224,8 @@ class _Ghost extends ConsumerWidget {
 /// The line beside a refused microphone, said once — TASKS.md D2.
 ///
 /// **Under the action row rather than next to the microphone itself.** Once
-/// the chit holds anything the row is microphone, Discard and Save, and there
-/// is no width left beside it; a line that had to move when a word was typed
+/// the chit holds anything the row is microphone and Save, and there is no
+/// width left beside it; a line that had to move when a word was typed
 /// would be worse than one that is simply below the row it explains, which is
 /// where the thumb already is.
 ///
@@ -249,8 +253,9 @@ class _MicrophoneNote extends StatelessWidget {
 /// The microphone, then what to do with what has been written.
 ///
 /// BEHAVIOUR.md §4.1: *the row reads left to right — the way in, then what to
-/// do with it.* The microphone leads at the full 54px, and **Discard** and
-/// **Save chit** arrive to its right as soon as the chit holds anything.
+/// do with it.* The microphone leads at the full 54px, and **Save chit**
+/// arrives to its right as soon as the chit holds anything. *Discard stood
+/// between them until ADR-060 took it off this screen.*
 class _ActionRow extends ConsumerWidget {
   const _ActionRow({required this.canSave, required this.hasAudio});
 
@@ -281,8 +286,8 @@ class _ActionRow extends ConsumerWidget {
         ),
         if (!hasAudio) SizedBox(width: context.space.s2),
         Expanded(
-          // A fade and no rise. DESIGN-SYSTEM.md §6.3's table puts *"Discard
-          // and Save arriving once the chit holds something"* under **routine
+          // A fade and no rise. DESIGN-SYSTEM.md §6.3's table puts *"Save
+          // arriving once the chit holds something"* under **routine
           // state change**, not under authored arrival — the prototype reuses
           // its `settle` keyframe here, and an 8px rise makes a routine change
           // look like one of the three moments in the app with any authorship.
@@ -434,13 +439,19 @@ class _MicrophonePainter extends CustomPainter {
       oldDelegate.colour != colour || oldDelegate.strokeWidth != strokeWidth;
 }
 
-/// **Discard** and **Save chit**, once the chit holds something.
+/// **Save chit**, once the chit holds something.
 ///
-/// Three controls, one system, ranked by weight rather than by colour
-/// (ADR-022): the microphone and Save share a border, Save carries the
-/// brighter one and a faint ink wash, and Discard has no outline at all. *v5
-/// made Save a solid `--seal` bar*, which became the loudest thing on the
-/// screen the instant a word was typed.
+/// Two controls, ranked by weight rather than by colour (ADR-022): the
+/// microphone and Save share a border and Save carries the brighter one and a
+/// faint ink wash. *v5 made Save a solid `--seal` bar*, which became the
+/// loudest thing on the screen the instant a word was typed.
+///
+/// **Discard used to stand to its left and is gone from this screen**
+/// (ADR-060). It cleared the words and dropped the take, and the words can be
+/// cleared by selecting them — so the take was the only thing it uniquely did,
+/// and that moved to **Remove** on the pill, where the take is. The recording
+/// sheet keeps its own Discard (ADR-055); the word there means *throw away the
+/// take in progress*, which is still a thing that happens.
 ///
 /// **Save is the only thing in the app that writes a row** (ARCHITECTURE.md
 /// §4.1). It stamps the chit at the moment it is pressed — ADR-040 — and opens
@@ -451,22 +462,9 @@ class _CommitControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final space = context.space;
-
-    return Row(
-      children: <Widget>[
-        QuietButton(
-          label: 'Discard',
-          onPressed: ref.read(composerControllerProvider.notifier).discard,
-        ),
-        SizedBox(width: space.s2),
-        Expanded(
-          child: PrimaryButton(
-            label: 'Save chit',
-            onPressed: ref.read(composerControllerProvider.notifier).save,
-          ),
-        ),
-      ],
+    return PrimaryButton(
+      label: 'Save chit',
+      onPressed: ref.read(composerControllerProvider.notifier).save,
     );
   }
 }

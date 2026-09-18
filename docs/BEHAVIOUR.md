@@ -25,9 +25,13 @@ read at the moment Save is pressed, so a chit is always filed on the day it was 
 written.
 
 **The stamp on the open chit is a preview**, not ticking: a chit sat on for twenty minutes lands
-in the thread carrying a later time than the slip showed. **Discard** returns the open chit to
-empty — which means **new**, not blanked, so the preview is taken again rather than showing a
-time that has passed.
+in the thread carrying a later time than the slip showed. Saving opens a fresh chit, so the
+preview is taken again rather than showing a time that has passed.
+
+**There is no Discard on the open chit** (ADR-060). Nothing needs to clear the whole page at
+once: the words are cleared by selecting them, and the recording is dropped by **Remove** on the
+pill, which is where the recording is. A control whose only remaining job is one its neighbour
+already does is a control the row is better without.
 
 **Saving never waits.** The row is written at once with what is in hand. A reading older than
 **five minutes** is refreshed behind the save and the chit corrected a moment later; inside five
@@ -45,7 +49,7 @@ recording, or both — all three ordinary.
 
 **Tapping the page gives the field focus; tapping away takes it back.** The keyboard comes up on
 first touch (ADR-023 — never on launch) and goes down when a tap lands outside it, since a
-keyboard that stays up covers the thread (§4.1). Discard, Save and the microphone are not
+keyboard that stays up covers the thread (§4.1). Save, Remove and the microphone are not
 *outside* in that sense — they take their tap and the keyboard goes down as they do.
 
 The microphone stays an equal by being reachable and never a step: available on an empty or
@@ -53,8 +57,12 @@ half-written chit, its target unchanged by text appearing, and using it never di
 already in the field.
 
 **A chit holds one recording.** Once kept, the microphone retires — a second take would destroy
-the first. The text stays editable; only the recording is settled. Discarding the chit clears
-it.
+the first. The text stays editable.
+
+**A kept take is dropped by Remove, beside the pill** (ADR-060). The microphone comes back when
+it goes, so recording again is the way to a different take rather than a second control that
+would silently overwrite the first. Remove does not touch the words: a recording is not words,
+and removing one is not an edit to anything written.
 
 **A refused microphone raises nothing and explains once.** The sheet does not open, the
 microphone stays where it is and stays tappable, and the line *"The microphone isn't allowed.
@@ -227,9 +235,16 @@ Shows today.
 
   with something written:
 
-  │ ┌────┐  Discard   ┌──────────────────┐  │
+  │ ┌────┐            ┌──────────────────┐  │
   │ │ ⏺  │            │    Save chit     │  │
   │ └────┘            └──────────────────┘  │
+
+  with a recording kept — the microphone has retired:
+
+  │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]        Remove        │
+  │                   ┌──────────────────┐  │
+  │                   │    Save chit     │  │
+  │                   └──────────────────┘  │
 
   earlier ─────────────────────────── 2 chits
 
@@ -242,12 +257,18 @@ Shows today.
   चित्त                                             ← the closing mark
 ```
 
-The microphone leads the action row at the foot of the slip, full 54px; **Discard** and **Save
-chit** arrive to its right once the chit holds anything typed or recorded. An untouched chit
-shows neither. The row reads left to right: the way in, then what to do with it.
+The microphone leads the action row at the foot of the slip, full 54px; **Save chit** arrives to
+its right once the chit holds anything typed or recorded. An untouched chit shows only the
+microphone. The row reads left to right: the way in, then what to do with it.
 
-The three are ranked by weight, not colour: the microphone and Save share a border, Save carries
-the brighter one and a faint ink wash, Discard has no outline at all (DESIGN-SYSTEM.md §6.1,
+**Remove** sits at the end of the pill's own row rather than in the action row, because it acts
+on the recording and not on the chit — so the pill reads play, how long, and then the way out.
+*Discard stood between the microphone and Save until ADR-060 took it off this screen*; the
+recording sheet keeps its own Discard (§4.3), where the word means *throw away the take in
+progress*.
+
+The two are ranked by weight, not colour: the microphone and Save share a border, Save carrying
+the brighter one and a faint ink wash, and Remove has no outline at all (DESIGN-SYSTEM.md §6.1,
 ADR-022).
 
 Once a recording is kept the microphone **leaves the row** rather than greying out (§3.2) — a

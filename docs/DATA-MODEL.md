@@ -250,15 +250,15 @@ in the presentation layer, where it can be re-tuned without a migration.
     ├── <chit-id>.m4a
     └── ...
 <app cache>/
-└── recording-<timestamp>.m4a     ← in flight; moved on Save, deleted on Discard
+└── recording-<timestamp>.m4a     ← in flight; moved on Save, deleted on Remove
 ```
 
 AAC in an m4a container: small, hardware-encoded on both platforms, and playable by
 `just_audio` without a codec dependency.
 
 **Lifecycle.** Record to cache → **Save** moves it to `audio/<chit-id>.m4a` and writes the row
-in one repository call → **Discard** deletes it. The move happens before the insert, so a
-failed move never leaves a row pointing at nothing.
+in one repository call → **Remove** on the pill, or the sheet's **Discard**, deletes it. The
+move happens before the insert, so a failed move never leaves a row pointing at nothing.
 
 **Reconciliation** runs once at startup, off the critical path, and handles both directions:
 a file with no row is deleted; a row whose file has vanished keeps rendering as a chit without

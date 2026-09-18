@@ -64,7 +64,8 @@ final class AudioStore {
     return relative;
   }
 
-  /// Deletes a recording that was never kept. **Discard** (BEHAVIOUR.md §3.1).
+  /// Deletes a recording that was never kept — the recording sheet's
+  /// **Discard**, and **Remove** on the open chit's pill (BEHAVIOUR.md §3.2).
   ///
   /// A temp file that has already gone is not an error — discarding twice, or
   /// discarding after the OS has swept its own cache, is the same outcome.

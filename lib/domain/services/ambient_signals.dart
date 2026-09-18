@@ -48,7 +48,8 @@ extension AmbientReadingFreshness on AmbientReading {
 /// on resume, and no capture at all on a chit that is merely opened.
 ///
 /// *The app used to ask both services on every chit open*, which meant four
-/// taps of **Discard** made four network calls. *And then it asked on every
+/// taps of the open chit's **Discard** — itself gone since ADR-060 — made four
+/// network calls. *And then it asked on every
 /// save*, which meant a burst of chits in one sitting paid for a GPS fix each.
 /// Neither is true now: a save inside the window writes what is already in
 /// hand.

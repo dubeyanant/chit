@@ -172,14 +172,14 @@ class ComposerState {
 bool get canSave => text.trim().isNotEmpty || audioTempPath != null;
 ```
 
-`canSave` is §3.1 and §4.1 in full: Discard and Save appear when it is true, and nothing
+`canSave` is §3.1 and §4.1 in full: Save appears when it is true, and only the microphone
 otherwise.
 
 **What the transitions must preserve** (§3.4):
 
 - Keeping a recording **leaves the field exactly as it was**. A recording is not words.
-- `audioTempPath` is set by recording and cleared only by Discard; editing `text` never touches
-  it.
+- `audioTempPath` is set by recording and cleared only by `removeTake` — **Remove** on the pill
+  (ADR-060); editing `text` never touches it, and `removeTake` never touches `text`.
 - The microphone is available on an empty or half-written chit, unavailable only while
   `isRecording` or once `audioTempPath` is set — one row holds one recording, so a second take
   would silently destroy the first (DESIGN-SYSTEM.md §6.4).
@@ -277,8 +277,8 @@ further. The five seconds are a product rule, not a pace, and never change.
 
 **A rebuild is exactly what this defends against**, and it fails invisibly: the field relays out
 whenever the keyboard arrives or the action row grows, and a widget-held timer would restart to
-five seconds each time. `ref.onDispose` cancels it; **Discard** arms it again, since Discard
-opens a freshly-opened chit (ADR-040).
+five seconds each time. `ref.onDispose` cancels it; a **save** arms it again, since it opens a
+fresh chit (ADR-040), and so does a **Remove** that leaves the chit holding nothing (ADR-060).
 
 **Drawn over the field, never into it.** `hintText` is the tempting shortcut and wrong twice —
 announced as a label, and shown on Material's schedule rather than after five seconds. The
@@ -308,8 +308,9 @@ closes the sheet.
 It is the one screen controller that is `keepAlive` (ADR-057): a take begins on the microphone's
 tap, before the sheet exists, and finishes after it has gone.
 
-**Discard** deletes the temp file through `ChitRepository.discardTemp`, the counterpart of
-`save`'s `audioTempPath`; nothing moves to permanent storage until Save (ADR-008).
+**The sheet's Discard, and Remove on the open chit's pill**, both delete the temp file through
+`ChitRepository.discardTemp`, the counterpart of `save`'s `audioTempPath`; nothing moves to
+permanent storage until Save (ADR-008).
 
 The sheet is raised by `showRecordingSheet`, which is also what ends the take: **every way out
 that is not Stop & keep is a cancel** — the drag, the scrim, the back gesture and Discard alike —
@@ -328,7 +329,7 @@ routinely built long after a recording started sounding — the archive is rebui
 change — and a stream carrying only changes left those pills drawn as though nothing were
 playing, so the one control that could have stopped the sound was a play button that did
 nothing. **`stopIf(id)`** is the other half: Save moves the open chit's take out of the cache and
-Discard deletes it, and `ComposerController` stops the player first, because a pill that is about
+Remove deletes it, and `ComposerController` stops the player first, because a pill that is about
 to stop being drawn cannot stop what it started. The `if` is what keeps a chit playing in the
 thread from being silenced by a save.
 

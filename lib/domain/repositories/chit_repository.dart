@@ -117,7 +117,8 @@ abstract interface class ChitRepository {
   /// Everything, newest day first. The archive.
   Stream<List<Chit>> watchArchive({required int limit, int offset = 0});
 
-  /// Deletes a take that was never saved. **Discard** — BEHAVIOUR.md §3.1.
+  /// Deletes a take that was never saved — the recording sheet's **Discard**,
+  /// and **Remove** on the open chit's pill (BEHAVIOUR.md §3.2, ADR-060).
   ///
   /// The counterpart of [save]'s `audioTempPath`: one door takes a temp file
   /// in, this one lets it go, and both go through the single thing ADR-008

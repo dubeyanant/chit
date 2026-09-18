@@ -20,7 +20,7 @@ final class Playback {
   ///
   /// It has no row yet and may never get one, but the player still has to be
   /// able to say *this pill and not that one* — and the composer has to be
-  /// able to name it when Save or Discard takes the file away.
+  /// able to name it when Save or Remove takes the file away.
   static const String openChit = 'open-chit';
 
   /// Which pill this is about, or `null` when none is loaded.
@@ -90,7 +90,7 @@ abstract interface class AudioPlayer {
   /// Stops and unloads, but **only if [id] is the pill that is loaded**.
   ///
   /// The open chit's take is what this exists for. Save moves that file out of
-  /// the cache and Discard deletes it, and either way the pill playing it
+  /// the cache and Remove deletes it, and either way the pill playing it
   /// stops being drawn a frame later — a player left running would go on
   /// sounding a recording with no control anywhere able to stop it. The
   /// `if` matters: a chit saved while a *thread* pill is playing must not

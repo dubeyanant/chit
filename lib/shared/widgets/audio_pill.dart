@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/extensions.dart';
 import '../../core/theme/chit_colors.dart';
 import '../../domain/services/audio_player.dart';
+import 'buttons.dart';
 
 /// A chit's recording, and the control that plays it — BEHAVIOUR.md §3.4.
 ///
@@ -14,6 +15,12 @@ import '../../domain/services/audio_player.dart';
 ///
 /// It draws itself from `playbackProvider`, so the pill that is lit is decided
 /// by the one player rather than by each pill holding its own idea.
+///
+/// **[onRemove] is how a recording goes** — ADR-060, ADR-061. It is absent on a
+/// chit in the thread and in the archive, which are reading surfaces, and
+/// present on the open chit and in the editor. *One control on both* rather
+/// than a Discard on one screen and something else on the other: a recording
+/// is removed from where the recording is.
 final class AudioPill extends ConsumerStatefulWidget {
   /// A pill for the recording at [path], [duration] long, known as [id].
   ///
@@ -23,6 +30,7 @@ final class AudioPill extends ConsumerStatefulWidget {
     required this.id,
     required this.path,
     required this.duration,
+    this.onRemove,
     super.key,
   });
 
@@ -36,6 +44,15 @@ final class AudioPill extends ConsumerStatefulWidget {
   /// How long it runs. The figure at rest, and what the playhead is measured
   /// against.
   final Duration duration;
+
+  /// Drops the recording, or `null` where it cannot be dropped.
+  ///
+  /// Null on a reading surface. Where it is given, **Remove** is drawn beside
+  /// the pill in [QuietButton]'s weight — no outline, nothing that competes
+  /// with the pill it belongs to. What it means differs by screen and neither
+  /// is this widget's business: on the open chit it deletes a take that was
+  /// never a row, and in the editor it stages a removal until Save.
+  final VoidCallback? onRemove;
 
   /// The bar heights of v6's wave, in its own units — `max(12, h × 6)` per
   /// cent of the pill's wave height.
@@ -109,7 +126,7 @@ class _AudioPillState extends ConsumerState<AudioPill> {
         ? AudioPill.barsLitAt(playback.position, of: widget.duration)
         : 0;
 
-    return Semantics(
+    final Widget pill = Semantics(
       button: true,
       label: sounding
           ? 'Pause recording, ${AudioPill.figureFor(widget.duration)}'
@@ -175,6 +192,20 @@ class _AudioPillState extends ConsumerState<AudioPill> {
           ),
         ),
       ),
+    );
+
+    final VoidCallback? remove = widget.onRemove;
+    if (remove == null) return pill;
+
+    // The pill takes the width it had and Remove sits at the end of the row,
+    // where the duration already is — so the reading order is play, how long,
+    // and then the way out.
+    return Row(
+      children: <Widget>[
+        Expanded(child: pill),
+        SizedBox(width: space.s2),
+        QuietButton(label: 'Remove', onPressed: remove),
+      ],
     );
   }
 

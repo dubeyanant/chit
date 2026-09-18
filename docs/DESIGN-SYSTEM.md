@@ -86,16 +86,17 @@ Hierarchy that used to come from colour now comes from weight, and the weights a
 | Microphone, hover | `--ink` 5% | the open chit | prototype only |
 | Microphone, pressed | `--ink` 10% | the open chit | |
 | Audio pill, pressed | `--ink` 8% | a chit, or the ground | |
-| **Discard**, pressed | `--ink` 6% | the open chit | **label lifts to `--ink`** — see below |
+| **The quiet button**, pressed | `--ink` 6% | wherever one is | **label lifts to `--ink`** — see below |
 | Calendar, one chit | `--ink` 6% | the ground | numeral in `--ink`, 12.66:1 |
 | Calendar, two | `--ink` 12% | the ground | 10.69:1 |
 | Calendar, three | `--ink` 20% | the ground | 8.31:1 |
 | Calendar, four or more | `--ink` 30% | the ground | 5.99:1 |
 
-Three controls, one system: the microphone and Save share a border, Save carries the brighter
-one and a wash, and **Discard** drops its outline altogether. A solid `--seal` bar was the
-loudest thing on the screen the moment a word was typed, and it made the outlined microphone
-beside it look like a control borrowed from another app.
+Two weights, one system: the microphone and Save share a border, Save carries the brighter one
+and a wash, and **the quiet button** drops its outline altogether — the recording sheet's
+Discard, *Show every day*, and **Remove** on a pill. A solid `--seal` bar was the loudest thing
+on the screen the moment a word was typed, and it made the outlined microphone beside it look
+like a control borrowed from another app.
 
 **The hover rows are the prototype's, not the app's.** `ChitColors` carries the resting and
 pressed washes and no hover ones: a finger gets no hover, and pressure is the only feedback
@@ -104,10 +105,10 @@ not, and web is after v1 (ADR-019). That is when they get added — and measured
 
 **A pressed wash is not decoration.** Under `prefers-reduced-motion` the 0.985 depress is gone
 (§6.4), so the wash is the *entire* acknowledgement a press produces, and one that cannot be
-seen makes a working control read as a dead one. That is why Discard has a wash at all: v6
-pressed it in `--hair-soft`, which measures 1.0145:1 on a chit and is not drawn.
+seen makes a working control read as a dead one. That is why the quiet button has a wash at all:
+v6 pressed it in `--hair-soft`, which measures 1.0145:1 on a chit and is not drawn.
 
-**And why Discard's label lifts.** Its label is `--ink-faint`, which clears the floor on a bare
+**And why its label lifts.** The label is `--ink-faint`, which clears the floor on a bare
 chit at 4.56:1 and fails on *any* wash — 4.12:1 at even 4%, and the wash is 6%. So while it is
 held, the label goes to `--ink`. The prototype already brightens it on hover for the same
 reason; this is that rule applied to the state a phone actually has. A pressed state is a
@@ -304,14 +305,14 @@ day-heading place the paragraph above already names.
   | Kind | Pace |
   |---|---|
   | Press feedback | 90ms; a 0.985 depress, 0.99 on the audio pill. On a phone there is no hover, so this is the only acknowledgement a finger gets |
-  | Routine state change | 200–300ms — switching tab, Discard and Save arriving once the chit holds something |
+  | Routine state change | 200–300ms — switching tab, Save arriving once the chit holds something |
   | Authored arrival | 340–460ms — a chit landing, a recording settling |
   | The idle prompt | 700ms, deliberately slower than everything else (§3.3) |
   | Exits | always quicker than entrances; a slow dismissal reads as lag |
 
   **The prompt fades and does not rise.** *The prototype lifts it 2px as it arrives.* It has a
   pace of its own in that table rather than being filed under authored arrival, and M2 group E
-  made the same call for Discard and Save: a rise is what the three moments with any authorship
+  made the same call for the action row: a rise is what the three moments with any authorship
   are for, and borrowing it makes an offer look like an event. What the prompt does need is to
   **survive** reduced motion, which is why it is a fade — at 140ms it is still an offer, and at
   nothing it is not there at all (ARCHITECTURE.md §4.3).
