@@ -71,13 +71,13 @@ abstract final class FindLine {
   /// Each earns its place by being **undiscoverable**: a gesture, a rotation,
   /// or a piece of syntax. Nothing here restates what a screen already shows.
   static const List<String> hints = <String>[
-    'Write @a_name or #a_topic, and tap it later to find every chit with it.',
-    'An underscore in a tag reads as a space: @first_last, #morning_pages.',
+    'Tap a @name or a #topic in a chit to find every chit with it.',
+    'An underscore in a tag reads as a space: #morning_pages.',
     'The question on an empty chit is a different one every time.',
     'Hold a chit anywhere to open it again, or to throw it away.',
+    'A recording is kept as it is. Nothing here transcribes it.',
     'A chit is stamped when you save it, never when you opened it.',
     'This line changes daily, and every fourth day it explains something.',
-    'Tapping a tag from inside another tag takes you straight across.',
   ];
 
   /// One line, the same all day and different tomorrow.
