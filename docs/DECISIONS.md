@@ -70,6 +70,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-050 | A day boundary is the tick at now, hanging below the line | the same height and weight; `s1` hid behind a mark written near midnight |
 | ADR-051 | New ADRs are short | the template shrinks from here — CLAUDE.md §0.2 |
 | ADR-052 | The recorder times a take on the clock and reports a level, not decibels | M5 group A — the file is not opened until playback; the waveform draws a number |
+| ADR-053 | The recogniser streams a split transcript, has no error table, and waits one beat | M5 group B — §3.4's lighter word is in the data; any error is §3.5; Stop & keep waits 900 ms for the last word |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -815,3 +816,24 @@ is the data layer's business, the way a speed's meaning is the ladder's and not 
 empty take are `false` or `null`, because the sheet has one answer to all three. Cost: a
 length measured on the clock can be a few frames longer than the audio; the pill's figure is
 in whole seconds and does not show it.
+
+---
+
+## ADR-053 — The recogniser streams a split transcript, has no error table, and waits one beat
+
+`SpeechRecognizer.start()` returns a `Stream<Transcript>` whose values carry the committed words
+and the one still being revised, so §3.4's lighter-ink word is a property of the data rather than
+a guess in the widget; the split is made in `data` because *the last word of a partial* is a fact
+about the plugin's results, not about chit. The stream is the only source of the transcript —
+`stop()` returns nothing and the sheet keeps what it last saw — over a `stop()` that also answers
+the words, which would have been the same value arriving twice. **There is no error-code table**,
+though TASKS.md group B expected one: Android marks every error permanent and stops listening as
+it reports one, so distinguishing `error_no_match` from the rest would describe one platform's
+vocabulary and change nothing D5 does not already say — any error closes the stream, keeping
+whatever was heard. `stop()` then waits up to 900 ms for the recogniser's last word, with the
+plugin's own final-result timeout cut from two seconds to 450 ms so its promotion lands inside
+that; this is the one place the app waits on a signal (ADR-007 refuses everywhere else) and the
+exception is ARCHITECTURE.md §6's — ambient signals fail silently, the user's content does not,
+and the final word is the one most likely wrong. Cost: Stop & keep can hold the sheet for a
+beat on a platform that has stopped answering, and a shortened final timeout promotes a partial
+the platform might still have improved.

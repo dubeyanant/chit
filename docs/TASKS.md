@@ -30,7 +30,7 @@ settings screen from which a refused microphone could be reconsidered.
 | **D2** | **Permission is asked at the first tap, never at first run.** A refusal does not open the sheet; the microphone explains once and stays available | BEHAVIOUR.md §4.4, ARCHITECTURE.md §6 |
 | **D3** | **A take's length is the clock's, start to stop, and never read from the file.** The file is not opened until playback | ADR-052 |
 | **D4** | **The recorder reports a level from 0 to 1, not decibels.** The waveform draws a number; the scale it came off is the data layer's | ADR-052 |
-| **D5** | **Three failures, one branch.** Heard nothing, on-device refused, no model — all `sttFailed`, all keep the audio | ADR-005, ARCHITECTURE.md §4.4 |
+| **D5** | **Three failures, one branch** — and since group B, *every* failure. Heard nothing, on-device refused, no model, anything else the platform reports: all `sttFailed`, all keep the audio | ADR-005, ADR-053, ARCHITECTURE.md §4.4 |
 | **D6** | **The pending transcript lives in the sheet's controller, not in `text`.** The field is written once, at Stop & keep, and never by the recogniser again | ARCHITECTURE.md §4.4, BEHAVIOUR.md §3.4.1 |
 | **D7** | **The record dot and the waveform are `ChitMotion.loop`'s first callers.** The dot's period is 1.2s and belongs to the dot; under reduced motion both draw at rest | ADR-027, DESIGN-SYSTEM.md §6.3 |
 
@@ -49,21 +49,23 @@ settings screen from which a refused microphone could be reconsidered.
 - [x] `main.dart` supplies it beside the location service.
 - [x] `test/data/record_audio_recorder_test.dart` — the level arithmetic and the take's path.
 
-## B. Recognition — the recogniser over `speech_to_text`
+## B. Recognition — the recogniser over `speech_to_text` ✅
 
 *Speech becomes words on the device. Nothing sent anywhere.*
 
-- [ ] `domain/services/speech_recognizer.dart` — the `SpeechRecognizer` interface: `start`
+- [x] `domain/services/speech_recognizer.dart` — the `SpeechRecognizer` interface: `start`
       returning a stream of partials, each carrying the committed words and the word still
       pending (the lighter-ink word of §3.4), and `stop`. A result that never arrives is the
       §3.5 branch, not an error.
-- [ ] `data/speech/on_device_speech_recognizer.dart` — `SpeechListenOptions(onDevice: true)` at
-      the one call site (ADR-005). Initialised once, lazily. The plugin's `error_no_match`,
-      `error_speech_timeout`, `error_language_unavailable` and `error_language_not_supported`
-      and an `initialize` that returns `false` all end the stream with nothing — D5.
-- [ ] `main.dart` supplies it.
-- [ ] A test for whatever pure mapping the implementation carries — the partial split, the
-      error-code table — and nothing that needs the plugin.
+- [x] `data/speech/on_device_speech_recognizer.dart` — `SpeechListenOptions(onDevice: true)` at
+      the one call site (ADR-005). Initialised once, lazily. An `initialize` that returns
+      `false` and **every** error end the stream with nothing — D5. *The four error codes this
+      list named are not in the code: Android marks every error permanent and stops listening
+      as it reports one, so the table would have described one platform's vocabulary and
+      changed nothing. ADR-053.*
+- [x] `main.dart` supplies it.
+- [x] `test/data/on_device_speech_recognizer_test.dart` — the partial split, and nothing that
+      needs the plugin. There is no error table left to walk.
 
 ## C. The composer's voice flow — the logic, bare
 

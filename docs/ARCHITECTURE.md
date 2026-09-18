@@ -307,8 +307,10 @@ recording sheet, not `text`; the sheet shows it accruing, last word in lighter i
 **Stop & keep** appends the pending transcript to the field under §4.1's rules. An empty or
 absent transcript sets `sttFailed` instead, leaving the field untouched and the audio attached —
 both outcomes keep the audio (ADR-013). Three causes all resolve to `sttFailed` — nothing heard,
-on-device recognition refused, no model for the language — and should share one branch; from the
-user's side they are the same event.
+on-device recognition refused, no model for the language — and share one branch; from the
+user's side they are the same event. **The recogniser has no error branch at all** (ADR-053):
+anything the platform calls an error closes the stream, keeping the words already heard, so an
+empty transcript is the only thing §3.5 ever tests.
 
 **Discard** deletes the temp file; nothing moves to permanent storage until Save (ADR-008).
 
@@ -412,7 +414,7 @@ rest (ADR-027).
 | What fails | What the user sees |
 |---|---|
 | Weather or location | that field is absent from the stamp. No message. |
-| Speech recognition — heard nothing, refused on-device, or no model | `sttFailed` — the audio is kept, the field is empty and theirs to type in, the note explains |
+| Speech recognition — heard nothing, refused on-device, no model, or anything else the platform reports | `sttFailed` — the audio is kept, the field is empty and theirs to type in, the note explains |
 | Microphone permission refused | the sheet does not open; the microphone explains once and stays available |
 | Audio file missing at playback | the chit renders; the pill is absent |
 | A database write | the only case that gets a visible failure, because the user's words are at stake |
