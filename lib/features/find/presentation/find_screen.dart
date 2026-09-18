@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../core/extensions.dart';
 import '../../../domain/find/find_axis.dart';
-import '../../../domain/quotes.dart';
+import '../../../domain/find_line.dart';
 import '../../today/application/today_controller.dart';
 import '../application/find_providers.dart';
 import 'widgets/find_list.dart';
@@ -30,7 +30,7 @@ class FindScreen extends ConsumerWidget {
     ];
 
     return FindList(
-      above: _Quote(line: Quotes.forDay(today)),
+      above: _Quote(line: FindLine.forDay(today)),
       rows: <Widget>[
         if (values != null && offered.isEmpty)
           const _NothingYet()

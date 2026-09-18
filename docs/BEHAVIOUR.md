@@ -118,10 +118,13 @@ no tag, `@anant.` tags the name and leaves the full stop, `@anant's` leaves the 
 trailing underscore falls outside rather than drawing as a space nobody can see. Any script — a
 Devanagari matra is a combining mark and belongs to the word it sits on.
 
-**Nothing here is tappable, and the raw text is what is stored.** A tap on the thread still does
-nothing and the row is still opened by holding it (§4.1), so this is how a chit *reads* and not yet
-a way in — that is backlog item 8, and this is the half of it that is decided. **The editor shows
-the words as they were typed**, underscores and sigils and all, because that is what an edit edits.
+**A tag is tapped, and the row it sits in is still held** (ADR-086). Tapping `@anant` or `#rent`
+anywhere a saved chit is drawn opens find on that tag — **switching tab if it has to**, and
+**unwinding to find's root and re-entering** rather than stacking, so back walks *find → that axis
+→ that tag* however you arrived and tapping tag after tag never piles a stack up. **It is the one
+tap in a thread that does anything**; everything that is not a tag still does nothing, and the row
+is still opened by holding it (§4.1). **The editor shows the words as they were typed**, underscores
+and sigils and all, because that is what an edit edits — and the raw text is what is stored.
 
 ## 4. Screens
 
@@ -192,7 +195,8 @@ back gesture all cancel, so nothing is kept and the take is deleted (ADR-055).
 chit's tear edge and two answers. **The first says what to expect** (ADR-074) — that the page is
 always open and a few words then **Save** make a chit; that the microphone speaks one instead and
 the take is kept rather than transcribed; and that a chit is opened again by **holding** it, the one
-gesture nothing on a screen can advertise. **The second asks**: a chit is stamped with the time and
+gesture nothing on a screen can advertise, **the same line carrying the `@` and `#` syntax**, which
+is the other thing a screen cannot show you (ADR-086). **The second asks**: a chit is stamped with the time and
 — if you let it — the weather, whether you were moving, and that a place was recorded; it never
 shows where, and none of it leaves the phone. **The wordmark is centred here and nowhere else**, and
 **the screen does not scroll** — the copy is cut until it fits, a first screen that slides under the
@@ -245,10 +249,16 @@ backend, and the prompt is the whole of the protection.
 **4.6 Find.** The third tab, and the way back to a chit you cannot date. **Three screens deep, and
 each one is a route** (ADR-084), so the system back walks up a level rather than out of the tab.
 
-*The first screen.* A line at the top — one of about forty-five, **the same all day and different
-tomorrow** — and then, at the **bottom right**, four words: `weather`, `motion`, `people`,
-`topics`. The words are one touch target apart, with the same space under the last as between any
-two, so the column reads as a rhythm rather than a list.
+*The first screen.* A line at the top, **the same all day and different tomorrow** — usually one of
+forty-five house lines, and **every fourth day a hint instead** (ADR-086) about something the app
+does and does not otherwise say: the tag syntax, that an underscore in a tag reads as a space, that
+the question on an empty chit is a different one every time. **A hint lives here rather than under
+the thing it describes** — a caption that never goes away is chrome on the sparest screens in the
+app, while one that comes round twice a week is read once and then recognised.
+
+Then, at the **bottom right**, four words: `weather`, `motion`, `people`, `topics`. The words are
+one touch target apart, with the same space under the last as between any two, so the column reads
+as a rhythm rather than a list.
 
 **Only an axis that goes somewhere is drawn** (ADR-085) — a word nobody has written anything under
 is not offered, the same argument §4.1 makes against a control that does nothing. A new install

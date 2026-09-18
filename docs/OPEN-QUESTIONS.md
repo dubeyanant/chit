@@ -19,9 +19,10 @@ screen. Answerable by living with the app for a week rather than by more design.
 
 ## 9. Feature backlog
 
-Ordered by how much each reinforces what chit already is, not by appetite. **6 and 2 are built** —
-voice chits as §3.4, weather as a search axis in find (§4.6, ADR-083) — and **their numbers are not
-reused**, 8 being cited from DATA-MODEL.md.
+Ordered by how much each reinforces what chit already is, not by appetite. **2, 6 and 8 are built**
+— weather as a search axis in find (§4.6, ADR-083), voice chits as §3.4, and tags written, drawn
+and tapped (§3.7, ADR-082, ADR-086). **Their numbers are not reused**, 2 and 8 being cited from
+DATA-MODEL.md and from the records.
 
 1. **Extend ambient capture** — coarse place ("home", "office"), what was playing.
 3. **Resurfacing** — a chit from a year ago on the home screen.
@@ -29,17 +30,11 @@ reused**, 8 being cited from DATA-MODEL.md.
 5. **The stitch** — one continuous year-long line, one mark per day.
 7. **Chit threading** — one chit replying to another. Hold until real usage shows people write in
    chains.
-8. **`@person` and `#hashtag` — half built.** They are **written and drawn** (ADR-082, §3.7); what
-   is left is the way in: **tappable**, opening every chit carrying the tag. The same shape as 2,
-   off a signal the user chose rather than one the weather gave. `ChitTags.tagsIn` already returns
-   a chit's distinct tags with a case- and underscore-insensitive key, so what is missing is a
-   query and a destination, not a parser.
 
-**1 and 3** make the app stickier; **5** makes it distinctive, and **2 did** — it is find's weather
-row. **8's rendering is built and its gesture is not** — M6's note was right and was spent: the `Text` became a `Text.rich` with no
-restructuring. **The rest of that note is now the warning** — a `TapGestureRecognizer` on a
-`TextSpan` wins the gesture arena against an ancestor's hold, so whoever makes a tag tappable takes
-the hold off the row it sits in, and §4.1's *a tap does nothing* goes with it.
+**1 and 3** make the app stickier; **5** makes it distinctive. **2 and 8 are both built** — 2 is
+find's weather row, and 8 is §3.7 drawn (ADR-082) and §3.7 tapped (ADR-086). M6's note was right
+twice over: the `Text` became a `Text.rich` with no restructuring, and **the arena half of it is
+now live code rather than a caution** — open item 52.
 
 **After v1** (signed off 18 September 2026, ADR-073), nothing is scheduled. In order: §8.3 answered
 with real usage; the backlog above; **migrations back** (item 38) before the first install anybody
@@ -158,7 +153,7 @@ retired: 32, 33, 35, 36.**
     unlooked-at. **The bottom-to-top switch at the frame where it flips**, which lands at a
     different list length on every handset: a list one row over the line jumps the whole column
     from the bottom of the screen to the top, and nobody has written enough tags to cross it. And
-    **the quote's two-line ceiling** — `Quotes.longest` is 92 characters, set by arithmetic rather
+    **the quote's two-line ceiling** — `FindLine.longest` is 92 characters, set by arithmetic rather
     than by looking, so a long line on a narrow phone may take three.
 51. **find's column is Hanken at 16.5px, sitting directly above a tab bar of Newsreader at
     16.5px.** Two faces at one size a few pixels apart, which §6.2 does not do anywhere else. It
@@ -166,3 +161,15 @@ retired: 32, 33, 35, 36.**
     Hanken — but §6.2 also gives **tab labels** to Newsreader, and this column is as much
     navigation as it is vocabulary. Nobody has decided it is wrong; **switching `filterWord` to
     `_serif` is one line** if the two ever read as a mismatch.
+52. **A tag's tap and the row's hold share a gesture arena, and nobody has held a tag** (ADR-086).
+    M6's note said a `TapGestureRecognizer` on a `TextSpan` wins against an ancestor's hold; the
+    arena should in fact give a long press to the row, the tap being rejected once 500ms passes
+    without a pointer-up. **That is reasoning, not a handset.** What to try: hold *on* a tag and
+    check the editor opens, hold just beside one and check nothing changed, and tap a tag while
+    the thread is mid-scroll. If the hold is lost, the fix is the row winning the arena rather
+    than the tag losing its tap — a tag that is not tappable is the feature gone.
+53. **First run is at three lines and now one of them does two jobs** (ADR-086, open item 44). The
+    hold line carries the tag syntax as well, which took it from one drawn line to two — roughly
+    25dp of the ~65dp of slack measured on an 800dp handset. **There is now about one line left in
+    the whole screen**, and the next thing added has to replace something rather than join it.
+    Nobody has looked at it on a short phone since the copy grew.

@@ -1,4 +1,5 @@
 import 'package:chitta/domain/find/find_axis.dart';
+import 'package:chitta/domain/tags/chit_tags.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -26,6 +27,30 @@ void main() {
         expect(axis.empty, isNotEmpty);
         expect(axis.empty.endsWith('.'), isTrue);
       }
+    });
+  });
+
+  group('a tag knows which axis it is found on — ADR-086', () {
+    test('a person goes to people, a topic to topics', () {
+      expect(FindAxis.ofTag(TagKind.person), FindAxis.people);
+      expect(FindAxis.ofTag(TagKind.topic), FindAxis.topics);
+    });
+
+    test('the slug is what the value route is keyed on', () {
+      const TagSpan tag = TagSpan(
+        kind: TagKind.person,
+        label: 'Anant Dubey',
+      );
+
+      expect(tag.slug, 'anant dubey');
+      expect(tag.key, 'person:anant dubey');
+    });
+
+    test('two spellings reach the same route', () {
+      const TagSpan upper = TagSpan(kind: TagKind.person, label: 'Mira');
+      const TagSpan lower = TagSpan(kind: TagKind.person, label: 'mira');
+
+      expect(upper.slug, lower.slug);
     });
   });
 

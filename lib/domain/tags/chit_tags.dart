@@ -37,11 +37,14 @@ final class TagSpan extends ChitSpan {
   /// The words as they are read, underscores already spaces.
   final String label;
 
+  /// The label folded to the one spelling a route and a lookup agree on.
+  String get slug => label.toLowerCase();
+
   /// What two spellings have to agree on to be the same tag.
   ///
   /// `@Anant_Dubey` and `@anant_dubey` are one person; `@morning` and
   /// `#morning` are not one anything, so the kind is part of it.
-  String get key => '${kind.name}:${label.toLowerCase()}';
+  String get key => '${kind.name}:$slug';
 
   @override
   bool operator ==(Object other) =>

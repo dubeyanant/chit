@@ -1,3 +1,5 @@
+import '../tags/chit_tags.dart';
+
 /// The four things find can look down — BEHAVIOUR.md §4.6.
 enum FindAxis {
   /// The sky a chit was written under, alphabetical.
@@ -51,6 +53,12 @@ enum FindAxis {
   bool get byFrequency => switch (this) {
     FindAxis.weather || FindAxis.motion => false,
     FindAxis.people || FindAxis.topics => true,
+  };
+
+  /// The axis a tag written in a chit belongs to (ADR-086).
+  static FindAxis ofTag(TagKind kind) => switch (kind) {
+    TagKind.person => FindAxis.people,
+    TagKind.topic => FindAxis.topics,
   };
 
   static FindAxis? ofSlug(String slug) {

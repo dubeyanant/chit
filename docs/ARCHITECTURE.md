@@ -40,13 +40,15 @@ demand.**
 
 **The shared widgets are the chit vocabulary — no state, no provider, each takes only what it
 draws.** `DayThread` is why the archive's *same treatment as Today* is true by construction: one
-widget, not two that look alike. Three earn exceptions — **`AudioPill` watches a provider**, since
+widget, not two that look alike. Four earn exceptions — **`AudioPill` watches a provider**, since
 which pill is lit is a property of the app's one player rather than of the row — **through a
 `select` that answers with its own row's playback**, so one pill's playhead does not rebuild the
 forty pills around it (ADR-077); **`ChitRow`
 navigates**, pushing the editor itself rather than taking a callback both callers would pass
-identically (ADR-061); and **`Microphone` takes a callback**, since the two screens that draw it
-send the same take to different owners (ADR-065).
+identically (ADR-061); **`ChitBody` navigates too, and is stateful for it** (ADR-086) — a tag goes
+to find on the same argument, and its `TapGestureRecognizer`s have to be owned and disposed, one
+built inside `build` leaking one a frame; and **`Microphone` takes a callback**, since the two
+screens that draw it send the same take to different owners (ADR-065).
 
 ## 2. Riverpod conventions
 

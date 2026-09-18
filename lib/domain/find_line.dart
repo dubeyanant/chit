@@ -1,19 +1,24 @@
 /// The line find opens with — BEHAVIOUR.md §4.6.
 ///
-/// **House lines, not quotations.** Nothing here is attributed, because a
-/// misattributed quotation is a defect that ships and cannot be checked from
-/// inside the app. They are written in the register the prompts are
-/// (`prompts.dart`): short, plain, and about noticing rather than about
-/// achieving.
-abstract final class Quotes {
-  /// The longest a line may be, counted in characters including its break.
+/// **Two books in one slot** (ADR-086): mostly house lines, and every fourth
+/// day a hint about something the app does not otherwise say out loud. A hint
+/// that lived permanently under the thing it described would be chrome on the
+/// two sparest screens in the app; one that comes round twice a week is read
+/// once and then recognised.
+abstract final class FindLine {
+  /// The longest a line may be, counted in characters.
   ///
   /// Two lines of the quote face at the gutter, which is what the screen has
-  /// room for above a bottom-anchored list. A test counts them.
+  /// room for above a bottom-anchored column. A test counts them.
   static const int longest = 92;
 
-  /// The book. Order is not meaning — [forDay] indexes into it.
-  static const List<String> all = <String>[
+  /// One day in [every] draws a hint instead of a line.
+  static const int every = 4;
+
+  /// **House lines, not quotations.** Nothing here is attributed, because a
+  /// misattributed quotation is a defect that ships and cannot be checked
+  /// from inside the app.
+  static const List<String> quotes = <String>[
     'A day you do not write down is a day you take on trust.',
     'You are not keeping a record. You are keeping company.',
     'The weather was doing something while you were busy.',
@@ -61,10 +66,33 @@ abstract final class Quotes {
     'This is the quiet part of the day, put somewhere.',
   ];
 
+  /// What the app does that nothing on screen says.
+  ///
+  /// Each earns its place by being **undiscoverable**: a gesture, a rotation,
+  /// or a piece of syntax. Nothing here restates what a screen already shows.
+  static const List<String> hints = <String>[
+    'Write @a_name or #a_topic, and tap it later to find every chit with it.',
+    'An underscore in a tag reads as a space: @first_last, #morning_pages.',
+    'The question on an empty chit is a different one every time.',
+    'Hold a chit anywhere to open it again, or to throw it away.',
+    'A chit is stamped when you save it, never when you opened it.',
+    'This line changes daily, and every fourth day it explains something.',
+    'Tapping a tag from inside another tag takes you straight across.',
+  ];
+
   /// One line, the same all day and different tomorrow.
   ///
   /// **Not random**: a line that changed on every glance would be an ambient
   /// loop (ADR-027), and a book indexed by the day is testable without a
   /// seeded `Random` and without reading a clock in here.
-  static String forDay(int localDay) => all[localDay.abs() % all.length];
+  static String forDay(int localDay) {
+    final int i = localDay.abs();
+
+    return i % every == 0
+        ? hints[(i ~/ every) % hints.length]
+        : quotes[i % quotes.length];
+  }
+
+  /// Both books, for the tests that hold every line to the same rules.
+  static List<String> get all => <String>[...quotes, ...hints];
 }
