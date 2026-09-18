@@ -34,7 +34,9 @@ immediately it is an instruction; after a pause it is an offer. **Nothing moves 
 caret is drawn until the user taps, and then it is the platform's own (ADR-028). **Which prompt
 depends on the moment**: the hour the chit was opened, and the weather if it arrived (ADR-029).
 Every prompt is a **short question**, nothing suggesting a subject worth writing about and nothing
-longer than the field's own line.
+longer than the field's own line — **46 characters, and a test counts them**. There are about
+seventy, and the book is meant to grow: what keeps it honest is that the most specific entry that
+fits wins, so a new pair never has to be slotted above an old one by hand.
 
 **3.4 The recording.** Tapping the microphone raises the sheet: elapsed time, a live waveform, two
 controls. **Stop & keep** attaches the recording and **leaves the field exactly as it was** — a
