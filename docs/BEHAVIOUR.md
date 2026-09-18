@@ -169,7 +169,11 @@ it clears the contrast floor whatever the density (ADR-046). **The current month
 today and stops**; a past month draws in full, **but only the weeks with something in them**
 (ADR-048), wherever a quiet week falls — within a drawn week every day keeps its cell, numbered or
 bare, so a tile's column still says its weekday. **The chevrons land only on months with something
-in them** (ADR-047), and **where there is nowhere to go, no chevron is drawn**. Changing the month
+in them** (ADR-047), and **where there is nowhere to go the chevron is dimmed rather than taken
+away** (ADR-088) — it is drawn in `--ink-disabled`, does nothing, and tells a screen reader it is
+disabled. A control that vanishes moves the one beside it and leaves a reader wondering whether the
+app has one. **Their glyphs sit on the gutter**, not the 44px targets around them. Changing the
+month
 clears any selected day, and **the month on screen changes once, when the new one has answered**
 (ADR-049).
 

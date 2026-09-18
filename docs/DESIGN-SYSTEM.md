@@ -20,6 +20,7 @@ Dark, single palette.
 | `--ink` | `#EDE7DC` | primary text — 14.54:1 on the ground, 13.03:1 on a chit |
 | `--ink-muted` | `#A39B8B` | secondary text — 6.49:1 / 5.82:1 |
 | `--ink-faint` | `#8F8879` | metadata — 5.08:1 / 4.56:1 |
+| `--ink-disabled` | `#5A554C` | a control drawn and not usable — 2.4:1, **under the 3:1 floor on purpose** (ADR-088) |
 | `--hair` | `#2E2A25` | borders, rules |
 | `--hair-soft` | `#252220` | inner dividers, **on the ground only** — 1.01:1 on a chit, where it is not drawn |
 | `--seal` | `#C4664E` | the one accent — the stamp pressed onto a surface |
@@ -46,6 +47,10 @@ the sheet's Discard, *Show every day*, Remove, and the editor's Cancel.
 
 **Nothing answers a press** (ADR-069 to ADR-071): no press feedback, no hover states, no token for
 either. A control's answer is the thing it does, and a held row is answered by the phone's tick.
+**There is one disabled state, and it is the calendar's chevrons** (ADR-088): `--ink-disabled`, no
+focus ring, no tap, `enabled: false` to a screen reader. It sits **under** §6.4's 3:1 component
+floor on purpose — a disabled control that met the floor set for a live one would be claiming it
+works. Anything else that cannot act still follows §4.1 and is simply not drawn.
 **The rule those washes taught is still live** — `--ink-faint` fails the floor on *any* wash, 4.12:1
 at even 4% — so wherever a tinted surface appears, the text on it goes up with it. Any new tinted
 surface inherits that, and §6.4 makes no exception for a surface that is brief.

@@ -24,7 +24,7 @@ class ValueScreen extends ConsumerWidget {
 
     if (days == null) return const SizedBox.shrink();
 
-    final String word = axis == FindAxis.topics ? '#$slug' : slug;
+    final String word = axis.wordOf(slug);
 
     return CustomScrollView(
       slivers: <Widget>[

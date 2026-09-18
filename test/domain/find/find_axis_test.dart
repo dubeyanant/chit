@@ -1,4 +1,7 @@
+import 'package:chitta/domain/ambient/ambient_words.dart';
 import 'package:chitta/domain/find/find_axis.dart';
+import 'package:chitta/domain/models/motion_state.dart';
+import 'package:chitta/domain/models/weather_condition.dart';
 import 'package:chitta/domain/tags/chit_tags.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -27,6 +30,38 @@ void main() {
         expect(axis.empty, isNotEmpty);
         expect(axis.empty.endsWith('.'), isTrue);
       }
+    });
+  });
+
+  group('a slug is not a word — ADR-088', () {
+    test('the ambient axes speak §3.6, not their enum names', () {
+      expect(FindAxis.weather.wordOf('clearNight'), 'clear night');
+      expect(FindAxis.motion.wordOf('traveling'), 'travelling');
+    });
+
+    test('the ones that already agree still come back right', () {
+      expect(FindAxis.weather.wordOf('raining'), 'raining');
+      expect(FindAxis.motion.wordOf('walking'), 'walking');
+    });
+
+    test('a person is its own word; a topic gets its sigil back', () {
+      expect(FindAxis.people.wordOf('anant dubey'), 'anant dubey');
+      expect(FindAxis.topics.wordOf('morning pages'), '#morning pages');
+    });
+
+    test('every value an axis offers draws the word it was offered as', () {
+      for (final WeatherCondition it in WeatherCondition.values) {
+        expect(FindAxis.weather.wordOf(it.name), it.word);
+      }
+      for (final MotionState it in MotionState.values) {
+        if (it == MotionState.stationary) continue;
+        expect(FindAxis.motion.wordOf(it.name), it.word);
+      }
+    });
+
+    test('a slug nothing knows comes back as itself, not a crash', () {
+      expect(FindAxis.weather.wordOf('drizzling'), 'drizzling');
+      expect(FindAxis.motion.wordOf('stationary'), 'stationary');
     });
   });
 
