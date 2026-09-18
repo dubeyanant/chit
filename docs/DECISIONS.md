@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-three records, not fifty-six: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Fifty-four records, not fifty-seven: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -74,6 +74,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-054 | A kept take can be words with no file, and Discard lets it go through the repository | M5 group C — the two plugins fail apart; one door owns the temp file; the wave is a window of levels, **amended in group D from the single level it first held** |
 | ADR-055 | The sheet keeps both of v6's controls, and every other way out is a cancel | M5 group D — Discard beside Stop & keep; one path ends the take; a scrim token that is meant to fail |
 | ADR-056 | §3.5's note is a block above the field, and a refusal names the OS | M5 group F — it takes the prompt's turn, not its overlay; the phone's settings are the only way back |
+| ADR-057 | The recording controller is the one screen controller that is kept alive | a take outlives the sheet; auto-disposed it was collected mid-`start` and no sheet ever opened |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -904,3 +905,22 @@ settings."* and **names the OS on purpose** — ADR-041 spends the app's one dia
 never asks again, so until there is a settings screen (open item 22) the phone's own is the only
 way back, and a line that stated the state without the way out would leave it to be guessed at.
 Both are `ChitType.failNote`, and neither animates: M5 defers every authored arrival to M7.
+
+---
+
+## ADR-057 — The recording controller is the one screen controller that is kept alive
+
+`recordingControllerProvider` is `@Riverpod(keepAlive: true)`, against ARCHITECTURE.md §3's rule
+that screen state is auto-disposed. **A take is not scoped to a widget**: it begins on the
+microphone's tap, and the sheet that watches it is only built once `start` has returned, so for
+the whole permission round-trip nothing in the app is listening. Auto-disposed, Riverpod
+collected the controller during that first await, `Ref.mounted` went false, and `start` cancelled
+the take it had just begun — on a handset the microphone opened, the status-bar indicator lit,
+and no sheet ever appeared. The alternatives were worse: holding a manual `listenManual`
+subscription from the tap until the sheet pops puts the provider's lifetime in a widget's hands
+for the one thing that must outlive it, and making the sheet a route so it could own the
+controller reverses ADR-011. Nothing is leaked in exchange — `start` resets the state and both
+ways out of a take reset it again. Cost: `ref.onDispose` now only runs when the container does,
+so it guards an app torn down mid-take rather than a sheet that vanished. **The test that should
+have caught this added a listener for symmetry with the composer**, which is the only reason the
+bug reached a device; that listener is gone, and ten tests fail without this line.

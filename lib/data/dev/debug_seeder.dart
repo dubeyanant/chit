@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
@@ -127,7 +129,7 @@ final class DebugSeeder {
       String? audioPath;
       if (seed.audioSeconds != null) {
         audioPath = await _audio.keep(
-          tempPath: await _placeholderRecording(id),
+          tempPath: await _placeholderRecording(id, seed.audioSeconds!),
           chitId: id,
         );
         recordings++;
@@ -186,18 +188,71 @@ final class DebugSeeder {
   static String _idOf(int index) =>
       '$idPrefix${(index + 1).toString().padLeft(2, '0')}';
 
-  /// A few bytes in the cache directory, for [AudioStore.keep] to move.
+  /// A playable tone in the cache directory, for [AudioStore.keep] to move.
   ///
-  /// Not audio. It exists so that a seeded recording is a file the row can
-  /// point at, which is what a real one is; the pill that will one day play
-  /// it is M5's, and these rows are cleared before then.
-  Future<String> _placeholderRecording(String id) async {
+  /// **It used to be thirty-eight bytes of ASCII**, on the reading that a
+  /// seeded recording only had to be a file the row could point at. M5's pill
+  /// made that false: a file no decoder can open draws a control that does
+  /// nothing, which is the one thing DESIGN-SYSTEM.md §6.4 forbids, and a
+  /// seeded pill is indistinguishable from broken playback — which is exactly
+  /// how it read on the first handset that tried it.
+  ///
+  /// **A tone rather than silence**, because silence cannot be told apart from
+  /// playback that is not working, and telling those two apart is open item 32.
+  ///
+  /// It is a **WAV wearing an `.m4a` extension**: ADR-008 fixes the stored
+  /// extension and encoding AAC in Dart is not on the table. Android's
+  /// extractor sniffs the content and plays it regardless; iOS may pick its
+  /// parser from the extension and refuse, which is open item 37 and costs
+  /// nothing real, since this is debug data that never ships.
+  Future<String> _placeholderRecording(String id, int seconds) async {
     final Directory dir = await _temp;
     if (!dir.existsSync()) await dir.create(recursive: true);
 
     final File file = File(p.join(dir.path, 'chit-$id.m4a'));
-    await file.writeAsString('seeded by DebugSeeder; not a recording');
+    await file.writeAsBytes(_tone(seconds));
     return file.path;
+  }
+
+  /// 8kHz mono 16-bit PCM in a WAV container — a quiet 440Hz tone, as many
+  /// [seconds] of it as the row claims.
+  ///
+  /// 8kHz because this is a voice note's stand-in and 16KB a second is small
+  /// enough that a whole seeded fixture stays inside a couple of megabytes.
+  static Uint8List _tone(int seconds) {
+    const int rate = 8000;
+    const int amplitude = 6000;
+    final int samples = rate * seconds;
+    final int dataBytes = samples * 2;
+
+    final ByteData out = ByteData(44 + dataBytes);
+    void ascii(int at, String tag) {
+      for (int i = 0; i < tag.length; i++) {
+        out.setUint8(at + i, tag.codeUnitAt(i));
+      }
+    }
+
+    ascii(0, 'RIFF');
+    out.setUint32(4, 36 + dataBytes, Endian.little);
+    ascii(8, 'WAVE');
+    ascii(12, 'fmt ');
+    out
+      ..setUint32(16, 16, Endian.little) // PCM header length
+      ..setUint16(20, 1, Endian.little) // uncompressed
+      ..setUint16(22, 1, Endian.little) // mono
+      ..setUint32(24, rate, Endian.little)
+      ..setUint32(28, rate * 2, Endian.little) // bytes per second
+      ..setUint16(32, 2, Endian.little) // bytes per frame
+      ..setUint16(34, 16, Endian.little); // bits per sample
+    ascii(36, 'data');
+    out.setUint32(40, dataBytes, Endian.little);
+
+    for (int i = 0; i < samples; i++) {
+      final double wave = math.sin(2 * math.pi * 440 * i / rate);
+      out.setInt16(44 + i * 2, (wave * amplitude).round(), Endian.little);
+    }
+
+    return out.buffer.asUint8List();
   }
 
   /// Somewhere in Mumbai. Stored and never displayed, like every fix.

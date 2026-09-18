@@ -102,6 +102,7 @@ its stated file path was.
 | The clock, once | `todayProvider`, `todayLocalDayProvider`, `timelineQueryWindowProvider`, `visibleMonthProvider` | auto-disposed; **one read of the clock per screen** — see below |
 | Derived | `timelineWindowProvider`, `drawnMonthProvider`, `archiveDaysProvider`, `archiveLimitProvider` | auto-disposed; pure functions of the above — except that `drawnMonthProvider` and `archiveDaysProvider` are notifiers that **hold their last answer while the stream under them is loading** (ADR-049), so each is a function of its inputs and its own last output |
 | Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider` | auto-disposed |
+| A take | `recordingControllerProvider` | **`keepAlive`** — ADR-057. The one exception, because a take begins before the sheet exists and finishes after it has gone |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** §1's layer
 rule, as a lint you should notice yourself breaking.

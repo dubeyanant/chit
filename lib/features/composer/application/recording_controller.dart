@@ -22,7 +22,15 @@ part 'recording_controller.g.dart';
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
 /// downstream of it to give a value to. That also keeps every §3.4 and §3.5
 /// rule in a controller, where a test can reach it without a widget (ADR-031).
-@riverpod
+///
+/// **`keepAlive`, and it is the only screen-state controller that is** —
+/// ADR-057. A take begins before the sheet exists and finishes after it has
+/// gone, so for the length of the permission round-trip there is nothing
+/// watching this at all; auto-disposed, it was thrown away mid-`start`, and
+/// the microphone opened and shut without a sheet ever appearing. Nothing here
+/// leaks in exchange: [start] resets the state, and both ways out of a take
+/// reset it again.
+@Riverpod(keepAlive: true)
 class RecordingController extends _$RecordingController {
   /// How often the elapsed figure is recomputed.
   ///
@@ -49,9 +57,11 @@ class RecordingController extends _$RecordingController {
 
   @override
   RecordingState build() {
-    // Read here rather than in each method so that a disposal — the sheet
-    // gone without a cancel, the app torn down mid-take — can still close the
-    // platform down. `ref.read` after disposal is not allowed; these are.
+    // Read here rather than in each method so that a disposal can still close
+    // the platform down. Since this provider is `keepAlive` that means the app
+    // being torn down mid-take rather than the sheet going away — but a live
+    // microphone is what it costs either way, and `ref.read` after disposal is
+    // not allowed where these are.
     final AudioRecorder recorder = ref.watch(audioRecorderProvider);
     final SpeechRecognizer recognizer = ref.watch(speechRecognizerProvider);
 

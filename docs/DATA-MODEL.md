@@ -349,9 +349,18 @@ is already the explicit act, and a second gate behind it protected nothing. It r
 critical path like the orphan sweep, and the console says what it did — which means **watch
 the console**: an error there is the only place a seeder that fell over will say so.
 
-Its placeholder recordings are written to the app's cache directory — §5's `<app cache>`,
-where a real recording sits before Save — and moved by `AudioStore.keep` like any other.
+Its recordings are written to the app's cache directory — §5's `<app cache>`, where a real
+recording sits before Save — and moved by `AudioStore.keep` like any other.
 *`Directory.systemTemp` was tried first and is not writable on Android.*
+
+**They are playable, and they were not until M5.** Each is a quiet 440Hz tone at the length the
+row claims — a WAV wearing the `.m4a` extension ADR-008 fixes, since encoding AAC in Dart is not
+on the table and Android's extractor sniffs the content anyway (iOS is open item 37). *They were
+thirty-eight bytes of ASCII until the first handset pass tried to play one*: a file no decoder
+can open draws a control that does nothing, which DESIGN-SYSTEM.md §6.4 forbids, and it is
+indistinguishable from playback being broken. A **tone rather than silence**, for the same
+reason — silence cannot be told apart from a player that is not working, and telling those two
+apart is open item 32.
 
 **Twenty chits, dated relative to the day it runs.** Yesterday and the day before hold five
 each — density step four on the calendar, and ten marks across two days on the timeline, which

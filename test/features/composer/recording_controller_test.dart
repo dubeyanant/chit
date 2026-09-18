@@ -44,8 +44,16 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    // Holds both controllers open across an await, the way the screen does.
-    container.listen(recordingControllerProvider, (RecordingState? _, _) {});
+    // **Nothing listens to `recordingControllerProvider` here, on purpose.**
+    // A listener used to be added for symmetry with the composer, and it hid
+    // ADR-057's bug for a whole milestone: auto-disposed and unwatched, the
+    // controller was thrown away during `start`'s permission round-trip, so on
+    // a handset the microphone opened and no sheet ever appeared. The app has
+    // no listener at that moment either — the sheet is built afterwards — so
+    // neither does this.
+    //
+    // The composer's listener stays: it really is auto-disposed, and a widget
+    // really does hold it open.
     container.listen(composerControllerProvider, (ComposerState? _, _) {});
     return container;
   }
@@ -57,6 +65,26 @@ void main() {
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
   group('the microphone is tapped', () {
+    test('the take survives the permission round-trip — ADR-057', () async {
+      // **The bug this whole file missed.** Between the tap and the sheet
+      // being built, nothing in the app watches this controller, and an
+      // auto-disposed provider does not survive an await with no listeners.
+      // On a handset that read as a microphone that opened and a sheet that
+      // never came. Asserting `started` is not enough on its own — what makes
+      // this a guard is that the container above has no listener on it.
+      final ProviderContainer container = containerOf();
+
+      final bool started = await sheetOf(container).start();
+
+      expect(started, isTrue);
+      expect(recorder.running, isTrue, reason: 'and it was not cancelled');
+      expect(
+        recorder.cancels,
+        0,
+        reason: 'a disposal mid-start cancels the take it just began',
+      );
+    });
+
     test('a granted microphone starts both services', () async {
       final ProviderContainer container = containerOf();
 

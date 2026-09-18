@@ -20,6 +20,14 @@ part of 'recording_controller.dart';
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
 /// downstream of it to give a value to. That also keeps every §3.4 and §3.5
 /// rule in a controller, where a test can reach it without a widget (ADR-031).
+///
+/// **`keepAlive`, and it is the only screen-state controller that is** —
+/// ADR-057. A take begins before the sheet exists and finishes after it has
+/// gone, so for the length of the permission round-trip there is nothing
+/// watching this at all; auto-disposed, it was thrown away mid-`start`, and
+/// the microphone opened and shut without a sheet ever appearing. Nothing here
+/// leaks in exchange: [start] resets the state, and both ways out of a take
+/// reset it again.
 
 @ProviderFor(RecordingController)
 final recordingControllerProvider = RecordingControllerProvider._();
@@ -36,6 +44,14 @@ final recordingControllerProvider = RecordingControllerProvider._();
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
 /// downstream of it to give a value to. That also keeps every §3.4 and §3.5
 /// rule in a controller, where a test can reach it without a widget (ADR-031).
+///
+/// **`keepAlive`, and it is the only screen-state controller that is** —
+/// ADR-057. A take begins before the sheet exists and finishes after it has
+/// gone, so for the length of the permission round-trip there is nothing
+/// watching this at all; auto-disposed, it was thrown away mid-`start`, and
+/// the microphone opened and shut without a sheet ever appearing. Nothing here
+/// leaks in exchange: [start] resets the state, and both ways out of a take
+/// reset it again.
 final class RecordingControllerProvider
     extends $NotifierProvider<RecordingController, RecordingState> {
   /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
@@ -50,13 +66,21 @@ final class RecordingControllerProvider
   /// because the sheet is a modal and not a route (ADR-011): there is nothing
   /// downstream of it to give a value to. That also keeps every §3.4 and §3.5
   /// rule in a controller, where a test can reach it without a widget (ADR-031).
+  ///
+  /// **`keepAlive`, and it is the only screen-state controller that is** —
+  /// ADR-057. A take begins before the sheet exists and finishes after it has
+  /// gone, so for the length of the permission round-trip there is nothing
+  /// watching this at all; auto-disposed, it was thrown away mid-`start`, and
+  /// the microphone opened and shut without a sheet ever appearing. Nothing here
+  /// leaks in exchange: [start] resets the state, and both ways out of a take
+  /// reset it again.
   RecordingControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'recordingControllerProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -78,7 +102,7 @@ final class RecordingControllerProvider
 }
 
 String _$recordingControllerHash() =>
-    r'1df5e290f1db2eea59dd7134f5a8faa3d7fa01ae';
+    r'a31c8233a5d7e83c1242ecfc923f858cdb1b1b93';
 
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
 ///
@@ -92,6 +116,14 @@ String _$recordingControllerHash() =>
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
 /// downstream of it to give a value to. That also keeps every §3.4 and §3.5
 /// rule in a controller, where a test can reach it without a widget (ADR-031).
+///
+/// **`keepAlive`, and it is the only screen-state controller that is** —
+/// ADR-057. A take begins before the sheet exists and finishes after it has
+/// gone, so for the length of the permission round-trip there is nothing
+/// watching this at all; auto-disposed, it was thrown away mid-`start`, and
+/// the microphone opened and shut without a sheet ever appearing. Nothing here
+/// leaks in exchange: [start] resets the state, and both ways out of a take
+/// reset it again.
 
 abstract class _$RecordingController extends $Notifier<RecordingState> {
   RecordingState build();

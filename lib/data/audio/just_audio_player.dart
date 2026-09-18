@@ -38,7 +38,13 @@ final class JustAudioPlayer implements AudioPlayer {
     try {
       if (!_now.holds(id)) {
         final File file = await _fileFor(path);
-        if (!file.existsSync()) return _report(Playback.silent);
+        if (!file.existsSync()) {
+          // The pill that was loaded is no longer the one being asked for, so
+          // leaving `_now` on it would light a pill nothing is playing.
+          _now = Playback.silent;
+          await _stopQuietly();
+          return _report(_now);
+        }
 
         await _player.setFilePath(file.path);
         _now = Playback(id: id);
