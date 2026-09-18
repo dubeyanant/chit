@@ -273,51 +273,40 @@ whole chit is the only thing that deletes a recording.
 
 ## 6. Migrations
 
-Drift's `MigrationStrategy`, one `from → to` step per schema version, each with a test against
-a checked-in schema snapshot. Snapshots are committed.
+**There are none, on purpose** — ADR-059. `schemaVersion` is **1** and stays there; changing a
+table changes the schema, and an install carrying the old shape is reinstalled. `onUpgrade`
+throws a message saying exactly that, because a database the app cannot trust should fail at
+`open` rather than three screens later as a column that is quietly missing.
+
+*There were three versions, with a step each and a committed snapshot each: v1 from M1, v2
+adding `chits.motion` (ADR-037), v3 dropping `chits.text_origin` (ADR-058). They went along with
+`drift_schemas/`, `test/data/db/generated/` and `migration_test.dart` while chit was still only
+ever installed on the owner's own phone.* A migration is a promise made to rows that exist, and
+the app has none it would be sad to lose.
+
+### What comes back, and when
+
+**The trigger is data somebody would miss** — the first install that is not a development one.
+Open item 38 carries it. What returns is all of it, not half:
 
 ```bash
 dart run drift_dev schema dump lib/data/db/app_database.dart drift_schemas/
 dart run drift_dev schema generate drift_schemas/ test/data/db/generated/
 ```
 
-The first writes `drift_schemas/drift_schema_v<n>.json` — the shape as it shipped. The second
-writes the helper `test/data/db/migration_test.dart` reads. **Run both when `schemaVersion`
-changes**; there is a test that fails if a version has no snapshot, because a migration with
-nothing to migrate *from* is not a migration.
+- One `from → to` step per version, and **once a version has shipped, its step and its snapshot
+  are never edited**.
+- **Steps gated on both ends** — `from < n && to >= n`. A step that ignored `to` would rebuild a
+  v2 database into the v3 shape and still call it v2. That bug was real, and the test caught it
+  by asking for an intermediate version on the way past.
+- A test that migrates **and reads rows back**. `migrateAndValidate` inspects the schema, not the
+  contents; a table rebuild is exactly the kind of migration that produces the right shape and
+  loses what was in it.
+- **Nothing is backfilled.** There is no way to know what a phone was doing last Tuesday, and a
+  guess written into a row is indistinguishable from a fact a month later.
 
-**The rule:** once a version has shipped to a real handset, its migration step and its snapshot
-are never edited.
-
-v1 was taken in M1, before there was anything to migrate. That is the point: the first
-migration is not the moment to find out the harness does not work. It earned its keep
-immediately — it is what proved the text column could not be called `text` (§1).
-
-**v2 is the first real one.** It adds `chits.motion` (ADR-037) with `m.addColumn`, and
-**nothing is backfilled**: there is no way to know what a phone was doing last Tuesday, and a
-guess written into a row is indistinguishable from a fact a month later. Every row written
-before M3 answers `NULL`, which is exactly what a chit opened indoors answers today, and is not
-drawn either way.
-
-`migration_test.dart` checks the step twice over, because the two claims are different: that
-the **shape** after migrating is the v2 that was committed, and that a chit **written at v1 is
-still readable** afterwards with a null motion. `migrateAndValidate` makes only the first claim
-— it inspects the schema, not the rows.
-
-**v3 drops `chits.text_origin`** and the check constraint that paired it with the body
-(ADR-058). SQLite cannot drop a column a constraint names, so the step **rebuilds the table** —
-`m.alterTable(TableMigration(chits))` — and a rebuild is exactly the kind of migration that runs
-without throwing while producing the wrong shape or losing rows. It is checked three ways: the
-shape after v2 → v3, a phone still on v1 arriving at v3 in one upgrade, and a chit **written at
-v2 coming through with its words, its recording and its day intact**.
-
-**Every step is gated on both ends** — `from < n && to >= n`. The app only ever migrates to
-`schemaVersion`, but a step that ignored `to` would rebuild a v2 database into the v3 shape and
-still call it v2, which is a database whose version number no longer describes it. The migration
-test is what found that, by asking for v2 on the way past.
-
-The `StateError` the strategy still throws now guards `v3 → v4`. That assertion moves up a
-version every time one ships.
+Those four lines are the whole of what was learned the first time round, which is why they are
+here rather than only in git.
 
 Changes already visible on the horizon, so the shape does not surprise us:
 

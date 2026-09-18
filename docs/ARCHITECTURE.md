@@ -45,7 +45,7 @@ lib/
 │   ├── repositories/   the ChitRepository interface
 │   └── services/    interfaces only — audio in and out, weather, location, first-run, ambient capture and signals
 ├── data/
-│   ├── db/          the Drift database, table, DAO and migrations
+│   ├── db/          the Drift database, its one table and the DAO
 │   ├── audio/       AudioStore — temp → permanent, delete, orphan sweep; the recorder over `record`,
 │   │                 the player over `just_audio`
 │   ├── dev/         DebugSeeder — DATA-MODEL.md §7
@@ -451,8 +451,8 @@ What is tested:
 
 - **Repository and DAO**, against `NativeDatabase.memory()` — the at-least-one invariant, the
   `localDay` across a midnight and a timezone change, audio move-on-save
-  and delete-on-discard, `updateText` touching nothing else. Plus the migration, against the
-  snapshots in `drift_schemas/`.
+  and delete-on-discard, `updateText` touching nothing else. *There is no migration test — there
+  are no migrations (ADR-059).*
 - **Models**, where §5's invariant fails first (a chit that cannot be *built*) and again at the
   table's check constraints, which survive a release build with asserts compiled out.
 - **Controllers and services**, on a bare `ProviderContainer` with a fake clock and hand-written

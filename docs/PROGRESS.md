@@ -23,8 +23,9 @@ Deleted: `speech_to_text`, `SpeechRecognizer` and `OnDeviceSpeechRecognizer`, th
 transcript and engine note, §3.5's failure note and `sttFailed`, the Android `<queries>` intent,
 the iOS speech permission, and **`chits.text_origin`** — provenance existed only to say whether
 words came from the recogniser, so with no recogniser it stored one value forever. That last one
-is a **v2 → v3 migration** that rebuilds the table; a chit's words, recording, times and
-ambience all come through it, and there is a test that writes a v2 row and reads it back after.
+was a **v2 → v3 migration** that rebuilt the table — *and then ADR-059 removed migrations
+altogether*, since the app has never been installed anywhere but the owner's own phone and there
+are no rows anybody would miss. `schemaVersion` is back to 1 and an older install is reinstalled.
 
 Three things it took with it that were costing real risk: item 32 (could two plugins share one
 microphone at all), item 33 (a recognition session ending mid-take), and item 36 (a second
@@ -96,13 +97,15 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
-| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A to F done — **transcription removed** (ADR-058); the handset pass is left. ADR-052 to ADR-058 |
+| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A to F done — **transcription removed** (ADR-058), **migrations removed** (ADR-059); the handset pass is left. ADR-052 to ADR-059 |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**450 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 — the
-tests that went were the recogniser's, not coverage lost.* **Schema is v3.** The release APK has
-not been rebuilt since M3's sign-off.
+**441 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
+before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
+anything the app still does.* **Schema is v1 again and there are no migrations** — an install
+carrying an older shape is reinstalled. The release APK has not been rebuilt since M3's
+sign-off.
 
 ---
 
@@ -112,8 +115,10 @@ not been rebuilt since M3's sign-off.
 before a device sees this.** Two passes have happened and found four bugs; what is left is the
 rest of group G's list.
 
-**Clear and re-seed first** — `--dart-define=CHIT_SEED=clear`, then `=seed`. Rows from before
-18 September point at the old ASCII placeholder files and at a v2 schema.
+**Uninstall the app first, then seed.** There are no migrations any more (ADR-059) and the
+database on the phone is a v3 one with a `text_origin` column and its check constraint; the app
+will refuse to open it and say so. After reinstalling, `--dart-define=CHIT_SEED=seed` — the old
+seeded rows go with the old database, so there is nothing to clear.
 
 1. **A recording that survives a restart.** Save one, kill the app, reopen, play it. Nothing has
    checked that the file survives `AudioStore.keep` and a cold start together.
@@ -332,3 +337,13 @@ them can happen now.** The numbers are not reused.
     device is a real `.m4a` — but a future session looking at a silent seeded pill on iOS
     should read this before suspecting `JustAudioPlayer`. If it matters, the answer is a small
     committed `.m4a` asset the seeder copies.
+38. **There are no database migrations, and that reverses the day chit holds real data.**
+    ADR-059 pinned `schemaVersion` at 1 and deleted the snapshots, the generated helpers and
+    `migration_test.dart`; `onUpgrade` throws a message telling whoever hit it to reinstall.
+    That is right while the app lives on one development phone and every schema change is
+    answered by an uninstall. **The trigger to undo it is the first install that is not a
+    development one** — somebody else's phone, or the owner's own once they start keeping chits
+    they would miss. At that point `DATA-MODEL.md` §6 has the four rules the deleted harness
+    taught, which is the expensive part; the code is a morning's work and is in git at
+    `ff78077`. Leaving it until *after* that install is how a milestone ends with somebody's
+    chits gone.

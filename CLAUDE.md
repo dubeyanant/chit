@@ -299,16 +299,10 @@ flutter run --dart-define=CHIT_SEED=seed
 flutter run --dart-define=CHIT_SEED=clear
 ```
 
-When `AppDatabase.schemaVersion` changes, and only then:
-
-```bash
-dart run drift_dev schema dump lib/data/db/app_database.dart drift_schemas/
-dart run drift_dev schema generate drift_schemas/ test/data/db/generated/
-```
-
-The first commits the shape that shipped, the second writes what
-`test/data/db/migration_test.dart` reads. A version with no snapshot fails that test, because a
-migration with nothing to migrate *from* is not a migration — `docs/DATA-MODEL.md` §6.
+**There are no migrations** (ADR-059). `schemaVersion` stays 1, changing a table changes the
+schema, and an install carrying the old shape is **reinstalled** — the app throws a message
+saying so rather than opening a database it cannot trust. That holds only while chit has no data
+anybody would miss; `docs/DATA-MODEL.md` §6 says what comes back when it does.
 
 Windows note: `flutter pub get` warns unless **Developer Mode** is enabled — plugin builds
 need symlink support. `start ms-settings:developers`.

@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-five records, not fifty-eight: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Fifty-six records, not fifty-nine: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -75,7 +75,8 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-055 | The sheet keeps both of v6's controls, and every other way out is a cancel | M5 group D — Discard beside Stop & keep; one path ends the take; a scrim token that is meant to fail |
 | ADR-056 | A refusal names the OS | M5 group F — the phone's settings are the only way back. *Its §3.5 half went with ADR-058* |
 | ADR-057 | The recording controller is the one screen controller that is kept alive | a take outlives the sheet; auto-disposed it was collected mid-`start` and no sheet ever opened |
-| ADR-058 | Transcription is removed, and a chit's words are always typed | the whole feature, not a flag; `textOrigin` goes too, in a v2 → v3 migration |
+| ADR-058 | Transcription is removed, and a chit's words are always typed | the whole feature, not a flag; `textOrigin` goes with it |
+| ADR-059 | There are no migrations while there is nothing to migrate | `schemaVersion` pinned at 1; an old install is reinstalled. **Reverses the moment chit holds data somebody would miss** |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -923,3 +924,21 @@ dormant recogniser is a plugin to keep building, a permission to keep explaining
 keep testing, for a feature nobody has asked to come back. Cost: git is now the only record of
 how any of it worked, **ADR-005 and ADR-013 are edited rather than deleted** because other
 records cite them, and §3.5 and OPEN-QUESTIONS §8.2 are retired with their numbers unreused.
+
+---
+
+## ADR-059 — There are no migrations while there is nothing to migrate
+
+`schemaVersion` is pinned at **1** and the only strategy is `onCreate: createAll()`; `onUpgrade`
+throws a message telling whoever hit it to reinstall. The snapshots under `drift_schemas/`, the
+generated helpers and `migration_test.dart` are deleted with the three versions they described —
+v1 from M1, v2's `chits.motion` (ADR-037), v3's dropped `text_origin` (ADR-058). **A migration is
+a promise made to rows that exist**, and chit has only ever been installed on the owner's own
+phone, where every schema change so far has been answered by a reinstall; the harness was
+charging a snapshot, a regenerated helper and a doc section per change to protect data nobody
+had. *Kept over a silent no-op upgrade:* a database whose shape the app cannot trust must fail at
+`open`, not three screens later as a column that is quietly missing (CLAUDE.md §4.1). Cost: **the
+first install that is not a development one cannot receive a schema change without losing
+everything**, so this reverses the moment chit holds anything somebody would miss — open item 38
+carries the trigger, and DATA-MODEL.md §6 keeps the four rules the harness taught rather than
+leaving them in git, because the expensive part was never the code.
