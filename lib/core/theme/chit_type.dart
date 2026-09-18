@@ -14,6 +14,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.ambientStamp,
     required this.chitMeta,
     required this.chitText,
+    required this.chitPerson,
+    required this.chitTopic,
     required this.composerBody,
     required this.composerGhost,
     required this.failNote,
@@ -91,6 +93,21 @@ final class ChitType extends ThemeExtension<ChitType> {
         tabularFigures: true,
       ),
       chitText: _serif(size: 16.5, weight: 400, color: colors.ink, height: 1.5),
+
+      chitPerson: _serif(
+        size: 16.5,
+        weight: 400,
+        color: colors.ink,
+        height: 1.5,
+        italic: true,
+      ),
+
+      chitTopic: _serif(
+        size: 16.5,
+        weight: 400,
+        color: colors.inkFaint,
+        height: 1.5,
+      ),
 
       composerBody: _serif(
         size: 17.5,
@@ -305,6 +322,13 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   final TextStyle chitText;
 
+  /// A @person in a saved chit — chitText, in the real italic face.
+  final TextStyle chitPerson;
+
+  /// A #topic in a saved chit — chitText, quieter. Its sigil is the second
+  /// difference §6.4 asks for, colour never being allowed to be the only one.
+  final TextStyle chitTopic;
+
   final TextStyle composerBody;
 
   final TextStyle composerGhost;
@@ -347,6 +371,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     ambientStamp,
     chitMeta,
     chitText,
+    chitPerson,
+    chitTopic,
     composerBody,
     composerGhost,
     failNote,
@@ -376,6 +402,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? ambientStamp,
     TextStyle? chitMeta,
     TextStyle? chitText,
+    TextStyle? chitPerson,
+    TextStyle? chitTopic,
     TextStyle? composerBody,
     TextStyle? composerGhost,
     TextStyle? failNote,
@@ -403,6 +431,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       ambientStamp: ambientStamp ?? this.ambientStamp,
       chitMeta: chitMeta ?? this.chitMeta,
       chitText: chitText ?? this.chitText,
+      chitPerson: chitPerson ?? this.chitPerson,
+      chitTopic: chitTopic ?? this.chitTopic,
       composerBody: composerBody ?? this.composerBody,
       composerGhost: composerGhost ?? this.composerGhost,
       failNote: failNote ?? this.failNote,
@@ -435,6 +465,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       ambientStamp: TextStyle.lerp(ambientStamp, other.ambientStamp, t)!,
       chitMeta: TextStyle.lerp(chitMeta, other.chitMeta, t)!,
       chitText: TextStyle.lerp(chitText, other.chitText, t)!,
+      chitPerson: TextStyle.lerp(chitPerson, other.chitPerson, t)!,
+      chitTopic: TextStyle.lerp(chitTopic, other.chitTopic, t)!,
       composerBody: TextStyle.lerp(composerBody, other.composerBody, t)!,
       composerGhost: TextStyle.lerp(composerGhost, other.composerGhost, t)!,
       failNote: TextStyle.lerp(failNote, other.failNote, t)!,

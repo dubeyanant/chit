@@ -31,13 +31,17 @@ DATA-MODEL.md.
 5. **The stitch** — one continuous year-long line, one mark per day.
 7. **Chit threading** — one chit replying to another. Hold until real usage shows people write in
    chains.
-8. **`@person` and `#hashtag`** — tappable in a chit's words, opening every chit carrying it. The
-   same shape as 2, off a signal the user chose rather than one the weather gave.
+8. **`@person` and `#hashtag` — half built.** They are **written and drawn** (ADR-082, §3.7); what
+   is left is the way in: **tappable**, opening every chit carrying the tag. The same shape as 2,
+   off a signal the user chose rather than one the weather gave. `ChitTags.tagsIn` already returns
+   a chit's distinct tags with a case- and underscore-insensitive key, so what is missing is a
+   query and a destination, not a parser.
 
-**1 and 3** make the app stickier; **2 and 5** make it distinctive. **8 is wanted and unscheduled**
-— nothing about it is decided, and all M6 owed it was not boxing it in: a `TapGestureRecognizer` on
-a `TextSpan` wins the gesture arena against an ancestor's hold, so the chit row stays a button and
-its `Text` becomes a `Text.rich` later without restructuring.
+**1 and 3** make the app stickier; **2 and 5** make it distinctive. **8's rendering is built and
+its gesture is not** — M6's note was right and was spent: the `Text` became a `Text.rich` with no
+restructuring. **The rest of that note is now the warning** — a `TapGestureRecognizer` on a
+`TextSpan` wins the gesture arena against an ancestor's hold, so whoever makes a tag tappable takes
+the hold off the row it sits in, and §4.1's *a tap does nothing* goes with it.
 
 **After v1** (signed off 18 September 2026, ADR-073), nothing is scheduled. In order: §8.3 answered
 with real usage; the backlog above; **migrations back** (item 38) before the first install anybody

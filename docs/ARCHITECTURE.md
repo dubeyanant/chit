@@ -19,7 +19,8 @@ lib/
 ├── app/       the root and the router — go_router: shell + two tabs
 ├── core/      the four ThemeExtensions of §6, the injected clock, the BuildContext sugar
 ├── domain/    models/ (Chit and its invariant, the stamp, the enums, the screen states, the
-│              sealed AudioEdit) · ambient/ · motion/ · weather/ · repositories/ · services/
+│              sealed AudioEdit) · ambient/ · motion/ · weather/ · tags/ (the sealed ChitSpan
+│              and its grammar) · repositories/ · services/
 ├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
 │              weather/ · location/ · preferences/ · repositories/
 ├── features/  shell, today, composer, calendar, editor, onboarding

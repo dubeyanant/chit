@@ -102,6 +102,27 @@ finishes seconds after the app opens, which is squarely inside the time somebody
 their first sentence: it moves the word on the stamp, and it leaves the text, the kept take and the
 hour the chit was opened exactly where they were.
 
+**3.7 Tags are written into the words** (ADR-082). **`@somebody` is a person and `#something` is a
+topic**, marked while typing and drawn on the saved chit: **a person loses its `@` and is set in
+italic**, a **topic keeps its `#` and is set in `--ink-faint`**. Italic is difference enough for a
+name; a topic's only other difference would be colour, which §6.4 forbids a signal to rest on
+alone, so its sigil stays and carries the rest.
+
+**An underscore inside a tag is a space** — `@anant_dubey` is written with the underscore and reads
+*anant dubey*, because a tag has to survive being one word while typing and be two when read. A run
+of them is still one space. **The whole tag counts as one thing**, matched regardless of case and
+of whether it was spelt with underscores or not, which is what a search would count later.
+
+**A tag starts at a word start and ends on a letter, a digit or a mark.** `work@example.com` carries
+no tag, `@anant.` tags the name and leaves the full stop, `@anant's` leaves the possessive, and a
+trailing underscore falls outside rather than drawing as a space nobody can see. Any script — a
+Devanagari matra is a combining mark and belongs to the word it sits on.
+
+**Nothing here is tappable, and the raw text is what is stored.** A tap on the thread still does
+nothing and the row is still opened by holding it (§4.1), so this is how a chit *reads* and not yet
+a way in — that is backlog item 8, and this is the half of it that is decided. **The editor shows
+the words as they were typed**, underscores and sigils and all, because that is what an edit edits.
+
 ## 4. Screens
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on

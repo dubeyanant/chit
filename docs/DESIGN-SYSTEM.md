@@ -87,6 +87,13 @@ wordmark is 16.5px. **15px is the exception, and it is one voice rather than a s
 summary and the empty notes are the app speaking *about* a day rather than reporting one, set a step
 below chit text in serif italic so they read as an aside.
 
+**A tag is chit text differing in exactly one way** (ADR-082, BEHAVIOUR §3.7). `chitPerson` is
+`chitText` in the real italic face — same size, weight, colour and line — and `chitTopic` is
+`chitText` in `--ink-faint`, same everything else. **That is why a person drops its `@` and a topic
+keeps its `#`**: the slope is a difference §6.4 accepts on its own, and colour is not, so the topic
+needs the glyph beside it. Newsreader ships a true italic (`Newsreader-Italic-VF`), so the slope is
+drawn rather than sheared.
+
 ### 6.3 Spacing, shape, motion
 
 **Spacing — 4px base:** 4 / 8 / 12 / 16 / 24 / 32 / 48 / 72. Page gutter 26px. **Every gap and
