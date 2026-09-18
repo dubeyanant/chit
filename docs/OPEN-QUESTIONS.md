@@ -46,7 +46,7 @@ then responsive web. Deliberately not on the list: **any speech engine, cloud or
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 47, 48, 52;
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 47, 48, 52, 53;
 retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
@@ -113,7 +113,9 @@ retired: 32, 33, 35, 36.**
 44. **The first-run screen has a copy ceiling, because it does not scroll** (ADR-076). On the 800dp
     handset it was checked on, the two slips and the two answers leave roughly 65dp of slack above
     the first slip; a phone with much less height, or a sentence added to either slip, clips instead
-    of scrolling. Cut something before adding something.
+    of scrolling. Cut something before adding something. **ADR-087's three lines draw as six** and
+    the owner confirmed the screen still does not scroll on that handset — so the slack is thinner
+    than 65dp now and nobody has re-measured it. Treat the ceiling as reached.
 45. **Today's thread is still built eagerly**, and deliberately: it holds one day, and a day is
     bounded by how much a person writes in one. Somebody writing sixty chits in a day would feel it
     before the archive does. The fix would be the archive's (ADR-077), but the rail is drawn behind
@@ -161,10 +163,10 @@ retired: 32, 33, 35, 36.**
     Hanken — but §6.2 also gives **tab labels** to Newsreader, and this column is as much
     navigation as it is vocabulary. Nobody has decided it is wrong; **switching `filterWord` to
     `_serif` is one line** if the two ever read as a mismatch.
-53. **First run's three lines were rewritten twice and nobody has measured the result** (ADR-087,
-    open item 44). The microphone line went and the tag line arrived, so the *count* is unchanged
-    at three — but what the screen costs is **drawn** lines, not written ones, and at roughly 42
-    characters to a line in that slip all three of the current ones sit near the wrap. Best guess
-    is five drawn lines, the same as before, which would leave item 44's ~65dp of slack intact on
-    an 800dp handset. **That is arithmetic, not a look.** Anything added here still has to replace
-    something, and a short phone clips rather than scrolls (ADR-076).
+54. **Nobody has seen the dimmed chevron or the gutter alignment on a handset** (ADR-088).
+    `--ink-disabled` is 2.4:1 by arithmetic, which says *visible and not available* — but a 1.3px
+    stroke is the thinnest thing the app draws, and a ratio that reads fine under a block of text
+    can vanish in a hairline. If it does, the answer is a **thicker stroke on the dead one**, not
+    a brighter colour: §6.4 will not have a disabled control clearing the floor a live one is held
+    to. The overhang is the other half — the glyph should now land on the gutter the month name
+    starts from, and whether the pair reads as aligned or as overhung is a looking question.

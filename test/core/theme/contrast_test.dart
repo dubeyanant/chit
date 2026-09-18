@@ -289,4 +289,36 @@ void main() {
       expect(contrastRatio(colors.hair, colors.paper), greaterThan(1.03));
     });
   });
+
+  group('a disabled control is drawn, and is not available — ADR-088', () {
+    test('it is plainly visible, not a ghost', () {
+      expect(
+        contrastRatio(colors.inkDisabled, colors.paper),
+        greaterThan(2),
+        reason: 'a chevron nobody can see is the hiding ADR-047 used to do',
+      );
+    });
+
+    test('and deliberately under the 3:1 floor a live control clears', () {
+      expect(
+        contrastRatio(colors.inkDisabled, colors.paper),
+        lessThan(3),
+        reason: 'meeting the floor set for a live control would say it works',
+      );
+    });
+
+    test('it is quieter than the chevron that does something', () {
+      expect(
+        contrastRatio(colors.inkDisabled, colors.paper),
+        lessThan(contrastRatio(colors.inkFaint, colors.paper)),
+      );
+    });
+
+    test('and louder than the hairline, which is not a control at all', () {
+      expect(
+        contrastRatio(colors.inkDisabled, colors.paper),
+        greaterThan(contrastRatio(colors.hair, colors.paper)),
+      );
+    });
+  });
 }

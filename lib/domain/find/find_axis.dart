@@ -1,3 +1,6 @@
+import '../ambient/ambient_words.dart';
+import '../models/motion_state.dart';
+import '../models/weather_condition.dart';
 import '../tags/chit_tags.dart';
 
 /// The four things find can look down — BEHAVIOUR.md §4.6.
@@ -54,6 +57,33 @@ enum FindAxis {
     FindAxis.weather || FindAxis.motion => false,
     FindAxis.people || FindAxis.topics => true,
   };
+
+  /// The word a value is *drawn* as, given the slug a route carries.
+  ///
+  /// **A slug is not a word** (ADR-088): the two ambient axes are keyed on the
+  /// enum name, so `clearNight` and `traveling` are what a route holds while
+  /// `clear night` and `travelling` are what §3.6 says out loud. A tag's slug
+  /// is already its folded label, so it is its own word.
+  String wordOf(String slug) => switch (this) {
+    FindAxis.weather => _weather(slug)?.word ?? slug,
+    FindAxis.motion => _motion(slug)?.word ?? slug,
+    FindAxis.people => slug,
+    FindAxis.topics => '#$slug',
+  };
+
+  static WeatherCondition? _weather(String slug) {
+    for (final WeatherCondition it in WeatherCondition.values) {
+      if (it.name == slug) return it;
+    }
+    return null;
+  }
+
+  static MotionState? _motion(String slug) {
+    for (final MotionState it in MotionState.values) {
+      if (it.name == slug && it != MotionState.stationary) return it;
+    }
+    return null;
+  }
 
   /// The axis a tag written in a chit belongs to (ADR-086).
   static FindAxis ofTag(TagKind kind) => switch (kind) {
