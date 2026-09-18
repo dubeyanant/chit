@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-six records, not fifty-nine: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty-three records, not sixty-six: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -34,7 +34,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-011 | `go_router` with a persistent tab shell | returning to a tab costs a fade, not a rebuild |
 | ADR-012 | An injected clock | three behaviours are functions of the current time |
 | ADR-013 | A chit is text, audio, or both | the one-of invariant of §5 |
-| ADR-014 | Saved chits are editable; their audio is not | editing changes what the chit says, never what was said |
+| ADR-014 | Saved chits are editable, and an edit never moves the moment | **its audio half reversed by ADR-063** — the stamp and the day are what an edit cannot touch |
 | ADR-015 | Variable fonts, and weight through `fontVariations` | and the silent failure that comes with them |
 | ADR-016 | Precise location first, coarse as the fallback | and the privacy tension it creates, stated plainly |
 | ADR-017 | The chit editor is a screen, and leaving it asks | settles §8.1 |
@@ -71,12 +71,19 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-051 | New ADRs are short | the template shrinks from here — CLAUDE.md §0.2 |
 | ADR-052 | The recorder times a take on the clock and reports a level, not decibels | M5 group A — the file is not opened until playback; the waveform draws a number |
 | ADR-053 | ~~The recogniser streams a split transcript~~ | **removed by ADR-058** with the recogniser it describes |
-| ADR-054 | Discard lets a take go through the repository, and the wave is a window of levels | M5 group C — one door owns the temp file; the wave is twenty levels, **amended in group D from the single level it first held** |
+| ADR-054 | A take goes through the repository, and the wave is a window of levels | M5 group C — one door owns the temp file; the wave is twenty levels, **amended in group D from the single level it first held** |
 | ADR-055 | The sheet keeps both of v6's controls, and every other way out is a cancel | M5 group D — Discard beside Stop & keep; one path ends the take; a scrim token that is meant to fail |
 | ADR-056 | A refusal names the OS | M5 group F — the phone's settings are the only way back. *Its §3.5 half went with ADR-058* |
 | ADR-057 | The recording controller is the one screen controller that is kept alive | a take outlives the sheet; auto-disposed it was collected mid-`start` and no sheet ever opened |
 | ADR-058 | Transcription is removed, and a chit's words are always typed | the whole feature, not a flag; `textOrigin` goes with it |
 | ADR-059 | There are no migrations while there is nothing to migrate | `schemaVersion` pinned at 1; an old install is reinstalled. **Reverses the moment chit holds data somebody would miss** |
+| ADR-060 | The open chit's Discard goes; a recording is dropped from its pill | M6 group A — Discard's last unique job was the take, and the take is on the pill. The sheet's Discard stays |
+| ADR-061 | A chit in the thread is a button, and its stamp lifts under a finger | M6 group B — one widget, so Today and the archive gain the tap together. No long-press, no swipe |
+| ADR-062 | The editor is a route above the tab shell | M6 group B — one task, one way out; a one-shot read, not a stream; a missing row pops the screen |
+| ADR-063 | An edit is one write, a recording can be removed or replaced, and a chit can be deleted | M6 group C — reverses ADR-014's audio half; the invariant is checked before any file moves |
+| ADR-064 | The prompt is a slip-style sheet; three acts, three words; delete confirms and has no undo | M6 group D — the first confirmation in the app, and the idiom every later one inherits. The quiet weight always lets go |
+| ADR-065 | A take has one owner, chosen at the tap | M6 group E — `RecordingSink`; the composer and the editor both implement it; the microphone moves to `shared/` |
+| ADR-066 | No pin, now keeps up with a save, Cancel leaves at once, the editor fills the screen | the owner's first look at M6 — six calls, one record. Narrows ADR-016; reverses group D's Cancel |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -197,7 +204,7 @@ weather, which is correct behaviour, not a gap to fill with a placeholder.
 
 Recordings are written to `<app documents>/audio/<chit-id>.m4a`, with only the relative path
 stored in the database; a recording writes to a temp file, moved into place on Save and deleted
-on Discard — over storing audio as a BLOB in SQLite. Multi-megabyte blobs bloat the database file
+when the take is dropped — over storing audio as a BLOB in SQLite. Multi-megabyte blobs bloat the database file
 and slow every backup and migration for no benefit, since only `just_audio` ever needs the bytes;
 a relative path matters because iOS's app container path changes between installs, and an
 absolute path saved today is dead after the next update. Deleting a chit deletes its file, and a
@@ -265,18 +272,20 @@ than four, and an invariant the database can only partly express.
 
 ---
 
-## ADR-014 — Saved chits are editable; their audio is not
+## ADR-014 — Saved chits are editable, and an edit never moves the moment
 
 `ChitRepository` gains an update path for `text` — *and for `textOrigin` until ADR-058 removed
-it* — and no path that changes or removes `audioPath` on an existing chit. There is no
-principled reason text stops being the user's the moment it is saved: a typo found the next
-morning is the same typo. Text is what the chit says and belongs to the user; audio is what was
-said and belongs
-to the moment: a chit can gain text but never lose a recording, and deleting the whole chit is
-the only way to remove one. Whether the editor is inline or its own screen was left to
-OPEN-QUESTIONS.md §8.1, settled by ADR-017. `updatedAt` stops being written once and forgotten;
-the archive's ordering stays on `createdAt`, since editing does not move a chit from the moment
-it was written.
+it*. There is no principled reason text stops being the user's the moment it is saved: a typo
+found the next morning is the same typo. **The second half of this record is reversed by
+ADR-063.** *It said the audio was neither editable nor removable — text is what the chit says
+and belongs to the user, audio is what was said and belongs to the moment, so a chit could gain
+text but never lose a recording and deleting the whole chit was the only way to remove one.*
+The owner asked for the recording to be as editable as the words, and it is; what survives of
+the argument is the half about the moment: `createdAt`, `localDay` and the ambient fields are
+not parameters of any edit. Whether the editor is inline or its own screen was left to
+OPEN-QUESTIONS.md §8.1, settled by ADR-017. `updatedAt` stops being written once and forgotten
+and moves on any edit; the archive's ordering stays on `createdAt`, since editing does not move
+a chit from the moment it was written.
 
 ---
 
@@ -302,7 +311,7 @@ grants (Android 12+ / iOS 14+); either outcome is a successful capture — over 
 accuracy, which earlier docs specified. OPEN-QUESTIONS.md §9 wants coarse place labels ("home",
 "office") inferred from the fix, and a neighbourhood-level coarse fix cannot separate them —
 asking for precision only later would mean a year of chits that can never carry the label. This
-stores a sharper fact than BEHAVIOUR.md §3.6 displays (a pin, never a name, coordinate or map),
+stores a sharper fact than BEHAVIOUR.md §3.6 displays (nothing at all since ADR-066; a pin, never a name, until then),
 a real tension: the row is precise enough to reconstruct a home address. Accepted because the
 database never leaves the device (ADR-004), capture stays best-effort so a refusal costs nothing
 (ADR-007), and a user who grants only approximate location gets the old behaviour exactly. Cost:
@@ -315,8 +324,9 @@ need to treat this row as more sensitive.
 
 OPEN-QUESTIONS.md §8.1 is settled: a saved chit opens in its own screen, not inline in the thread
 — over inline editing. Leaving with unsaved changes raises a clear prompt (keep or discard);
-quitting outright cancels the edit; the chit's audio stays neither editable nor removable
-anywhere (ADR-014). The thread is a reading surface, and a second editable field among its rows
+quitting outright cancels the edit. *It also said the chit's audio stayed neither editable nor
+removable anywhere; ADR-063 reversed that with ADR-014.* The thread is a reading surface, and a
+second editable field among its rows
 would make it ambiguous which one a tap targets; a screen has room for the stamp, the pill and
 the text without the row growing, and somewhere for the save prompt to live. The prompt exists
 because discarding an edit throws away a change to something real, unlike discarding a
@@ -834,9 +844,11 @@ stays because ADR-054 and ADR-055 cite it.
 
 ---
 
-## ADR-054 — Discard lets a take go through the repository, and the wave is a window of levels
+## ADR-054 — A take goes through the repository, and the wave is a window of levels
 
-**Discard deletes the temp file through `ChitRepository.discardTemp`**, over a method on
+**The temp file is deleted through `ChitRepository.discardTemp`** — *by Discard when this was
+written, and since ADR-060 by the sheet's Discard and by Remove on the open chit's pill* — over
+a method on
 `AudioRecorder` or a direct call to `AudioStore`: `features` cannot reach `data` at all
 (ARCHITECTURE.md §1), and `save` already takes a temp path *in*, so one door owns the file's
 whole lifetime instead of two. `RecordingState` holds **the last twenty levels, one per bar of
@@ -876,7 +888,7 @@ one control that commits, with nothing on screen saying why.
 ## ADR-056 — A refused microphone names the OS
 
 The line sits **under the action row** rather than beside the microphone: once the chit holds
-anything the row is microphone, Discard and Save, and a line that had to move when a word was
+anything the row is microphone and Save, and a line that had to move when a word was
 typed is worse than one below the row it explains. It reads *"The microphone isn't allowed. You
 can turn it on in your phone's settings."* and **names the OS on purpose** — ADR-041 spends the
 app's one dialog on location and never asks again, so until there is a settings screen (open
@@ -942,3 +954,151 @@ first install that is not a development one cannot receive a schema change witho
 everything**, so this reverses the moment chit holds anything somebody would miss — open item 38
 carries the trigger, and DATA-MODEL.md §6 keeps the four rules the harness taught rather than
 leaving them in git, because the expensive part was never the code.
+
+---
+
+## ADR-060 — The open chit's Discard goes; a recording is dropped from its pill
+
+**Discard leaves the open chit's action row**, and **Remove** appears beside the audio pill
+instead — over keeping a control that cleared the whole page. Discard did two things: it emptied
+the field, which selecting the words already does and does more precisely, and it deleted a kept
+take, which was the only thing nothing else could do; a control whose one remaining job belongs
+somewhere more obvious is better placed there than kept for the shape of the row. Remove acts on
+the recording and not on the chit, so it sits at the end of the pill's row and leaves the words
+exactly as they are — the converse of Stop & keep leaving the field alone. Three consequences
+worth not rediscovering: the microphone comes back when a take is removed, so recording again is
+how you get a different take rather than a second control that would silently overwrite the
+first; the stamp does **not** move, because this is the same chit one part lighter rather than a
+fresh one, which is what Discard used to do and why ADR-021 once cared; and `microphoneRefused`
+lost its only clearer, so it now clears on the next take that gets as far as the sheet and on
+the save that opens a fresh chit. **The recording sheet's Discard is a different control and
+stays** (ADR-055) — the word means *throw away the take in progress*, which still happens. Cost:
+emptying a half-written chit is now two gestures rather than one, and nobody has felt that on a
+handset; if it reads badly the honest answer is a clear affordance on the field, not Discard
+back in the row.
+
+---
+
+## ADR-061 — A chit in the thread is a button, and its stamp lifts under a finger
+
+**The whole chit row opens the editor**, on Today and in the archive both — over a chevron, an
+edit affordance beside the row, or a long-press. `ChitRow` is one widget, so the two screens
+gain the tap in the same change and cannot drift; the row *is* the target, so a marker pointing
+at something that large would only repeat what the press says. There is **no long-press and no
+swipe-to-delete**: the thread is a reading surface, delete lives in the editor (ADR-062), and a
+flick that destroys a memory has nothing to recover it from. The press is a **6% ink wash**
+(`rowPressedWash`), and it forced a second call — at 6% `--ink-faint` measures **4.42:1** and
+fails §6.4's floor, so **the row's stamp lifts to `--ink-muted` (5.65:1) while it is held**,
+exactly the rule §6.1 already states for the quiet button's label. `contrast_test.dart` holds
+both figures and is where the design was decided rather than merely checked. The wash gets its
+own token despite equalling `discardPressedWash`, because a button's press and the largest
+target in the app are free to want different weights. Cost: `AmbientStampRow.saved` now takes a
+`lifted` flag, which is presentation state reaching a piece of vocabulary — accepted because
+the alternative is a stamp that fails a contrast floor in the one state nobody screenshots.
+
+---
+
+## ADR-062 — The editor is a route above the tab shell
+
+The editor is a **sibling of `StatefulShellRoute`, pushed** — over a route inside the current
+tab's branch. It covers the tab bar, so editing is one task with one way out and a tab change
+cannot strand a half-typed edit in a branch nobody is looking at; being pushed makes the back
+gesture and the back arrow the same exit, which matters because ADR-017's prompt has to fire on
+both and one exit is easier to get right than three. It is **not a `ChitRoute`** — that enum is
+the list the tab bar is built from, so a constant there would be a third tab, the same reason
+`firstRunPath` sits outside it. The chit is named by a path parameter and loaded by a **one-shot
+read, not a stream**: the thread and the calendar watch because two tabs must never disagree
+(§7), but a row re-emitting under a caret is a screen fighting its own user, and the only thing
+that writes this row while the editor is open is the editor. A **null answer pops the screen**
+rather than drawing a slip with nothing on it, since an id outlives its row across a delete and
+a blank screen with a back arrow explains nothing. The header is a back arrow and the chit's
+day — not the wordmark, which would make somewhere you came into read as a second home.
+
+---
+
+## ADR-063 — An edit is one write, a recording can be removed or replaced, and a chit can be deleted
+
+**`ChitRepository.updateText` becomes `update`**, taking the text and a sealed `AudioEdit` —
+`keep`, `remove`, `replace(tempPath, duration)` — and writing both in one statement; and
+**`delete(id)` arrives**, the row and its recording together (open item 9). This **reverses
+ADR-014's second half**: audio was neither editable nor removable anywhere, on the argument that
+it belonged to the moment, and the owner asked for a recording to be removable and replaceable
+like the words are. Chosen over a `removeAudio`/`replaceAudio` pair beside `updateText` because
+a Save that changes the words and drops the take must not be two transactions with a window in
+which the row is legal by accident, and because README §5's invariant then has one place to be
+asserted — on what the row *will* hold, **before any file moves**, so a refused edit leaves the
+disk as it found it. Ordering follows DATA-MODEL.md §5: a replacement moves in first (over the
+old file, since `keep` names files by chit id), a removal is written first and its file deleted
+after, and a delete drops the row then the file — at no point does a row point at nothing, and a
+file nobody points at is only an orphan the sweep collects. `updatedAt` moves on any edit, text
+or audio; the stamp and the day are not parameters and cannot. Cost: the guarantee `updateText`
+carried — *an edit provably cannot lose a recording* — is gone, and what replaces it is the
+weaker, still exhaustive one that an edit cannot move a chit in time or place.
+
+---
+
+## ADR-064 — The prompt is a slip-style sheet; three acts, three words; delete confirms and has no undo
+
+chit's first confirmation of any kind is **`showPromptSheet`** — the recording sheet's paper
+rising from below, perforated edge, `sheetRadius`, the scrim, a question in the chit's face and
+two answers in §6.1's two button weights — over Material's `AlertDialog`, which is free and
+familiar and a centred card with another framework's shape and motion in an app that has spent
+five milestones not looking like one. **The quiet weight is always the answer that lets go**
+(Discard the edit, Delete the chit) and the bright one always keeps, the ranking the recording
+sheet and the pill already use; every other way out — drag, scrim, back — keeps, for the reason
+the recording sheet treats them as a cancel. It is a modal sheet and not a route, the second
+such alongside ADR-011's. **Three acts get three words**: *Discard* throws away something in
+flight (the sheet's take, the prompt's edit), *Cancel* abandons an edit, *Delete this chit* —
+named in full, at the foot of the slip and apart from the action row — destroys a record;
+CLAUDE.md §4.1's vocabulary rule is the reason Cancel is not a second Discard. Cancel, the back
+arrow and the system back gesture (`PopScope`) are one exit and ask one question, and only when
+something has changed. **Deleting confirms and there is no undo**: there is no trash and no
+backend, so an undo would be a whole feature pretending to be a nicety. *The prompt named the recording until ADR-066; it no longer does.* Cost: saving a removed recording is destructive behind one tap —
+reversible until Save, then not — and the prompt budget was spent on Delete instead; if that
+reads wrong on a handset the fix is a second question, not a softer Remove.
+
+---
+
+## ADR-065 — A take has one owner, chosen at the tap
+
+`RecordingController.start` takes a **`RecordingSink`** — the four things a sheet can tell the
+screen under it: refused, started, keep this, cancelled — and holds it for the take's life, so
+Stop & keep and every cancel land on whoever asked. *It called `ComposerController` by name
+until M6's editor became the second screen to record*; the alternatives were a second recording
+controller for the editor (two copies of ADR-057's keep-alive dance and the level window) or
+`stopAndKeep` returning the take for the caller to route (which leaves refused-and-started with
+nowhere to go). `ComposerController` and `EditorController` both implement the sink, and the
+recording sheet is untouched — it still talks to the one controller. The microphone widget moved
+to `shared/widgets/` at the same time, for ARCHITECTURE.md §2's reason: a second screen wanted
+it. In the editor a kept take is **staged** as `AudioEdit.replace` (D6) and the pill plays it
+from its temp path — absolute, as ADR-008 already allows — until Save moves it in; Cancel
+discards the temp file, and a take recorded and removed again on a text-only chit is no change
+at all. Cost: the sink is held by a keep-alive controller and the editor's is auto-disposed, so
+a take whose owner has gone is dropped on the floor rather than delivered — acceptable because
+the sheet is modal over the editor and the owner cannot go while it is up.
+
+---
+
+## ADR-066 — The owner's first look at M6: no pin, now keeps up with a save, Cancel leaves at once, the editor fills the screen
+
+Six calls from the first handset pass of M6 on 18 September 2026, recorded together because a
+future citation would want them together. **The pin is gone from the open chit** — location is
+captured and stored exactly as before, README §5, but a mark that appears on every chit and can
+never be absent says nothing and read as jarring; this narrows ADR-016's display half to
+*nothing*, and the argument for drawing motion (rare, therefore informative, ADR-039) is the
+argument against drawing the pin. **The tick at now is re-read on every save** through
+`timelineNowProvider`, the one exception to ARCHITECTURE.md §3's one-clock-read rule: the strip
+is static by design and `todayProvider` re-reads only at midnight (ADR-033), so a chit saved
+twenty minutes after launch landed *ahead* of now — a mark in the future. Re-reading when the
+rows change is exactly when §4.1 says the strip may change, and it cannot disagree with the
+date line about the day, only the minute. **Cancel is always shown and leaves at once**,
+reversing group D's *Cancel asks*: a press on a button that says Cancel is the decision, and
+asking twice is what people learn to dismiss; the back arrow and the system gesture still ask
+when something has changed, because a swipe is not a decision. **The editor's slip fills the
+screen**, the field taking every line left, with *Delete this chit* pinned below it and always
+visible — a long chit is edited in place, not in a box inside a scroll. The header says
+*Editing* rather than the day, since the slip's stamp already carries the time; the back arrow's
+glyph sits on the gutter with its target overhanging. And **Save chit is Save**, on Today and in
+the editor, and the delete prompt no longer names the recording. Cost: the prompt-on-Cancel
+that ADR-017 half-assumed is gone, so a stray tap on Cancel loses an edit — the owner accepted
+that in exchange for a way out that is always one tap.

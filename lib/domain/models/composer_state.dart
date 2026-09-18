@@ -43,7 +43,8 @@ abstract class ComposerState with _$ComposerState {
     /// every time the field is laid out again (ARCHITECTURE.md §4.3).
     @Default(false) bool showPrompt,
 
-    /// Set once a recording is kept, and cleared only by Discard. **M5.**
+    /// Set once a recording is kept, and cleared by **Remove** on the pill.
+    /// **M5; ADR-060 moved the clearing there when Discard went.**
     String? audioTempPath,
 
     /// How long that recording runs. **M5.**
@@ -54,7 +55,9 @@ abstract class ComposerState with _$ComposerState {
 
     /// Whether the microphone has been refused — TASKS.md D2. **M5.**
     ///
-    /// Set the first time permission is withheld and cleared only by Discard.
+    /// Set the first time permission is withheld, and cleared by a later tap
+    /// that gets as far as recording, or by the save that opens a fresh chit.
+    /// *The open chit's Discard used to clear it, and it is gone* (ADR-060).
     /// The microphone stays where it is and stays tappable: ADR-041 spends the
     /// app's one dialog on location, so the only way back is the OS, and a
     /// control that greys out reads as broken where one that explains reads as
@@ -62,11 +65,11 @@ abstract class ComposerState with _$ComposerState {
     @Default(false) bool microphoneRefused,
   }) = _ComposerState;
 
-  /// Whether there is anything to save, and therefore anything to discard.
+  /// Whether there is anything to save.
   ///
-  /// This is the whole of BEHAVIOUR.md §3.1 and §4.1: **Discard** and **Save
-  /// chit** appear when it is true, and an untouched chit shows neither,
-  /// because there is nothing to save and nothing to discard.
+  /// This is the whole of BEHAVIOUR.md §3.1 and §4.1: **Save chit** appears
+  /// when it is true, and an untouched chit shows only the microphone,
+  /// because there is nothing yet to save.
   ///
   /// Whitespace is nothing. A field holding three spaces is an empty field,
   /// and README §5's invariant would refuse the row anyway — better to refuse

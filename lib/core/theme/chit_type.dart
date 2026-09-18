@@ -194,8 +194,8 @@ final class ChitType extends ThemeExtension<ChitType> {
         italic: true,
       ),
 
-      // Discard and Save. Colour belongs to the button, not to the label, so
-      // this style carries none.
+      // Both button weights. Colour belongs to the button, not to the label,
+      // so this style carries none.
       button: _sans(size: 13, weight: 600, letterSpacingEm: 0.04),
 
       // The audio pill's duration. Set in inkMuted rather than inkFaint
@@ -447,7 +447,7 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// situation and they change together.
   final TextStyle emptyNote;
 
-  /// Discard, Save chit, Stop & keep. Carries no colour.
+  /// Save chit, Remove, Discard, Stop & keep. Carries no colour.
   final TextStyle button;
 
   /// "0:22" on an audio pill.

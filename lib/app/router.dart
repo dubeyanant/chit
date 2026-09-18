@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../features/calendar/presentation/calendar_screen.dart';
+import '../features/editor/presentation/editor_screen.dart';
 import '../features/onboarding/application/first_run_controller.dart';
 import '../features/onboarding/presentation/first_run_screen.dart';
 import '../features/shell/presentation/shell_screen.dart';
@@ -43,6 +44,22 @@ enum ChitRoute {
 /// passes through exactly once and never returns to, which is a different kind
 /// of thing and belongs outside the shell.
 const String firstRunPath = '/welcome';
+
+/// The editor's route name — **ADR-062**. `ChitRow` pushes this.
+const String editorRouteName = 'editor';
+
+/// The path parameter carrying which chit the editor opens.
+const String editorIdParameter = 'id';
+
+/// Where the editor lives — **ADR-017, ADR-062**.
+///
+/// **Not a [ChitRoute], and not inside a branch.** It is a sibling of the
+/// shell rather than a route within a tab, so it *covers* the tab bar: the
+/// editor is one task with one way out, and a tab change cannot strand a
+/// half-typed edit in a branch nobody is looking at. It is pushed, so the back
+/// gesture is the same way out as the back arrow and both go through the same
+/// prompt.
+const String editorPath = '/chit/:$editorIdParameter';
 
 /// The router: a shell holding two tabs that keep their own state (ADR-011).
 ///
@@ -104,6 +121,12 @@ GoRouter router(Ref ref) {
         path: firstRunPath,
         builder: (BuildContext context, GoRouterState state) =>
             const FirstRunScreen(),
+      ),
+      GoRoute(
+        path: editorPath,
+        name: editorRouteName,
+        builder: (BuildContext context, GoRouterState state) =>
+            EditorScreen(id: state.pathParameters[editorIdParameter]!),
       ),
       StatefulShellRoute(
         builder: (

@@ -112,6 +112,15 @@ final class JustAudioPlayer implements AudioPlayer {
 
   void _onPosition(Duration at) {
     if (_now.id == null) return;
+    // **A playhead never goes backwards while a take plays.** Nothing here
+    // seeks mid-play — a finished take is reloaded, not rewound — so a
+    // position lower than the last one is the platform correcting itself, not
+    // the recording starting over. *Seen on a handset on 18 September 2026 on
+    // two-second takes: the wave ran for about a second, snapped back to the
+    // start and ran again.* Whether the sound did the same is open item 39;
+    // holding the higher figure keeps the pill honest either way, at the cost
+    // of the bars pausing for a beat if the platform's real position is behind.
+    if (at < _now.position) return;
     _report(_now = Playback(id: _now.id, position: at, playing: _now.playing));
   }
 

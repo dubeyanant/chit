@@ -82,6 +82,94 @@ final class TimelineQueryWindowProvider
 String _$timelineQueryWindowHash() =>
     r'ce531ecba0b6f6d164b7bbd5152836ead610b68f';
 
+/// Where the tick at now is drawn — **re-read on every save** (ADR-066).
+///
+/// The strip is static by design (§4.1: nothing on it moves), and
+/// [todayProvider] is read once per screen and again at midnight (ADR-033) —
+/// so a chit saved twenty minutes after launch used to land *ahead* of the
+/// tick at now, which then read as a mark in the future. This re-reads the
+/// clock whenever the rows under the strip change, which is exactly when §4.1
+/// says the strip may change: on a save, and on the day turning.
+///
+/// **A second clock read on the screen, and the one exception to
+/// ARCHITECTURE.md §3's one-read rule.** It cannot disagree with the date line
+/// about *which day* — the window it is drawn into still comes off
+/// [todayProvider] — only about the minute, which is the point. At the instant
+/// after midnight, before the rollover timer fires, it falls outside the window
+/// and the tick is simply not drawn for those milliseconds.
+
+@ProviderFor(timelineNow)
+final timelineNowProvider = TimelineNowProvider._();
+
+/// Where the tick at now is drawn — **re-read on every save** (ADR-066).
+///
+/// The strip is static by design (§4.1: nothing on it moves), and
+/// [todayProvider] is read once per screen and again at midnight (ADR-033) —
+/// so a chit saved twenty minutes after launch used to land *ahead* of the
+/// tick at now, which then read as a mark in the future. This re-reads the
+/// clock whenever the rows under the strip change, which is exactly when §4.1
+/// says the strip may change: on a save, and on the day turning.
+///
+/// **A second clock read on the screen, and the one exception to
+/// ARCHITECTURE.md §3's one-read rule.** It cannot disagree with the date line
+/// about *which day* — the window it is drawn into still comes off
+/// [todayProvider] — only about the minute, which is the point. At the instant
+/// after midnight, before the rollover timer fires, it falls outside the window
+/// and the tick is simply not drawn for those milliseconds.
+
+final class TimelineNowProvider
+    extends $FunctionalProvider<DateTime, DateTime, DateTime>
+    with $Provider<DateTime> {
+  /// Where the tick at now is drawn — **re-read on every save** (ADR-066).
+  ///
+  /// The strip is static by design (§4.1: nothing on it moves), and
+  /// [todayProvider] is read once per screen and again at midnight (ADR-033) —
+  /// so a chit saved twenty minutes after launch used to land *ahead* of the
+  /// tick at now, which then read as a mark in the future. This re-reads the
+  /// clock whenever the rows under the strip change, which is exactly when §4.1
+  /// says the strip may change: on a save, and on the day turning.
+  ///
+  /// **A second clock read on the screen, and the one exception to
+  /// ARCHITECTURE.md §3's one-read rule.** It cannot disagree with the date line
+  /// about *which day* — the window it is drawn into still comes off
+  /// [todayProvider] — only about the minute, which is the point. At the instant
+  /// after midnight, before the rollover timer fires, it falls outside the window
+  /// and the tick is simply not drawn for those milliseconds.
+  TimelineNowProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'timelineNowProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$timelineNowHash();
+
+  @$internal
+  @override
+  $ProviderElement<DateTime> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  DateTime create(Ref ref) {
+    return timelineNow(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DateTime value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DateTime>(value),
+    );
+  }
+}
+
+String _$timelineNowHash() => r'bcb59f5876eed8c85129e8a57a244513fe3f5306';
+
 /// Every chit in the query window, oldest first — the timeline's marks.
 ///
 /// A second stream over rows the thread already has for one of the three days.

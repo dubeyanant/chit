@@ -69,7 +69,8 @@ void main() {
       // this a guard is that the container above has no listener on it.
       final ProviderContainer container = containerOf();
 
-      final bool started = await sheetOf(container).start();
+      final bool started = await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
 
       expect(started, isTrue);
       expect(recorder.running, isTrue, reason: 'and it was not cancelled');
@@ -83,7 +84,11 @@ void main() {
     test('a granted microphone opens the sheet', () async {
       final ProviderContainer container = containerOf();
 
-      expect(await sheetOf(container).start(), isTrue);
+      expect(
+        await sheetOf(container)
+            .start(into: container.read(composerControllerProvider.notifier)),
+        isTrue,
+      );
       expect(recorder.running, isTrue);
       expect(
         container.read(composerControllerProvider).isRecording,
@@ -96,7 +101,11 @@ void main() {
       final ProviderContainer container = containerOf();
       recorder.permitted = false;
 
-      expect(await sheetOf(container).start(), isFalse);
+      expect(
+        await sheetOf(container)
+            .start(into: container.read(composerControllerProvider.notifier)),
+        isFalse,
+      );
       expect(recorder.running, isFalse);
 
       final ComposerState chit = container.read(composerControllerProvider);
@@ -111,7 +120,11 @@ void main() {
       final ProviderContainer container = containerOf();
       recorder.canStart = false;
 
-      expect(await sheetOf(container).start(), isFalse);
+      expect(
+        await sheetOf(container)
+            .start(into: container.read(composerControllerProvider.notifier)),
+        isFalse,
+      );
       expect(
         container.read(composerControllerProvider).microphoneRefused,
         isTrue,
@@ -122,7 +135,8 @@ void main() {
   group('while the take runs', () {
     test('the elapsed figure comes off the clock, not off a counter', () async {
       final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
 
       clock.moveTo(began.add(const Duration(seconds: 47)));
       await Future<void>.delayed(RecordingController.tick * 2);
@@ -135,7 +149,8 @@ void main() {
 
     test('the levels reach the state as the recorder reports them', () async {
       final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
 
       recorder.emitLevel(0.62);
       recorder.emitLevel(0.31);
@@ -151,7 +166,8 @@ void main() {
       // The bar at the right is the sound a moment ago; the one that falls off
       // the left is 1.6 seconds old and nobody is looking at it.
       final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
 
       const int window = RecordingController.levelWindow;
       for (int i = 0; i <= window; i++) {
@@ -171,7 +187,8 @@ void main() {
   group('Stop & keep', () {
     test('hands the take to the open chit', () async {
       final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
 
       await sheetOf(container).stopAndKeep();
 
@@ -189,7 +206,8 @@ void main() {
           .read(composerControllerProvider.notifier)
           .edit('Train 20 late.');
 
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
       await sheetOf(container).stopAndKeep();
 
       final ComposerState chit = container.read(composerControllerProvider);
@@ -200,7 +218,8 @@ void main() {
     test('a take that wrote nothing keeps nothing', () async {
       final ProviderContainer container = containerOf();
       recorder.take = null;
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
 
       await sheetOf(container).stopAndKeep();
 
@@ -211,7 +230,8 @@ void main() {
 
     test('leaves the sheet back where it started', () async {
       final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
       recorder.emitLevel(0.9);
       await settle();
 
@@ -225,7 +245,8 @@ void main() {
 
     test('a second press does nothing at all', () async {
       final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
 
       await sheetOf(container).stopAndKeep();
       await sheetOf(container).stopAndKeep();
@@ -240,7 +261,8 @@ void main() {
   group('the sheet is dismissed', () {
     test('cancel keeps nothing and deletes the take', () async {
       final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
+      await sheetOf(container)
+          .start(into: container.read(composerControllerProvider.notifier));
 
       await sheetOf(container).cancel();
 
@@ -265,7 +287,9 @@ void main() {
         );
         container.listen(composerControllerProvider, (ComposerState? _, _) {});
 
-        await container.read(recordingControllerProvider.notifier).start();
+        await container
+            .read(recordingControllerProvider.notifier)
+            .start(into: container.read(composerControllerProvider.notifier));
         expect(recorder.running, isTrue);
 
         container.dispose();

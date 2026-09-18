@@ -23,12 +23,15 @@ mixin _$ComposerState {
 /// It is state rather than a widget's own business because the five
 /// seconds have to survive a rebuild: a timer in the widget restarts
 /// every time the field is laid out again (ARCHITECTURE.md §4.3).
- bool get showPrompt;/// Set once a recording is kept, and cleared only by Discard. **M5.**
+ bool get showPrompt;/// Set once a recording is kept, and cleared by **Remove** on the pill.
+/// **M5; ADR-060 moved the clearing there when Discard went.**
  String? get audioTempPath;/// How long that recording runs. **M5.**
  Duration? get audioDuration;/// Whether the recording sheet is up. **M5.**
  bool get isRecording;/// Whether the microphone has been refused — TASKS.md D2. **M5.**
 ///
-/// Set the first time permission is withheld and cleared only by Discard.
+/// Set the first time permission is withheld, and cleared by a later tap
+/// that gets as far as recording, or by the save that opens a fresh chit.
+/// *The open chit's Discard used to clear it, and it is gone* (ADR-060).
 /// The microphone stays where it is and stays tappable: ADR-041 spends the
 /// app's one dialog on location, so the only way back is the OS, and a
 /// control that greys out reads as broken where one that explains reads as
@@ -259,7 +262,8 @@ class _ComposerState extends ComposerState {
 /// seconds have to survive a rebuild: a timer in the widget restarts
 /// every time the field is laid out again (ARCHITECTURE.md §4.3).
 @override@JsonKey() final  bool showPrompt;
-/// Set once a recording is kept, and cleared only by Discard. **M5.**
+/// Set once a recording is kept, and cleared by **Remove** on the pill.
+/// **M5; ADR-060 moved the clearing there when Discard went.**
 @override final  String? audioTempPath;
 /// How long that recording runs. **M5.**
 @override final  Duration? audioDuration;
@@ -267,7 +271,9 @@ class _ComposerState extends ComposerState {
 @override@JsonKey() final  bool isRecording;
 /// Whether the microphone has been refused — TASKS.md D2. **M5.**
 ///
-/// Set the first time permission is withheld and cleared only by Discard.
+/// Set the first time permission is withheld, and cleared by a later tap
+/// that gets as far as recording, or by the save that opens a fresh chit.
+/// *The open chit's Discard used to clear it, and it is gone* (ADR-060).
 /// The microphone stays where it is and stays tappable: ADR-041 spends the
 /// app's one dialog on location, so the only way back is the OS, and a
 /// control that greys out reads as broken where one that explains reads as

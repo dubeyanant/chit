@@ -250,24 +250,33 @@ in the presentation layer, where it can be re-tuned without a migration.
     ├── <chit-id>.m4a
     └── ...
 <app cache>/
-└── recording-<timestamp>.m4a     ← in flight; moved on Save, deleted on Discard
+└── recording-<timestamp>.m4a     ← in flight; moved on Save, deleted on Remove
 ```
 
 AAC in an m4a container: small, hardware-encoded on both platforms, and playable by
 `just_audio` without a codec dependency.
 
 **Lifecycle.** Record to cache → **Save** moves it to `audio/<chit-id>.m4a` and writes the row
-in one repository call → **Discard** deletes it. The move happens before the insert, so a
-failed move never leaves a row pointing at nothing.
+in one repository call → **Remove** on the pill, or the sheet's **Discard**, deletes it. The
+move happens before the insert, so a failed move never leaves a row pointing at nothing.
+
+**The same ordering governs an edit** (ADR-063). A replacement moves in *before* the row is
+written — over the old file, since the name is the chit's id — and a removal is written to
+the row *first* and its file deleted *after*; a delete drops the row, then the file. The rule
+in every case: a row pointing at nothing is a corruption, a file nobody points at is only an
+orphan, so the row is never the one left wrong. `update` checks README §5's invariant on what
+the row *will* hold before any of this starts, so a refused edit leaves the disk untouched.
 
 **Reconciliation** runs once at startup, off the critical path, and handles both directions:
 a file with no row is deleted; a row whose file has vanished keeps rendering as a chit without
 a pill. A missing recording is a loss, not a corruption, and the words — if there are any —
 are still the record.
 
-**Editing never touches this.** ADR-014 gives the repository an update path for `text` and
-and no path that changes or removes `audioPath` on an existing chit. Deleting the
-whole chit is the only thing that deletes a recording.
+**Editing reaches this since M6.** *Until ADR-063 it did not: ADR-014 gave the repository an
+update path for `text` and no path that changed or removed `audioPath`, and deleting the whole
+chit was the only thing that deleted a recording.* Now `update` takes a sealed `AudioEdit` —
+keep, remove, replace — and `delete` takes the row and the file together; what an edit still
+cannot reach is `createdAt`, `localDay` and the ambient fields.
 
 ---
 

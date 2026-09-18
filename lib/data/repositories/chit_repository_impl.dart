@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/clock.dart';
 import '../../domain/models/ambient_stamp.dart';
+import '../../domain/models/audio_edit.dart';
 import '../../domain/models/chit.dart';
 import '../../domain/models/day_summary.dart';
 import '../../domain/models/motion_state.dart';
@@ -108,24 +109,70 @@ final class ChitRepositoryImpl implements ChitRepository {
   }
 
   @override
-  Future<void> updateText({required String id, required String text}) async {
-    final String words = text.trim();
-    if (words.isEmpty) {
-      throw ArgumentError.value(
-        text,
-        'text',
-        'a chit cannot be emptied from here — README §5',
+  Future<void> update({
+    required String id,
+    required String? text,
+    AudioEdit audio = const AudioEdit.keep(),
+  }) async {
+    final Chit? existing = await byId(id);
+    if (existing == null) {
+      throw StateError('no chit with id $id');
+    }
+
+    final String? words = switch (text?.trim()) {
+      null || '' => null,
+      final String trimmed => trimmed,
+    };
+
+    // The invariant is checked on what the row *will* hold, before a single
+    // file moves — so a refused edit leaves the disk exactly as it found it.
+    final bool willHaveAudio = switch (audio) {
+      KeepAudio() => existing.hasAudio,
+      RemoveAudio() => false,
+      ReplaceAudio() => true,
+    };
+    if (words == null && !willHaveAudio) {
+      throw ArgumentError(
+        'a chit with neither text nor audio is not a chit — README §5',
       );
     }
 
-    final int written = await _dao.updateTextOf(
+    // A replacement moves in first, over the old file — `keep` names the file
+    // by chit id, so the old recording is simply written over. A removal is
+    // written first and deleted after (DATA-MODEL.md §5).
+    final (Value<String?> audioPath, Value<int?> audioMs) = switch (audio) {
+      KeepAudio() => (
+        const Value<String?>.absent(),
+        const Value<int?>.absent(),
+      ),
+      RemoveAudio() => (const Value<String?>(null), const Value<int?>(null)),
+      ReplaceAudio(:final String tempPath, :final Duration duration) => (
+        Value<String?>(await _audio.keep(tempPath: tempPath, chitId: id)),
+        Value<int?>(duration.inMilliseconds),
+      ),
+    };
+
+    await _dao.updateChitOf(
       id: id,
       text: words,
+      audioPath: audioPath,
+      audioMs: audioMs,
       updatedAt: _clock.now(),
     );
 
-    if (written == 0) {
-      throw StateError('no chit with id $id');
+    if (audio is RemoveAudio && existing.audioPath != null) {
+      await _audio.delete(existing.audioPath!);
+    }
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    final Chit? existing = await byId(id);
+    if (existing == null) return;
+
+    await _dao.deleteRow(id);
+    if (existing.audioPath != null) {
+      await _audio.delete(existing.audioPath!);
     }
   }
 
@@ -137,7 +184,7 @@ final class ChitRepositoryImpl implements ChitRepository {
     required double? lon,
     required MotionState? motion,
   }) async {
-    // No `written == 0` check, and no throw. Unlike `updateText` there is
+    // No `written == 0` check, and no throw. Unlike `update` there is
     // nobody waiting on this and no screen that could report it — a row gone
     // between the insert and the patch is an ordinary race (ADR-042).
     await _dao.updateAmbientOf(

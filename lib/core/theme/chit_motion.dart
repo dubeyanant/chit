@@ -10,8 +10,8 @@ enum ChitPace {
   /// 0.99 on the audio pill.
   press,
 
-  /// 220ms, the house pace. Switching tab; Discard and Save arriving once the
-  /// chit holds something.
+  /// 220ms, the house pace. Switching tab; Save arriving once the chit holds
+  /// something.
   routine,
 
   /// 400ms. The two moments in the app with any authorship: a chit falling

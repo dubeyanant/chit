@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../models/ambient_stamp.dart';
+import '../models/audio_edit.dart';
 import '../models/chit.dart';
 import '../models/day_summary.dart';
 import '../models/motion_state.dart';
@@ -42,21 +43,46 @@ abstract interface class ChitRepository {
     Duration? audioDuration,
   });
 
-  /// Changes what a chit says. ADR-014.
+  /// Edits a chit: what it says, and what it holds. ADR-014, ADR-063.
   ///
-  /// Touches `text` and `updatedAt`, and can touch nothing else:
-  /// `createdAt`, `localDay` and `audioPath` are not parameters, so an edit
-  /// cannot move a chit in the thread, relight a calendar tile, or lose a
-  /// recording. Text is what the chit *says* and belongs to the user; audio is
-  /// what *was said* and belongs to the moment.
+  /// **One write.** The text and the [audio] edit land in the same statement,
+  /// so a Save that changes both cannot be half-applied, and README §5's
+  /// invariant is asserted once, here, before anything touches the disk.
+  /// *Until M6 this was `updateText`, whose guarantee was that an edit could
+  /// not reach the recording; the recording is editable now, and the guarantee
+  /// that survives is the one about the stamp.*
   ///
-  /// [text] is required and must not be blank. A chit cannot be emptied from
-  /// here — for a typed chit that would break the invariant of README §5, and
-  /// for a recorded one no screen offers it. Deleting the chit is how a chit
-  /// goes away.
+  /// Touches `text`, `audioPath`, `audioDuration` and `updatedAt`, and can
+  /// touch nothing else: `createdAt`, `localDay` and the three ambient fields
+  /// are not parameters, so an edit cannot move a chit in the thread, relight
+  /// a calendar tile, or change the moment it was written under. `updatedAt`
+  /// moves on any edit, text or audio.
   ///
-  /// Throws [StateError] if no chit has that [id].
-  Future<void> updateText({required String id, required String text});
+  /// Blank [text] is no text, stored as `null`, exactly as [save] stores it.
+  /// A [ReplaceAudio] moves its file into place **before** the row is written
+  /// and a [RemoveAudio] deletes the old file **after**, for the reason
+  /// DATA-MODEL.md §5 gives: a row pointing at nothing is a corruption, a file
+  /// nobody points at is an orphan the sweep collects.
+  ///
+  /// Throws [ArgumentError] if the result would be no chit at all — no words
+  /// and no recording — and throws it before any file has moved. Throws
+  /// [StateError] if no chit has that [id].
+  Future<void> update({
+    required String id,
+    required String? text,
+    AudioEdit audio = const AudioEdit.keep(),
+  });
+
+  /// Deletes a chit — the row and its recording together. ADR-063, and the
+  /// close of open item 9.
+  ///
+  /// The row goes first and the file after, so that at no point does a row
+  /// point at nothing. A recording that fails to delete is an orphan, and
+  /// [reconcileAudio] collects it at the next launch.
+  ///
+  /// **Does nothing if no chit has that [id]**: deleting twice, or deleting
+  /// what a race already removed, is the outcome the caller wanted.
+  Future<void> delete(String id);
 
   /// Corrects a chit's ambience after the row was written — **ADR-042**.
   ///
@@ -67,10 +93,10 @@ abstract interface class ChitRepository {
   /// **Touches the three ambient fields and nothing else.** `createdAt` and
   /// `localDay` are not parameters, so a late signal cannot move a chit in the
   /// thread, move its mark on the timeline, or move it to another day.
-  /// **`updatedAt` does not move either** — ADR-014 reserves that for a change
-  /// to the *text*, and a signal arriving two seconds late is not an edit
-  /// anybody made. That distinction is the whole reason this is a separate
-  /// method rather than an argument to [updateText].
+  /// **`updatedAt` does not move either** — ADR-014 reserves that for an
+  /// edit, and a signal arriving two seconds late is not an edit anybody
+  /// made. That distinction is the whole reason this is a separate method
+  /// rather than an argument to [update].
   ///
   /// Every parameter is nullable and a `null` is written as `null`: this is the
   /// whole reading replacing the whole reading, not a partial patch. A capture
@@ -78,7 +104,7 @@ abstract interface class ChitRepository {
   /// capture had — the user walked indoors, and the pin should go.
   ///
   /// **Does nothing if no chit has that [id]**, rather than throwing. Unlike
-  /// [updateText], nobody is waiting on this and no screen can report it; a row
+  /// [update], nobody is waiting on this and no screen can report it; a row
   /// deleted between the write and the patch is an ordinary race, not a fault.
   Future<void> updateAmbient({
     required String id,
@@ -117,7 +143,8 @@ abstract interface class ChitRepository {
   /// Everything, newest day first. The archive.
   Stream<List<Chit>> watchArchive({required int limit, int offset = 0});
 
-  /// Deletes a take that was never saved. **Discard** — BEHAVIOUR.md §3.1.
+  /// Deletes a take that was never saved — the recording sheet's **Discard**,
+  /// and **Remove** on the open chit's pill (BEHAVIOUR.md §3.2, ADR-060).
   ///
   /// The counterpart of [save]'s `audioTempPath`: one door takes a temp file
   /// in, this one lets it go, and both go through the single thing ADR-008

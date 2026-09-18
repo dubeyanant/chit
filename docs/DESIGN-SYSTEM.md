@@ -86,16 +86,18 @@ Hierarchy that used to come from colour now comes from weight, and the weights a
 | Microphone, hover | `--ink` 5% | the open chit | prototype only |
 | Microphone, pressed | `--ink` 10% | the open chit | |
 | Audio pill, pressed | `--ink` 8% | a chit, or the ground | |
-| **Discard**, pressed | `--ink` 6% | the open chit | **label lifts to `--ink`** — see below |
+| **The quiet button**, pressed | `--ink` 6% | wherever one is | **label lifts to `--ink`** — see below |
+| **A chit in the thread**, pressed | `--ink` 6% | the ground | **stamp lifts to `--ink-muted`** — 4.42:1 faint, 5.65:1 muted (ADR-061) |
 | Calendar, one chit | `--ink` 6% | the ground | numeral in `--ink`, 12.66:1 |
 | Calendar, two | `--ink` 12% | the ground | 10.69:1 |
 | Calendar, three | `--ink` 20% | the ground | 8.31:1 |
 | Calendar, four or more | `--ink` 30% | the ground | 5.99:1 |
 
-Three controls, one system: the microphone and Save share a border, Save carries the brighter
-one and a wash, and **Discard** drops its outline altogether. A solid `--seal` bar was the
-loudest thing on the screen the moment a word was typed, and it made the outlined microphone
-beside it look like a control borrowed from another app.
+Two weights, one system: the microphone and Save share a border, Save carries the brighter one
+and a wash, and **the quiet button** drops its outline altogether — the recording sheet's
+Discard, *Show every day*, and **Remove** on a pill. A solid `--seal` bar was the loudest thing
+on the screen the moment a word was typed, and it made the outlined microphone beside it look
+like a control borrowed from another app.
 
 **The hover rows are the prototype's, not the app's.** `ChitColors` carries the resting and
 pressed washes and no hover ones: a finger gets no hover, and pressure is the only feedback
@@ -104,10 +106,14 @@ not, and web is after v1 (ADR-019). That is when they get added — and measured
 
 **A pressed wash is not decoration.** Under `prefers-reduced-motion` the 0.985 depress is gone
 (§6.4), so the wash is the *entire* acknowledgement a press produces, and one that cannot be
-seen makes a working control read as a dead one. That is why Discard has a wash at all: v6
-pressed it in `--hair-soft`, which measures 1.0145:1 on a chit and is not drawn.
+seen makes a working control read as a dead one. That is why the quiet button has a wash at all:
+v6 pressed it in `--hair-soft`, which measures 1.0145:1 on a chit and is not drawn.
 
-**And why Discard's label lifts.** Its label is `--ink-faint`, which clears the floor on a bare
+**The chit row does the same thing for the same reason** (ADR-061). It is a button since M6 and
+its stamp is `--ink-faint`, which measures 4.42:1 on the 6% wash; `--ink-muted` measures 5.65:1,
+so the stamp lifts while the row is held. Two places faint ink meets a wash, one rule.
+
+**And why its label lifts.** The label is `--ink-faint`, which clears the floor on a bare
 chit at 4.56:1 and fails on *any* wash — 4.12:1 at even 4%, and the wash is 6%. So while it is
 held, the label goes to `--ink`. The prototype already brightens it on hover for the same
 reason; this is that rule applied to the state a phone actually has. A pressed state is a
@@ -224,8 +230,9 @@ day-heading place the paragraph above already names.
   **The list of four dimensions did not grow**, and that was the test each of them had to pass.
 
   **The motion marks of ADR-039 did not grow it either.** The walking figure, the car and the
-  plane are drawn at `s3` — the same 12px the pin takes — in the pin's own 14-unit box at its
-  own 1.42 stroke, which renders at about 1.22px and is what every icon in the app measures.
+  plane are drawn at `s3` — the 12px the pin took, in the pin's 14-unit box (the pin itself is
+  gone, ADR-066) — at its 1.42 stroke, which renders at about 1.22px and is what every icon in
+  the app measures.
   One box, one stroke, one size: an icon set that agreed on none of those would be three
   drawings sharing a row, and §6.2's argument about the stamp not speaking a second dialect
   applies to what is drawn on it as much as to what is written.
@@ -233,10 +240,10 @@ day-heading place the paragraph above already names.
   They are **strokes rather than silhouettes**, and that is a legibility floor rather than a
   taste. At 12px an outlined plane's wings and a walking figure's limbs are a unit and a half
   across, which a 1.22px stroke on each side closes into a blob. Three lines that suggest a
-  plane survive the size; a traced one does not. The one departure from the pin is colour: the
-  pin is fixed at `--ink-faint` because it is an adornment beside the words, whereas a motion
-  mark stands in for the word it displaced (ADR-038) and so takes the row's own colour —
-  `--ink-muted` on the open chit, `--ink-faint` in the thread.
+  plane survive the size; a traced one does not. A motion mark stands in for the word it
+  displaced (ADR-038) and so takes the row's own colour — `--ink-muted` on the open chit,
+  `--ink-faint` in the thread. *The pin, while it existed, was fixed at `--ink-faint` as an
+  adornment beside the words; that distinction went with it.*
 
   The thread rail's own position is derived rather than declared: it runs down the centre of
   the 7px mark, so the mark's left edge is flush with the thread's. *The prototype puts the
@@ -304,14 +311,14 @@ day-heading place the paragraph above already names.
   | Kind | Pace |
   |---|---|
   | Press feedback | 90ms; a 0.985 depress, 0.99 on the audio pill. On a phone there is no hover, so this is the only acknowledgement a finger gets |
-  | Routine state change | 200–300ms — switching tab, Discard and Save arriving once the chit holds something |
+  | Routine state change | 200–300ms — switching tab, Save arriving once the chit holds something |
   | Authored arrival | 340–460ms — a chit landing, a recording settling |
   | The idle prompt | 700ms, deliberately slower than everything else (§3.3) |
   | Exits | always quicker than entrances; a slow dismissal reads as lag |
 
   **The prompt fades and does not rise.** *The prototype lifts it 2px as it arrives.* It has a
   pace of its own in that table rather than being filed under authored arrival, and M2 group E
-  made the same call for Discard and Save: a rise is what the three moments with any authorship
+  made the same call for the action row: a rise is what the three moments with any authorship
   are for, and borrowing it makes an offer look like an event. What the prompt does need is to
   **survive** reduced motion, which is why it is a fade — at 140ms it is still an offer, and at
   nothing it is not there at all (ARCHITECTURE.md §4.3).
@@ -380,8 +387,8 @@ Enforced, and verified on every revision:
   fills: in both, the shape carries the meaning and the colour confirms it. A future mark that
   matched its neighbours' shape and differed only in `--seal` would clear every ratio in
   `contrast_test.dart` and still be wrong.
-- **A mark that is the whole of a fact is labelled.** The pin says *Location noted*; ADR-039's
-  three motion marks say *Walking*, *Travelling* and *Flying*. These are not decoration beside
+- **A mark that is the whole of a fact is labelled.** ADR-039's three motion marks say
+  *Walking*, *Travelling* and *Flying*. These are not decoration beside
   a word — since ADR-038 a motion mark **replaces** the weather word, so a reader who cannot
   see it is not missing an adornment, they are missing the fact. The test is whether removing
   the drawing removes information: if it does, it carries a `Semantics` label; if it does not,

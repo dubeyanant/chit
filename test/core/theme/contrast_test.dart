@@ -413,4 +413,46 @@ void main() {
       expect(contrastRatio(colors.ink, pressed), greaterThan(floor));
     });
   });
+
+  /// **A chit row under a finger** — ADR-061, M6 group B.
+  ///
+  /// This is the arithmetic that decided the design rather than a check on
+  /// one that was already chosen: the row is a button now, and `--ink-faint`
+  /// is what its stamp is set in.
+  group('a pressed chit row, and why its stamp lifts', () {
+    final Color rowPressed = colors.inkWash(
+      colors.paper,
+      opacity: ChitColors.rowPressedWash,
+    );
+
+    test('ink-faint fails on the wash, which is the whole reason', () {
+      expect(contrastRatio(colors.inkFaint, rowPressed), lessThan(floor));
+      expect(
+        contrastRatio(colors.inkFaint, rowPressed),
+        closeTo(4.42, 0.01),
+        reason: 'ChitColors.rowPressedWash quotes 4.42:1',
+      );
+    });
+
+    test('ink-muted clears it, which is what the stamp lifts to', () {
+      expect(contrastRatio(colors.inkMuted, rowPressed), greaterThan(floor));
+      expect(
+        contrastRatio(colors.inkMuted, rowPressed),
+        closeTo(5.65, 0.01),
+        reason: 'ChitColors.rowPressedWash quotes 5.65:1',
+      );
+    });
+
+    test('a chit\'s own words are never in question', () {
+      // `chitText` is `--ink`. Stated so that a future session raising the
+      // wash knows which of the three is the one that constrains it.
+      expect(contrastRatio(colors.ink, rowPressed), greaterThan(floor));
+    });
+
+    test('the row wash is the quiet button\'s figure, kept separately', () {
+      // They are equal today and free to move apart — a row is the largest
+      // target in the app and the likeliest to want a different weight.
+      expect(ChitColors.rowPressedWash, ChitColors.discardPressedWash);
+    });
+  });
 }

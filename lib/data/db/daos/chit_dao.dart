@@ -133,21 +133,36 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
   /// Writes a row. The check constraints of [Chits] apply.
   Future<void> insertRow(ChitsCompanion row) => into(chits).insert(row);
 
-  /// Changes the text of one chit and nothing else — ADR-014.
+  /// Writes an edit to one chit — ADR-014, ADR-063.
   ///
-  /// `createdAt`, `localDay` and `audioPath` are not parameters, so an edit
-  /// cannot move a chit in the thread, relight a calendar tile, or lose a
-  /// recording. Returns the number of rows written: 0 if [id] is unknown.
-  Future<int> updateTextOf({
+  /// The text, the recording and `updatedAt`, in one statement. `createdAt`,
+  /// `localDay` and the ambient fields are not parameters, so an edit cannot
+  /// move a chit in the thread, relight a calendar tile, or change the moment
+  /// it was written under. *It took the text alone until M6 made the
+  /// recording editable.* [audioPath] and [audioMs] are `Value`s so that
+  /// *leave it* is distinguishable from *clear it*. Returns the number of rows
+  /// written: 0 if [id] is unknown.
+  Future<int> updateChitOf({
     required String id,
-    required String text,
+    required String? text,
+    required Value<String?> audioPath,
+    required Value<int?> audioMs,
     required DateTime updatedAt,
   }) => (update(chits)..where(($ChitsTable t) => t.id.equals(id))).write(
     ChitsCompanion(
       body: Value<String?>(text),
+      audioPath: audioPath,
+      audioMs: audioMs,
       updatedAt: Value<int>(updatedAt.millisecondsSinceEpoch),
     ),
   );
+
+  /// Deletes one chit's row. Returns 1, or 0 if [id] is unknown.
+  ///
+  /// The row only — the recording it pointed at is the repository's to delete
+  /// after, because the DAO does not know where files live (ADR-008).
+  Future<int> deleteRow(String id) =>
+      (delete(chits)..where(($ChitsTable t) => t.id.equals(id))).go();
 
   /// Replaces the three ambient fields of one chit and nothing else — ADR-042.
   ///
@@ -190,8 +205,8 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
 
   /// Deletes every row whose id starts with [prefix] and returns how many went.
   ///
-  /// The other half of the seeder, and the only delete in the DAO. It removes
-  /// rows and nothing else — the recordings those rows pointed at are the
+  /// The other half of the seeder. It removes rows and nothing else — the
+  /// recordings those rows pointed at are the
   /// seeder's to delete first, because the DAO does not know where files live.
   Future<int> deleteWithIdPrefix(String prefix) =>
       (delete(chits)..where(($ChitsTable t) => t.id.like('$prefix%'))).go();

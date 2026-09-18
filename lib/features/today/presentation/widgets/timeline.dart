@@ -9,7 +9,6 @@ import '../../../../core/theme/chit_motion.dart';
 import '../../../../core/theme/chit_space.dart';
 import '../../../../domain/models/chit.dart';
 import '../../application/timeline_provider.dart';
-import '../../application/today_controller.dart';
 
 /// The strip under the date: three days, a mark per chit, a ring at now.
 ///
@@ -158,7 +157,7 @@ class _TimelineState extends ConsumerState<Timeline> {
         position.viewportDimension + position.maxScrollExtent;
     final double? fraction = ref
         .read(timelineWindowProvider)
-        .fractionOf(ref.read(todayProvider));
+        .fractionOf(ref.read(timelineNowProvider));
 
     if (fraction == null) return position.maxScrollExtent;
 
@@ -204,7 +203,7 @@ class _TimelineState extends ConsumerState<Timeline> {
   Widget build(BuildContext context) {
     final space = context.space;
     final TimelineWindow window = ref.watch(timelineWindowProvider);
-    final DateTime now = ref.watch(todayProvider);
+    final DateTime now = ref.watch(timelineNowProvider);
 
     // §4.1: saving puts a mark at the current time and the strip scrolls
     // smoothly to it. Watching the rows arrive rather than listening for a

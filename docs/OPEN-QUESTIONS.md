@@ -29,12 +29,14 @@ is about to put the cursor in.
 Quitting outright — answering *discard*, or the app being killed — cancels the edit and
 returns to Today, and nothing is written.
 
-The prompt exists because editing a saved chit is not like writing a new one. Discarding an
-open chit throws away something that was never a record, and gets no confirmation (§3.1).
-Discarding an edit throws away a change to something that is, and gets one.
+The prompt exists because editing a saved chit is not like writing a new one. Abandoning an
+open chit throws away something that was never a record, and gets no confirmation (§3.1) —
+*which is why the open chit's Discard could go without one either* (ADR-060). Discarding an
+edit throws away a change to something that **is** a record, and gets one.
 
-A chit's **audio is never editable and never removable**, here or anywhere. Editing changes
-what the chit says, never what was said.
+*This section said a chit's audio was never editable and never removable.* **Reversed on
+18 September 2026** (ADR-063): the recording is removable and replaceable from the editor,
+like the words. What an edit still cannot touch is the moment — the stamp and the day.
 
 The affordance in the thread arrives with the editor, in the same change — until then a chit
 in the thread is still not tappable, because a pointer that leads nowhere is worse than none.
@@ -70,7 +72,16 @@ Ordered by how much each reinforces what chit already is.
 | 5 | The stitch — one continuous year-long line, one mark per day | Shows a year's rhythm in a single gesture |
 | 6 | Voice chits (**in the design**, §3.4) | Matches the "whenever something hits them" trigger. On-device only for now; a cloud engine would be more accurate and is a decision for later |
 | 7 | Chit threading — one chit replying to another | Lets a preoccupation reveal itself over weeks |
+| 8 | **`@person` and `#hashtag`** — a name or a tag in a chit's words is tappable, and opens a screen of every chit carrying it | A second way in that costs nothing to write: the axis is already in the text. The same shape as 2, off a signal the user chose rather than one the weather gave |
 
 Suggested order: **1 and 3** make the app stickier; **2 and 5** make it distinctive.
 Hold **7** until real usage shows people write in chains.
+
+**8 is wanted and unscheduled.** Nothing is decided — not whether mentions are derived from the
+text on read or indexed in a table, not what a name means when two people share one, not how
+one is typed. What M6 owes it is only that it is not boxed in, and the one place it could have
+been is the chit row becoming a tap target: a `TapGestureRecognizer` on a `TextSpan` wins the
+gesture arena against an ancestor, so the row stays a button and its `Text` becomes a
+`Text.rich` later without restructuring. Nothing goes in the schema on speculation (CLAUDE.md
+§4.1, YAGNI).
 

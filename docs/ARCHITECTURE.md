@@ -38,7 +38,7 @@ lib/
 ├── core/            the four ThemeExtensions of DESIGN-SYSTEM.md §6, the injected clock (ADR-012),
 │                     and the BuildContext sugar that reaches them
 ├── domain/
-│   ├── models/      Chit and its invariant, the stamp, the enums, composer and recording state
+│   ├── models/      Chit and its invariant, the stamp, the enums, composer, recording and editor state, and the sealed `AudioEdit`
 │   ├── ambient/     which one fact the stamp draws — the ladder (ADR-038)
 │   ├── motion/      speed + accuracy + altitude → one of the four states
 │   ├── weather/     WMO code + is_day + wind → one of the five words
@@ -55,7 +55,10 @@ lib/
 │   └── repositories/   the ChitRepository implementation
 ├── features/        one folder per screen — shell, today, composer, calendar, editor, onboarding —
 │                     each split application/ (controllers) and presentation/ (widgets)
-└── shared/widgets/  the chit vocabulary used by more than one feature
+└── shared/
+    ├── widgets/     the chit vocabulary used by more than one feature
+    └── day_label.dart   *Today* / *Yesterday* / *Friday 11 September* — the archive's headings
+                          and the editor's, one function so they cannot disagree
 ```
 
 `shared/widgets` holds pieces used by more than one feature; a widget used by one screen lives
@@ -69,6 +72,14 @@ treatment as Today* is true by construction — one widget, not two that look al
 **`AudioPill` is the one that watches a provider**, and it is a control rather than a piece of
 vocabulary: which pill is lit is a property of the app's one player, not of the row it sits on,
 so threading it down from three screens would be the same fact copied three times.
+
+**`ChitRow` is the one that navigates** (ADR-061). It pushes the editor itself rather than
+taking a callback, because both screens that draw it would pass the same one — go_router owns
+navigation (CLAUDE.md §4.2) and a destination is not something a row should have to be told.
+
+**`Microphone` takes a callback**, by contrast, because the two screens that draw it start the
+same take and send it to different owners (ADR-065) — what differs is exactly the thing a
+callback carries.
 
 `Slip` draws its own `PerforatedEdge`, since a slip and its tear are one object. `ThreadRail`
 draws only the line; each row places its own `ThreadNode` on it, because where a node falls is
@@ -97,13 +108,16 @@ its stated file path was.
 | Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `monthSummariesProvider`, `archiveChitsProvider` | auto-disposed; Drift re-emits on subscribe |
 | The clock, once | `todayProvider`, `todayLocalDayProvider`, `timelineQueryWindowProvider`, `visibleMonthProvider` | auto-disposed; **one read of the clock per screen** — see below |
 | Derived | `timelineWindowProvider`, `drawnMonthProvider`, `archiveDaysProvider`, `archiveLimitProvider` | auto-disposed; pure functions of the above — except that `drawnMonthProvider` and `archiveDaysProvider` are notifiers that **hold their last answer while the stream under them is loading** (ADR-049), so each is a function of its inputs and its own last output |
-| Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider` | auto-disposed |
+| Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider`, `editorControllerProvider(id)` | auto-disposed; the editor's is a family keyed by chit id, and every rule its screen draws is a getter on `EditorState` (TASKS.md D11) |
 | A take | `recordingControllerProvider` | **`keepAlive`** — ADR-057. The one exception, because a take begins before the sheet exists and finishes after it has gone |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** §1's layer
 rule, as a lint you should notice yourself breaking.
 
-**A screen reads the clock once, through a provider.** `todayProvider` is `clock.now()` and
+**A screen reads the clock once, through a provider** — with one exception, `timelineNowProvider`,
+which re-reads it whenever the rows under the strip change so the tick at now keeps up with a
+save (ADR-066); it cannot disagree with the date line about the day, only the minute.
+`todayProvider` is `clock.now()` and
 nothing else; the date line and the thread both read it rather than the clock directly, so two
 reads a millisecond apart can never disagree at midnight (ADR-006, ADR-033).
 
@@ -130,8 +144,9 @@ around it.
 **Riverpod owns everything that outlives a build, the router included** — ADR-001 makes it the
 only state mechanism, and a `GoRouter` in a `StatefulWidget` would put the one thing that must
 survive a rebuild in the one place that does not. `ChitApp` is a `ConsumerWidget` watching
-`routerProvider` and nothing else. The one exception is ADR-011's recording sheet: a modal
-sheet, not a route, because dismissing it is not a back navigation.
+`routerProvider` and nothing else. The two exceptions are ADR-011's recording sheet and
+ADR-064's prompt sheet: modal sheets, not routes, because dismissing either is not a back
+navigation — and the prompt is what a back navigation from the editor has to pass through.
 
 **Startup is synchronous.** `drift_flutter`'s `driftDatabase(name: 'chit')` resolves its path
 lazily, so there is no async bootstrap and no loading state before the home screen — README §1's
@@ -172,14 +187,14 @@ class ComposerState {
 bool get canSave => text.trim().isNotEmpty || audioTempPath != null;
 ```
 
-`canSave` is §3.1 and §4.1 in full: Discard and Save appear when it is true, and nothing
+`canSave` is §3.1 and §4.1 in full: Save appears when it is true, and only the microphone
 otherwise.
 
 **What the transitions must preserve** (§3.4):
 
 - Keeping a recording **leaves the field exactly as it was**. A recording is not words.
-- `audioTempPath` is set by recording and cleared only by Discard; editing `text` never touches
-  it.
+- `audioTempPath` is set by recording and cleared only by `removeTake` — **Remove** on the pill
+  (ADR-060); editing `text` never touches it, and `removeTake` never touches `text`.
 - The microphone is available on an empty or half-written chit, unavailable only while
   `isRecording` or once `audioTempPath` is set — one row holds one recording, so a second take
   would silently destroy the first (DESIGN-SYSTEM.md §6.4).
@@ -252,7 +267,7 @@ nothing.
 **The row is written first, patched after only if stale.** A save inserts with whatever is
 held; if that reading is older than five minutes, a fresh read starts beside the insert and
 corrects the row through `updateAmbient` when it lands — one capture both patches the row and
-becomes the next chit's preview. `updateAmbient` is a separate method from `updateText` so one
+becomes the next chit's preview. `updateAmbient` is a separate method from `update` so one
 rule lives in the type: **the patch moves neither `createdAt` nor `updatedAt`** (ADR-014).
 
 **What is held is a preview; what a row carries is the record.** A phone left open all day draws
@@ -277,8 +292,8 @@ further. The five seconds are a product rule, not a pace, and never change.
 
 **A rebuild is exactly what this defends against**, and it fails invisibly: the field relays out
 whenever the keyboard arrives or the action row grows, and a widget-held timer would restart to
-five seconds each time. `ref.onDispose` cancels it; **Discard** arms it again, since Discard
-opens a freshly-opened chit (ADR-040).
+five seconds each time. `ref.onDispose` cancels it; a **save** arms it again, since it opens a
+fresh chit (ADR-040), and so does a **Remove** that leaves the chit holding nothing (ADR-060).
 
 **Drawn over the field, never into it.** `hintText` is the tempting shortcut and wrong twice —
 announced as a label, and shown on Material's schedule rather than after five seconds. The
@@ -308,8 +323,14 @@ closes the sheet.
 It is the one screen controller that is `keepAlive` (ADR-057): a take begins on the microphone's
 tap, before the sheet exists, and finishes after it has gone.
 
-**Discard** deletes the temp file through `ChitRepository.discardTemp`, the counterpart of
-`save`'s `audioTempPath`; nothing moves to permanent storage until Save (ADR-008).
+**Who gets the take is decided at the tap** (ADR-065). `start` takes a `RecordingSink` — the
+four things a sheet can tell the screen under it — and holds it for the take's life;
+`ComposerController` attaches a kept take to the open chit, `EditorController` stages it as
+`AudioEdit.replace`. The sheet itself talks to the one recording controller and knows neither.
+
+**The sheet's Discard, and Remove on the open chit's pill**, both delete the temp file through
+`ChitRepository.discardTemp`, the counterpart of `save`'s `audioTempPath`; nothing moves to
+permanent storage until Save (ADR-008).
 
 The sheet is raised by `showRecordingSheet`, which is also what ends the take: **every way out
 that is not Stop & keep is a cancel** — the drag, the scrim, the back gesture and Discard alike —
@@ -328,7 +349,7 @@ routinely built long after a recording started sounding — the archive is rebui
 change — and a stream carrying only changes left those pills drawn as though nothing were
 playing, so the one control that could have stopped the sound was a play button that did
 nothing. **`stopIf(id)`** is the other half: Save moves the open chit's take out of the cache and
-Discard deletes it, and `ComposerController` stops the player first, because a pill that is about
+Remove deletes it, and `ComposerController` stops the player first, because a pill that is about
 to stop being drawn cannot stop what it started. The `if` is what keeps a chit playing in the
 thread from being silenced by a save.
 
@@ -341,9 +362,12 @@ rather than silently overwriting it (§3.2).
 `ChitRepository.save()` writes the row and, when there is a recording, moves the audio into
 place — one call, ordered so a failed file move never leaves a row pointing at nothing.
 
-`updateText()` is the ADR-014 counterpart: it changes only `text` and `updatedAt`
-— `createdAt`, `localDay` and `audioPath` are not parameters, so an edit cannot move a chit in
-the thread, relight a calendar tile, or lose a recording.
+`update()` is the editor's counterpart (ADR-014, ADR-063): the words and a sealed `AudioEdit`
+in one write, moving `updatedAt` — `createdAt`, `localDay` and the ambient fields are not
+parameters, so an edit cannot move a chit in the thread, relight a calendar tile, or change the
+moment it was written under. `delete()` takes the row and then the file. The editor's controller
+loads its chit **once** rather than watching it (ADR-062), so it is the one screen that does not
+re-emit on a write — the write is its own.
 
 Everything downstream is a Drift stream — the thread, the timeline, the calendar density and the
 month total are four providers over four queries, so one save updates them all by construction.
@@ -451,7 +475,8 @@ What is tested:
 
 - **Repository and DAO**, against `NativeDatabase.memory()` — the at-least-one invariant, the
   `localDay` across a midnight and a timezone change, audio move-on-save
-  and delete-on-discard, `updateText` touching nothing else. *There is no migration test — there
+  and delete-on-discard, `update` and `delete` touching nothing about the moment and refusing an
+  empty chit before any file moves. *There is no migration test — there
   are no migrations (ADR-059).*
 - **Models**, where §5's invariant fails first (a chit that cannot be *built*) and again at the
   table's check constraints, which survive a release build with asserts compiled out.

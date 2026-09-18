@@ -10,6 +10,7 @@ import '../../../domain/repositories/chit_repository.dart';
 import '../../../domain/services/ambient_signals.dart';
 import '../../../domain/services/audio_player.dart';
 import '../../../domain/services/audio_recorder.dart';
+import 'recording_sink.dart';
 
 part 'composer_controller.g.dart';
 
@@ -23,7 +24,8 @@ part 'composer_controller.g.dart';
 ///
 /// **This screen captures nothing** (ADR-042). *It used to drive an
 /// `open()`/`settle()` pair on every chit open, which meant four taps of
-/// Discard made four network calls.* Capture now happens twice in the life of
+/// Discard — itself gone since ADR-060 — made four network calls.* Capture now
+/// happens twice in the life of
 /// the app — at launch and at save — and what the slip draws is whatever
 /// `AmbientSignals` is holding.
 ///
@@ -37,7 +39,7 @@ part 'composer_controller.g.dart';
 /// is laid out again — a keyboard arriving, the action row growing by two
 /// controls — has not been idle for any less time than it was a frame ago.
 @riverpod
-class ComposerController extends _$ComposerController {
+class ComposerController extends _$ComposerController implements RecordingSink {
   /// How long the field waits before it offers the prompt — BEHAVIOUR.md §3.3.
   ///
   /// **A product rule, not an animation.** It is not in the pace table, it
@@ -127,8 +129,8 @@ class ComposerController extends _$ComposerController {
   /// each. Only a stale reading is patched, and since §3.6 draws nothing for a
   /// `null` even that is usually invisible.
   ///
-  /// Saving then opens a new chit, the way [discard] does: the same
-  /// `_openChit()`, so there is one way for a chit to come into existence.
+  /// Saving then opens a new chit through `_openChit()`, which since ADR-060
+  /// is the only way a chit comes into existence.
   ///
   /// Does nothing when there is nothing to save. The control is not drawn in
   /// that state, so this is the belt rather than the braces — but `canSave` is
@@ -231,9 +233,19 @@ class ComposerController extends _$ComposerController {
   ///
   /// The prompt goes: it offers something to write about, and somebody who is
   /// speaking has already found one.
+  ///
+  /// **A refusal that has since been granted stops being said.** This is one
+  /// of the two places the note clears now that Discard is gone (ADR-060); the
+  /// other is [save], which opens a fresh chit. Getting as far as the sheet
+  /// means permission was given, so a line saying it was withheld is stale.
+  @override
   void recordingStarted() {
     _cancelPrompt();
-    state = state.copyWith(isRecording: true, showPrompt: false);
+    state = state.copyWith(
+      isRecording: true,
+      showPrompt: false,
+      microphoneRefused: false,
+    );
   }
 
   /// The sheet was dismissed without keeping anything — nothing is attached
@@ -241,6 +253,7 @@ class ComposerController extends _$ComposerController {
   ///
   /// The five seconds start again on a chit that is still empty, because that
   /// is a chit nothing has happened to.
+  @override
   void recordingCancelled() {
     state = state.copyWith(isRecording: false);
     if (!state.canSave) _armPrompt();
@@ -251,6 +264,7 @@ class ComposerController extends _$ComposerController {
   /// The sheet does not open and the microphone does not move. It is the
   /// controller that records this rather than the widget so that the rule has
   /// a test at all (ADR-031).
+  @override
   void microphoneWasRefused() =>
       state = state.copyWith(isRecording: false, microphoneRefused: true);
 
@@ -263,6 +277,7 @@ class ComposerController extends _$ComposerController {
   /// [recording] is nullable because a take that wrote nothing is nothing —
   /// the platform refused, or produced no file. That closes the sheet and
   /// changes nothing else.
+  @override
   void keepRecording(Recording? recording) {
     final ComposerState chit = state;
     if (recording == null) {
@@ -282,21 +297,27 @@ class ComposerController extends _$ComposerController {
     );
   }
 
-  /// **Discard** — BEHAVIOUR.md §3.1.
+  /// **Remove**, on the audio pill — ADR-060.
   ///
-  /// Opens a fresh chit rather than emptying this one, so the slip's preview
-  /// reads the moment it was discarded rather than a time that has passed.
-  /// *Under ADR-021 this was load-bearing enough to have a record of its own,
-  /// because the shown stamp was the one that got written. Under ADR-040 it is
-  /// honesty about a preview — a smaller claim, and still the right behaviour.*
+  /// *This is what is left of the open chit's Discard*, which cleared the
+  /// whole chit and is gone: the words can be cleared by selecting them, so
+  /// dropping the take was the only thing it uniquely did, and the pill is
+  /// where the take is. (The recording sheet's Discard is a different control
+  /// and stays — ADR-055.) The field is not touched here: a recording is not
+  /// words, and removing one is not an edit to anything written.
   ///
-  /// A take that was never saved goes with it (ADR-008). The screen is reset
-  /// first and the file deleted after: nothing about a disk write should be in
-  /// front of somebody who has just cleared the page.
-  Future<void> discard() async {
+  /// The take goes for good (ADR-008). The screen is cleared first and the
+  /// file deleted after: nothing about a disk write should be in front of
+  /// somebody who has just removed a recording.
+  ///
+  /// **The five seconds start again on a chit this empties**, because a chit
+  /// nothing is left in is a chit nothing has happened to (BEHAVIOUR.md §3.3).
+  Future<void> removeTake() async {
     final String? take = state.audioTempPath;
-    state = _openChit();
     if (take == null) return;
+
+    state = state.copyWith(audioTempPath: null, audioDuration: null);
+    if (!state.canSave) _armPrompt();
 
     await ref.read(audioPlayerProvider).stopIf(Playback.openChit);
     await ref.read(chitRepositoryProvider).discardTemp(take);

@@ -5,6 +5,7 @@ import 'package:chit/core/clock.dart';
 import 'package:chit/data/audio/audio_store.dart';
 import 'package:chit/data/db/app_database.dart';
 import 'package:chit/data/repositories/chit_repository_impl.dart';
+import 'package:chit/domain/models/ambient_stamp.dart';
 import 'package:chit/domain/models/chit.dart';
 import 'package:chit/domain/models/composer_state.dart';
 import 'package:chit/domain/models/motion_state.dart';
@@ -320,29 +321,86 @@ void main() {
     });
   });
 
-  group('Discard takes the recording with it — ADR-008', () {
-    test('the temp file is deleted and the state is clear', () async {
-      final ProviderContainer container = containerOf();
+  group('Remove takes the recording with it — ADR-008, ADR-060', () {
+    /// A take on disk, kept on the open chit.
+    Future<(ComposerController, File)> keptTake(
+      ProviderContainer container,
+    ) async {
       final ComposerController composer = container.read(
         composerControllerProvider.notifier,
       );
-
       final File take = File(p.join(root.path, 'take-1.m4a'));
       await take.writeAsString('audio');
 
       composer.keepRecording(
         Recording(tempPath: take.path, duration: const Duration(seconds: 9)),
       );
+      return (composer, take);
+    }
 
-      await composer.discard();
+    test('the temp file is deleted and the take is gone', () async {
+      final ProviderContainer container = containerOf();
+      final (ComposerController composer, File take) = await keptTake(
+        container,
+      );
+
+      await composer.removeTake();
 
       expect(take.existsSync(), isFalse);
-      final ComposerState fresh = container.read(composerControllerProvider);
-      expect(fresh.audioTempPath, isNull);
-      expect(fresh.canSave, isFalse);
+      final ComposerState after = container.read(composerControllerProvider);
+      expect(after.audioTempPath, isNull);
+      expect(after.audioDuration, isNull);
+      expect(after.hasAudio, isFalse, reason: 'the microphone comes back');
+      // `canSave` false is also what re-arms the five seconds. The timer
+      // itself has never had a test — it would need `fake_async` as an
+      // explicit dependency for the one claim — so this is the precondition,
+      // and the prompt coming back is on TASKS.md group G's handset pass.
+      expect(after.canSave, isFalse);
     });
 
-    test('a refused microphone is forgotten by Discard, not by a save', () {
+    test('the words are left exactly as they were', () async {
+      // A recording is not words, so removing one is not an edit to anything
+      // written — the converse of `keepRecording` leaving the field alone.
+      final ProviderContainer container = containerOf();
+      final (ComposerController composer, _) = await keptTake(container);
+
+      composer.edit('Both, and then only one.');
+      await composer.removeTake();
+
+      final ComposerState after = container.read(composerControllerProvider);
+      expect(after.text, 'Both, and then only one.');
+      expect(after.canSave, isTrue, reason: 'the words can still be saved');
+    });
+
+    test('the stamp does not move, because this is not a new chit', () async {
+      // Discard opened a *fresh* chit and re-took the preview. Remove does
+      // not: the chit is the same chit, one part lighter.
+      final ProviderContainer container = containerOf();
+      final (ComposerController composer, _) = await keptTake(container);
+      final AmbientStamp before = container
+          .read(composerControllerProvider)
+          .stamp;
+
+      clock.moveTo(savedAt);
+      await composer.removeTake();
+
+      expect(container.read(composerControllerProvider).stamp, before);
+    });
+
+    test('removing nothing does nothing', () async {
+      final ProviderContainer container = containerOf();
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+
+      composer.edit('words alone');
+      await composer.removeTake();
+
+      expect(container.read(composerControllerProvider).text, 'words alone');
+    });
+
+    test('a refused microphone is forgotten once one is allowed', () {
+      // Discard used to be what cleared it and Discard is gone (ADR-060).
       final ProviderContainer container = containerOf();
       final ComposerController composer = container.read(
         composerControllerProvider.notifier,
@@ -358,13 +416,14 @@ void main() {
       expect(
         container.read(composerControllerProvider).microphoneRefused,
         isTrue,
-        reason: 'it is said once and stays said until the page is cleared',
+        reason: 'it is said once and stays said',
       );
 
-      unawaited(composer.discard());
+      composer.recordingStarted();
       expect(
         container.read(composerControllerProvider).microphoneRefused,
         isFalse,
+        reason: 'getting as far as the sheet means it was allowed',
       );
     });
   });
@@ -398,11 +457,11 @@ void main() {
       expect(player.now, Playback.silent);
     });
 
-    test('Discard stops it, because the file is about to go', () async {
+    test('Remove stops it, because the file is about to go', () async {
       final ProviderContainer container = containerOf();
       final ComposerController composer = await playingTake(container);
 
-      await composer.discard();
+      await composer.removeTake();
 
       expect(player.now, Playback.silent);
     });

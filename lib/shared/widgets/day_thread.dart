@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../app/router.dart';
 import '../../core/extensions.dart';
+import '../../core/theme/chit_colors.dart';
 import '../../domain/models/chit.dart';
 import 'ambient_stamp_row.dart';
 import 'audio_pill.dart';
@@ -50,11 +53,16 @@ class DayThread extends StatelessWidget {
 /// identical marks distinguishing nothing; on the open chit it means *this is
 /// being noted, now*.
 ///
-/// A past chit is a record and not a control. Nothing opens yet
-/// (OPEN-QUESTIONS.md §8.1 settled *that* saved chits are editable, not where
-/// the editor lives), so nothing here claims it does — no tap target, no
-/// chevron, no ripple.
-class ChitRow extends StatelessWidget {
+/// **The whole row opens the editor** — ADR-061, and the affordance M2 and M4
+/// held back because until M6 a tap had nowhere to go. It is one widget, so
+/// Today and the archive gain it in the same change and cannot drift apart.
+/// No chevron: the row *is* the target, and a marker pointing at a target
+/// that large would be saying what the press already says.
+///
+/// **There is no long-press and no swipe.** Delete lives in the editor
+/// (ADR-062) rather than a thumb's width from a scroll, because the thread is
+/// a reading surface and there is no trash to recover a chit from.
+class ChitRow extends StatefulWidget {
   /// The row for [chit].
   const ChitRow({required this.chit, super.key});
 
@@ -70,11 +78,74 @@ class ChitRow extends StatelessWidget {
   static const double _overhang = ThreadRail.centre - ThreadNode.size / 2;
 
   @override
+  State<ChitRow> createState() => _ChitRowState();
+}
+
+class _ChitRowState extends State<ChitRow> {
+  bool _pressed = false;
+
+  void _press({required bool down}) => setState(() => _pressed = down);
+
+  @override
   Widget build(BuildContext context) {
+    final Chit chit = widget.chit;
+
+    return Semantics(
+      button: true,
+      label: 'Chit, ${chit.hasText ? chit.text! : 'a recording'}',
+      hint: 'Opens the chit',
+      // `excludeSemantics` so a screen reader is offered the row and not also
+      // the stamp, the words and the pill inside it — one target, one thing
+      // to say about it. The pill is the exception it costs: its own control
+      // is unreachable from here, and a chit's recording is reached from the
+      // editor instead.
+      excludeSemantics: true,
+      child: FocusableActionDetector(
+        mouseCursor: SystemMouseCursors.click,
+        onShowFocusHighlight: (bool on) => _press(down: on),
+        actions: <Type, Action<Intent>>{
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (ActivateIntent _) {
+              _open(context);
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (TapDownDetails _) => _press(down: true),
+          onTapUp: (TapUpDetails _) => _press(down: false),
+          onTapCancel: () => _press(down: false),
+          onTap: () => _open(context),
+          child: _Body(chit: chit, pressed: _pressed),
+        ),
+      ),
+    );
+  }
+
+  void _open(BuildContext context) => context.pushNamed(
+    editorRouteName,
+    pathParameters: <String, String>{editorIdParameter: widget.chit.id},
+  );
+}
+
+/// What the row draws, pressed or not.
+///
+/// Split out so the press state above has one child to rebuild rather than a
+/// tree of gesture wrappers.
+class _Body extends StatelessWidget {
+  const _Body({required this.chit, required this.pressed});
+
+  final Chit chit;
+  final bool pressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
     final space = context.space;
     final double inset = ThreadRail.contentInset(context);
 
-    return Padding(
+    final Widget row = Padding(
       // 12 / 8 / 16 / 0 in the prototype, and all four are already steps.
       padding: EdgeInsets.fromLTRB(0, space.s3, space.s2, space.s4),
       child: Column(
@@ -92,14 +163,19 @@ class ChitRow extends StatelessWidget {
                 width: inset,
                 height: ThreadNode.size,
                 child: Transform.translate(
-                  offset: const Offset(_overhang, 0),
+                  offset: const Offset(ChitRow._overhang, 0),
                   child: const Align(
                     alignment: Alignment.centerLeft,
                     child: ThreadNode(),
                   ),
                 ),
               ),
-              Expanded(child: AmbientStampRow.saved(stamp: chit.stamp)),
+              Expanded(
+                child: AmbientStampRow.saved(
+                  stamp: chit.stamp,
+                  lifted: pressed,
+                ),
+              ),
             ],
           ),
           if (chit.hasText)
@@ -107,6 +183,11 @@ class ChitRow extends StatelessWidget {
               // 5px under the stamp in the prototype, and `s1` here — a gap is
               // a relationship and §6.3 keeps those on the scale.
               padding: EdgeInsets.only(left: inset, top: space.s1),
+              // **This becomes a `Text.rich` when `@person` and `#hashtag`
+              // arrive** (OPEN-QUESTIONS.md §9 item 8) and nothing here has to
+              // move for it: a `TapGestureRecognizer` on a span wins the
+              // gesture arena against the row's own tap, so a name can lead
+              // somewhere else while the rest of the row still opens the chit.
               child: Text(chit.text!, style: context.type.chitText),
             ),
           // **A chit with audio and no words is a recording, not an empty
@@ -123,6 +204,21 @@ class ChitRow extends StatelessWidget {
             ),
         ],
       ),
+    );
+
+    if (!pressed) return row;
+
+    // **6% ink, the quietest wash there is** (DESIGN-SYSTEM.md §6.1) — and it
+    // is why the stamp above lifts: at 6% `--ink-faint` measures 4.42:1 and
+    // fails §6.4's floor, where `--ink-muted` measures 5.65:1 and clears it.
+    // The wash is drawn under the row's own padding rather than inside it, so
+    // what lights up is the target the finger actually hit.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.inkWash(colors.paper, opacity: ChitColors.rowPressedWash),
+        borderRadius: BorderRadius.circular(space.radius),
+      ),
+      child: row,
     );
   }
 }

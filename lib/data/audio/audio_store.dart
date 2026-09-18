@@ -64,12 +64,27 @@ final class AudioStore {
     return relative;
   }
 
-  /// Deletes a recording that was never kept. **Discard** (BEHAVIOUR.md §3.1).
+  /// Deletes a recording that was never kept — the recording sheet's
+  /// **Discard**, and **Remove** on the open chit's pill (BEHAVIOUR.md §3.2).
   ///
   /// A temp file that has already gone is not an error — discarding twice, or
   /// discarding after the OS has swept its own cache, is the same outcome.
   Future<void> discardTemp(String tempPath) async {
     final File file = File(tempPath);
+    if (file.existsSync()) {
+      await file.delete();
+    }
+  }
+
+  /// Deletes a kept recording — **Remove** in the editor, and the whole-chit
+  /// delete (ADR-063).
+  ///
+  /// The row is written first and this runs after: a row pointing at a file
+  /// that is not there is a corruption, and a file no row points at is only
+  /// an orphan, which [sweep] collects if this never runs. A file already gone
+  /// is not an error, for the same reason [discardTemp] says.
+  Future<void> delete(String relativePath) async {
+    final File file = await resolve(relativePath);
     if (file.existsSync()) {
       await file.delete();
     }

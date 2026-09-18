@@ -6,11 +6,80 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M5 — voice — is done and signed off on a handset.** A
-chit can now be spoken as well as typed: the microphone opens a recording sheet, the take is
-attached to the open chit, and it plays back from a pill on Today, in the calendar's archive and
-on the open chit itself. **Next is M6, the chit editor** — and its first job is cutting
-[TASKS.md](TASKS.md), which still holds M5's groups.
+**Last updated:** 18 September 2026. **M6 — the chit editor — has had two looks on a handset; groups A to F
+are done.**
+[TASKS.md](TASKS.md) is cut for it, in seven groups, and the cut is **wider than
+[BUILD-PLAN.md](BUILD-PLAN.md) M6 as written** — the owner asked for three things the plan did
+not have. A chit's recording becomes removable and replaceable, which **reverses ADR-014's
+second half**; a chit can be deleted, which closes open item 9; and **the open chit's Discard is
+gone**, which was group A. Read TASKS.md's decision table D1–D12 before writing any of the rest;
+it is where the session's answers live.
+
+**Group A is committed.** Today's action row is the microphone and Save, and a kept take is
+dropped by **Remove** beside the pill (ADR-060) — one control that the editor will reuse, rather
+than a Discard on one screen and something else on the other. `ComposerController.discard()` is
+`removeTake()`; it leaves the words alone, does not re-take the stamp, and re-arms the prompt on
+a chit it empties. The recording sheet keeps its own Discard (ADR-055); the word means *throw
+away the take in progress* and that still happens. **Nobody has looked at any of this on a
+handset** — group G.
+
+**Group B is committed.** A chit in the thread is now a button — the whole row, on Today and in
+the archive, since it is one widget (ADR-061) — and it opens the editor, a route **above** the
+tab shell (ADR-062). The screen only reads so far: back arrow, the chit's day, and the chit on
+the same slip under the same saved stamp. It cannot move the stamp and never will be able to;
+that is the *no metadata* rule made structural.
+
+**Group B's one real design finding is in `contrast_test.dart`, which decided rather than
+checked.** The row's 6% pressed wash puts `--ink-faint` at **4.42:1**, under §6.4's floor, so
+the stamp lifts to `--ink-muted` (5.65:1) while the row is held — the same rule §6.1 already
+had for the quiet button's label, now in its second place. A future session raising
+`rowPressedWash` has to move the stamp again or drop below the floor, and the test says so.
+
+**Group C is committed.** The editor edits: a field seeded from the chit, **Save chit**
+arriving once something has changed and withheld again if what it would write is not a chit,
+and a save that returns to where the chit was opened from. `EditorState`'s getters are the
+whole rulebook — `isDirty`, `holdsAnything`, `canSave`, `shouldPromptOnLeave` — so the screen
+draws and decides nothing (D11). **The repository half of groups E and F came with it**:
+`updateText` is `update`, one write taking a sealed `AudioEdit`, and `delete` takes the row
+and the file together, both tested against Drift in memory; ADR-014's audio half is reversed
+in place and ADR-063 says why. *One thing the plan changed on the way*: a removed recording is
+deleted after the row is written rather than left for the startup sweep, so it does not sit on
+disk until the next launch.
+
+**Group D is committed.** `showPromptSheet` is the app's first confirmation of any kind
+(ADR-064) — the recording sheet's paper, a question, two answers in the two button weights, and
+**the quiet weight always lets go**. Cancel arrives beside Save with the first change, and
+Cancel, the back arrow and the system back gesture (`PopScope`) are one exit asking one
+question, only when something has changed. Nothing about the sheet can be tested (ADR-031);
+what can — that leaving without saving leaves the row as it was — is.
+
+**Group E is committed.** The editor's pill carries the same **Remove** as the open chit's, and
+here it stages (D6): the pill goes, the microphone comes back, and nothing touches the file
+until Save. A kept take is staged as `AudioEdit.replace` and the pill plays it from its temp
+path. To get there the recording controller stopped naming `ComposerController` and took a
+**`RecordingSink`** at the tap (ADR-065) — both controllers implement it, the sheet is
+untouched — and the microphone moved to `shared/widgets/`. A recording-only chit whose take is
+removed is left with Cancel alone until group F adds *Delete this chit*.
+
+**Group F is committed.** *Delete this chit* sits below the slip, quiet and a step of the scale
+from Save; it asks with the prompt sheet — naming the recording when there is one — and calls
+the `delete` group C built, taking a staged take and a playing recording with it. Open item 9
+is closed. **Everything M6 builds is built**; what is left is looking at it.
+
+**Group G, the first look, is in — the owner took the `m6-preview` build on a handset** and passed
+six of the eight checks: the row without Discard, the tappable chit row, the prompt sheet, a
+replaced take playing from the pill, delete, and the stamp never moving. Two were not
+understood and stay open — see *Next*. **Six things came back to fix, all fixed** (ADR-066): the
+pin is gone from the open chit (location still stored), the tick at now is re-read on every
+save, Cancel is always shown and leaves at once, the editor's slip fills the screen with
+*Delete this chit* pinned below it, the header says *Editing*, and Save chit is *Save*. **Two
+reports could not be reproduced from the code**: that Today's Save and the microphone
+"are broken". Nothing in the suite or the analyser finds a fault and no device was attached;
+the editor's action row was rebuilt for the other fixes, so the second build is the test.
+
+*M5 — voice — was signed off on a handset earlier the same day.* A chit can be spoken as well as
+typed: the microphone opens a recording sheet, the take is attached to the open chit, and it
+plays back from a pill on Today, in the calendar's archive and on the open chit itself.
 
 **Voice is recording and playback. There is no transcription** (ADR-058): it was built, taken to
 a handset, recognised nothing, and removed — the cost ADR-005 had stated two milestones earlier.
@@ -64,10 +133,10 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
 | **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
-| **M6** — the chit editor | 🔜 next | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017). TASKS.md is cut for it first |
+| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A to F done, G half done** — two looks in, the Save layout fixed on the second; open item 39 is the one real unknown. ADR-017, ADR-060 to ADR-066. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
 | M7 — motion and the floors | ⬜ | |
 
-**441 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
+**492 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
 anything the app still does.* **Schema is v1 again and there are no migrations** — an install
 carrying an older shape is reinstalled.
@@ -81,34 +150,35 @@ bundle of item 6 is the only part chit chose. Nothing about shipping has been de
 
 ---
 
-## Next: M6 — the chit editor
+## Next: M6 group G — the third look
 
-**M5 is signed off and nothing is half-built.** [BUILD-PLAN.md](BUILD-PLAN.md) M6 is the next
-milestone and [TASKS.md](TASKS.md) still holds M5's groups — **cut M6 into groups and replace
-that file first** (CLAUDE.md §2). The session that does:
+**Everything M6 builds is built; two looks are in.** The second look settled three things:
+*the Save button was a layout bug, not a dead control* — a bare `PrimaryButton` under an
+`AnimatedSwitcher` is laid out loose and shrinks to its label, a tall sliver beside the
+microphone; wrapped in a `Row` with one `Expanded` child on both screens, which is the shape
+that had been seen working in M5. The caret lands where the thumb presses (first-look item 3,
+closed). And **short recordings appear to restart a second in** — open item 39, with a guard in
+place and the real question still open. What the owner should look at on the third build:
 
-1. **Reads BUILD-PLAN.md M6 and ADR-017.** The editor is a screen, and leaving it with unsaved
-   changes asks. *The prompt is as much the point of the milestone as the editor is*: discarding
-   an open chit needs no confirmation and gets none (§3.1), and discarding an edit to a **record**
-   does.
-2. **Knows what M2 and M4 have been holding back.** A chit in the thread has no pointer, no focus
-   stop and no button semantics, on Today and in the archive both, because until now there was
-   nowhere for a tap to go. All of that arrives with the screen it leads to, in one change —
-   `DayThread`'s `ChitRow` is the one widget, so both screens gain it together.
-3. **Calls `ChitRepository.updateText()` at last.** It has existed since M1 precisely so this
-   milestone does not have to grow one in a hurry, and it takes `text` and `updatedAt` and
-   nothing else — an edit provably cannot move a chit in the thread, relight a calendar tile, or
-   lose a recording. There is already a test proving it.
-4. **Leaves the audio alone.** No control offers to remove or replace it — not disabled, not
-   present (ADR-014). Editing changes what the chit says, never what was said.
-5. **Reads the four lessons in BUILD-PLAN.md M5 before writing a fake.** Two of M5's four handset
-   bugs were a fake or its harness behaving better than the real thing.
+1. **Save, on Today and in the editor** — full width beside the microphone, 49px tall, the
+   height the M5 handset saw.
+2. **A two-second recording, played from the thread**: does the *sound* start over a second
+   in, or only the bars? The guard in `JustAudioPlayer._onPosition` stops the bars going
+   backwards; if the sound still restarts, the cause is in the platform or the file and item
+   39 says where to look next.
+3. **A recording-only chit with its take removed** (first-look item 6, still not answered):
+   Cancel in the row, *Delete this chit* below, and no Save — does that read as intended, or
+   as broken?
+4. **The microphone on Today** — the first look called it broken alongside Save; if Save was
+   the layout, this may have been too. Confirm it opens the sheet.
 
-**Seed before looking at anything** — `flutter run --dart-define=CHIT_SEED=seed`, and `=clear`
-afterwards. There are no migrations now (ADR-059), so **a schema change means uninstalling the
-app**, and the seeded rows go with it.
+**Passed so far** (18 September 2026): the row without Discard; the chit row as a button; the
+prompt sheet; a replaced take playing from the pill; delete; the stamp never moving; the
+caret. TASKS.md G carries the ticks.
 
-The old *Next* is in git under `ca43d1b`; it said to take M5 to a handset, and M5 is signed off.
+**Read BUILD-PLAN.md M5's four lessons before fixing anything a device turns up.**
+
+The old *Next* is in git under `efb3a85`.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M6.
@@ -142,9 +212,9 @@ they are cited from other documents — so a closed item keeps its number and sh
 8. **OPEN-QUESTIONS.md §8.3 (does Today carry enough rhythm) is still open**, and now
    answerable — the rhythm signal it is about exists and can be lived with for a week. *§8.2,
    re-transcription, was retired with ADR-058.*
-9. **Nothing deletes a chit yet,** so the orphan sweep has little to collect. When a delete
-   arrives it goes in the repository, removes the row and the file together, and gets its own
-   test.
+9. ~~Nothing deletes a chit yet.~~ **Closed 18 September 2026** by M6 groups C and F:
+   `ChitRepository.delete` removes the row and the file together, and *Delete this chit* in the
+   editor calls it behind a prompt with no undo (ADR-064).
 10. ~~The debug seeder of DATA-MODEL.md §7 does not exist.~~ **Closed 17 September 2026** by
     M4 group A. `flutter run --dart-define=CHIT_SEED=seed` writes twenty chits over six weeks,
     `=clear` takes them off again; DATA-MODEL.md §7 has the shape of the fixture.
@@ -318,3 +388,15 @@ them can happen now.** The numbers are not reused.
     taught, which is the expensive part; the code is a morning's work and is in git at
     `ff78077`. Leaving it until *after* that install is how a milestone ends with somebody's
     chits gone.
+39. **A short recording appears to start over about a second in.** Seen on the second look,
+    18 September 2026, on two-to-three-second takes recorded on the handset and played from the
+    thread: the bars ran for a second, snapped to the start and ran the whole take. Longer takes
+    showed nothing. **Whether the sound restarts or only the playhead is not known** — the
+    owner could not tell. `JustAudioPlayer._onPosition` now ignores a position lower than the
+    last, since nothing in chit seeks mid-play, so the bars can no longer go backwards; if the
+    sound still restarts on the third look, the suspects in order are: `just_audio` reporting
+    `ready`+`playing` before the audio track has actually started, so the interpolated position
+    runs ahead and is then corrected by the platform; and the `record` package's AAC output on
+    a very short take — an encoder-priming frame or a `moov` atom written last, either of which
+    ExoPlayer handles by re-seeking. A take's length is the clock's and never the file's
+    (ADR-052), so a bar count that ends early on a short take is a different, known effect.

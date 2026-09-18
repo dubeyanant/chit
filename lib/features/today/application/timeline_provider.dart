@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/clock.dart';
 import '../../../domain/models/chit.dart';
 import '../../../domain/repositories/chit_repository.dart';
 import 'today_controller.dart';
@@ -186,6 +187,28 @@ final class TimelineWindow {
 @riverpod
 TimelineWindow timelineQueryWindow(Ref ref) =>
     TimelineWindow.around(ref.watch(todayProvider));
+
+/// Where the tick at now is drawn — **re-read on every save** (ADR-066).
+///
+/// The strip is static by design (§4.1: nothing on it moves), and
+/// [todayProvider] is read once per screen and again at midnight (ADR-033) —
+/// so a chit saved twenty minutes after launch used to land *ahead* of the
+/// tick at now, which then read as a mark in the future. This re-reads the
+/// clock whenever the rows under the strip change, which is exactly when §4.1
+/// says the strip may change: on a save, and on the day turning.
+///
+/// **A second clock read on the screen, and the one exception to
+/// ARCHITECTURE.md §3's one-read rule.** It cannot disagree with the date line
+/// about *which day* — the window it is drawn into still comes off
+/// [todayProvider] — only about the minute, which is the point. At the instant
+/// after midnight, before the rollover timer fires, it falls outside the window
+/// and the tick is simply not drawn for those milliseconds.
+@riverpod
+DateTime timelineNow(Ref ref) {
+  ref.watch(todayProvider);
+  ref.watch(timelineChitsProvider);
+  return ref.watch(clockProvider).now();
+}
 
 /// Every chit in the query window, oldest first — the timeline's marks.
 ///
