@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../domain/ambient/ambient_words.dart';
+import '../../../domain/find/find_axis.dart';
 import '../../../domain/models/chit.dart';
-import '../../../domain/models/chit_filter.dart';
 import '../../../domain/models/motion_state.dart';
 import '../../../domain/models/weather_condition.dart';
 import '../../../domain/repositories/chit_repository.dart';
@@ -11,43 +12,35 @@ import '../../../shared/day_group.dart';
 
 part 'find_providers.g.dart';
 
-/// The words find can offer, and the tags each chit carries.
-///
-/// Read once per change to the chits and not once per tap: the tags live in
-/// the body text, so building this walks every chit's words.
+/// One row on an axis: what it is called, and how many chits carry it.
 @immutable
-final class FindFacets {
-  const FindFacets({
-    required this.weather,
-    required this.motion,
-    required this.people,
-    required this.topics,
-    required this.tagsByChit,
+final class FindValue {
+  const FindValue({
+    required this.slug,
+    required this.label,
+    required this.count,
   });
 
-  static const FindFacets none = FindFacets(
-    weather: <WeatherCondition>[],
-    motion: <MotionState>[],
-    people: <TagSpan>[],
-    topics: <TagSpan>[],
-    tagsByChit: <String, Set<String>>{},
-  );
+  /// What it is called in a route — an enum name, or a folded tag label.
+  final String slug;
 
-  /// Only what was actually written — a row with nothing in it is not drawn,
-  /// the same reason §4.1 draws no settings control.
-  final List<WeatherCondition> weather;
+  /// What it is called on screen.
+  final String label;
 
-  final List<MotionState> motion;
+  final int count;
 
-  final List<TagSpan> people;
+  @override
+  bool operator ==(Object other) =>
+      other is FindValue &&
+      other.slug == slug &&
+      other.label == label &&
+      other.count == count;
 
-  final List<TagSpan> topics;
+  @override
+  int get hashCode => Object.hash(slug, label, count);
 
-  /// Chit id to the [TagSpan.key]s in its words.
-  final Map<String, Set<String>> tagsByChit;
-
-  bool get isEmpty =>
-      weather.isEmpty && motion.isEmpty && people.isEmpty && topics.isEmpty;
+  @override
+  String toString() => 'FindValue($slug, $count)';
 }
 
 /// Every chit, which find narrows rather than queries.
@@ -55,114 +48,132 @@ final class FindFacets {
 Stream<List<Chit>> everyChit(Ref ref) =>
     ref.watch(chitRepositoryProvider).watchEvery();
 
+/// What each axis can offer, read once per change to the chits.
 @riverpod
-class Facets extends _$Facets {
+class AxisValues extends _$AxisValues {
   @override
-  FindFacets build() => switch (ref.watch(everyChitProvider)) {
-    AsyncData<List<Chit>>(:final List<Chit> value) => _read(value),
-    _ => stateOrNull ?? FindFacets.none,
-  };
+  Map<FindAxis, List<FindValue>> build() =>
+      switch (ref.watch(everyChitProvider)) {
+        AsyncData<List<Chit>>(:final List<Chit> value) => _read(value),
+        _ => stateOrNull ?? const <FindAxis, List<FindValue>>{},
+      };
 
-  static FindFacets _read(List<Chit> chits) {
-    final Set<WeatherCondition> weather = <WeatherCondition>{};
-    final Set<MotionState> motion = <MotionState>{};
-    final Map<String, TagSpan> people = <String, TagSpan>{};
-    final Map<String, TagSpan> topics = <String, TagSpan>{};
-    final Map<String, Set<String>> tagsByChit = <String, Set<String>>{};
+  static Map<FindAxis, List<FindValue>> _read(List<Chit> chits) {
+    final Map<String, int> weather = <String, int>{};
+    final Map<String, int> motion = <String, int>{};
+    final Map<String, _Counted> people = <String, _Counted>{};
+    final Map<String, _Counted> topics = <String, _Counted>{};
 
     for (final Chit chit in chits) {
-      if (chit.weather != null) weather.add(chit.weather!);
+      if (chit.weather != null) {
+        weather.update(chit.weather!.name, _up, ifAbsent: _one);
+      }
 
-      // `stationary` is stored and never drawn (§3.6.1), and a word find
-      // offers is a word a chit shows.
+      // `stationary` is stored and never drawn (§3.6.1), so it is never
+      // offered either — a word find hands you is a word a chit shows.
       if (chit.motion != null && chit.motion != MotionState.stationary) {
-        motion.add(chit.motion!);
+        motion.update(chit.motion!.name, _up, ifAbsent: _one);
       }
 
       if (!chit.hasText) continue;
 
-      final List<TagSpan> tags = ChitTags.tagsIn(chit.text!);
-      if (tags.isEmpty) continue;
-
-      tagsByChit[chit.id] = <String>{for (final TagSpan tag in tags) tag.key};
-
-      for (final TagSpan tag in tags) {
-        switch (tag.kind) {
-          case TagKind.person:
-            people.putIfAbsent(tag.key, () => tag);
-          case TagKind.topic:
-            topics.putIfAbsent(tag.key, () => tag);
-        }
+      for (final TagSpan tag in ChitTags.tagsIn(chit.text!)) {
+        final Map<String, _Counted> into = switch (tag.kind) {
+          TagKind.person => people,
+          TagKind.topic => topics,
+        };
+        // The rows arrive newest first, so the first spelling seen is the
+        // latest one written — change how you write a name and the list
+        // follows it, while the key keeps the older chits underneath.
+        into.update(
+          tag.key,
+          (_Counted it) => it.more(),
+          ifAbsent: () => _Counted(tag.label, 1),
+        );
       }
     }
 
-    return FindFacets(
-      // Ranked as §3.6.1 ranks them, so the row reads in the app's own order
-      // rather than in whatever order the chits happened to arrive.
-      weather: <WeatherCondition>[
-        for (final WeatherCondition c in WeatherCondition.values)
-          if (weather.contains(c)) c,
-      ],
-      motion: <MotionState>[
-        for (final MotionState m in MotionState.values)
-          if (motion.contains(m)) m,
-      ],
-      people: _alphabetical(people.values),
-      topics: _alphabetical(topics.values),
-      tagsByChit: tagsByChit,
-    );
+    return <FindAxis, List<FindValue>>{
+      FindAxis.weather: _alphabetical(<FindValue>[
+        for (final WeatherCondition it in WeatherCondition.values)
+          if (weather[it.name] case final int n)
+            FindValue(slug: it.name, label: it.word, count: n),
+      ]),
+      FindAxis.motion: _alphabetical(<FindValue>[
+        for (final MotionState it in MotionState.values)
+          if (motion[it.name] case final int n)
+            FindValue(slug: it.name, label: it.word, count: n),
+      ]),
+      FindAxis.people: _byFrequency(people),
+      FindAxis.topics: _byFrequency(topics),
+    };
   }
 
-  static List<TagSpan> _alphabetical(Iterable<TagSpan> tags) =>
-      tags.toList(growable: false)
-        ..sort(
-          (TagSpan a, TagSpan b) =>
-              a.label.toLowerCase().compareTo(b.label.toLowerCase()),
-        );
+  static int _up(int n) => n + 1;
+
+  static int _one() => 1;
+
+  static List<FindValue> _alphabetical(List<FindValue> values) =>
+      values..sort((FindValue a, FindValue b) => a.label.compareTo(b.label));
+
+  /// Most written first, and **alphabetical where two tie** — otherwise two
+  /// tags written once each would swap places on every save.
+  static List<FindValue> _byFrequency(Map<String, _Counted> counted) {
+    final List<FindValue> values = <FindValue>[
+      for (final MapEntry<String, _Counted> it in counted.entries)
+        FindValue(
+          slug: it.key.split(':').last,
+          label: it.value.label,
+          count: it.value.count,
+        ),
+    ];
+
+    values.sort((FindValue a, FindValue b) {
+      final int byCount = b.count.compareTo(a.count);
+      return byCount != 0
+          ? byCount
+          : a.label.toLowerCase().compareTo(b.label.toLowerCase());
+    });
+
+    return values;
+  }
 }
 
-@riverpod
-class Filter extends _$Filter {
-  @override
-  ChitFilter build() => ChitFilter.none;
+@immutable
+final class _Counted {
+  const _Counted(this.label, this.count);
 
-  void toggleWeather(WeatherCondition value) =>
-      state = state.copyWith(weather: _flip(state.weather, value));
+  final String label;
+  final int count;
 
-  void toggleMotion(MotionState value) =>
-      state = state.copyWith(motion: _flip(state.motion, value));
-
-  void togglePerson(String key) =>
-      state = state.copyWith(people: _flip(state.people, key));
-
-  void toggleTopic(String key) =>
-      state = state.copyWith(topics: _flip(state.topics, key));
-
-  void clear() => state = ChitFilter.none;
-
-  static Set<T> _flip<T>(Set<T> chosen, T value) => <T>{
-    for (final T held in chosen)
-      if (held != value) held,
-    if (!chosen.contains(value)) value,
-  };
+  _Counted more() => _Counted(label, count + 1);
 }
 
-/// What find is showing: every chit the filter allows, grouped by day.
+/// The chits carrying one value of one axis, grouped by day.
 @riverpod
-List<DayGroup> found(Ref ref) {
-  final ChitFilter filter = ref.watch(filterProvider);
-  final FindFacets facets = ref.watch(facetsProvider);
-
+List<DayGroup> chitsOfValue(Ref ref, FindAxis axis, String slug) {
   final List<Chit> chits = switch (ref.watch(everyChitProvider)) {
     AsyncData<List<Chit>>(:final List<Chit> value) => value,
     _ => const <Chit>[],
   };
 
-  if (filter.isEmpty) return groupByDay(chits);
-
   return groupByDay(<Chit>[
     for (final Chit chit in chits)
-      if (filter.allows(chit, facets.tagsByChit[chit.id] ?? const <String>{}))
-        chit,
+      if (_carries(chit, axis, slug)) chit,
   ]);
+}
+
+bool _carries(Chit chit, FindAxis axis, String slug) => switch (axis) {
+  FindAxis.weather => chit.weather?.name == slug,
+  FindAxis.motion => chit.motion?.name == slug,
+  FindAxis.people => _tagged(chit, 'person:$slug'),
+  FindAxis.topics => _tagged(chit, 'topic:$slug'),
+};
+
+bool _tagged(Chit chit, String key) {
+  if (!chit.hasText) return false;
+  for (final TagSpan tag in ChitTags.tagsIn(chit.text!)) {
+    if (tag.key == key) return true;
+  }
+  return false;
 }

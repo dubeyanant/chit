@@ -20,7 +20,8 @@ lib/
 ├── core/      the four ThemeExtensions of §6, the injected clock, the BuildContext sugar
 ├── domain/    models/ (Chit and its invariant, the stamp, the enums, the screen states, the
 │              sealed AudioEdit) · ambient/ · motion/ · weather/ · tags/ (the sealed ChitSpan
-│              and its grammar) · repositories/ · services/
+│              and its grammar) · find/ (the four axes, and where a column sits) ·
+│              repositories/ · services/
 ├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
 │              weather/ · location/ · preferences/ · repositories/
 ├── features/  shell, today, composer, calendar, find, editor, onboarding
@@ -70,6 +71,9 @@ overridden in `main.dart` — the one place the two layers meet, and the seam te
 
 **go_router owns navigation entirely**; `ChitRoute` is the one destination list the tab bar is built
 from, and `BranchFade` is written *into* `navigatorContainerBuilder` rather than around it.
+**find's two deeper screens are nested routes inside its branch** (ADR-084), so the tab bar stays
+and the system back walks up a level — a drill-down held as state, with a `PopScope` to catch back,
+is hand-rolling beside the package that already has the seam.
 **Riverpod owns everything that outlives a build, the router included** — a `GoRouter` in a
 `StatefulWidget` puts the one thing that must survive a rebuild in the one place that does not. The
 two exceptions are the recording sheet (ADR-011) and the prompt sheet (ADR-064): modal sheets, not

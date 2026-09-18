@@ -242,27 +242,36 @@ screen, and a step of the scale away from Save rather than an inch from it. It i
 it cannot be read as Discard. It asks, and **there is no undo** (ADR-064) — there is no trash and no
 backend, and the prompt is the whole of the protection.
 
-**4.6 Find.** The third tab, and the way back to a chit you cannot date (ADR-083). Its heading is
-one line saying what is on screen — *Everything written.* until something is chosen, then
-**12 chits** *like that* — sitting at the same height as Today's date and the calendar's month
-(§6.3), so a tab switch does not move it.
+**4.6 Find.** The third tab, and the way back to a chit you cannot date. **Three screens deep, and
+each one is a route** (ADR-084), so the system back walks up a level rather than out of the tab.
 
-Under it, **four rows of words**: `weather`, `motion`, `people`, `topics`. **A row holds only what
-was actually written** — a sky nobody wrote under is not offered, and a row with nothing in it is
-not drawn at all, a control that does nothing not being marked up as one (§4.1). Weather and motion
-read in §3.6.1's order, people and topics alphabetically. **`stationary` is never offered**, being
-never drawn.
+*The first screen.* A line at the top — one of about forty-five, **the same all day and different
+tomorrow** — and then, at the **bottom right**, four words: `weather`, `motion`, `people`,
+`topics`. The words are one touch target apart, with the same space under the last as between any
+two, so the column reads as a rhythm rather than a list.
 
-**Any within a row, all across them.** A second word in the same row widens — `raining` and `windy`
-asks for either — and a word in another row tightens. **A chosen word is lit to `--ink` and framed**,
-the calendar's own selection idiom, because §6.4 will not let colour be the only difference. Tapping
-it again lets it go, and **Show everything** puts them all out at once.
+**This is the one surface in the app that is not left-aligned** (ADR-084). Everything else hangs off
+the left gutter; find's column is flush *right*, because it is a set of targets rather than a
+reading surface, and the right edge is where a right thumb already is. **The lines are house lines,
+not quotations** — nothing is attributed, a misattribution being a defect that ships and cannot be
+checked from inside the app.
 
-Below that, **every chit the words leave behind**, grouped by day newest-first in the same thread
-Today and the archive use — so a chit is opened by holding it here too. **Nothing chosen shows
-everything**, which is what makes this tab the continuous scroll back that ADR-079 took off the
-calendar. An empty result says *Nothing written like that.*, and an app with nothing in it yet says
-*Nothing written yet.* and draws no rows at all.
+*The second screen.* One axis' values, **no quote**, the same right-flush column. `weather` and
+`motion` read **alphabetically**, both being short lists a reader already knows the whole of, where
+alphabetical is what lets a word be *found*. `people` and `topics` read **most written first**, both
+growing without limit, so the useful ones rise; **a tie breaks alphabetically**, or two tags written
+once each would swap places on every save. A topic keeps its `#`, as it does on a chit (§3.7).
 
-**The filter is not remembered across a launch** — a saved filter is a state the app would open in
-without saying why. Switching tabs keeps it, because that is one task.
+**A value is drawn only if something carries it** — a sky nobody wrote under is not offered, and
+`stationary` is never offered because it is never drawn (§3.6.1). An axis with nothing on it says so
+in one line rather than showing an empty column.
+
+*Where the column sits.* **At the bottom while it fits, and from the top once it does not**
+(ADR-084) — measured against the handset, not guessed at a count, because five weathers fit anywhere
+and a year of tags fits nowhere. A list that has overflowed must start at the top, or its first
+row — the one written most — would open off the top of the screen.
+
+*The third screen.* Every chit carrying that value, headed by the value, grouped by day
+newest-first in the same thread Today and the archive use — so a chit is opened by holding it here
+too. **One value at a time**: find is a way *to* a chit, not a query builder, and two values at once
+is the question nobody asked on the way in.

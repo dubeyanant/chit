@@ -26,6 +26,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.audioDuration,
     required this.tabLabel,
     required this.filterWord,
+    required this.quote,
     required this.sheetState,
     required this.sheetTime,
     required this.calendarDay,
@@ -165,10 +166,18 @@ final class ChitType extends ThemeExtension<ChitType> {
       tabLabel: _serif(size: 16.5, weight: 400, color: colors.inkFaint),
 
       filterWord: _sans(
-        size: 13,
+        size: 16.5,
         weight: 500,
+        color: colors.ink,
+        letterSpacingEm: 0.01,
+      ),
+
+      quote: _serif(
+        size: 15,
+        weight: 400,
         color: colors.inkFaint,
-        letterSpacingEm: 0.02,
+        italic: true,
+        height: 1.5,
       ),
 
       sheetState: _sans(
@@ -355,9 +364,11 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   final TextStyle tabLabel;
 
-  /// One word find can be narrowed by — the ambient vocabulary, in the sans
-  /// the chits speak it in. Lit to --ink when chosen, framed as well (§6.4).
+  /// One word in find's right-hand column — an axis, or a value on one.
   final TextStyle filterWord;
+
+  /// The line find opens with: an aside, in the voice §6.2 keeps for asides.
+  final TextStyle quote;
 
   final TextStyle sheetState;
 
@@ -395,6 +406,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     audioDuration,
     tabLabel,
     filterWord,
+    quote,
     sheetState,
     sheetTime,
     calendarDay,
@@ -427,6 +439,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? audioDuration,
     TextStyle? tabLabel,
     TextStyle? filterWord,
+    TextStyle? quote,
     TextStyle? sheetState,
     TextStyle? sheetTime,
     TextStyle? calendarDay,
@@ -457,6 +470,7 @@ final class ChitType extends ThemeExtension<ChitType> {
       audioDuration: audioDuration ?? this.audioDuration,
       tabLabel: tabLabel ?? this.tabLabel,
       filterWord: filterWord ?? this.filterWord,
+      quote: quote ?? this.quote,
       sheetState: sheetState ?? this.sheetState,
       sheetTime: sheetTime ?? this.sheetTime,
       calendarDay: calendarDay ?? this.calendarDay,
@@ -492,6 +506,7 @@ final class ChitType extends ThemeExtension<ChitType> {
       audioDuration: TextStyle.lerp(audioDuration, other.audioDuration, t)!,
       tabLabel: TextStyle.lerp(tabLabel, other.tabLabel, t)!,
       filterWord: TextStyle.lerp(filterWord, other.filterWord, t)!,
+      quote: TextStyle.lerp(quote, other.quote, t)!,
       sheetState: TextStyle.lerp(sheetState, other.sheetState, t)!,
       sheetTime: TextStyle.lerp(sheetTime, other.sheetTime, t)!,
       calendarDay: TextStyle.lerp(calendarDay, other.calendarDay, t)!,

@@ -112,9 +112,9 @@ lib/
 reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's words (ADR-082) —
 pure, so the widget that draws them holds no grammar. `lib/shared/widgets/` is the chit vocabulary:
 the slip and its tear edge, the chit's own body text, the stamp
-row and its motion marks, the rail and the thread over it, the wordmark, the heading row both tabs
-hang their title in, the two button weights, the microphone, the pill, the prompt sheet, `Arrival`,
-`StaggeredEntrance` and `FocusRing`.
+row and its motion marks, the rail and the thread over it, a day's heading and its group, the
+wordmark, the heading row the tabs hang their title in, the two button weights, the microphone, the
+pill, the prompt sheet, `Arrival`, `StaggeredEntrance` and `FocusRing`.
 
 **Tests.** `flutter test`. **There are no widget tests, and there will not be** (ADR-031) — what can
 only be seen on a screen is seen on a handset and written into the commit. Suites sit beside what

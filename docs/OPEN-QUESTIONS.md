@@ -143,16 +143,20 @@ retired: 32, 33, 35, 36.**
     `CHIT_SEED=stress` and `CHIT_FRAMES=true` are how all of this is re-checked — before believing a
     report of jank, ask which build mode it was in.
 49. **Find reads every chit and parses every chit's words, and nobody has measured it** (ADR-083).
-    `watchEvery` has no `WHERE`, and `Facets` walks each body with `ChitTags.parse` to know who and
-    what a chit names. **The parse is per change to the data and not per tap** — a filter re-applies
-    against a map already built — so the cost lands on open and on save, not on the row of words.
+    `watchEvery` has no `WHERE`, and `AxisValues` walks every body with `ChitTags.tagsIn` to know who
+    and what the chits name. **That walk is per change to the data, not per screen** — the four
+    value lists come off one pass. **`chitsOfValue` walks again**, re-parsing every chit to ask
+    whether it carries the one tag, so the third screen costs a second pass on every open.
     Item 46's numbers are from the archive and say nothing about this. **Three things to try before
     an index, in order**: the parse is the suspect, not the query; `weather` and `motion` could be
     pushed into SQL and deliberately were not; and only then the `weather` index ADR-077 deleted,
     which is a schema change and ADR-059's reinstall. A tags table is the end of that road and is
     what would also make backlog 8's tap cheap.
-50. **Nobody has seen the find tab on a handset.** The words, the frame on a chosen one, and whether
-    four `Wrap` rows of them read as four rows or as a wall. The one most likely to be wrong is
-    **`people` and `topics` on a long history**, where the rows have no cap and will simply keep
-    wrapping — a month of tagging could push the chits off the first screen entirely. If it does,
-    the honest fix is a cap with the rest behind a word, not a smaller type size.
+50. **Nobody has seen the find tab on a handset** (ADR-084). Three things nothing can check from
+    here. **The right-flush column against a left-aligned app** — it is the one surface that breaks
+    the axis, and whether that reads as deliberate or as a mistake is a looking question. **The
+    bottom-to-top switch**, which happens at a different list length on every handset: the frame
+    where a list has eleven rows on one phone and ten on another is the one to watch, and a list
+    that lands one row over the line jumps from the bottom of the screen to the top. **And the
+    quote's two-line ceiling** — `Quotes.longest` is 92 characters, set by arithmetic and not by
+    looking, so a long line on a narrow phone may take three.

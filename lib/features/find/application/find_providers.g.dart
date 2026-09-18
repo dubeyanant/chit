@@ -51,50 +51,67 @@ final class EveryChitProvider
 
 String _$everyChitHash() => r'3765a2cf2134ebb33b70b978a03de49d2c252616';
 
-@ProviderFor(Facets)
-final facetsProvider = FacetsProvider._();
+/// What each axis can offer, read once per change to the chits.
 
-final class FacetsProvider extends $NotifierProvider<Facets, FindFacets> {
-  FacetsProvider._()
+@ProviderFor(AxisValues)
+final axisValuesProvider = AxisValuesProvider._();
+
+/// What each axis can offer, read once per change to the chits.
+final class AxisValuesProvider
+    extends $NotifierProvider<AxisValues, Map<FindAxis, List<FindValue>>> {
+  /// What each axis can offer, read once per change to the chits.
+  AxisValuesProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'facetsProvider',
+        name: r'axisValuesProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$facetsHash();
+  String debugGetCreateSourceHash() => _$axisValuesHash();
 
   @$internal
   @override
-  Facets create() => Facets();
+  AxisValues create() => AxisValues();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FindFacets value) {
+  Override overrideWithValue(Map<FindAxis, List<FindValue>> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<FindFacets>(value),
+      providerOverride: $SyncValueProvider<Map<FindAxis, List<FindValue>>>(
+        value,
+      ),
     );
   }
 }
 
-String _$facetsHash() => r'684e2886e4947765ceddc38d28db9cd7bcfba246';
+String _$axisValuesHash() => r'51dd1fe84cf9230cd0cdf791ae748cc8de5d8d6f';
 
-abstract class _$Facets extends $Notifier<FindFacets> {
-  FindFacets build();
+/// What each axis can offer, read once per change to the chits.
+
+abstract class _$AxisValues extends $Notifier<Map<FindAxis, List<FindValue>>> {
+  Map<FindAxis, List<FindValue>> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<FindFacets, FindFacets>;
+    final ref =
+        this.ref
+            as $Ref<
+              Map<FindAxis, List<FindValue>>,
+              Map<FindAxis, List<FindValue>>
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<FindFacets, FindFacets>,
-              FindFacets,
+              AnyNotifier<
+                Map<FindAxis, List<FindValue>>,
+                Map<FindAxis, List<FindValue>>
+              >,
+              Map<FindAxis, List<FindValue>>,
               Object?,
               Object?
             >;
@@ -102,81 +119,37 @@ abstract class _$Facets extends $Notifier<FindFacets> {
   }
 }
 
-@ProviderFor(Filter)
-final filterProvider = FilterProvider._();
+/// The chits carrying one value of one axis, grouped by day.
 
-final class FilterProvider extends $NotifierProvider<Filter, ChitFilter> {
-  FilterProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'filterProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+@ProviderFor(chitsOfValue)
+final chitsOfValueProvider = ChitsOfValueFamily._();
 
-  @override
-  String debugGetCreateSourceHash() => _$filterHash();
+/// The chits carrying one value of one axis, grouped by day.
 
-  @$internal
-  @override
-  Filter create() => Filter();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ChitFilter value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ChitFilter>(value),
-    );
-  }
-}
-
-String _$filterHash() => r'd71fdf02b1b72152e942f43a9d24979b7303c6d3';
-
-abstract class _$Filter extends $Notifier<ChitFilter> {
-  ChitFilter build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<ChitFilter, ChitFilter>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<ChitFilter, ChitFilter>,
-              ChitFilter,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-/// What find is showing: every chit the filter allows, grouped by day.
-
-@ProviderFor(found)
-final foundProvider = FoundProvider._();
-
-/// What find is showing: every chit the filter allows, grouped by day.
-
-final class FoundProvider
+final class ChitsOfValueProvider
     extends $FunctionalProvider<List<DayGroup>, List<DayGroup>, List<DayGroup>>
     with $Provider<List<DayGroup>> {
-  /// What find is showing: every chit the filter allows, grouped by day.
-  FoundProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'foundProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  /// The chits carrying one value of one axis, grouped by day.
+  ChitsOfValueProvider._({
+    required ChitsOfValueFamily super.from,
+    required (FindAxis, String) super.argument,
+  }) : super(
+         retry: null,
+         name: r'chitsOfValueProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
-  String debugGetCreateSourceHash() => _$foundHash();
+  String debugGetCreateSourceHash() => _$chitsOfValueHash();
+
+  @override
+  String toString() {
+    return r'chitsOfValueProvider'
+        ''
+        '$argument';
+  }
 
   @$internal
   @override
@@ -185,7 +158,8 @@ final class FoundProvider
 
   @override
   List<DayGroup> create(Ref ref) {
-    return found(ref);
+    final argument = this.argument as (FindAxis, String);
+    return chitsOfValue(ref, argument.$1, argument.$2);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -195,6 +169,38 @@ final class FoundProvider
       providerOverride: $SyncValueProvider<List<DayGroup>>(value),
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ChitsOfValueProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
 }
 
-String _$foundHash() => r'c2871386f79d78cd3e19c4d9578a8b9e71299fc9';
+String _$chitsOfValueHash() => r'ce78937840128be3ec7eaf3d507730be6bd604bc';
+
+/// The chits carrying one value of one axis, grouped by day.
+
+final class ChitsOfValueFamily extends $Family
+    with $FunctionalFamilyOverride<List<DayGroup>, (FindAxis, String)> {
+  ChitsOfValueFamily._()
+    : super(
+        retry: null,
+        name: r'chitsOfValueProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// The chits carrying one value of one axis, grouped by day.
+
+  ChitsOfValueProvider call(FindAxis axis, String slug) =>
+      ChitsOfValueProvider._(argument: (axis, slug), from: this);
+
+  @override
+  String toString() => r'chitsOfValueProvider';
+}

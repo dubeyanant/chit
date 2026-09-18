@@ -94,11 +94,11 @@ keeps its `#`**: the slope is a difference §6.4 accepts on its own, and colour 
 needs the glyph beside it. Newsreader ships a true italic (`Newsreader-Italic-VF`), so the slope is
 drawn rather than sheared.
 
-**`filterWord` is find's row of words** (ADR-083) — 13px Hanken, the sans the ambient facts are
-already spoken in, because the words *are* the ambient facts. **Chosen is `--ink` and framed;
-unchosen is `--ink-faint` and bare**, two differences, the frame being the calendar's own selection
-idiom and not a new kind of object. Its tap target is a full `minTouchTarget` with the frame drawn
-at its natural size inside, the same way a tab's dot sits in a 44px row.
+**`filterWord` is find's column** (ADR-084) — 16.5px Hanken in `--ink`, each word its own
+`minTouchTarget` row. **It is the one thing in the app set flush right**: everything else hangs off
+the left gutter, and this column is a set of targets rather than prose, sitting where a right thumb
+already is. **`quote` is the line above it** — 15px serif italic in `--ink-faint`, §6.2's voice for
+an aside, which is what a line nobody signed is.
 
 ### 6.3 Spacing, shape, motion
 

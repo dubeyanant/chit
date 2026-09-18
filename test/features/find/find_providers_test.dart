@@ -4,12 +4,12 @@ import 'package:chitta/core/clock.dart';
 import 'package:chitta/data/audio/audio_store.dart';
 import 'package:chitta/data/db/app_database.dart';
 import 'package:chitta/data/repositories/chit_repository_impl.dart';
+import 'package:chitta/domain/find/find_axis.dart';
 import 'package:chitta/domain/models/ambient_stamp.dart';
 import 'package:chitta/domain/models/chit.dart';
 import 'package:chitta/domain/models/motion_state.dart';
 import 'package:chitta/domain/models/weather_condition.dart';
 import 'package:chitta/domain/repositories/chit_repository.dart';
-import 'package:chitta/domain/tags/chit_tags.dart';
 import 'package:chitta/features/find/application/find_providers.dart';
 import 'package:chitta/shared/day_group.dart';
 import 'package:drift/native.dart';
@@ -48,8 +48,10 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.listen(facetsProvider, (FindFacets? _, FindFacets _) {});
-    container.listen(foundProvider, (List<DayGroup>? _, List<DayGroup> _) {});
+    container.listen(axisValuesProvider, (
+      Map<FindAxis, List<FindValue>>? _,
+      Map<FindAxis, List<FindValue>> _,
+    ) {});
   });
 
   tearDown(() async {
@@ -57,202 +59,199 @@ void main() {
     if (root.existsSync()) await root.delete(recursive: true);
   });
 
+  int hour = 0;
+
   Future<Chit> write(
     String text, {
-    required DateTime at,
     WeatherCondition? weather,
     MotionState? motion,
   }) => repo.save(
-    stamp: AmbientStamp(capturedAt: at, weather: weather, motion: motion),
+    stamp: AmbientStamp(
+      capturedAt: monday.add(Duration(hours: hour++)),
+      weather: weather,
+      motion: motion,
+    ),
     text: text,
   );
 
   Future<void> settle() async {
     for (int i = 0; i < 100; i++) {
       await Future<void>.delayed(const Duration(milliseconds: 5));
-      if (container.read(facetsProvider).isEmpty == false) return;
+      if (container.read(axisValuesProvider).isNotEmpty) return;
     }
   }
 
-  List<String> foundText() => <String>[
-    for (final DayGroup day in container.read(foundProvider))
-      for (final Chit chit in day.chits) chit.text!,
+  List<FindValue> valuesOf(FindAxis axis) =>
+      container.read(axisValuesProvider)[axis] ?? const <FindValue>[];
+
+  List<String> labelsOf(FindAxis axis) => <String>[
+    for (final FindValue it in valuesOf(axis)) it.label,
   ];
 
-  group('the facets are only what was written', () {
-    test('a sky nobody saw is not offered', () async {
-      await write(
-        'Wet.',
-        at: monday,
-        weather: WeatherCondition.raining,
-      );
+  setUp(() => hour = 0);
+
+  group('the two ambient axes read alphabetically — §4.6', () {
+    test('weather, whatever order it was written in', () async {
+      await write('a', weather: WeatherCondition.windy);
+      await write('b', weather: WeatherCondition.clear);
+      await write('c', weather: WeatherCondition.raining);
+      await write('d', weather: WeatherCondition.clearNight);
       await settle();
 
-      expect(container.read(facetsProvider).weather, <WeatherCondition>[
-        WeatherCondition.raining,
+      expect(labelsOf(FindAxis.weather), <String>[
+        'clear',
+        'clear night',
+        'raining',
+        'windy',
       ]);
     });
 
-    test('stationary is never offered, being never drawn — §3.6.1', () async {
-      await write('Still.', at: monday, motion: MotionState.stationary);
-      await write(
-        'Moving.',
-        at: monday.add(const Duration(hours: 1)),
-        motion: MotionState.walking,
-      );
+    test('motion, and never stationary', () async {
+      await write('a', motion: MotionState.walking);
+      await write('b', motion: MotionState.flying);
+      await write('c', motion: MotionState.stationary);
       await settle();
 
-      expect(container.read(facetsProvider).motion, <MotionState>[
-        MotionState.walking,
-      ]);
+      expect(labelsOf(FindAxis.motion), <String>['flying', 'walking']);
     });
 
-    test('people and topics come out of the words', () async {
-      await write('Called @anant_dubey about #rent.', at: monday);
+    test('a sky nobody wrote under is not offered', () async {
+      await write('a', weather: WeatherCondition.raining);
       await settle();
 
-      final FindFacets facets = container.read(facetsProvider);
-
-      expect(
-        <String>[for (final TagSpan t in facets.people) t.label],
-        <String>['anant dubey'],
-      );
-      expect(
-        <String>[for (final TagSpan t in facets.topics) t.label],
-        <String>['rent'],
-      );
-    });
-
-    test('one person written two ways is offered once', () async {
-      await write('@Anant again', at: monday);
-      await write('@anant_dubey?', at: monday.add(const Duration(hours: 1)));
-      await write('@anant once more', at: monday.add(const Duration(hours: 2)));
-      await settle();
-
-      expect(
-        container.read(facetsProvider).people.map((TagSpan t) => t.key),
-        <String>['person:anant', 'person:anant dubey'],
-        reason: 'two distinct people, alphabetical, case folded',
-      );
+      expect(labelsOf(FindAxis.weather), <String>['raining']);
     });
   });
 
-  group('what the filter leaves behind', () {
-    Future<void> threeChits() async {
-      await write(
-        'Wet walk with @anant.',
-        at: monday,
-        weather: WeatherCondition.raining,
-        motion: MotionState.walking,
-      );
-      await write(
-        'Dry desk, #rent due.',
-        at: monday.add(const Duration(hours: 2)),
-        weather: WeatherCondition.clear,
-      );
-      await write(
-        'Wet desk, @anant again.',
-        at: monday.add(const Duration(days: 1)),
-        weather: WeatherCondition.raining,
-      );
+  group('the two tag axes read by how often they were written', () {
+    test('most written first', () async {
+      await write('@mira and @anant');
+      await write('@anant again');
+      await write('@anant once more');
+      await write('@rahul');
+      await write('@rahul twice');
       await settle();
-    }
 
-    test('nothing chosen shows everything, newest day first', () async {
-      await threeChits();
-
-      expect(foundText(), <String>[
-        'Wet desk, @anant again.',
-        'Dry desk, #rent due.',
-        'Wet walk with @anant.',
-      ]);
+      expect(labelsOf(FindAxis.people), <String>['anant', 'rahul', 'mira']);
+      expect(<int>[for (final FindValue v in valuesOf(FindAxis.people)) v.count],
+          <int>[3, 2, 1]);
     });
 
-    test('one word narrows to the chits carrying it', () async {
-      await threeChits();
+    test('a tie breaks alphabetically, so nothing swaps on a save', () async {
+      await write('@zoe');
+      await write('@adam');
+      await write('@mira');
+      await settle();
 
-      container.read(filterProvider.notifier).toggleWeather(
-        WeatherCondition.raining,
+      expect(labelsOf(FindAxis.people), <String>['adam', 'mira', 'zoe']);
+    });
+
+    test('one person written two ways counts as one', () async {
+      await write('@Anant_Dubey');
+      await write('again, @anant_dubey');
+      await settle();
+
+      expect(valuesOf(FindAxis.people), hasLength(1));
+      expect(valuesOf(FindAxis.people).single.count, 2);
+      expect(
+        valuesOf(FindAxis.people).single.label,
+        'anant dubey',
+        reason: 'the rows arrive newest first, so the latest spelling is the '
+            'one drawn — change how you write a name and the list follows',
       );
-
-      expect(foundText(), <String>[
-        'Wet desk, @anant again.',
-        'Wet walk with @anant.',
-      ]);
     });
 
-    test('a second row tightens it', () async {
-      await threeChits();
+    test('an underscore is what joins a name — a space does not', () async {
+      await write('@anant_dubey');
+      await write('@anant dubey');
+      await settle();
 
-      final Filter filter = container.read(filterProvider.notifier);
-      filter.toggleWeather(WeatherCondition.raining);
-      filter.toggleMotion(MotionState.walking);
-
-      expect(foundText(), <String>['Wet walk with @anant.']);
+      expect(
+        labelsOf(FindAxis.people),
+        <String>['anant', 'anant dubey'],
+        reason: 'the second chit tags @anant and leaves "dubey" as words',
+      );
     });
 
-    test('a second word in the same row widens it', () async {
-      await threeChits();
+    test('naming somebody twice in one chit counts once', () async {
+      await write('@anant and @anant again');
+      await write('@mira');
+      await settle();
 
-      final Filter filter = container.read(filterProvider.notifier);
-      filter.toggleWeather(WeatherCondition.raining);
-      filter.toggleWeather(WeatherCondition.clear);
-
-      expect(foundText(), hasLength(3));
+      expect(
+        <String, int>{
+          for (final FindValue v in valuesOf(FindAxis.people)) v.label: v.count,
+        },
+        <String, int>{'anant': 1, 'mira': 1},
+      );
     });
 
-    test('a person filter reaches both spellings', () async {
-      await threeChits();
+    test('topics are their own axis, not mixed in with people', () async {
+      await write('@anant about #rent');
+      await settle();
 
-      container.read(filterProvider.notifier).togglePerson('person:anant');
-
-      expect(foundText(), <String>[
-        'Wet desk, @anant again.',
-        'Wet walk with @anant.',
-      ]);
-    });
-
-    test('tapping the same word again lets it go', () async {
-      await threeChits();
-
-      final Filter filter = container.read(filterProvider.notifier);
-      filter.toggleWeather(WeatherCondition.raining);
-      expect(foundText(), hasLength(2));
-
-      filter.toggleWeather(WeatherCondition.raining);
-      expect(container.read(filterProvider).isEmpty, isTrue);
-      expect(foundText(), hasLength(3));
-    });
-
-    test('Show everything puts every word out at once', () async {
-      await threeChits();
-
-      final Filter filter = container.read(filterProvider.notifier);
-      filter.toggleWeather(WeatherCondition.raining);
-      filter.togglePerson('person:anant');
-      expect(container.read(filterProvider).chosen, 2);
-
-      filter.clear();
-      expect(container.read(filterProvider).isEmpty, isTrue);
-      expect(foundText(), hasLength(3));
-    });
-
-    test('a combination nothing answers leaves nothing', () async {
-      await threeChits();
-
-      final Filter filter = container.read(filterProvider.notifier);
-      filter.toggleWeather(WeatherCondition.clear);
-      filter.togglePerson('person:anant');
-
-      expect(foundText(), isEmpty);
+      expect(labelsOf(FindAxis.people), <String>['anant']);
+      expect(labelsOf(FindAxis.topics), <String>['rent']);
     });
   });
 
-  test('a recording with no words carries no tags and is still found', () async {
-    await write('Words.', at: monday);
-    await settle();
+  group('a value opens the chits carrying it', () {
+    List<String> chitsOf(FindAxis axis, String slug) => <String>[
+      for (final DayGroup day in container.read(
+        chitsOfValueProvider(axis, slug),
+      ))
+        for (final Chit chit in day.chits) chit.text!,
+    ];
 
-    expect(container.read(facetsProvider).tagsByChit, isEmpty);
-    expect(foundText(), <String>['Words.']);
+    test('weather, newest first', () async {
+      await write('first wet', weather: WeatherCondition.raining);
+      await write('dry', weather: WeatherCondition.clear);
+      await write('second wet', weather: WeatherCondition.raining);
+      await settle();
+
+      expect(chitsOf(FindAxis.weather, 'raining'), <String>[
+        'second wet',
+        'first wet',
+      ]);
+    });
+
+    test('a person, reached by the folded label', () async {
+      await write('one @Anant_Dubey');
+      await write('two @anant_dubey');
+      await write('three @mira');
+      await settle();
+
+      expect(chitsOf(FindAxis.people, 'anant dubey'), <String>[
+        'two @anant_dubey',
+        'one @Anant_Dubey',
+      ]);
+    });
+
+    test('a topic of the same name is a different value', () async {
+      await write('person @rent');
+      await write('topic #rent');
+      await settle();
+
+      expect(chitsOf(FindAxis.people, 'rent'), <String>['person @rent']);
+      expect(chitsOf(FindAxis.topics, 'rent'), <String>['topic #rent']);
+    });
+
+    test('a value nothing carries is empty, not an error', () async {
+      await write('a', weather: WeatherCondition.raining);
+      await settle();
+
+      expect(chitsOf(FindAxis.weather, 'windy'), isEmpty);
+      expect(chitsOf(FindAxis.people, 'nobody'), isEmpty);
+    });
+
+    test('the slug is the enum name, not the word on screen', () async {
+      await write('night', weather: WeatherCondition.clearNight);
+      await settle();
+
+      final FindValue value = valuesOf(FindAxis.weather).single;
+      expect(value.slug, 'clearNight');
+      expect(value.label, 'clear night');
+      expect(chitsOf(FindAxis.weather, value.slug), <String>['night']);
+    });
   });
 }
