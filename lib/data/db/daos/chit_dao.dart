@@ -86,6 +86,8 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
 
   Future<void> insertRow(ChitsCompanion row) => into(chits).insert(row);
 
+  Future<void> transact(Future<void> Function() writes) => transaction(writes);
+
   Future<int> updateChitOf({
     required String id,
     required String? text,

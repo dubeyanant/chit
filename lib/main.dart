@@ -13,6 +13,7 @@ import 'data/audio/just_audio_player.dart';
 import 'data/audio/record_audio_recorder.dart';
 import 'data/db/app_database.dart';
 import 'data/dev/debug_seeder.dart';
+import 'data/dev/frame_log.dart';
 import 'data/location/geolocator_location_service.dart';
 import 'data/preferences/prefs_first_run_store.dart';
 import 'data/repositories/chit_repository_impl.dart';
@@ -27,6 +28,8 @@ import 'domain/services/weather_service.dart';
 import 'features/onboarding/application/first_run_controller.dart';
 
 const String _seedMode = String.fromEnvironment('CHIT_SEED');
+
+const bool _logFrames = bool.fromEnvironment('CHIT_FRAMES');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,6 +80,8 @@ Future<void> main() async {
     );
     unawaited(seeder.apply(_seedMode).then(debugPrint));
   }
+
+  if (_logFrames) FrameLog(report: debugPrint).watch();
 
   if (!container.read(firstRunControllerProvider)) {
     WidgetsBinding.instance.addPostFrameCallback((Duration _) {

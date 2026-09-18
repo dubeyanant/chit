@@ -29,6 +29,16 @@ final class DebugSeeder {
 
   static const String modeClear = 'clear';
 
+  static const String modeStress = 'stress';
+
+  static const String stressPrefix = '${idPrefix}s';
+
+  static const int stressRows = 2000;
+
+  static const int stressDays = 1095;
+
+  static const int stressRecordings = 40;
+
   static int get count => _fixture.length;
 
   final ChitDao _dao;
@@ -42,6 +52,10 @@ final class DebugSeeder {
         final SeedOutcome done = await seed();
         return 'chit: seeded ${done.rows} rows and ${done.recordings} '
             'recordings (${count - done.rows} were already there)';
+      case modeStress:
+        final SeedOutcome done = await stress();
+        return 'chit: stressed with ${done.rows} rows and ${done.recordings} '
+            'recordings (${stressRows - done.rows} were already there)';
       case modeClear:
         final SeedOutcome done = await clear();
         return 'chit: cleared ${done.rows} seeded rows and '
@@ -50,7 +64,7 @@ final class DebugSeeder {
         throw ArgumentError.value(
           mode,
           'mode',
-          'CHIT_SEED takes "$modeSeed" or "$modeClear"',
+          'CHIT_SEED takes "$modeSeed", "$modeStress" or "$modeClear"',
         );
     }
   }
@@ -99,6 +113,64 @@ final class DebugSeeder {
       );
       rows++;
     }
+
+    return (rows: rows, recordings: recordings);
+  }
+
+  Future<SeedOutcome> stress() async {
+    final DateTime now = _clock.now();
+    final math.Random dice = math.Random(20260919);
+    int rows = 0;
+    int recordings = 0;
+
+    await _dao.transact(() async {
+      for (int index = 0; index < stressRows; index++) {
+        final String id = '$stressPrefix${index.toString().padLeft(5, '0')}';
+        if (await _dao.byId(id) != null) continue;
+
+        final int daysAgo = (index * stressDays) ~/ stressRows;
+        final DateTime at = Chit.startOfLocalDay(
+          now,
+          offsetDays: -daysAgo,
+        ).add(Duration(minutes: 7 * 60 + dice.nextInt(15 * 60)));
+
+        final bool sounds = index % (stressRows ~/ stressRecordings) == 0;
+        String? audioPath;
+        if (sounds) {
+          audioPath = await _audio.keep(
+            tempPath: await _placeholderRecording(id, _stressAudioSeconds),
+            chitId: id,
+          );
+          recordings++;
+        }
+
+        await _dao.insertRow(
+          ChitsCompanion.insert(
+            id: id,
+            createdAt: at.millisecondsSinceEpoch,
+            localDay: Chit.localDayOf(at),
+            updatedAt: at.millisecondsSinceEpoch,
+            body: Value<String?>(
+              '${_stressWords[index % _stressWords.length]} '
+              '(${index + 1})',
+            ),
+            audioPath: Value<String?>(audioPath),
+            audioMs: Value<int?>(sounds ? _stressAudioSeconds * 1000 : null),
+            weather: Value<WeatherCondition?>(
+              WeatherCondition.values[index % WeatherCondition.values.length],
+            ),
+            lat: Value<double?>(_lat + (index % 97) * _jitter),
+            lon: Value<double?>(_lon - (index % 89) * _jitter),
+            motion: Value<MotionState?>(
+              index % 11 == 0
+                  ? MotionState.values[index % MotionState.values.length]
+                  : null,
+            ),
+          ),
+        );
+        rows++;
+      }
+    });
 
     return (rows: rows, recordings: recordings);
   }
@@ -168,6 +240,15 @@ final class DebugSeeder {
 
     return out.buffer.asUint8List();
   }
+
+  static const int _stressAudioSeconds = 12;
+
+  static const List<String> _stressWords = <String>[
+    'Long enough to wrap onto a second line, which is what the list has to lay out.',
+    'Short one.',
+    'Middle of the day, middle of the week, nothing much to report.',
+    'Two lines of something ordinary, so the rows are not all one height.',
+  ];
 
   static const double _lat = 19.076;
   static const double _lon = 72.8777;

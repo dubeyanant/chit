@@ -16,6 +16,8 @@ class CalendarScreen extends ConsumerWidget {
 
   static const double _pageAhead = 600;
 
+  static const int entranceDays = StaggeredEntrance.cap;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final space = context.space;
@@ -38,14 +40,12 @@ class CalendarScreen extends ConsumerWidget {
               space.gutter,
               space.s5,
               space.gutter,
-              space.s8,
+              0,
             ),
             sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  if (shape != null)
-                    StaggeredEntrance(
+              child: shape == null
+                  ? const SizedBox.shrink()
+                  : StaggeredEntrance(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         MonthBar(
@@ -74,37 +74,74 @@ class CalendarScreen extends ConsumerWidget {
                         _MonthSummary(shape: shape),
                       ],
                     ),
-                  if (days != null)
-                    StaggeredEntrance(
-                      key: ValueKey<int?>(selected),
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        for (final ArchiveDay day in days)
-                          Padding(
-                            padding: EdgeInsets.only(top: space.s6),
-                            child: ArchiveDayGroup(day: day, today: today),
-                          ),
-
-                        if (days.isEmpty && selected != null)
-                          const _EmptyNote(),
-                        if (selected != null)
-                          Padding(
-                            padding: EdgeInsets.only(top: space.s4),
-                            child: Center(
-                              child: QuietButton(
-                                label: 'Show every day',
-                                onPressed: ref
-                                    .read(selectedDayProvider.notifier)
-                                    .clear,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                ],
-              ),
             ),
           ),
+
+          if (days != null) ...<Widget>[
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: space.gutter),
+              sliver: SliverToBoxAdapter(
+                child: StaggeredEntrance(
+                  key: ValueKey<int?>(selected),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    for (final ArchiveDay day in days.take(
+                      CalendarScreen.entranceDays,
+                    ))
+                      Padding(
+                        padding: EdgeInsets.only(top: space.s6),
+                        child: ArchiveDayGroup(day: day, today: today),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: space.gutter),
+              sliver: SliverList.builder(
+                itemCount: days.length <= CalendarScreen.entranceDays
+                    ? 0
+                    : days.length - CalendarScreen.entranceDays,
+                itemBuilder: (BuildContext context, int index) {
+                  final ArchiveDay day =
+                      days[index + CalendarScreen.entranceDays];
+                  return Padding(
+                    key: ValueKey<int>(day.localDay),
+                    padding: EdgeInsets.only(top: space.s6),
+                    child: ArchiveDayGroup(day: day, today: today),
+                  );
+                },
+              ),
+            ),
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                space.gutter,
+                0,
+                space.gutter,
+                space.s8,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    if (days.isEmpty && selected != null) const _EmptyNote(),
+                    if (selected != null)
+                      Padding(
+                        padding: EdgeInsets.only(top: space.s4),
+                        child: Center(
+                          child: QuietButton(
+                            label: 'Show every day',
+                            onPressed: ref
+                                .read(selectedDayProvider.notifier)
+                                .clear,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

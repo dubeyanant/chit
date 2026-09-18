@@ -672,29 +672,16 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ChitsTable chits = $ChitsTable(this);
-  late final Index chitsLocalDay = Index(
-    'chits_local_day',
-    'CREATE INDEX chits_local_day ON chits (local_day)',
-  );
-  late final Index chitsCreatedAt = Index(
-    'chits_created_at',
-    'CREATE INDEX chits_created_at ON chits (created_at)',
-  );
-  late final Index chitsWeather = Index(
-    'chits_weather',
-    'CREATE INDEX chits_weather ON chits (weather)',
+  late final Index chitsDayTime = Index(
+    'chits_day_time',
+    'CREATE INDEX chits_day_time ON chits (local_day, created_at)',
   );
   late final ChitDao chitDao = ChitDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    chits,
-    chitsLocalDay,
-    chitsCreatedAt,
-    chitsWeather,
-  ];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [chits, chitsDayTime];
 }
 
 typedef $$ChitsTableCreateCompanionBuilder = ChitsCompanion Function({

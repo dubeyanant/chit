@@ -144,8 +144,10 @@ dart run build_runner watch                 # leave running while working
 flutter analyze                             # must be clean before a commit
 flutter test
 flutter run                                 # an Android device or emulator
-flutter run --dart-define=CHIT_SEED=seed    # six weeks of chits — DATA-MODEL.md §6
+flutter run --dart-define=CHIT_SEED=seed    # three months of chits — DATA-MODEL.md §6
+flutter run --dart-define=CHIT_SEED=stress  # 2,000 of them, for measuring
 flutter run --dart-define=CHIT_SEED=clear   # and the same build with them taken off again
+flutter run --profile --dart-define=CHIT_FRAMES=true   # frame times to the log
 ```
 
 The design is mobile at 390×844. On Windows, `flutter pub get` warns unless **Developer Mode** is

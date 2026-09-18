@@ -115,3 +115,11 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     handset it was checked on, the two slips and the two answers leave roughly 65dp of slack above
     the first slip; a phone with much less height, or a sentence added to either slip, clips instead
     of scrolling. Cut something before adding something.
+45. **Today's thread is still built eagerly**, and deliberately: it holds one day, and a day is
+    bounded by how much a person writes in one. Somebody writing sixty chits in a day would feel it
+    before the archive does. The fix would be the archive's (ADR-077), but the rail is drawn behind
+    the whole column, so a lazy sliver there is a real piece of work rather than a swap.
+46. **The performance numbers are from one handset** (Android 16, 2,000 chits, 40 recordings,
+    profile build): archive scroll build p50 0.5ms, p90 1.1ms, nothing over the 16.7ms budget, flat
+    at any depth. `CHIT_SEED=stress` and `CHIT_FRAMES=true` are how that is re-checked — before
+    believing a report of jank, ask which build mode it was in.

@@ -20,8 +20,8 @@ lib/
 ├── core/      the four ThemeExtensions of §6, the injected clock, the BuildContext sugar
 ├── domain/    models/ (Chit and its invariant, the stamp, the enums, the screen states, the
 │              sealed AudioEdit) · ambient/ · motion/ · weather/ · repositories/ · services/
-├── data/      db/ · audio/ (store, recorder, player) · dev/ · weather/ · location/ ·
-│              preferences/ · repositories/
+├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
+│              weather/ · location/ · preferences/ · repositories/
 ├── features/  shell, today, composer, calendar, editor, onboarding
 └── shared/    widgets/ (the chit vocabulary) · day_label.dart
 ```
@@ -30,10 +30,18 @@ A widget used by one screen stays in that screen's `presentation/widgets/` until
 wants it. `Clock` lives in `core/`, not `domain` — `core` is imported by every layer and depends on
 none, which is what an injected clock needs.
 
+**The archive is a lazy sliver, and that is load-bearing** (ADR-077). Its day groups are built by
+`SliverList.builder`, so what the reader cannot see is not built; only the first
+`StaggeredEntrance.cap` groups sit in a box adapter, because the entrance needs them all at once and
+that number is bounded. Anything added to that screen must keep the rule: **a list that grows with
+the archive belongs in a sliver that builds on demand.**
+
 **The shared widgets are the chit vocabulary — no state, no provider, each takes only what it
 draws.** `DayThread` is why the archive's *same treatment as Today* is true by construction: one
 widget, not two that look alike. Three earn exceptions — **`AudioPill` watches a provider**, since
-which pill is lit is a property of the app's one player rather than of the row; **`ChitRow`
+which pill is lit is a property of the app's one player rather than of the row — **through a
+`select` that answers with its own row's playback**, so one pill's playhead does not rebuild the
+forty pills around it (ADR-077); **`ChitRow`
 navigates**, pushing the editor itself rather than taking a callback both callers would pass
 identically (ADR-061); and **`Microphone` takes a callback**, since the two screens that draw it
 send the same take to different owners (ADR-065).

@@ -102,10 +102,20 @@ void main() {
       expect(await schemaOf('chits'), contains('PRIMARY KEY'));
     });
 
-    test('the three indexes of DATA-MODEL.md §1 exist', () async {
-      expect(await schemaOf('chits_local_day'), contains('local_day'));
-      expect(await schemaOf('chits_created_at'), contains('created_at'));
-      expect(await schemaOf('chits_weather'), contains('weather'));
-    });
+    test(
+      'the one index of DATA-MODEL.md §1 reads in the archive\'s order',
+      () async {
+        final String index = await schemaOf('chits_day_time');
+        expect(index, contains('local_day'));
+        expect(index, contains('created_at'));
+        expect(
+          index.indexOf('local_day'),
+          lessThan(index.indexOf('created_at')),
+          reason:
+              'the archive orders by day first; a suffix column cannot '
+              'answer a prefix query',
+        );
+      },
+    );
   });
 }
