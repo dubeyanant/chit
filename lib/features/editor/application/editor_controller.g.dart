@@ -8,32 +8,13 @@ part of 'editor_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The chit the editor is showing — **ADR-017**.
+/// A saved chit being edited — **ADR-017, ADR-062**.
 ///
-/// A one-shot read rather than a stream. The thread and the calendar watch,
-/// because two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is
-/// a screen somebody is typing on, and a row re-emitting under a caret is a
-/// screen that fights its own user. The only thing that writes this row while
-/// the editor is open is the editor.
-///
-/// **Null means the chit is gone.** The screen leaves rather than drawing
-/// nothing — an id can outlive its row across a delete, and a blank screen
-/// with a back arrow is a dead end that says nothing about why.
-///
-/// Keyed by id so two chits opened in one session are two states, and
-/// auto-disposed so leaving the screen forgets it: unlike the recording
-/// controller (ADR-057) nothing here outlives the screen.
-
-@ProviderFor(editorChit)
-final editorChitProvider = EditorChitFamily._();
-
-/// The chit the editor is showing — **ADR-017**.
-///
-/// A one-shot read rather than a stream. The thread and the calendar watch,
-/// because two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is
-/// a screen somebody is typing on, and a row re-emitting under a caret is a
-/// screen that fights its own user. The only thing that writes this row while
-/// the editor is open is the editor.
+/// **Loaded once, not watched.** The thread and the calendar watch, because
+/// two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is a screen
+/// somebody is typing on, and a row re-emitting under a caret is a screen that
+/// fights its own user. The only thing that writes this row while the editor
+/// is open is the editor.
 ///
 /// **Null means the chit is gone.** The screen leaves rather than drawing
 /// nothing — an id can outlive its row across a delete, and a blank screen
@@ -41,18 +22,39 @@ final editorChitProvider = EditorChitFamily._();
 ///
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
-/// controller (ADR-057) nothing here outlives the screen.
+/// controller (ADR-057) nothing here outlives the screen. **Every decision the
+/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// lets ADR-031 hold: there is nothing here a test would need a widget for.
 
-final class EditorChitProvider
-    extends $FunctionalProvider<AsyncValue<Chit?>, Chit?, FutureOr<Chit?>>
-    with $FutureModifier<Chit?>, $FutureProvider<Chit?> {
-  /// The chit the editor is showing — **ADR-017**.
+@ProviderFor(EditorController)
+final editorControllerProvider = EditorControllerFamily._();
+
+/// A saved chit being edited — **ADR-017, ADR-062**.
+///
+/// **Loaded once, not watched.** The thread and the calendar watch, because
+/// two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is a screen
+/// somebody is typing on, and a row re-emitting under a caret is a screen that
+/// fights its own user. The only thing that writes this row while the editor
+/// is open is the editor.
+///
+/// **Null means the chit is gone.** The screen leaves rather than drawing
+/// nothing — an id can outlive its row across a delete, and a blank screen
+/// with a back arrow is a dead end that says nothing about why.
+///
+/// Keyed by id so two chits opened in one session are two states, and
+/// auto-disposed so leaving the screen forgets it: unlike the recording
+/// controller (ADR-057) nothing here outlives the screen. **Every decision the
+/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// lets ADR-031 hold: there is nothing here a test would need a widget for.
+final class EditorControllerProvider
+    extends $AsyncNotifierProvider<EditorController, EditorState?> {
+  /// A saved chit being edited — **ADR-017, ADR-062**.
   ///
-  /// A one-shot read rather than a stream. The thread and the calendar watch,
-  /// because two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is
-  /// a screen somebody is typing on, and a row re-emitting under a caret is a
-  /// screen that fights its own user. The only thing that writes this row while
-  /// the editor is open is the editor.
+  /// **Loaded once, not watched.** The thread and the calendar watch, because
+  /// two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is a screen
+  /// somebody is typing on, and a row re-emitting under a caret is a screen that
+  /// fights its own user. The only thing that writes this row while the editor
+  /// is open is the editor.
   ///
   /// **Null means the chit is gone.** The screen leaves rather than drawing
   /// nothing — an id can outlive its row across a delete, and a blank screen
@@ -60,42 +62,37 @@ final class EditorChitProvider
   ///
   /// Keyed by id so two chits opened in one session are two states, and
   /// auto-disposed so leaving the screen forgets it: unlike the recording
-  /// controller (ADR-057) nothing here outlives the screen.
-  EditorChitProvider._({
-    required EditorChitFamily super.from,
+  /// controller (ADR-057) nothing here outlives the screen. **Every decision the
+  /// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+  /// lets ADR-031 hold: there is nothing here a test would need a widget for.
+  EditorControllerProvider._({
+    required EditorControllerFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
-         name: r'editorChitProvider',
+         name: r'editorControllerProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$editorChitHash();
+  String debugGetCreateSourceHash() => _$editorControllerHash();
 
   @override
   String toString() {
-    return r'editorChitProvider'
+    return r'editorControllerProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  $FutureProviderElement<Chit?> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<Chit?> create(Ref ref) {
-    final argument = this.argument as String;
-    return editorChit(ref, argument);
-  }
+  EditorController create() => EditorController();
 
   @override
   bool operator ==(Object other) {
-    return other is EditorChitProvider && other.argument == argument;
+    return other is EditorControllerProvider && other.argument == argument;
   }
 
   @override
@@ -104,15 +101,15 @@ final class EditorChitProvider
   }
 }
 
-String _$editorChitHash() => r'acbed83d43abc01f608ab9c2eacdd14249dd2707';
+String _$editorControllerHash() => r'10588c7125fdf1f44ffb8873c68bb57988ca8082';
 
-/// The chit the editor is showing — **ADR-017**.
+/// A saved chit being edited — **ADR-017, ADR-062**.
 ///
-/// A one-shot read rather than a stream. The thread and the calendar watch,
-/// because two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is
-/// a screen somebody is typing on, and a row re-emitting under a caret is a
-/// screen that fights its own user. The only thing that writes this row while
-/// the editor is open is the editor.
+/// **Loaded once, not watched.** The thread and the calendar watch, because
+/// two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is a screen
+/// somebody is typing on, and a row re-emitting under a caret is a screen that
+/// fights its own user. The only thing that writes this row while the editor
+/// is open is the editor.
 ///
 /// **Null means the chit is gone.** The screen leaves rather than drawing
 /// nothing — an id can outlive its row across a delete, and a blank screen
@@ -120,26 +117,35 @@ String _$editorChitHash() => r'acbed83d43abc01f608ab9c2eacdd14249dd2707';
 ///
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
-/// controller (ADR-057) nothing here outlives the screen.
+/// controller (ADR-057) nothing here outlives the screen. **Every decision the
+/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// lets ADR-031 hold: there is nothing here a test would need a widget for.
 
-final class EditorChitFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Chit?>, String> {
-  EditorChitFamily._()
+final class EditorControllerFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          EditorController,
+          AsyncValue<EditorState?>,
+          EditorState?,
+          FutureOr<EditorState?>,
+          String
+        > {
+  EditorControllerFamily._()
     : super(
         retry: null,
-        name: r'editorChitProvider',
+        name: r'editorControllerProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  /// The chit the editor is showing — **ADR-017**.
+  /// A saved chit being edited — **ADR-017, ADR-062**.
   ///
-  /// A one-shot read rather than a stream. The thread and the calendar watch,
-  /// because two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is
-  /// a screen somebody is typing on, and a row re-emitting under a caret is a
-  /// screen that fights its own user. The only thing that writes this row while
-  /// the editor is open is the editor.
+  /// **Loaded once, not watched.** The thread and the calendar watch, because
+  /// two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is a screen
+  /// somebody is typing on, and a row re-emitting under a caret is a screen that
+  /// fights its own user. The only thing that writes this row while the editor
+  /// is open is the editor.
   ///
   /// **Null means the chit is gone.** The screen leaves rather than drawing
   /// nothing — an id can outlive its row across a delete, and a blank screen
@@ -147,11 +153,52 @@ final class EditorChitFamily extends $Family
   ///
   /// Keyed by id so two chits opened in one session are two states, and
   /// auto-disposed so leaving the screen forgets it: unlike the recording
-  /// controller (ADR-057) nothing here outlives the screen.
+  /// controller (ADR-057) nothing here outlives the screen. **Every decision the
+  /// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+  /// lets ADR-031 hold: there is nothing here a test would need a widget for.
 
-  EditorChitProvider call(String id) =>
-      EditorChitProvider._(argument: id, from: this);
+  EditorControllerProvider call(String id) =>
+      EditorControllerProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'editorChitProvider';
+  String toString() => r'editorControllerProvider';
+}
+
+/// A saved chit being edited — **ADR-017, ADR-062**.
+///
+/// **Loaded once, not watched.** The thread and the calendar watch, because
+/// two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is a screen
+/// somebody is typing on, and a row re-emitting under a caret is a screen that
+/// fights its own user. The only thing that writes this row while the editor
+/// is open is the editor.
+///
+/// **Null means the chit is gone.** The screen leaves rather than drawing
+/// nothing — an id can outlive its row across a delete, and a blank screen
+/// with a back arrow is a dead end that says nothing about why.
+///
+/// Keyed by id so two chits opened in one session are two states, and
+/// auto-disposed so leaving the screen forgets it: unlike the recording
+/// controller (ADR-057) nothing here outlives the screen. **Every decision the
+/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// lets ADR-031 hold: there is nothing here a test would need a widget for.
+
+abstract class _$EditorController extends $AsyncNotifier<EditorState?> {
+  late final _$args = ref.$arg as String;
+  String get id => _$args;
+
+  FutureOr<EditorState?> build(String id);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<EditorState?>, EditorState?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<EditorState?>, EditorState?>,
+              AsyncValue<EditorState?>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
 }

@@ -76,6 +76,20 @@ final class AudioStore {
     }
   }
 
+  /// Deletes a kept recording — **Remove** in the editor, and the whole-chit
+  /// delete (ADR-063).
+  ///
+  /// The row is written first and this runs after: a row pointing at a file
+  /// that is not there is a corruption, and a file no row points at is only
+  /// an orphan, which [sweep] collects if this never runs. A file already gone
+  /// is not an error, for the same reason [discardTemp] says.
+  Future<void> delete(String relativePath) async {
+    final File file = await resolve(relativePath);
+    if (file.existsSync()) {
+      await file.delete();
+    }
+  }
+
   /// The file behind a stored path, for playback.
   ///
   /// It may not exist: a recording that has vanished is a loss, not a

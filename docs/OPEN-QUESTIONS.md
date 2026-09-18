@@ -34,8 +34,9 @@ open chit throws away something that was never a record, and gets no confirmatio
 *which is why the open chit's Discard could go without one either* (ADR-060). Discarding an
 edit throws away a change to something that **is** a record, and gets one.
 
-A chit's **audio is never editable and never removable**, here or anywhere. Editing changes
-what the chit says, never what was said.
+*This section said a chit's audio was never editable and never removable.* **Reversed on
+18 September 2026** (ADR-063): the recording is removable and replaceable from the editor,
+like the words. What an edit still cannot touch is the moment — the stamp and the day.
 
 The affordance in the thread arrives with the editor, in the same change — until then a chit
 in the thread is still not tappable, because a pointer that leads nowhere is worse than none.

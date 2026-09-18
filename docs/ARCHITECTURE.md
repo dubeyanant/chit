@@ -38,7 +38,7 @@ lib/
 ├── core/            the four ThemeExtensions of DESIGN-SYSTEM.md §6, the injected clock (ADR-012),
 │                     and the BuildContext sugar that reaches them
 ├── domain/
-│   ├── models/      Chit and its invariant, the stamp, the enums, composer and recording state
+│   ├── models/      Chit and its invariant, the stamp, the enums, composer, recording and editor state, and the sealed `AudioEdit`
 │   ├── ambient/     which one fact the stamp draws — the ladder (ADR-038)
 │   ├── motion/      speed + accuracy + altitude → one of the four states
 │   ├── weather/     WMO code + is_day + wind → one of the five words
@@ -104,7 +104,7 @@ its stated file path was.
 | Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `monthSummariesProvider`, `archiveChitsProvider` | auto-disposed; Drift re-emits on subscribe |
 | The clock, once | `todayProvider`, `todayLocalDayProvider`, `timelineQueryWindowProvider`, `visibleMonthProvider` | auto-disposed; **one read of the clock per screen** — see below |
 | Derived | `timelineWindowProvider`, `drawnMonthProvider`, `archiveDaysProvider`, `archiveLimitProvider` | auto-disposed; pure functions of the above — except that `drawnMonthProvider` and `archiveDaysProvider` are notifiers that **hold their last answer while the stream under them is loading** (ADR-049), so each is a function of its inputs and its own last output |
-| Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider` | auto-disposed |
+| Screen state | `composerControllerProvider`, `selectedDayProvider`, `archivePagesProvider`, `editorControllerProvider(id)` | auto-disposed; the editor's is a family keyed by chit id, and every rule its screen draws is a getter on `EditorState` (TASKS.md D11) |
 | A take | `recordingControllerProvider` | **`keepAlive`** — ADR-057. The one exception, because a take begins before the sheet exists and finishes after it has gone |
 
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** §1's layer
@@ -259,7 +259,7 @@ nothing.
 **The row is written first, patched after only if stale.** A save inserts with whatever is
 held; if that reading is older than five minutes, a fresh read starts beside the insert and
 corrects the row through `updateAmbient` when it lands — one capture both patches the row and
-becomes the next chit's preview. `updateAmbient` is a separate method from `updateText` so one
+becomes the next chit's preview. `updateAmbient` is a separate method from `update` so one
 rule lives in the type: **the patch moves neither `createdAt` nor `updatedAt`** (ADR-014).
 
 **What is held is a preview; what a row carries is the record.** A phone left open all day draws
@@ -349,9 +349,12 @@ rather than silently overwriting it (§3.2).
 `ChitRepository.save()` writes the row and, when there is a recording, moves the audio into
 place — one call, ordered so a failed file move never leaves a row pointing at nothing.
 
-`updateText()` is the ADR-014 counterpart: it changes only `text` and `updatedAt`
-— `createdAt`, `localDay` and `audioPath` are not parameters, so an edit cannot move a chit in
-the thread, relight a calendar tile, or lose a recording.
+`update()` is the editor's counterpart (ADR-014, ADR-063): the words and a sealed `AudioEdit`
+in one write, moving `updatedAt` — `createdAt`, `localDay` and the ambient fields are not
+parameters, so an edit cannot move a chit in the thread, relight a calendar tile, or change the
+moment it was written under. `delete()` takes the row and then the file. The editor's controller
+loads its chit **once** rather than watching it (ADR-062), so it is the one screen that does not
+re-emit on a write — the write is its own.
 
 Everything downstream is a Drift stream — the thread, the timeline, the calendar density and the
 month total are four providers over four queries, so one save updates them all by construction.
@@ -459,7 +462,8 @@ What is tested:
 
 - **Repository and DAO**, against `NativeDatabase.memory()` — the at-least-one invariant, the
   `localDay` across a midnight and a timezone change, audio move-on-save
-  and delete-on-discard, `updateText` touching nothing else. *There is no migration test — there
+  and delete-on-discard, `update` and `delete` touching nothing about the moment and refusing an
+  empty chit before any file moves. *There is no migration test — there
   are no migrations (ADR-059).*
 - **Models**, where §5's invariant fails first (a chit that cannot be *built*) and again at the
   table's check constraints, which survive a release build with asserts compiled out.

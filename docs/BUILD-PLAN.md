@@ -245,24 +245,31 @@ handle a chit that already carries an audio pill, and after M5 every chit shape 
 - The affordance in the thread — on Today and in the archive, both, in this change. Pointer,
   focus stop and button semantics arrive together with the screen they lead to; that is what
   M2 and M4 have been holding back.
-- The editor screen: the ambient stamp, the audio pill, the text. Same slip treatment as a
-  chit in the thread, because it is the same chit.
-- **The audio is not editable and not removable.** No control offers it — not disabled, not
-  present. Editing changes what the chit says, never what was said.
-- Dirty tracking, and the save prompt on leaving with unsaved changes: keep the edit, or
-  discard it.
-- Discard, and a hard quit, both cancel the edit and land on Today. Nothing is written.
-- `ChitRepository.updateText()` is called at last — it has existed since M1 precisely so this
-  milestone does not have to grow one in a hurry. It touches `text` and `updatedAt`, and nothing
-  else.
+- The editor screen, above the tab shell (ADR-062): the ambient stamp, the audio pill, the
+  text. Same slip treatment as a chit in the thread, because it is the same chit.
+- **The recording is removable and replaceable, like the words** (ADR-063). *This section
+  said the opposite until 18 September 2026 — no control, not disabled, not present — and the
+  owner reversed it when the milestone was cut.* Removal is staged until Save, since a chit
+  with neither words nor a take is a row the database refuses.
+- Dirty tracking — *differs from what was loaded* — and the prompt on leaving with unsaved
+  changes: keep the edit, or discard it. Cancel, the back arrow and the system back gesture all
+  raise it; with nothing changed all three just leave.
+- **A chit can be deleted**, from the editor, behind a confirmation and with no undo (open
+  item 9). *Delete this chit*, named in full.
+- `ChitRepository.updateText()` becomes `update()`, one write taking the text and a sealed
+  `AudioEdit`; it touches `text`, the recording and `updatedAt`, and never the stamp or the day.
+- **Today's Discard goes** (ADR-060), replaced by **Remove** on the pill — the one voice
+  control on both screens.
 
 **Done when** a saved chit can be opened, corrected and saved; when leaving with changes asks
-and answering *discard* leaves the row exactly as it was; when editing a chit that has audio
-leaves the recording playable and untouched; and when an edit provably moves nothing on the
+and answering *discard* leaves the row exactly as it was; when a recording can be removed,
+replaced, and left alone, and a removal that would empty the chit withholds Save; when a chit
+can be deleted and its recording goes with it; and when an edit provably moves nothing on the
 timeline and relights no calendar tile.
 
-The prompt is the point of this milestone as much as the editor is. Discarding an open chit
+The prompt is the point of this milestone as much as the editor is. Abandoning an open chit
 needs no confirmation and gets none (BEHAVIOUR.md §3.1) — discarding an edit to a record does.
+`docs/TASKS.md` carries the cut and the twelve decisions it turns on.
 
 ---
 

@@ -27,12 +27,12 @@ settings screen (open item 22).
 | **D2** | **Tapping a chit row opens the editor**, and the thread offers nothing else — no long-press, no swipe. The whole row is the target, on Today and in the archive, in one change | ADR-017, ADR-062 |
 | **D3** | **The editor covers the tab shell.** A route above it, not inside a branch: one task with one way out, so a tab change cannot strand a half-typed edit | ADR-011, ADR-062 |
 | **D4** | **The stamp cannot move.** `createdAt`, `localDay`, `weather`, `lat`, `lon` and `motion` are not parameters of anything the editor can call. `updatedAt` moves on any edit, text or audio | ADR-014 |
-| **D5** | **A chit's recording can be removed and replaced** — reverses ADR-014's second half, which said audio was neither editable nor removable anywhere. The pill's `Remove` is one control on both screens | ADR-061 |
+| **D5** | **A chit's recording can be removed and replaced** — reverses ADR-014's second half, which said audio was neither editable nor removable anywhere. The pill's `Remove` is one control on both screens | ADR-063 |
 | **D6** | **Removing a recording in the editor is staged until Save**, and it cannot be otherwise: a row with neither words nor audio is one the check constraint refuses. It is also what makes Cancel honest | README §5, DATA-MODEL.md §2 |
 | **D7** | **Save appears only once something has changed**, and is withheld when the chit holds nothing — a removal that empties the chit leaves Cancel and Delete alone. Today's rule, on Today's own terms: a control arrives when there is something for it to do, and a retired one leaves rather than greys out | BEHAVIOUR.md §4.1 |
-| **D8** | **Three acts, three words.** *Discard* is gone; *Cancel* abandons an edit; *Delete this chit* destroys a record, named in full so it cannot be misread | ADR-063, CLAUDE.md §4.1 |
-| **D9** | **The prompt is a slip-style sheet, and it is the app's first confirmation.** No `showDialog` and no `SnackBar` exist anywhere yet, so whatever this is becomes the idiom every later prompt inherits | ADR-011, ADR-063 |
-| **D10** | **Delete confirms and there is no undo.** There is no trash and no backend, so an undo would be a whole feature pretending to be a nicety | ADR-063 |
+| **D8** | **Three acts, three words.** *Discard* is gone; *Cancel* abandons an edit; *Delete this chit* destroys a record, named in full so it cannot be misread | ADR-064, CLAUDE.md §4.1 |
+| **D9** | **The prompt is a slip-style sheet, and it is the app's first confirmation.** No `showDialog` and no `SnackBar` exist anywhere yet, so whatever this is becomes the idiom every later prompt inherits | ADR-011, ADR-064 |
+| **D10** | **Delete confirms and there is no undo.** There is no trash and no backend, so an undo would be a whole feature pretending to be a nicety | ADR-064 |
 | **D11** | **The controller decides; the widget draws.** Whether to prompt, whether Save shows, whether the chit is still legal — all controller state, because ADR-031 means none of it can be tested through a screen | ADR-031 |
 | **D12** | **Nothing here boxes in `@person` and `#hashtag`.** A row that is a button can still carry tappable spans — a `TapGestureRecognizer` on a `TextSpan` wins the gesture arena against an ancestor — so `ChitRow`'s `Text` becomes a `Text.rich` later without restructuring. Nothing goes in the schema now | OPEN-QUESTIONS.md §9 |
 
@@ -78,17 +78,17 @@ settings screen (open item 22).
       contrast test decided this rather than checking it**: `--ink-faint` measures 4.42:1 on the
       wash and fails §6.4's floor (ADR-061).
 
-## C. Editing the text
+## C. Editing the text ✅
 
-- [ ] `EditorController` gains the field and **dirty tracking**: dirty is *differs from what was
+- [x] `EditorController` gains the field and **dirty tracking**: dirty is *differs from what was
       loaded*, not *was typed in*, so typing a character and deleting it again is not a change.
-- [ ] `ChitRepository.updateText` becomes **`update`**, one transactional write taking the text
+- [x] `ChitRepository.updateText` becomes **`update`**, one transactional write taking the text
       and a sealed `AudioEdit` — `Keep` (the default), `Remove`, `Replace`. Its guarantee was
       that an edit could not touch audio, and D5 has taken that away; what replaces it is one
       write, exhaustively switched, with the invariant asserted in one place. `updatedAt` moves;
       nothing else does (D4).
-- [ ] Save, in `PrimaryButton`'s weight, appearing only once dirty (D7).
-- [ ] Tests: the controller's dirty rule; `chit_repository_test.dart` for `update` against
+- [x] Save, in `PrimaryButton`'s weight, appearing only once dirty (D7).
+- [x] Tests: the controller's dirty rule; `chit_repository_test.dart` for `update` against
       `NativeDatabase.memory()` — the text changes, `updatedAt` moves, `createdAt`, `localDay`
       and the three ambient fields do not, and a blank text is refused.
 
@@ -111,9 +111,10 @@ settings screen (open item 22).
       reusing the recording sheet unchanged. A new take is staged the same way.
 - [ ] Save withheld when a removal leaves the chit holding nothing; Cancel and *Delete this
       chit* are what is left (D7).
-- [ ] `AudioEdit.Remove` and `.Replace` wired through `update`: the row stops pointing at the
-      old file and ADR-008's existing sweep collects it, so `AudioStore` stays the single owner
-      of a recording's lifetime.
+- [x] `AudioEdit.remove` and `.replace` through `update` — **built and tested in group C** with
+      the repository. *The plan said the old file would ride the sweep; it is deleted after the
+      row is written instead*, so a removed recording does not sit on disk until the next
+      launch, and the sweep is the backstop for a delete that fails (ADR-063).
 - [ ] A playing recording is stopped before its file stops being the row's — `stopIf`, as
       `save()` already does.
 - [ ] Tests: the controller's legality rule; the repository's remove and replace paths; that a
@@ -121,7 +122,8 @@ settings screen (open item 22).
 
 ## F. Delete this chit
 
-- [ ] `ChitRepository.delete(id)` — the row and the file together (open item 9).
+- [x] `ChitRepository.delete(id)` — the row and the file together (open item 9). **Built and
+      tested in group C** beside `update`; the screen's half is below.
 - [ ] *Delete this chit* below the slip, in `QuietButton`'s weight and apart from the action
       row: distance from Save is the first defence, and the prompt is the second.
 - [ ] *Delete this chit?*, and *"The recording goes with it."* on a chit that has one →

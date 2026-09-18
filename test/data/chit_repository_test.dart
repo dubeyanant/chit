@@ -5,6 +5,7 @@ import 'package:chit/data/audio/audio_store.dart';
 import 'package:chit/data/db/app_database.dart';
 import 'package:chit/data/repositories/chit_repository_impl.dart';
 import 'package:chit/domain/models/ambient_stamp.dart';
+import 'package:chit/domain/models/audio_edit.dart';
 import 'package:chit/domain/models/chit.dart';
 import 'package:chit/domain/models/day_summary.dart';
 import 'package:chit/domain/models/motion_state.dart';
@@ -305,7 +306,7 @@ void main() {
       );
 
       clock.moveTo(DateTime(2026, 9, 16, 8, 0));
-      await repo.updateText(id: saved.id, text: 'Late one, corrected.');
+      await repo.update(id: saved.id, text: 'Late one, corrected.');
 
       // A typo found the next morning is the same typo. Correcting it must not
       // relight a calendar tile (ADR-014).
@@ -425,7 +426,7 @@ void main() {
       'updatedAt does not move — ADR-014 reserves it for the text',
       () async {
         // The clock has moved on by an hour in setUp, so an implementation that
-        // stamped this the way `updateText` does would be caught here. A signal
+        // stamped this the way `update` does would be caught here. A signal
         // arriving late is not an edit anybody made, and an edit is the user's act.
         await repo.updateAmbient(
           id: original.id,
@@ -464,10 +465,10 @@ void main() {
       },
     );
 
-    test('an unknown id is silent, where updateText throws', () async {
+    test('an unknown id is silent, where update throws', () async {
       // Nobody is waiting on this and no screen could report it: a row deleted
       // between the write and the patch is an ordinary race (ADR-042). The
-      // contrast with `updateText` is deliberate and is the reason these are
+      // contrast with `update` is deliberate and is the reason these are
       // two methods.
       await expectLater(
         repo.updateAmbient(
@@ -482,7 +483,7 @@ void main() {
     });
   });
 
-  group('updateText (ADR-014)', () {
+  group('update (ADR-014, ADR-063)', () {
     late Chit original;
 
     setUp(() async {
@@ -500,8 +501,8 @@ void main() {
       clock.moveTo(DateTime(2026, 9, 16, 8, 0));
     });
 
-    test('touches text, textOrigin and updatedAt — and nothing else', () async {
-      await repo.updateText(id: original.id, text: 'Train 20 late.');
+    test('a text edit touches text and updatedAt — and nothing else', () async {
+      await repo.update(id: original.id, text: 'Train 20 late.');
 
       final Chit edited = (await repo.byId(original.id))!;
 
@@ -520,12 +521,107 @@ void main() {
       expect(edited.lon, original.lon);
     });
 
-    test('the recording is still there afterwards', () async {
-      await repo.updateText(id: original.id, text: 'Train 20 late.');
+    test('the recording is still there after a text edit', () async {
+      await repo.update(id: original.id, text: 'Train 20 late.');
 
-      // Text is what the chit says and belongs to the user; audio is what was
-      // said and belongs to the moment. Nothing here may touch the second.
+      // `AudioEdit.keep` is the default, and *keep* means the file is not
+      // so much as looked at.
       expect(audioFileOf(original).existsSync(), isTrue);
+    });
+
+    test(
+      'removing the recording clears the row and deletes the file',
+      () async {
+        await repo.update(
+          id: original.id,
+          text: 'Train 20 late.',
+          audio: const AudioEdit.remove(),
+        );
+
+        final Chit edited = (await repo.byId(original.id))!;
+        expect(edited.hasAudio, isFalse);
+        expect(edited.audioDuration, isNull);
+        expect(edited.text, 'Train 20 late.');
+        expect(edited.updatedAt, DateTime(2026, 9, 16, 8, 0));
+        expect(audioFileOf(original).existsSync(), isFalse);
+      },
+    );
+
+    test('replacing the recording moves the new one over the old', () async {
+      final String newTake = p.join(cache.path, 'second.m4a');
+      await File(newTake).writeAsString('a different take');
+      final String before = audioFileOf(original).readAsStringSync();
+
+      await repo.update(
+        id: original.id,
+        text: original.text,
+        audio: AudioEdit.replace(
+          tempPath: newTake,
+          duration: const Duration(seconds: 21),
+        ),
+      );
+
+      final Chit edited = (await repo.byId(original.id))!;
+      expect(edited.audioPath, original.audioPath, reason: 'same name');
+      expect(edited.audioDuration, const Duration(seconds: 21));
+      expect(File(newTake).existsSync(), isFalse, reason: 'moved, not copied');
+      expect(audioFileOf(edited).readAsStringSync(), isNot(before));
+    });
+
+    test('a recording-only chit can be given a replacement', () async {
+      final Chit voiceOnly = await repo.save(
+        stamp: stampAt(morning),
+        audioTempPath: await aRecording('third'),
+        audioDuration: const Duration(seconds: 4),
+      );
+
+      await repo.update(
+        id: voiceOnly.id,
+        text: null,
+        audio: AudioEdit.replace(
+          tempPath: await aRecording('fourth'),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+
+      final Chit edited = (await repo.byId(voiceOnly.id))!;
+      expect(edited.text, isNull);
+      expect(edited.audioDuration, const Duration(seconds: 6));
+    });
+
+    test(
+      'refuses to leave a chit with nothing, before any file moves',
+      () async {
+        final Chit voiceOnly = await repo.save(
+          stamp: stampAt(morning),
+          audioTempPath: await aRecording('fifth'),
+          audioDuration: const Duration(seconds: 4),
+        );
+
+        await expectLater(
+          repo.update(
+            id: voiceOnly.id,
+            text: '  ',
+            audio: const AudioEdit.remove(),
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+
+        expect(
+          audioFileOf(voiceOnly).existsSync(),
+          isTrue,
+          reason: 'the invariant is checked before the disk is touched',
+        );
+        expect((await repo.byId(voiceOnly.id))!.hasAudio, isTrue);
+      },
+    );
+
+    test('blank text with a recording kept is stored as null', () async {
+      await repo.update(id: original.id, text: '   ');
+
+      final Chit edited = (await repo.byId(original.id))!;
+      expect(edited.text, isNull);
+      expect(edited.hasAudio, isTrue);
     });
 
     test('a chit that is only a recording can gain words', () async {
@@ -535,7 +631,7 @@ void main() {
         audioDuration: const Duration(seconds: 4),
       );
 
-      await repo.updateText(
+      await repo.update(
         id: voiceOnly.id,
         text: 'What the machine could not read.',
       );
@@ -545,18 +641,62 @@ void main() {
       expect(edited.hasAudio, isTrue);
     });
 
-    test('refuses to empty a chit', () {
+    test('refuses to empty a text-only chit', () async {
+      final Chit words = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Only words.',
+      );
       expect(
-        () => repo.updateText(id: original.id, text: '   '),
+        () => repo.update(id: words.id, text: '   '),
         throwsA(isA<ArgumentError>()),
       );
     });
 
     test('refuses an id that is not a chit', () {
       expect(
-        () => repo.updateText(id: 'no-such-chit', text: 'Train 20 late.'),
+        () => repo.update(id: 'no-such-chit', text: 'Train 20 late.'),
         throwsA(isA<StateError>()),
       );
+    });
+  });
+
+  group('delete (ADR-063, open item 9)', () {
+    test('the row and the recording go together', () async {
+      final Chit chit = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Gone soon.',
+        audioTempPath: await aRecording(),
+        audioDuration: const Duration(seconds: 9),
+      );
+
+      await repo.delete(chit.id);
+
+      expect(await repo.byId(chit.id), isNull);
+      expect(audioFileOf(chit).existsSync(), isFalse);
+    });
+
+    test('the thread and the calendar re-emit without it', () async {
+      final Chit chit = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Gone soon.',
+      );
+      final Chit stays = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Stays.',
+      );
+
+      await repo.delete(chit.id);
+
+      final List<Chit> day = await repo.watchDay(chit.localDay).first;
+      expect(day.map((Chit c) => c.id), <String>[stays.id]);
+      final List<DaySummary> summaries = await repo
+          .watchDaySummaries(fromDay: chit.localDay, toDay: chit.localDay)
+          .first;
+      expect(summaries.single.count, 1);
+    });
+
+    test('deleting what is already gone is the outcome wanted', () async {
+      await expectLater(repo.delete('no-such-chit'), completes);
     });
   });
 
@@ -754,7 +894,7 @@ void main() {
       final Chit newest = await chitAt(DateTime(2026, 9, 15, 9, 0), 'Two.');
 
       clock.moveTo(DateTime(2026, 9, 20, 8, 0));
-      await repo.updateText(id: oldest.id, text: 'One, corrected.');
+      await repo.update(id: oldest.id, text: 'One, corrected.');
 
       // The archive orders on createdAt and never on updatedAt: a chit belongs
       // to the moment it was written.

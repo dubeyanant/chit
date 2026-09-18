@@ -475,6 +475,14 @@ when or where it was written.
 **A chit whose row has gone leaves the screen** rather than drawing an empty slip. An id
 outlives its row across a delete, and a blank page with a back arrow explains nothing.
 
-*As of M6 group B this screen only reads.* The field, the action row — Cancel and **Save chit**,
-appearing once something has changed — **Remove** on the pill, and *Delete this chit* below the
-slip arrive in groups C to F; `docs/TASKS.md` has them and the decisions they turn on.
+**The words are editable, and Save chit appears once something has changed** — *changed*
+meaning *differs from what was loaded*: typing a character and deleting it again is not a
+change, and neither is a trailing space the save would trim. Save is withheld again if what it
+would write is no longer a chit — a recording removed from a chit with no words — so that state
+is left with Cancel and *Delete this chit* alone. Saving writes the words and whatever was done
+to the recording in one write (ADR-063), moves `updatedAt`, and returns to where the chit was
+opened from.
+
+*As of M6 group C*, Cancel and the prompt it raises, **Remove** on the pill, the microphone's
+return, and *Delete this chit* below the slip are still to come — groups D to F in
+`docs/TASKS.md`, with the decisions they turn on.

@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-nine records, not sixty-two: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty records, not sixty-three: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -34,7 +34,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-011 | `go_router` with a persistent tab shell | returning to a tab costs a fade, not a rebuild |
 | ADR-012 | An injected clock | three behaviours are functions of the current time |
 | ADR-013 | A chit is text, audio, or both | the one-of invariant of §5 |
-| ADR-014 | Saved chits are editable; their audio is not | editing changes what the chit says, never what was said |
+| ADR-014 | Saved chits are editable, and an edit never moves the moment | **its audio half reversed by ADR-063** — the stamp and the day are what an edit cannot touch |
 | ADR-015 | Variable fonts, and weight through `fontVariations` | and the silent failure that comes with them |
 | ADR-016 | Precise location first, coarse as the fallback | and the privacy tension it creates, stated plainly |
 | ADR-017 | The chit editor is a screen, and leaving it asks | settles §8.1 |
@@ -80,6 +80,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-060 | The open chit's Discard goes; a recording is dropped from its pill | M6 group A — Discard's last unique job was the take, and the take is on the pill. The sheet's Discard stays |
 | ADR-061 | A chit in the thread is a button, and its stamp lifts under a finger | M6 group B — one widget, so Today and the archive gain the tap together. No long-press, no swipe |
 | ADR-062 | The editor is a route above the tab shell | M6 group B — one task, one way out; a one-shot read, not a stream; a missing row pops the screen |
+| ADR-063 | An edit is one write, a recording can be removed or replaced, and a chit can be deleted | M6 group C — reverses ADR-014's audio half; the invariant is checked before any file moves |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -268,18 +269,20 @@ than four, and an invariant the database can only partly express.
 
 ---
 
-## ADR-014 — Saved chits are editable; their audio is not
+## ADR-014 — Saved chits are editable, and an edit never moves the moment
 
 `ChitRepository` gains an update path for `text` — *and for `textOrigin` until ADR-058 removed
-it* — and no path that changes or removes `audioPath` on an existing chit. There is no
-principled reason text stops being the user's the moment it is saved: a typo found the next
-morning is the same typo. Text is what the chit says and belongs to the user; audio is what was
-said and belongs
-to the moment: a chit can gain text but never lose a recording, and deleting the whole chit is
-the only way to remove one. Whether the editor is inline or its own screen was left to
-OPEN-QUESTIONS.md §8.1, settled by ADR-017. `updatedAt` stops being written once and forgotten;
-the archive's ordering stays on `createdAt`, since editing does not move a chit from the moment
-it was written.
+it*. There is no principled reason text stops being the user's the moment it is saved: a typo
+found the next morning is the same typo. **The second half of this record is reversed by
+ADR-063.** *It said the audio was neither editable nor removable — text is what the chit says
+and belongs to the user, audio is what was said and belongs to the moment, so a chit could gain
+text but never lose a recording and deleting the whole chit was the only way to remove one.*
+The owner asked for the recording to be as editable as the words, and it is; what survives of
+the argument is the half about the moment: `createdAt`, `localDay` and the ambient fields are
+not parameters of any edit. Whether the editor is inline or its own screen was left to
+OPEN-QUESTIONS.md §8.1, settled by ADR-017. `updatedAt` stops being written once and forgotten
+and moves on any edit; the archive's ordering stays on `createdAt`, since editing does not move
+a chit from the moment it was written.
 
 ---
 
@@ -318,8 +321,9 @@ need to treat this row as more sensitive.
 
 OPEN-QUESTIONS.md §8.1 is settled: a saved chit opens in its own screen, not inline in the thread
 — over inline editing. Leaving with unsaved changes raises a clear prompt (keep or discard);
-quitting outright cancels the edit; the chit's audio stays neither editable nor removable
-anywhere (ADR-014). The thread is a reading surface, and a second editable field among its rows
+quitting outright cancels the edit. *It also said the chit's audio stayed neither editable nor
+removable anywhere; ADR-063 reversed that with ADR-014.* The thread is a reading surface, and a
+second editable field among its rows
 would make it ambiguous which one a tap targets; a screen has room for the stamp, the pill and
 the text without the row growing, and somewhere for the save prompt to live. The prompt exists
 because discarding an edit throws away a change to something real, unlike discarding a
@@ -1006,3 +1010,24 @@ that writes this row while the editor is open is the editor. A **null answer pop
 rather than drawing a slip with nothing on it, since an id outlives its row across a delete and
 a blank screen with a back arrow explains nothing. The header is a back arrow and the chit's
 day — not the wordmark, which would make somewhere you came into read as a second home.
+
+---
+
+## ADR-063 — An edit is one write, a recording can be removed or replaced, and a chit can be deleted
+
+**`ChitRepository.updateText` becomes `update`**, taking the text and a sealed `AudioEdit` —
+`keep`, `remove`, `replace(tempPath, duration)` — and writing both in one statement; and
+**`delete(id)` arrives**, the row and its recording together (open item 9). This **reverses
+ADR-014's second half**: audio was neither editable nor removable anywhere, on the argument that
+it belonged to the moment, and the owner asked for a recording to be removable and replaceable
+like the words are. Chosen over a `removeAudio`/`replaceAudio` pair beside `updateText` because
+a Save that changes the words and drops the take must not be two transactions with a window in
+which the row is legal by accident, and because README §5's invariant then has one place to be
+asserted — on what the row *will* hold, **before any file moves**, so a refused edit leaves the
+disk as it found it. Ordering follows DATA-MODEL.md §5: a replacement moves in first (over the
+old file, since `keep` names files by chit id), a removal is written first and its file deleted
+after, and a delete drops the row then the file — at no point does a row point at nothing, and a
+file nobody points at is only an orphan the sweep collects. `updatedAt` moves on any edit, text
+or audio; the stamp and the day are not parameters and cannot. Cost: the guarantee `updateText`
+carried — *an edit provably cannot lose a recording* — is gone, and what replaces it is the
+weaker, still exhaustive one that an edit cannot move a chit in time or place.

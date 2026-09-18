@@ -5,24 +5,28 @@ import 'package:chit/data/audio/audio_store.dart';
 import 'package:chit/data/db/app_database.dart';
 import 'package:chit/data/repositories/chit_repository_impl.dart';
 import 'package:chit/domain/models/ambient_stamp.dart';
+import 'package:chit/domain/models/audio_edit.dart';
 import 'package:chit/domain/models/chit.dart';
+import 'package:chit/domain/models/editor_state.dart';
 import 'package:chit/domain/repositories/chit_repository.dart';
 import 'package:chit/features/editor/application/editor_controller.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 
 import '../../support/fake_clock.dart';
 
-/// What the editor loads, through a bare `ProviderContainer` — ADR-031.
+/// The editor through a bare `ProviderContainer` — ADR-031, TASKS.md D11.
 ///
-/// M6 group B is a screen you can reach and read, so what a test can hold is
-/// what it reads: the right chit, and the null that means the row has gone.
-/// Whether the slip *looks* like the one in the thread is a device check and
-/// PROGRESS.md carries it.
+/// Every control on the screen turns on a getter of [EditorState], and this
+/// is where those getters are held to their meaning: dirty is *differs from
+/// what was loaded*, Save needs a change *and* a chit to write, and the prompt
+/// guards a change. What the slip looks like is a device check.
 void main() {
   late Directory root;
   late AppDatabase db;
+  late FakeClock clock;
   late ChitRepository repo;
   late ProviderContainer container;
 
@@ -32,7 +36,7 @@ void main() {
   setUp(() async {
     root = await Directory.systemTemp.createTemp('chit-editor-test');
     db = AppDatabase(NativeDatabase.memory());
-    final FakeClock clock = FakeClock(afternoon);
+    clock = FakeClock(afternoon);
     repo = ChitRepositoryImpl(
       dao: db.chitDao,
       audio: AudioStore(Future<Directory>.value(root)),
@@ -52,37 +56,172 @@ void main() {
     if (root.existsSync()) await root.delete(recursive: true);
   });
 
-  Future<Chit> given(String text) => repo.save(
-    stamp: AmbientStamp(capturedAt: afternoon),
-    text: text,
-  );
+  Future<Chit> given(String? text, {bool recorded = false}) async {
+    String? temp;
+    if (recorded) {
+      temp = p.join(root.path, 'take.m4a');
+      await File(temp).writeAsString('audio');
+    }
+    return repo.save(
+      stamp: AmbientStamp(capturedAt: afternoon),
+      text: text,
+      audioTempPath: temp,
+      audioDuration: recorded ? const Duration(seconds: 4) : null,
+    );
+  }
 
-  test('it opens on the chit the id names', () async {
-    final Chit wanted = await given('Room too cold, again.');
-    await given('And a second one, so the id has to do work.');
+  /// The editor open on [chit], held so the auto-dispose family survives the
+  /// test the way the screen holds it.
+  Future<EditorController> open(Chit chit) async {
+    container.listen<AsyncValue<EditorState?>>(
+      editorControllerProvider(chit.id),
+      (AsyncValue<EditorState?>? _, AsyncValue<EditorState?> _) {},
+    );
+    await container.read(editorControllerProvider(chit.id).future);
+    return container.read(editorControllerProvider(chit.id).notifier);
+  }
 
-    final Chit? got = await container.read(
-      editorChitProvider(wanted.id).future,
+  EditorState stateOf(Chit chit) =>
+      container.read(editorControllerProvider(chit.id)).value!;
+
+  group('loading', () {
+    test('it opens on the chit the id names', () async {
+      final Chit wanted = await given('Room too cold, again.');
+      await given('And a second one, so the id has to do work.');
+
+      await open(wanted);
+
+      expect(stateOf(wanted).chit, wanted);
+      expect(stateOf(wanted).text, 'Room too cold, again.');
+    });
+
+    test(
+      'an id with no row answers null, and the screen leaves on it',
+      () async {
+        // An id outlives its row across a delete (group F), which is the case
+        // this exists for. `byId` answers null rather than throwing.
+        expect(
+          await container.read(editorControllerProvider('gone').future),
+          isNull,
+        );
+      },
     );
 
-    expect(got, wanted);
+    test('a recording-only chit opens with an empty field', () async {
+      final Chit voice = await given(null, recorded: true);
+      await open(voice);
+      expect(stateOf(voice).text, '');
+      expect(stateOf(voice).hasAudio, isTrue);
+    });
   });
 
-  test('an id with no row answers null, and the screen leaves on it', () async {
-    // An id outlives its row across a delete (group F), which is the case
-    // this exists for. `byId` answers null rather than throwing, because
-    // nothing here is a fault.
-    expect(await container.read(editorChitProvider('gone').future), isNull);
+  group('dirty is *differs from what was loaded*', () {
+    test('an untouched chit is not dirty, and offers no Save', () async {
+      final Chit chit = await given('Room too cold, again.');
+      await open(chit);
+
+      expect(stateOf(chit).isDirty, isFalse);
+      expect(stateOf(chit).canSave, isFalse);
+      expect(stateOf(chit).shouldPromptOnLeave, isFalse);
+    });
+
+    test('a changed word is dirty', () async {
+      final Chit chit = await given('Room too cold, again.');
+      final EditorController editor = await open(chit);
+
+      editor.edit('Room too warm, again.');
+
+      expect(stateOf(chit).isDirty, isTrue);
+      expect(stateOf(chit).canSave, isTrue);
+      expect(stateOf(chit).shouldPromptOnLeave, isTrue);
+    });
+
+    test('typing a character and deleting it again is not a change', () async {
+      final Chit chit = await given('Room too cold, again.');
+      final EditorController editor = await open(chit);
+
+      editor.edit('Room too cold, again.x');
+      editor.edit('Room too cold, again.');
+
+      expect(stateOf(chit).isDirty, isFalse);
+    });
+
+    test('a trailing space the save would trim is not a change', () async {
+      final Chit chit = await given('Room too cold, again.');
+      final EditorController editor = await open(chit);
+
+      editor.edit('Room too cold, again. ');
+
+      expect(stateOf(chit).isDirty, isFalse);
+    });
   });
 
-  test('the stamp it carries is the one the row was written with', () async {
-    // The editor cannot move a stamp, and the first half of that claim is
-    // that it reads the stored one rather than composing a fresh one.
-    final Chit saved = await given('A chit with a moment attached.');
+  group('Save needs a change and a chit to write — D7', () {
+    test('emptying a text-only chit withholds Save', () async {
+      final Chit chit = await given('Room too cold, again.');
+      final EditorController editor = await open(chit);
 
-    final Chit? got = await container.read(editorChitProvider(saved.id).future);
+      editor.edit('   ');
 
-    expect(got!.stamp.capturedAt, saved.stamp.capturedAt);
-    expect(got.localDay, saved.localDay);
+      expect(stateOf(chit).isDirty, isTrue, reason: 'it *is* a change');
+      expect(stateOf(chit).holdsAnything, isFalse);
+      expect(stateOf(chit).canSave, isFalse);
+      expect(
+        stateOf(chit).shouldPromptOnLeave,
+        isTrue,
+        reason: 'the prompt guards a change, not an available Save',
+      );
+    });
+
+    test('emptying the words of a recorded chit still saves', () async {
+      final Chit both = await given('Words too.', recorded: true);
+      final EditorController editor = await open(both);
+
+      editor.edit('');
+
+      expect(stateOf(both).holdsAnything, isTrue);
+      expect(stateOf(both).canSave, isTrue);
+    });
+  });
+
+  group('save', () {
+    test('writes the words and moves updatedAt, and nothing else', () async {
+      final Chit chit = await given('Trane 20 late.');
+      final EditorController editor = await open(chit);
+
+      editor.edit('Train 20 late.');
+      clock.moveTo(DateTime(2026, 9, 18, 8, 0));
+      await editor.save();
+
+      final Chit edited = (await repo.byId(chit.id))!;
+      expect(edited.text, 'Train 20 late.');
+      expect(edited.updatedAt, DateTime(2026, 9, 18, 8, 0));
+      expect(edited.createdAt, chit.createdAt);
+      expect(edited.localDay, chit.localDay);
+      expect(edited.stamp, chit.stamp);
+    });
+
+    test('does nothing when there is nothing to save', () async {
+      final Chit chit = await given('Room too cold, again.');
+      final EditorController editor = await open(chit);
+
+      clock.moveTo(DateTime(2026, 9, 18, 8, 0));
+      await editor.save();
+
+      expect((await repo.byId(chit.id))!.updatedAt, chit.updatedAt);
+    });
+
+    test('a text-only edit sends AudioEdit.keep', () async {
+      // The default is *leave it alone*. Group E adds the other two; until
+      // then nothing the controller does can reach a recording.
+      final Chit both = await given('Words too.', recorded: true);
+      final EditorController editor = await open(both);
+
+      editor.edit('Different words.');
+      expect(stateOf(both).audio, const AudioEdit.keep());
+      await editor.save();
+
+      expect((await repo.byId(both.id))!.audioPath, both.audioPath);
+    });
   });
 }

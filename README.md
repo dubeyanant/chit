@@ -28,11 +28,12 @@ Then read what that milestone points at, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
-> **Status:** in build, and **M5 is done** — five milestones signed off on a handset. A chit can
-> be typed or spoken, carries the time, the weather, what the phone was doing and that a place
-> was noted, and is read back on Today, on a scrolling timeline and in a calendar of the months
-> written. **Voice is recording and playback: there is no transcription** (ADR-058). Next is
-> **M6**, the editor for a saved chit.
+> **Status:** in build, and **M6 — the editor — is under way** on top of five milestones signed
+> off on a handset. A chit can be typed or spoken, carries the time, the weather, what the phone
+> was doing and that a place was noted, and is read back on Today, on a scrolling timeline and
+> in a calendar of the months written. **Voice is recording and playback: there is no
+> transcription** (ADR-058). A saved chit opens from the thread and its words can be corrected;
+> the recording becomes removable and a chit deletable as M6 finishes.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
@@ -215,8 +216,9 @@ draws and nothing else, which is what lets a screen compose them freely. Two ear
 `lib/shared/day_label.dart` is the one function that names a day — *Today*, *Yesterday*,
 *Friday 11 September* — so the archive's headings and the editor's cannot disagree.
 
-`lib/features/editor/` is M6: the editor screen above the tab shell (ADR-062) and the provider
-that loads the chit it opens on.
+`lib/features/editor/` is M6: the editor screen above the tab shell (ADR-062) and the
+controller behind it, whose `EditorState` getters are every rule the screen draws (TASKS.md
+D11).
 
 ### 10.3 The tests
 
@@ -238,7 +240,7 @@ some of it was real and could not come back.
 | `test/core/clock_is_the_only_now_test.dart` | ADR-012: nothing in `lib/` calls `DateTime.now()` except `SystemClock` |
 | `test/domain/chit_test.dart` | The invariant of §5 where it fails first: a chit with neither text nor audio, text without a provenance, half a coordinate and a recording without a length cannot be *built*. Also `localDayOf` across a midnight |
 | `test/data/db/chits_table_test.dart` | The same invariant where it survives a release build — the table's check constraints, every one of them exercised by writing the row by hand, around the repository. Also that the primary key survived being declared beside them |
-| `test/data/chit_repository_test.dart` | **M1's statement of done.** All three legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, `updateText` provably touching nothing but `text` and `updatedAt`, and every query of DATA-MODEL.md §4 as it arrived — the timeline's range, the calendar's day summaries, the archive's paging, and the written months the chevrons step through |
+| `test/data/chit_repository_test.dart` | **M1's statement of done.** All three legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, `update` writing the words and a sealed `AudioEdit` in one statement — remove, replace, keep — and touching nothing about the moment; `delete` taking the row and the file together, and every query of DATA-MODEL.md §4 as it arrived — the timeline's range, the calendar's day summaries, the archive's paging, and the written months the chevrons step through |
 | `test/data/audio_store_test.dart` | ADR-008: a recording is moved rather than copied, its stored path is relative and uses forward slashes, discarding twice is not a failure, and the orphan sweep deletes what no chit claims |
 | `test/data/record_audio_recorder_test.dart` | ADR-052, the two rules the recorder holds without a microphone: the waveform's level is 0 at the silence floor and 1 at full scale, linear between and clamped past either end, with a non-finite reading as silence; a take's path is under the cache with the extension the store keeps and distinct for two takes a microsecond apart. Also that a `Recording` cannot have no length or no file |
 | `test/data/debug_seeder_test.dart` | DATA-MODEL.md §7's seeder, and the two claims that fail quietly on a handset: **seeding twice writes nothing**, and **clearing removes exactly the seeded rows and recordings** while a chit somebody wrote is left alone. Also that the fixture reaches all three shapes of §5, every weather word and all three motion marks — because a seeder that skips the recording-with-no-words hides the shape most likely to be forgotten |
@@ -246,7 +248,7 @@ some of it was real and could not come back.
 | `test/domain/services/ambient_capture_test.dart` | ADR-007, clause by clause: the two signals go out **in parallel** rather than one after the other, each under its own timeout, and **a signal that does not arrive is null** — whether it hung, threw, or simply had nothing to say. Since ADR-040 the time is no longer part of it; what is left is the half with the failure modes |
 | `test/domain/services/ambient_signals_test.dart` | **ADR-042, by counting.** *Captured twice and never in between* is invisible when it is wrong — an implementation that polled would pass every assertion about values in this repository and show up only as battery on somebody's phone. So this counts how many times the services were asked: reading the held value asks nothing, `prime` asks once, `refresh` asks again and replaces rather than merges |
 | `test/features/composer/composer_controller_test.dart` | **ADR-040's reversal**, which fails silently — a stamp taken at the wrong moment is still a plausible time, and only a clock moved across the save can tell. The row carries the save time and not the open time; a chit opened at 23:58 and saved at 00:05 lands on the *new* day; and ADR-042's half: the save returns without waiting on a capture that never comes back, and the patch that follows moves neither `createdAt` nor `updatedAt`. **Since M5 it also carries §3.4**: **Remove** deleting the temp take and leaving the words alone (ADR-060), a recording with no words saving and coming back as a chit, and the take stopping when Save moves its file — while a chit playing in the thread is left alone |
-| `test/features/editor/editor_controller_test.dart` | What the editor loads (ADR-062): the chit its id names and not another, the stored stamp rather than a fresh one, and the **null that means the row has gone** — the case an id outliving its row across a delete produces, and the reason the screen pops instead of drawing an empty slip |
+| `test/features/editor/editor_controller_test.dart` | **The editor's rules, held to their meaning without a screen** (ADR-031, TASKS.md D11). Dirty is *differs from what was loaded* — a character typed and deleted, or a trailing space the save would trim, is not a change; Save needs a change *and* a chit to write, so emptying a text-only chit withholds it while still raising the leave prompt; a save moves `updatedAt` and nothing about the moment; and the **null that means the row has gone**, which is why the screen pops rather than drawing an empty slip |
 | `test/shared/day_label_test.dart` | *Today*, *Yesterday*, then the weekday and date — with the year only when it is not this one. It moved out of `ArchiveDay` when the editor's header wanted the same phrase, so it now guards both callers |
 | `test/features/composer/audio_pill_test.dart` | ADR-031 again: what the pill *computes*, never how it looks. The figure, and a playhead that lights nothing at the start, half the bars halfway, everything at the end, and does not run off the end of the list when `just_audio` reports a position past the duration or a row has lost its length. Then the rule the one player exists for — a second pill takes the first one off, a pause keeps its playhead, a vanished file leaves the player silent, and the end is silence rather than a full playhead |
 | `test/features/composer/live_wave_test.dart` | ADR-054 as amended: **a bar is its level.** The floor at silence, the full height at full scale, linear between, clamped outside; and the window always full so a sheet that has just opened draws a row of ticks rather than three bars floating, filling from the right with the newest reading last |

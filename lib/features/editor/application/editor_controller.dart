@@ -1,17 +1,18 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/models/chit.dart';
+import '../../../domain/models/editor_state.dart';
 import '../../../domain/repositories/chit_repository.dart';
 
 part 'editor_controller.g.dart';
 
-/// The chit the editor is showing — **ADR-017**.
+/// A saved chit being edited — **ADR-017, ADR-062**.
 ///
-/// A one-shot read rather than a stream. The thread and the calendar watch,
-/// because two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is
-/// a screen somebody is typing on, and a row re-emitting under a caret is a
-/// screen that fights its own user. The only thing that writes this row while
-/// the editor is open is the editor.
+/// **Loaded once, not watched.** The thread and the calendar watch, because
+/// two tabs must never disagree (DESIGN-SYSTEM.md §7); the editor is a screen
+/// somebody is typing on, and a row re-emitting under a caret is a screen that
+/// fights its own user. The only thing that writes this row while the editor
+/// is open is the editor.
 ///
 /// **Null means the chit is gone.** The screen leaves rather than drawing
 /// nothing — an id can outlive its row across a delete, and a blank screen
@@ -19,7 +20,40 @@ part 'editor_controller.g.dart';
 ///
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
-/// controller (ADR-057) nothing here outlives the screen.
+/// controller (ADR-057) nothing here outlives the screen. **Every decision the
+/// screen draws is a getter on [EditorState]** (TASKS.md D11), which is what
+/// lets ADR-031 hold: there is nothing here a test would need a widget for.
 @riverpod
-Future<Chit?> editorChit(Ref ref, String id) =>
-    ref.watch(chitRepositoryProvider).byId(id);
+class EditorController extends _$EditorController {
+  @override
+  Future<EditorState?> build(String id) async {
+    final Chit? chit = await ref.watch(chitRepositoryProvider).byId(id);
+    if (chit == null) return null;
+    return EditorState(chit: chit, text: chit.text ?? '');
+  }
+
+  /// What the user has typed. Whether it is a *change* is [EditorState.isDirty]'s
+  /// to say, not this method's.
+  void edit(String text) {
+    final EditorState? current = state.value;
+    if (current == null) return;
+    state = AsyncData<EditorState?>(current.copyWith(text: text));
+  }
+
+  /// **Save chit** — writes the text and the staged audio edit in one call.
+  ///
+  /// Does nothing when there is nothing to save. The control is not drawn in
+  /// that state, so this is the belt rather than the braces — but `canSave` is
+  /// also what the repository would refuse, and refusing here is quieter.
+  ///
+  /// Leaving the screen afterwards is the screen's business; the state is
+  /// not reset, because the screen is about to go.
+  Future<void> save() async {
+    final EditorState? current = state.value;
+    if (current == null || !current.canSave) return;
+
+    await ref
+        .read(chitRepositoryProvider)
+        .update(id: current.chit.id, text: current.text, audio: current.audio);
+  }
+}
