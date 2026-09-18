@@ -19,13 +19,11 @@ screen. Answerable by living with the app for a week rather than by more design.
 
 ## 9. Feature backlog
 
-Ordered by how much each reinforces what chit already is, not by appetite. **6 is built** — voice
-chits shipped as §3.4 — and **its number is not reused**, 8 being cited from item 47 and from
-DATA-MODEL.md.
+Ordered by how much each reinforces what chit already is, not by appetite. **6 and 2 are built** —
+voice chits as §3.4, weather as a search axis in find (§4.6, ADR-083) — and **their numbers are not
+reused**, 8 being cited from DATA-MODEL.md.
 
 1. **Extend ambient capture** — coarse place ("home", "office"), what was playing.
-2. **Weather as a search axis** — "everything I wrote when it was raining". Possible *because* of
-   the ambient stamp, and a genuinely novel way in.
 3. **Resurfacing** — a chit from a year ago on the home screen.
 4. **Adapt the prompt to time-to-first-word.**
 5. **The stitch** — one continuous year-long line, one mark per day.
@@ -37,8 +35,8 @@ DATA-MODEL.md.
    a chit's distinct tags with a case- and underscore-insensitive key, so what is missing is a
    query and a destination, not a parser.
 
-**1 and 3** make the app stickier; **2 and 5** make it distinctive. **8's rendering is built and
-its gesture is not** — M6's note was right and was spent: the `Text` became a `Text.rich` with no
+**1 and 3** make the app stickier; **5** makes it distinctive, and **2 did** — it is find's weather
+row. **8's rendering is built and its gesture is not** — M6's note was right and was spent: the `Text` became a `Text.rich` with no
 restructuring. **The rest of that note is now the warning** — a `TapGestureRecognizer` on a
 `TextSpan` wins the gesture arena against an ancestor's hold, so whoever makes a tag tappable takes
 the hold off the row it sits in, and §4.1's *a tap does nothing* goes with it.
@@ -53,7 +51,7 @@ then responsive web. Deliberately not on the list: **any speech engine, cloud or
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 48;
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 47, 48;
 retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
@@ -144,8 +142,17 @@ retired: 32, 33, 35, 36.**
     was the stress seeder still writing in the background; it does not reproduce cold.
     `CHIT_SEED=stress` and `CHIT_FRAMES=true` are how all of this is re-checked — before believing a
     report of jank, ask which build mode it was in.
-47. **There is no way to walk backwards through everything any more** (ADR-079). The archive is one
-    month, and the chevrons skip the months nothing was written in, so every chit is still reachable
-    — but only if you know roughly when it was. **The thing that would answer this is search**, which
-    is backlog items 2 and 8 wearing a different hat; the density grid is the only finding aid until
-    then.
+49. **Find reads every chit and parses every chit's words, and nobody has measured it** (ADR-083).
+    `watchEvery` has no `WHERE`, and `Facets` walks each body with `ChitTags.parse` to know who and
+    what a chit names. **The parse is per change to the data and not per tap** — a filter re-applies
+    against a map already built — so the cost lands on open and on save, not on the row of words.
+    Item 46's numbers are from the archive and say nothing about this. **Three things to try before
+    an index, in order**: the parse is the suspect, not the query; `weather` and `motion` could be
+    pushed into SQL and deliberately were not; and only then the `weather` index ADR-077 deleted,
+    which is a schema change and ADR-059's reinstall. A tags table is the end of that road and is
+    what would also make backlog 8's tap cheap.
+50. **Nobody has seen the find tab on a handset.** The words, the frame on a chosen one, and whether
+    four `Wrap` rows of them read as four rows or as a wall. The one most likely to be wrong is
+    **`people` and `topics` on a long history**, where the rows have no cap and will simply keep
+    wrapping — a month of tagging could push the chits off the first screen entirely. If it does,
+    the honest fix is a cap with the rest behind a word, not a smaller type size.

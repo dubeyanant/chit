@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/extensions.dart';
-import '../../../../shared/widgets/day_thread.dart';
-import '../../application/archive_provider.dart';
+import '../../core/extensions.dart';
+import '../day_group.dart';
+import 'day_thread.dart';
 
-final class ArchiveDayGroup extends StatelessWidget {
-  const ArchiveDayGroup({required this.day, required this.today, super.key});
+/// A day's heading — its label, a hairline, its count — over its thread.
+final class DayGroupView extends StatelessWidget {
+  const DayGroupView({required this.day, required this.today, super.key});
 
-  final ArchiveDay day;
+  final DayGroup day;
 
   final int today;
 

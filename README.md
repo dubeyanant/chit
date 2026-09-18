@@ -103,7 +103,7 @@ lib/
 ├── core/       the design system, the clock, the BuildContext accessors
 ├── domain/     models and interfaces. Pure Dart; imports neither of the two below
 ├── data/       the implementations: Drift, files, network, platform plugins
-├── features/   one per screen — shell, today, composer, calendar, editor, onboarding
+├── features/   one per screen — shell, today, composer, calendar, find, editor, onboarding
 └── shared/     widgets used by more than one feature
 ```
 

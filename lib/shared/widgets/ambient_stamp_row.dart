@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/extensions.dart';
 import '../../domain/ambient/ambient_fact.dart';
+import '../../domain/ambient/ambient_words.dart';
 import '../../domain/models/ambient_stamp.dart';
 import '../../domain/models/motion_state.dart';
 import '../../domain/models/weather_condition.dart';
@@ -76,28 +77,3 @@ final class AmbientStampRow extends StatelessWidget {
       DateFormat('h:mm a').format(at).toLowerCase();
 }
 
-extension on MotionState {
-  String get word {
-    assert(
-      this != MotionState.stationary,
-      'stationary is never drawn — ADR-038 filters it before here',
-    );
-
-    return switch (this) {
-      MotionState.stationary => '',
-      MotionState.walking => 'walking',
-      MotionState.traveling => 'travelling',
-      MotionState.flying => 'flying',
-    };
-  }
-}
-
-extension on WeatherCondition {
-  String get word => switch (this) {
-    WeatherCondition.raining => 'raining',
-    WeatherCondition.clear => 'clear',
-    WeatherCondition.overcast => 'overcast',
-    WeatherCondition.windy => 'windy',
-    WeatherCondition.clearNight => 'clear night',
-  };
-}

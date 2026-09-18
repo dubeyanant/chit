@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../features/calendar/presentation/calendar_screen.dart';
 import '../features/editor/presentation/editor_screen.dart';
+import '../features/find/presentation/find_screen.dart';
 import '../features/onboarding/application/first_run_controller.dart';
 import '../features/onboarding/presentation/first_run_screen.dart';
 import '../features/shell/presentation/shell_screen.dart';
@@ -14,7 +15,9 @@ part 'router.g.dart';
 enum ChitRoute {
   today(path: '/', label: 'today'),
 
-  calendar(path: '/calendar', label: 'calendar');
+  calendar(path: '/calendar', label: 'calendar'),
+
+  find(path: '/find', label: 'find');
 
   const ChitRoute({required this.path, required this.label});
 
@@ -96,6 +99,16 @@ GoRouter router(Ref ref) {
                 name: ChitRoute.calendar.name,
                 builder: (BuildContext context, GoRouterState state) =>
                     const CalendarScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: ChitRoute.find.path,
+                name: ChitRoute.find.name,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const FindScreen(),
               ),
             ],
           ),

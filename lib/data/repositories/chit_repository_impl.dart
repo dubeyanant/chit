@@ -201,6 +201,9 @@ final class ChitRepositoryImpl implements ChitRepository {
       _dao.watchArchive(fromDay: fromDay, toDay: toDay).map(_chitsOf);
 
   @override
+  Stream<List<Chit>> watchEvery() => _dao.watchEvery().map(_chitsOf);
+
+  @override
   Future<void> discardTemp(String tempPath) => _audio.discardTemp(tempPath);
 
   @override

@@ -241,3 +241,28 @@ withholds Save, leaving Cancel and *Delete this chit* — the honest pair.
 screen, and a step of the scale away from Save rather than an inch from it. It is named in full so
 it cannot be read as Discard. It asks, and **there is no undo** (ADR-064) — there is no trash and no
 backend, and the prompt is the whole of the protection.
+
+**4.6 Find.** The third tab, and the way back to a chit you cannot date (ADR-083). Its heading is
+one line saying what is on screen — *Everything written.* until something is chosen, then
+**12 chits** *like that* — sitting at the same height as Today's date and the calendar's month
+(§6.3), so a tab switch does not move it.
+
+Under it, **four rows of words**: `weather`, `motion`, `people`, `topics`. **A row holds only what
+was actually written** — a sky nobody wrote under is not offered, and a row with nothing in it is
+not drawn at all, a control that does nothing not being marked up as one (§4.1). Weather and motion
+read in §3.6.1's order, people and topics alphabetically. **`stationary` is never offered**, being
+never drawn.
+
+**Any within a row, all across them.** A second word in the same row widens — `raining` and `windy`
+asks for either — and a word in another row tightens. **A chosen word is lit to `--ink` and framed**,
+the calendar's own selection idiom, because §6.4 will not let colour be the only difference. Tapping
+it again lets it go, and **Show everything** puts them all out at once.
+
+Below that, **every chit the words leave behind**, grouped by day newest-first in the same thread
+Today and the archive use — so a chit is opened by holding it here too. **Nothing chosen shows
+everything**, which is what makes this tab the continuous scroll back that ADR-079 took off the
+calendar. An empty result says *Nothing written like that.*, and an app with nothing in it yet says
+*Nothing written yet.* and draws no rows at all.
+
+**The filter is not remembered across a launch** — a saved filter is a state the app would open in
+without saying why. Switching tabs keeps it, because that is one task.

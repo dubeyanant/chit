@@ -25,6 +25,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.button,
     required this.audioDuration,
     required this.tabLabel,
+    required this.filterWord,
     required this.sheetState,
     required this.sheetTime,
     required this.calendarDay,
@@ -162,6 +163,13 @@ final class ChitType extends ThemeExtension<ChitType> {
       ),
 
       tabLabel: _serif(size: 16.5, weight: 400, color: colors.inkFaint),
+
+      filterWord: _sans(
+        size: 13,
+        weight: 500,
+        color: colors.inkFaint,
+        letterSpacingEm: 0.02,
+      ),
 
       sheetState: _sans(
         size: 11.5,
@@ -347,6 +355,10 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   final TextStyle tabLabel;
 
+  /// One word find can be narrowed by — the ambient vocabulary, in the sans
+  /// the chits speak it in. Lit to --ink when chosen, framed as well (§6.4).
+  final TextStyle filterWord;
+
   final TextStyle sheetState;
 
   final TextStyle sheetTime;
@@ -382,6 +394,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     button,
     audioDuration,
     tabLabel,
+    filterWord,
     sheetState,
     sheetTime,
     calendarDay,
@@ -413,6 +426,7 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? button,
     TextStyle? audioDuration,
     TextStyle? tabLabel,
+    TextStyle? filterWord,
     TextStyle? sheetState,
     TextStyle? sheetTime,
     TextStyle? calendarDay,
@@ -442,6 +456,7 @@ final class ChitType extends ThemeExtension<ChitType> {
       button: button ?? this.button,
       audioDuration: audioDuration ?? this.audioDuration,
       tabLabel: tabLabel ?? this.tabLabel,
+      filterWord: filterWord ?? this.filterWord,
       sheetState: sheetState ?? this.sheetState,
       sheetTime: sheetTime ?? this.sheetTime,
       calendarDay: calendarDay ?? this.calendarDay,
@@ -476,6 +491,7 @@ final class ChitType extends ThemeExtension<ChitType> {
       button: TextStyle.lerp(button, other.button, t)!,
       audioDuration: TextStyle.lerp(audioDuration, other.audioDuration, t)!,
       tabLabel: TextStyle.lerp(tabLabel, other.tabLabel, t)!,
+      filterWord: TextStyle.lerp(filterWord, other.filterWord, t)!,
       sheetState: TextStyle.lerp(sheetState, other.sheetState, t)!,
       sheetTime: TextStyle.lerp(sheetTime, other.sheetTime, t)!,
       calendarDay: TextStyle.lerp(calendarDay, other.calendarDay, t)!,
