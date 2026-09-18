@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/extensions.dart';
 import '../../core/theme/chit_colors.dart';
+import 'focus_ring.dart';
 
 /// The brighter of the two: a border, an ink wash, and still not a fill.
 final class PrimaryButton extends StatelessWidget {
@@ -39,20 +40,25 @@ final class PrimaryButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      child: GestureDetector(
-        onTap: onPressed,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.inkWash(colors.slip, opacity: ChitColors.saveWash),
-            border: Border.all(color: colors.inkMuted),
-            borderRadius: BorderRadius.circular(space.radius),
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: space.s4),
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: context.type.button.copyWith(color: colors.ink),
+      child: FocusRing(
+        onActivate: onPressed,
+        child: GestureDetector(
+          onTap: onPressed,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.inkWash(colors.slip, opacity: ChitColors.saveWash),
+              border: Border.all(color: colors.inkMuted),
+              borderRadius: BorderRadius.circular(space.radius),
+            ),
+            child: Padding(
+              // `s4` top and bottom takes the label to 49px, clear of §6.4's
+              // 44px floor.
+              padding: EdgeInsets.symmetric(vertical: space.s4),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: context.type.button.copyWith(color: colors.ink),
+              ),
             ),
           ),
         ),
@@ -79,19 +85,22 @@ final class QuietButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      child: GestureDetector(
-        onTap: onPressed,
-        child: Padding(
-          // 14px by 16px in the prototype; both are `s4`. A padding is a
-          // relationship and DESIGN-SYSTEM.md §6.3 keeps those on the scale.
-          // At 16px the control measures 49px, clear of §6.4's 44px floor.
-          padding: EdgeInsets.all(space.s4),
-          child: Text(
-            label,
-            // `--ink-faint`, and it stays there: with no pressed wash under it
-            // (ADR-070) there is no surface for the lift §6.1 describes to be
-            // against. On a bare chit the label measures 4.56:1.
-            style: context.type.button.copyWith(color: colors.inkFaint),
+      child: FocusRing(
+        onActivate: onPressed,
+        child: GestureDetector(
+          onTap: onPressed,
+          child: Padding(
+            // 14px by 16px in the prototype; both are `s4`. A padding is a
+            // relationship and DESIGN-SYSTEM.md §6.3 keeps those on the scale.
+            // At 16px the control measures 49px, clear of §6.4's 44px floor.
+            padding: EdgeInsets.all(space.s4),
+            child: Text(
+              label,
+              // `--ink-faint`, and it stays there: with no pressed wash under
+              // it (ADR-071) there is no surface for a lift to be against. On
+              // a bare chit the label measures 4.56:1.
+              style: context.type.button.copyWith(color: colors.inkFaint),
+            ),
           ),
         ),
       ),

@@ -28,12 +28,12 @@ Then read what that milestone points at, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
-> **Status:** in build, and **M6 — the editor — is under way** on top of five milestones signed
-> off on a handset. A chit can be typed or spoken, carries the time, the weather, what the phone
-> was doing and that a place was noted, and is read back on Today, on a scrolling timeline and
-> in a calendar of the months written. **Voice is recording and playback: there is no
-> transcription** (ADR-058). A saved chit opens from the thread and its words can be corrected;
-> the recording becomes removable and a chit deletable as M6 finishes.
+> **Status:** in build, and **M7 — motion and the floors — is under way**, the last milestone of
+> v1, on top of six signed off on a handset. A chit can be typed or spoken, carries the time,
+> the weather and what the phone was doing, and is read back on Today, on a scrolling timeline
+> and in a calendar of the months written. **Voice is recording and playback: there is no
+> transcription** (ADR-058). A saved chit is opened by holding it in the thread, and its words,
+> its recording and the chit itself can all be changed or destroyed.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
@@ -215,10 +215,13 @@ draws and nothing else, which is what lets a screen compose them freely. Two ear
 `AudioPill` watches the one player, and `ChitRow` pushes the editor (ADR-061). `PromptSheet`
 is the app's one confirmation (ADR-064) — a question and two answers, asked by `showPromptSheet`
 and deciding nothing itself. `Microphone` is the 54px control of §4.1, moved here when the
-editor became the second screen to record (ADR-065). `Pressable` is the one press every control
-`StaggeredEntrance` is how a page arrives, one block at a time and once, with `Unstaggered` for
+editor became the second screen to record (ADR-065). **No control answers a press with anything
+of its own** — ADR-071 took the app's press feedback off, so what says a tap landed is what the
+tap does. `StaggeredEntrance` is how a page arrives, one block at a time and once, with
+`Unstaggered` for
 the one block it draws straight through; `Arrival` is §6.3's two authored moments, a saved chit
-falling into the thread and a recording rising into the open chit (ADR-070). Beside them,
+falling into the thread and a recording rising into the open chit (ADR-070); and `FocusRing` is
+§6.4's focus floor, the ring and the Enter that go with it. Beside them,
 `lib/shared/day_label.dart` is the one function that names a day — *Today*, *Yesterday*,
 *Friday 11 September* — so the archive's headings and the editor's cannot disagree.
 
@@ -242,7 +245,7 @@ some of it was real and could not come back.
 | `test/core/theme/contrast_test.dart` | §6.4's contrast floor: every text token against every surface it sits on, **composited**. Also the negative cases — `--seal` failing as text on a chit is why `--seal-ink` exists, and `--ink-faint` failing on the audio pill's wash is why the pill's duration is set in `--ink-muted`. It locks §6.1's quoted figures to ±0.01 so the prose and the arithmetic cannot drift apart. **Since M6 it also decides rather than checks**: the pressed chit row's 4.42:1 is why ADR-061 lifts the stamp |
 | `test/core/theme/chit_type_test.dart` | ADR-015: every style sets `fontVariations`, not `fontWeight` alone. The three faces of §6.2 are the only families used, the चित्त mark is the only thing set in Devanagari, tabular figures are on everything that counts or keeps time, no functional text is under 11.5px |
 | `test/core/theme/chit_motion_test.dart` | §6.4's reduced-motion rule: movement collapses, feedback does not. The suite that found ADR-020 |
-| `test/core/theme/widget_constants_test.dart` | The dimensions §6.3 lets a widget spell out as a compile-time constant instead of reading from `ChitSpace` — and the rule that keeps them honest: **a constant copied off the scale still equals it**. The perforation's strip and the thread node's halo are both `s1` written by hand, because a painter and a layout caller each need them before there is a `BuildContext`. Also v6's exact figures, 1.55px on an 8px pitch and the 7px mark, and that the rail's centre stays *derived* from the mark rather than set beside it |
+| `test/core/theme/widget_constants_test.dart` | The dimensions §6.3 lets a widget spell out as a compile-time constant instead of reading from `ChitSpace` — and the rule that keeps them honest: **a constant copied off the scale still equals it**. The perforation's strip and the thread node's halo are both `s1` written by hand, because a painter and a layout caller each need them before there is a `BuildContext`. Also v6's exact figures, 1.55px on an 8px pitch and the 7px mark, and that the rail's centre stays *derived* from the mark rather than set beside it. **Since M7 group D it also holds §6.4's floors that are arithmetic** — the 44px target, the microphone above it, a button's padding clearing it, and the pill's *not* clearing it, which is the assertion that found a control two pixels under the floor after a comment had claimed it was exactly on. Also that the focus ring is drawn at the app's one 1.5px stroke, the caret's and the tick's |
 | `test/core/clock_is_the_only_now_test.dart` | ADR-012: nothing in `lib/` calls `DateTime.now()` except `SystemClock` |
 | `test/domain/chit_test.dart` | The invariant of §5 where it fails first: a chit with neither text nor audio, text without a provenance, half a coordinate and a recording without a length cannot be *built*. Also `localDayOf` across a midnight |
 | `test/data/db/chits_table_test.dart` | The same invariant where it survives a release build — the table's check constraints, every one of them exercised by writing the row by hand, around the repository. Also that the primary key survived being declared beside them |

@@ -1,17 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../core/extensions.dart';
-import '../../core/theme/chit_colors.dart';
 import '../../domain/models/chit.dart';
 import 'ambient_stamp_row.dart';
 import 'arrival.dart';
 import 'audio_pill.dart';
+import 'focus_ring.dart';
 import 'thread_rail.dart';
 
 /// A day's chits, hanging off one rail — README §2, BEHAVIOUR.md §4.1.
@@ -111,7 +110,13 @@ class _DayThreadState extends State<DayThread> {
 /// surface: a tap that opened the editor was a scroll's glancing touch away
 /// from leaving the page, and the one tap the row does answer is the pill's.
 /// Delete lives in the editor (ADR-062), not a thumb's width from a scroll.
-class ChitRow extends StatefulWidget {
+///
+/// **A held row draws nothing** (ADR-071). It took a wash for two milestones;
+/// the owner took it off with the rest of the app's press feedback, and what
+/// says the hold has landed is the tick the phone gives when it is recognised.
+/// The thread is a page of writing, and a page does not light up under a
+/// thumb.
+class ChitRow extends StatelessWidget {
   /// The row for [chit].
   const ChitRow({required this.chit, super.key});
 
@@ -127,23 +132,7 @@ class ChitRow extends StatefulWidget {
   static const double _overhang = ThreadRail.centre - ThreadNode.size / 2;
 
   @override
-  State<ChitRow> createState() => _ChitRowState();
-}
-
-class _ChitRowState extends State<ChitRow> {
-  bool _pressed = false;
-
-  void _press({required bool down}) {
-    // The hold pushes the editor while the finger is still down, so the
-    // release can land after the row has gone — a chit deleted from the
-    // screen it opened.
-    if (mounted) setState(() => _pressed = down);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final Chit chit = widget.chit;
-
     return Semantics(
       button: true,
       label: 'Chit, ${chit.hasText ? chit.text! : 'a recording'}',
@@ -155,32 +144,20 @@ class _ChitRowState extends State<ChitRow> {
       // is unreachable from here, and a chit's recording is reached from the
       // editor instead.
       excludeSemantics: true,
-      child: FocusableActionDetector(
-        mouseCursor: SystemMouseCursors.click,
-        onShowFocusHighlight: (bool on) => _press(down: on),
-        actions: <Type, Action<Intent>>{
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (ActivateIntent _) {
-              _open(context);
-              return null;
-            },
-          ),
-        },
+      child: FocusRing(
+        onActivate: () => _open(context),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          // The wash arrives with the finger and leaves with a scroll, so the
-          // half-second before the hold is recognised is not a dead row. No
-          // `onTap`: the pill inside keeps its own, and nothing else here
+          // No `onTap`: the pill inside keeps its own, and nothing else here
           // answers one.
-          onLongPressDown: (LongPressDownDetails _) => _press(down: true),
-          onLongPressCancel: () => _press(down: false),
-          // The strip's tick, at the moment the hold is recognised — the only
-          // thing that moves is the screen, and a thumb wants telling first.
-          onLongPressStart: (LongPressStartDetails _) =>
-              unawaited(HapticFeedback.selectionClick()),
-          onLongPress: () => _open(context),
-          onLongPressEnd: (LongPressEndDetails _) => _press(down: false),
-          child: _Body(chit: chit, pressed: _pressed),
+          onLongPress: () {
+            // The strip's tick, at the moment the hold is recognised. With no
+            // wash left it is the whole of what says the row heard the finger,
+            // and it lands before the screen moves.
+            unawaited(HapticFeedback.selectionClick());
+            _open(context);
+          },
+          child: _Body(chit: chit),
         ),
       ),
     );
@@ -188,27 +165,22 @@ class _ChitRowState extends State<ChitRow> {
 
   void _open(BuildContext context) => context.pushNamed(
     editorRouteName,
-    pathParameters: <String, String>{editorIdParameter: widget.chit.id},
+    pathParameters: <String, String>{editorIdParameter: chit.id},
   );
 }
 
-/// What the row draws, pressed or not.
-///
-/// Split out so the press state above has one child to rebuild rather than a
-/// tree of gesture wrappers.
+/// What the row draws. It has one appearance and no states.
 class _Body extends StatelessWidget {
-  const _Body({required this.chit, required this.pressed});
+  const _Body({required this.chit});
 
   final Chit chit;
-  final bool pressed;
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     final space = context.space;
     final double inset = ThreadRail.contentInset(context);
 
-    final Widget row = Padding(
+    return Padding(
       // 12 / 8 / 16 / 0 in the prototype, and all four are already steps.
       padding: EdgeInsets.fromLTRB(0, space.s3, space.s2, space.s4),
       child: Column(
@@ -233,12 +205,7 @@ class _Body extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
-                child: AmbientStampRow.saved(
-                  stamp: chit.stamp,
-                  lifted: pressed,
-                ),
-              ),
+              Expanded(child: AmbientStampRow.saved(stamp: chit.stamp)),
             ],
           ),
           if (chit.hasText)
@@ -267,29 +234,6 @@ class _Body extends StatelessWidget {
             ),
         ],
       ),
-    );
-
-    // **6% ink, the quietest wash there is** (DESIGN-SYSTEM.md §6.1) — and it
-    // is why the stamp above lifts: at 6% `--ink-faint` measures 4.42:1 and
-    // fails §6.4's floor, where `--ink-muted` measures 5.65:1 and clears it.
-    // The wash is drawn under the row's own padding rather than inside it, so
-    // what lights up is the target the finger actually hit.
-    //
-    // **The box is always here and only its colour changes** (ADR-070). Adding
-    // it on press and taking it away again changes the shape of the tree, so
-    // Flutter rebuilds everything under it — which disposed the audio pill's
-    // recogniser on the frame the finger landed, and a recording in the thread
-    // could not be played at all. The hold made it certain: `onLongPressDown`
-    // fires on the first pointer event, where a tap's own `onTapDown` waits to
-    // see whether it has won.
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: pressed
-            ? colors.inkWash(colors.paper, opacity: ChitColors.rowPressedWash)
-            : null,
-        borderRadius: BorderRadius.circular(space.radius),
-      ),
-      child: row,
     );
   }
 }

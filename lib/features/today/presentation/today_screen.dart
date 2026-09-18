@@ -79,10 +79,15 @@ class TodayScreen extends ConsumerWidget {
                 ...switch (chits) {
                   AsyncData<List<Chit>>(:final List<Chit> value) => <Widget>[
                     _EarlierHeading(count: value.length),
-                    if (value.isEmpty)
-                      const _EmptyNote()
-                    else
-                      DayThread(chits: value),
+                    if (value.isEmpty) const _EmptyNote(),
+                    // **The thread is mounted even on an empty day**, where it
+                    // draws nothing. It has to be: it tells a row that was
+                    // just written from one that was already there by
+                    // remembering what it drew last time, and a thread that
+                    // appeared *with* the day's first chit would have no last
+                    // time — so the first chit of every day arrived without
+                    // its arrival, and the second did not (ADR-071).
+                    DayThread(chits: value),
                   ],
                   _ => const <Widget>[],
                 },

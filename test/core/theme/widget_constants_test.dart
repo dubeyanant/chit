@@ -2,6 +2,8 @@ import 'package:chit/core/theme/chit_space.dart';
 import 'package:chit/features/calendar/presentation/widgets/month_grid.dart';
 import 'package:chit/features/today/application/timeline_provider.dart';
 import 'package:chit/features/today/presentation/widgets/timeline.dart';
+import 'package:chit/shared/widgets/focus_ring.dart';
+import 'package:chit/shared/widgets/microphone.dart';
 import 'package:chit/shared/widgets/perforated_edge.dart';
 import 'package:chit/shared/widgets/thread_rail.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -117,6 +119,50 @@ void main() {
       // ADR-024. A different number is a different record, so this is here to
       // make changing it deliberate rather than easy.
       expect(TimelineWindow.maxDays, 3);
+    });
+  });
+
+  /// **§6.4's two floors that are arithmetic** — M7 group D.
+  ///
+  /// Whether a target can be *hit* is a thumb's question and group E's. What
+  /// is checkable here is that the figures the controls are built from clear
+  /// the floor before anybody lays one out.
+  group('the accessibility floors that are numbers', () {
+    test('44px, with no exceptions — §6.4', () {
+      expect(space.minTouchTarget, 44);
+    });
+
+    test('the microphone is larger and does not shrink for text', () {
+      // §3.2 and §6.4 together: it leads the action row as an equal of the
+      // field, so its size is a constant rather than a function of anything.
+      expect(Microphone.size, 54);
+      expect(Microphone.size, greaterThan(space.minTouchTarget));
+    });
+
+    test('a control padded by s4 clears the floor on its own', () {
+      // Both button weights are text plus `s4` on every side. Even at a zero
+      // line height that is 32px, so the label carries the rest — the figure
+      // the handset measured is 49px.
+      expect(2 * space.s4, greaterThanOrEqualTo(32.0));
+    });
+
+    test(
+      'a pill does not reach the floor on its padding, so it is held to it',
+      () {
+        // **This is the assertion that found the bug.** A comment in the pill
+        // claimed `s3` around an 18px wave measured 44px; it measures 42, and
+        // §6.4 makes no exceptions. The pill carries a minimum height now, and
+        // this is here so that nobody takes it off again believing the padding
+        // was ever enough.
+        expect(2 * space.s3 + 18, lessThan(space.minTouchTarget));
+        expect(2 * space.s3 + 18, 42);
+      },
+    );
+
+    test('the focus ring is the app\x27s one stroke', () {
+      // The caret and the tick at now are drawn at 1.5. A ring at some other
+      // weight would be a second vocabulary for a line — §6.4.
+      expect(FocusRing.thickness, Timeline.nowStroke);
     });
   });
 }

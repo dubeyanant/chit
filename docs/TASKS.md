@@ -91,21 +91,25 @@ tab bar off Material's `InkWell` and two bugs it flushed out.*
       *reads* as one movement, which is group E's.
 - [x] Docs: DESIGN-SYSTEM.md §6.3's authored-arrival paragraph; README.md §10.
 
-## D. The floors
+## D. The floors ✅ built, uncommitted
 
-- [ ] **Targets.** Every control at or above 44px: the back arrow, both button weights, the
-      pill, Remove, the calendar's tiles and chevrons, the tab bar. Named dimensions go in
-      `ChitSpace` and are asserted (D6).
-- [ ] **Focus rings.** A `--seal` ring on every control on keyboard focus, through one
-      decoration (D5). Never on touch.
-- [ ] **Semantics.** Heading levels never skip; every icon-only control has a label; a control
-      that does nothing is not marked up as one; `ExcludeSemantics` only under a labelled
-      parent; the live regions still say the right thing.
-- [ ] Tests: the target arithmetic in `widget_constants_test.dart`; `contrast_test.dart` for any
-      surface the depress or the ring touches.
-- [ ] Docs: DESIGN-SYSTEM.md §6.4; BEHAVIOUR.md §4 if a control gained a label worth naming.
+- [x] **Targets, and one was under.** `s3` around an 18px wave is **42px**, not the 44 a comment
+      in `AudioPill` had claimed for two milestones, and §6.4 makes no exceptions — the pill
+      carries a minimum height now. Everything else clears it: both button weights at 49px, the
+      microphone at 54, the chevrons, tabs and back arrow sized to the target itself.
+- [x] **Focus rings.** `shared/widgets/focus_ring.dart` — a `--seal` ring at the app's one 1.5px
+      stroke, **only on keyboard or switch focus**, painted over the control so nothing moves
+      when it arrives, and carrying Enter and Space with it (D5). On every control: both button
+      weights, the microphone, the pill, the chevrons, the tabs, the back arrow and the chit row.
+- [x] **Semantics**, read through: headings on the date line, the month bar, the archive's days,
+      the editor's header and the prompt; labels on every icon-only control; `ExcludeSemantics`
+      only under a labelled parent, and the two live regions still say what they said.
+- [x] Tests: the floors that are arithmetic, in `widget_constants_test.dart` — the 44px token,
+      the microphone above it, a button's padding clearing it, the pill's **not** clearing it,
+      and the ring at the same stroke as the caret and the tick.
+- [x] Docs: DESIGN-SYSTEM.md §6.4's focus line; README.md §10; ADR-071.
 
-## E. The device pass, the commit, and the sign-off of v1
+## E. The device pass, and the sign-off of v1
 
 *What no test can settle. Seed first — `flutter run --dart-define=CHIT_SEED=seed`, `=clear`
 after. Write what was seen into PROGRESS.md as it is seen.*
@@ -117,13 +121,19 @@ after. Write what was seen into PROGRESS.md as it is seen.*
 - [ ] **The first tap after launch makes a sound**, and two recordings on Today: tap one, then
       the other while the first sounds. The second lights with the pause glyph, and the next tap
       pauses it. *Both halves of this were broken once — the pause-not-stop fix is the second.*
-- [ ] **No press effect anywhere** (ADR-070), and whether a control with no acknowledgement of
-      its own reads as responsive or as dead — the one thing removing it might have cost.
+- [ ] **No press effect anywhere** (ADR-070, ADR-071) — no colour and no movement on any
+      control, the chit row included. Whether that reads as responsive or as dead is the one
+      thing removing it might have cost.
 - [ ] The stagger on Today's first build, reading as one movement; a tab switch costing a fade
       and nothing more; the archive re-staggering on a tapped date and not on a scroll, with the
       month grid above it holding still while it does.
-- [ ] **The timeline, which the entrance draws straight through** (ADR-070): it should settle by
-      scrolling to now and do nothing else. This is the glitch the second look found.
+- [ ] **The timeline does not move of its own accord** (ADR-071): it is at now when the screen
+      opens and at now after a save, and it never travels there. The entrance leaves it alone
+      too. This is the glitch the second and third looks both found.
+- [ ] **The first chit of a day falls in like any other** (ADR-071) — write on an empty day and
+      then write again, and the two should arrive the same way.
+- [ ] Every target hit with a thumb, **the audio pill especially**: it was two pixels under the
+      floor and is held to 44px now, so it should feel no different and miss no taps.
 - [ ] A chit falling into the thread and the strip scrolling to now; a recording rising into
       the open chit.
 - [ ] **Reduced motion on, the whole app**: nothing travels, every fade survives, the prompt
@@ -132,8 +142,10 @@ after. Write what was seen into PROGRESS.md as it is seen.*
 - [ ] **A screen reader, the whole app** (TalkBack): every screen in reading order, every
       control announced with what it does, headings never skipping, nothing announced that is
       decoration.
-- [ ] Every target hit with a thumb, including the microphone with text in the field.
-- [ ] Then: the one commit of M7; BUILD-PLAN.md M7 signed off with what it taught; PROGRESS.md
-      marks v1 done; this file is replaced by whatever comes after v1 — or by nothing.
+- [ ] The microphone with text in the field, still 54px and still opening the sheet.
+- [ ] **A keyboard or a switch**, if one can be attached: every control takes focus, shows a
+      `--seal` ring, and answers Enter. Nothing moves when the ring arrives.
+- [ ] Then: BUILD-PLAN.md M7 signed off with what it taught; PROGRESS.md marks v1 done; this
+      file is replaced by whatever comes after v1 — or by nothing.
 
 **This file is replaced when the next milestone starts** (CLAUDE.md §2).

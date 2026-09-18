@@ -10,8 +10,8 @@ and from TASKS.md, on the owner's instruction: what each milestone built is in g
 settled is in DECISIONS.md, and what it taught is in BUILD-PLAN.md's one list of lessons.
 
 **Last updated:** 18 September 2026. **M0 to M6 are done and signed off on a handset. M7 —
-motion and the floors — is cut into five groups in [TASKS.md](TASKS.md); A, B and C are built
-and committed. D and E are open.** M7 is the last milestone of v1.
+motion and the floors — is cut into five groups in [TASKS.md](TASKS.md); A to D are built and
+committed. Only E is left, and E is the device pass that signs v1 off.**
 
 ---
 
@@ -25,9 +25,9 @@ and committed. D and E are open.** M7 is the last milestone of v1.
 | M4 — calendar | ✅ done | 17 Sep 2026 |
 | M5 — voice | ✅ done | 18 Sep 2026. No transcription (ADR-058), no migrations (ADR-059) |
 | M6 — the chit editor | ✅ done | 18 Sep 2026. Its last three handset checks are carried into M7's device pass (ADR-067) |
-| **M7 — motion and the floors** | 🔨 in progress | five groups, **A to C done**, D and E open. ADR-068 to ADR-070 |
+| **M7 — motion and the floors** | 🔨 in progress | five groups, **A to D done**; E is the device pass. ADR-068 to ADR-071 |
 
-**506 tests, `flutter analyze` clean, `dart format` clean.** Schema is v1 and there are no
+**505 tests, `flutter analyze` clean, `dart format` clean.** Schema is v1 and there are no
 migrations — an install carrying an older shape is reinstalled (ADR-059, open item 38).
 
 **Both APKs build**, release included. The release APK is a 59 MB fat APK across three ABIs, of
@@ -36,44 +36,50 @@ which one device's share is about 22 MB; nothing about shipping is decided, so n
 
 ---
 
-## Next: M7 group D, the floors
+## Next: M7 group E — the device pass, and then v1 is done
 
-Targets at 44px, focus rings, and the semantics audit. TASKS.md D carries it and D5 and D6 are
-the decisions it turns on. **Then group E is the device pass that signs v1 off**, and it has
-grown: everything A to C built has been seen only once, half-working, and its checklist says
-what to look at.
+**Everything M7 builds is built.** What is left is a handset and a checklist: TASKS.md group E,
+which is the whole of the sign-off. M7 is mostly a device pass by design (BUILD-PLAN.md M7), so
+**write what the handset showed into this file as it is seen**, not at the end. **Read
+BUILD-PLAN.md's lessons first** — three of them were paid for again this session.
 
-M7 is mostly a device pass (BUILD-PLAN.md M7), so **write what the handset showed into this
-file as each group lands**, not at the end. **Read BUILD-PLAN.md's lessons first** — two of them
-were paid for again this session.
+### What three handset looks cost, and what they taught
 
-### What the last two handset looks cost, and what they taught
-
-**Group A was built and then removed on the owner's call.** The press feedback — a depress on
-every control, a wash under it — went out in two steps: the colour first, called artificial,
-then the whole effect. There is now no press feedback anywhere (ADR-070). What survives is the
-tab bar off Material's `InkWell`, and the two bugs the work flushed out.
+**The press feedback was built and then removed, over three looks.** First the wash was called
+artificial, so it went; then the depress; then the chit row's wash, the last one left. There is
+now **no press feedback anywhere** (ADR-069 superseded, ADR-070, ADR-071) and four wash tokens
+are gone with it. What survives is the tab bar off Material's `InkWell`, and the two bugs the
+work flushed out on its way through.
 
 **A recording in the thread could not be played at all, and the cause was not the player.** The
-chit row's pressed wash was a `DecoratedBox` added on press and taken away again, so the shape
-of the tree changed under the finger, Flutter rebuilt the subtree, and the audio pill's gesture
+chit row's wash was a `DecoratedBox` added on press and taken away again, so the shape of the
+tree changed under the finger, Flutter rebuilt the subtree, and the audio pill's gesture
 recogniser was disposed on the frame the pointer landed. The hold (ADR-061) made it certain,
 because `onLongPressDown` fires on the first pointer event where a tap's own `onTapDown` waits
-to see whether it has won. The box is always in the tree now and only its colour changes.
+to see whether it has won.
 
-*Two earlier player fixes are in the same area and both are real, so do not undo them:* the
-adapter pauses rather than stops before loading the next file (a stop releases the native
-player, which cost the first tap after launch its sound), and `just_audio_player_test.dart`
-counts platform inits so that difference cannot regress unseen.
+*Two player fixes are in the same area and both are real, so do not undo them:* the adapter
+pauses rather than stops before loading the next file (a stop releases the native player, which
+cost the first tap after launch its sound), and `just_audio_player_test.dart` counts platform
+inits so that difference cannot regress unseen.
 
-**The timeline glitched inside the page's entrance**, and it is the one block the entrance now
-draws straight through (`Unstaggered`). It already arrives by scrolling to now (ADR-024), so
-inside the stagger it was fading, rising and scrolling at once; it also spared a moving viewport
-an `Opacity` layer every frame.
+**The timeline was wrong twice.** It glitched inside the page's entrance, so it is the one block
+the entrance draws straight through (`Unstaggered`); then its scroll to now still read as a
+fault, so **it jumps and never travels** — ADR-024's second half, reversed.
 
-**The lesson, and it is the third time this milestone:** *a wrapper that comes and goes is a
-rebuild.* Both `Arrival` and the row's wash are written to it now — the wrapper stays and is
-told whether to play. It belongs in BUILD-PLAN.md's list when M7 is signed off.
+**The first chit of a day arrived without its arrival** and the second did not, which is what
+*sometimes it looks right* meant. The thread tells a new row from an old one by remembering what
+it drew last time, and it used to appear *with* the day's first chit, so it had no last time. It
+is mounted on an empty day now, drawing nothing.
+
+**Group D found a control under the floor.** `s3` around an 18px wave is 42px, not the 44 a
+comment in `AudioPill` had claimed for two milestones. §6.4 makes no exceptions, so the pill
+carries a minimum height, and the test says which way the arithmetic actually goes.
+
+**The lesson, three times over this milestone:** *a wrapper that comes and goes is a rebuild.*
+`Arrival`, `FocusRing` and the row all stay in the tree and change only what they draw. It
+belongs in BUILD-PLAN.md's list when M7 is signed off, with *a comment is not a measurement*
+beside it.
 
 ---
 

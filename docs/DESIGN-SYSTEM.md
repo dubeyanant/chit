@@ -84,10 +84,10 @@ Hierarchy that used to come from colour now comes from weight, and the weights a
 | Save | `--ink` 7%, border `--ink-muted` | the open chit | label in `--ink`, 10.85:1 |
 | Save, hover | `--ink` 13%, border `--ink` | the open chit | prototype only |
 | Microphone, hover | `--ink` 5% | the open chit | prototype only |
-| Microphone, pressed | `--ink` 10% | the open chit | |
-| Audio pill, pressed | `--ink` 8% | a chit, or the ground | |
-| **The quiet button**, pressed | `--ink` 6% | wherever one is | **label lifts to `--ink`** — see below |
-| **A chit in the thread**, pressed | `--ink` 6% | the ground | **stamp lifts to `--ink-muted`** — 4.42:1 faint, 5.65:1 muted (ADR-061) |
+| Microphone, pressed | `--ink` 10% | the open chit | prototype only — ADR-071 |
+| Audio pill, pressed | `--ink` 8% | a chit, or the ground | prototype only — ADR-071 |
+| The quiet button, pressed | `--ink` 6% | wherever one is | prototype only — ADR-071; the label lifted to `--ink` |
+| A chit in the thread, pressed | `--ink` 6% | the ground | prototype only — ADR-071; the stamp lifted to `--ink-muted`, 4.42:1 against 5.65:1 |
 | Calendar, one chit | `--ink` 6% | the ground | numeral in `--ink`, 12.66:1 |
 | Calendar, two | `--ink` 12% | the ground | 10.69:1 |
 | Calendar, three | `--ink` 20% | the ground | 8.31:1 |
@@ -104,24 +104,18 @@ pressed washes and no hover ones: a finger gets no hover, and pressure is the on
 touch has (the design log). The prototype runs in a browser and needs them; the phone app does
 not, and web is after v1 (ADR-019). That is when they get added — and measured.
 
-**The four pressed rows above are drawn by nothing but the chit row** — ADR-070. The app has no
-press feedback: the owner saw a depress and a wash together on a handset, called the colour
-artificial, and took the whole effect off, so a control's answer is the thing it does. The rows
-stay for the reason the hover rows below them do, as the record and as what a browser will want.
-The **chit row's** is the exception that is drawn, because a hold has no other way to say it has
-started.
+**Nothing draws the four pressed rows above** — ADR-070 and ADR-071. The app has no press
+feedback at all: the owner saw a depress and a wash together on a handset, called the colour
+artificial, and took the whole effect off over two looks, the chit row's included. A control's
+answer is the thing it does, and a held row is answered by the phone's tick. The rows stay for
+the reason the hover rows below them do — as the record, and as what a browser will want — and
+`ChitColors` carries no token for any of them.
 
-**The chit row does the same thing for the same reason** (ADR-061). It is a button since M6 and
-its stamp is `--ink-faint`, which measures 4.42:1 on the 6% wash; `--ink-muted` measures 5.65:1,
-so the stamp lifts while the row is held. Two places faint ink meets a wash, one rule.
-
-**And why a label on a wash lifts.** `--ink-faint` clears the floor on a bare chit at 4.56:1 and
-fails on *any* wash — 4.12:1 at even 4%, and the wash is 6%. So wherever that wash is drawn, the
-text on it goes up with it. *The quiet button's label lifted for this reason until ADR-070 took
-its wash away; the rule is the chit row's stamp now, and it is what any new tinted surface
-inherits.* The prototype already brightens it on hover for the same
-reason; this is that rule applied to the state a phone actually has. A pressed state is a
-surface text sits on, and §6.4 does not make exceptions for surfaces that are brief.
+**And why text on a wash lifts.** `--ink-faint` clears the floor on a bare chit at 4.56:1 and
+fails on *any* wash — 4.12:1 at even 4%. So wherever a wash is drawn, the text on it goes up
+with it: the quiet button's label to `--ink`, a chit row's stamp to `--ink-muted`. *Neither wash
+is drawn any more (ADR-071), so neither lift is;* the rule is kept because **any new tinted
+surface inherits it**, and §6.4 makes no exception for a surface that is brief.
 
 ### 6.2 Typography
 
@@ -412,7 +406,11 @@ Enforced, and verified on every revision:
 - **Type** — functional text starts at **11.5px**. Quiet comes from weight and colour.
 - **Touch targets** — ≥44px, with no exceptions. The microphone is 54px, and its target is not
   reduced when the field has text in it.
-- **Focus** — every interactive element has a visible `:focus-visible` ring in `--seal`.
+- **Focus** — every interactive element has a visible ring in `--seal`, at the app's one 1.5px
+  stroke, and **only on keyboard or switch focus**. `FocusRing` draws it and gives the control
+  Enter and Space with it; a finger leaves no focus behind, so on a phone it costs nothing and
+  is drawn never. It is painted *over* the control rather than around it, so nothing moves when
+  focus arrives.
 - **Motion** — under `prefers-reduced-motion`, **movement collapses and feedback does not.**
   Travel, zoom and every ambient loop stop outright: the caret blink, the breathing record dot.
   **The live waveform stops too, and it is not a loop** — it is twenty levels the microphone

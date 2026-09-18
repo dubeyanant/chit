@@ -11,6 +11,7 @@ import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/arrival.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/focus_ring.dart';
 import '../../../shared/widgets/microphone.dart';
 import '../../../shared/widgets/prompt_sheet.dart';
 import '../../../shared/widgets/slip.dart';
@@ -443,17 +444,24 @@ class _Header extends ConsumerWidget {
           child: Semantics(
             button: true,
             label: 'Back',
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              // The same exit as the system gesture: it asks when something
-              // has changed. Cancel, in the row below, does not.
-              onTap: () => leaveEditor(context, ref, id, ask: true),
-              child: Padding(
-                // `s3` on every side takes the 20px glyph to 44px, §6.4's
-                // floor; the translate above puts the glyph itself on the
-                // gutter.
-                padding: EdgeInsets.all(space.s3),
-                child: Icon(Icons.arrow_back, size: 20, color: colors.inkMuted),
+            child: FocusRing(
+              onActivate: () => leaveEditor(context, ref, id, ask: true),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                // The same exit as the system gesture: it asks when something
+                // has changed. Cancel, in the row below, does not.
+                onTap: () => leaveEditor(context, ref, id, ask: true),
+                child: Padding(
+                  // `s3` on every side takes the 20px glyph to 44px, §6.4's
+                  // floor; the translate above puts the glyph itself on the
+                  // gutter.
+                  padding: EdgeInsets.all(space.s3),
+                  child: Icon(
+                    Icons.arrow_back,
+                    size: 20,
+                    color: colors.inkMuted,
+                  ),
+                ),
               ),
             ),
           ),

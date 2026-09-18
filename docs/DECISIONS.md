@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Sixty-seven records, not seventy: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty-eight records, not seventy-one: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -88,6 +88,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-068 | The caret blinks under reduced motion, and that is a stated limit | closes open item 14 without a fix; §6.4 names the exception |
 | ADR-069 | Press feedback is one widget, and the depress is a token | M7 group A — `Pressable`; the tab bar's ripple goes. **Reversed by ADR-070**, which deletes the widget and the tokens |
 | ADR-070 | No press feedback; a row's box is always there; the strip arrives by scrolling | the owner's second look at M7 — three calls, and the middle one is why a recording in the thread would not play |
+| ADR-071 | Nothing answers a press; the strip jumps; a thread outlives its empty day | the owner's third look at M7 — the last wash goes, ADR-024's scroll is reversed, and the first chit of a day gets its arrival |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -426,7 +427,8 @@ README §1 wants; three days is the smallest window where yesterday-versus-today
 without becoming a second calendar (§4.2 already is one). Costs: the home screen is no longer
 purely about today, the thread and timeline no longer share one query, a horizontal scroller sits
 inside a vertical page, and the prototype no longer shows the built target. How days are
-delineated was left open — later answered by ADR-050.
+delineated was left open — later answered by ADR-050. *Resting at now was an animated scroll
+until ADR-071 made it a jump: the travel drew the eye to the movement rather than to the mark.*
 
 ---
 
@@ -1178,3 +1180,23 @@ cannot fade, rise and scroll at once and still look like one thing; it also spar
 viewport an `Opacity` layer per frame. Cost: with motion on, a control that is slow to respond
 now looks like nothing happened until it does, and §6.1's four pressed washes are kept as record
 and drawn by nothing but the chit row.
+
+---
+
+## ADR-071 — Nothing answers a press; the strip jumps; a thread outlives its empty day
+
+The owner's third look at M7, 18 September 2026, and the end of a line ADR-069 and ADR-070 were
+walking down. **A chit row draws nothing under a finger** — the last pressed wash in the app is
+gone with the four tokens that held them, and what says a hold has landed is the tick the phone
+gives when it is recognised. The thread is a page of writing and a page does not light up.
+`AmbientStampRow.lifted` goes with it, which was the cost ADR-061 named. **The strip jumps to
+now and never slides**, reversing ADR-024's second half: a strip that scrolled itself into place
+drew the eye to the movement instead of to the mark and read as a fault; the tick at now and the
+haptic are what say where you are, and they never needed the travel. **The thread is mounted on
+an empty day**, drawing nothing, because it tells a row that was just written from one that was
+already there by remembering what it drew last time — and a thread that appeared *with* the
+day's first chit had no last time, so the first chit of every day arrived without its arrival
+and the second did not. Chosen over giving the thread a flag from the screen, which would put
+the question of what is new somewhere that cannot answer it. Cost: §6.1's pressed rows are now
+prototype-only like the hover rows above them, and a control with a slow callback has nothing at
+all to say it heard the tap — the owner accepted that twice.

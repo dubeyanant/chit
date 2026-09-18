@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/extensions.dart';
+import 'focus_ring.dart';
 
 /// The way in that is not typing — BEHAVIOUR.md §3.2 and §3.4.
 ///
@@ -38,21 +39,24 @@ final class Microphone extends StatelessWidget {
     return Semantics(
       button: true,
       label: 'Record',
-      child: GestureDetector(
-        onTap: onRecord,
-        child: SizedBox.square(
-          dimension: Microphone.size,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(color: colors.hair),
-              borderRadius: BorderRadius.circular(context.space.radius),
-            ),
-            child: Center(
-              child: CustomPaint(
-                size: const Size.square(Microphone._icon),
-                painter: _MicrophonePainter(
-                  colour: colors.inkMuted,
-                  strokeWidth: Microphone._strokeInViewBox,
+      child: FocusRing(
+        onActivate: onRecord,
+        child: GestureDetector(
+          onTap: onRecord,
+          child: SizedBox.square(
+            dimension: Microphone.size,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: colors.hair),
+                borderRadius: BorderRadius.circular(context.space.radius),
+              ),
+              child: Center(
+                child: CustomPaint(
+                  size: const Size.square(Microphone._icon),
+                  painter: _MicrophonePainter(
+                    colour: colors.inkMuted,
+                    strokeWidth: Microphone._strokeInViewBox,
+                  ),
                 ),
               ),
             ),
