@@ -10,6 +10,7 @@ import '../../../domain/repositories/chit_repository.dart';
 import '../../../domain/services/ambient_signals.dart';
 import '../../../domain/services/audio_player.dart';
 import '../../../domain/services/audio_recorder.dart';
+import 'recording_sink.dart';
 
 part 'composer_controller.g.dart';
 
@@ -38,7 +39,7 @@ part 'composer_controller.g.dart';
 /// is laid out again — a keyboard arriving, the action row growing by two
 /// controls — has not been idle for any less time than it was a frame ago.
 @riverpod
-class ComposerController extends _$ComposerController {
+class ComposerController extends _$ComposerController implements RecordingSink {
   /// How long the field waits before it offers the prompt — BEHAVIOUR.md §3.3.
   ///
   /// **A product rule, not an animation.** It is not in the pace table, it
@@ -237,6 +238,7 @@ class ComposerController extends _$ComposerController {
   /// of the two places the note clears now that Discard is gone (ADR-060); the
   /// other is [save], which opens a fresh chit. Getting as far as the sheet
   /// means permission was given, so a line saying it was withheld is stale.
+  @override
   void recordingStarted() {
     _cancelPrompt();
     state = state.copyWith(
@@ -251,6 +253,7 @@ class ComposerController extends _$ComposerController {
   ///
   /// The five seconds start again on a chit that is still empty, because that
   /// is a chit nothing has happened to.
+  @override
   void recordingCancelled() {
     state = state.copyWith(isRecording: false);
     if (!state.canSave) _armPrompt();
@@ -261,6 +264,7 @@ class ComposerController extends _$ComposerController {
   /// The sheet does not open and the microphone does not move. It is the
   /// controller that records this rather than the widget so that the rule has
   /// a test at all (ADR-031).
+  @override
   void microphoneWasRefused() =>
       state = state.copyWith(isRecording: false, microphoneRefused: true);
 
@@ -273,6 +277,7 @@ class ComposerController extends _$ComposerController {
   /// [recording] is nullable because a take that wrote nothing is nothing —
   /// the platform refused, or produced no file. That closes the sheet and
   /// changes nothing else.
+  @override
   void keepRecording(Recording? recording) {
     final ComposerState chit = state;
     if (recording == null) {

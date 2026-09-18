@@ -29,6 +29,11 @@ abstract class EditorState with _$EditorState {
 
     /// What has been done to the recording, **staged until Save** (D6).
     @Default(AudioEdit.keep()) AudioEdit audio,
+
+    /// Whether the microphone has been refused on this screen — the same
+    /// line as the open chit's (ADR-056), cleared by a later tap that gets as
+    /// far as recording.
+    @Default(false) bool microphoneRefused,
   }) = _EditorState;
 
   /// Whether the chit will hold a recording if this edit is saved.
@@ -36,6 +41,22 @@ abstract class EditorState with _$EditorState {
     KeepAudio() => chit.hasAudio,
     RemoveAudio() => false,
     ReplaceAudio() => true,
+  };
+
+  /// What the pill plays: the stored recording, or the staged replacement —
+  /// relative for the first, absolute for the second (ADR-008). Null when
+  /// there is nothing to play.
+  String? get audioPath => switch (audio) {
+    KeepAudio() => chit.audioPath,
+    RemoveAudio() => null,
+    ReplaceAudio(:final String tempPath) => tempPath,
+  };
+
+  /// How long what the pill plays runs. Null with [audioPath].
+  Duration? get audioDuration => switch (audio) {
+    KeepAudio() => chit.audioDuration,
+    RemoveAudio() => null,
+    ReplaceAudio(:final Duration duration) => duration,
   };
 
   /// Whether saving would write anything different from what was loaded.

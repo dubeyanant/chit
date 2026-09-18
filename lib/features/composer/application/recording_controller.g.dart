@@ -10,10 +10,12 @@ part of 'recording_controller.dart';
 // ignore_for_file: type=lint, type=warning
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
 ///
-/// **It hands the result to `ComposerController` rather than returning it**,
+/// **It hands the result to a [RecordingSink] rather than returning it**,
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
-/// downstream of it to give a value to. That also keeps every §3.4 and §3.5
-/// rule in a controller, where a test can reach it without a widget (ADR-031).
+/// downstream of it to give a value to. That also keeps every §3.4 rule in a
+/// controller, where a test can reach it without a widget (ADR-031). *The sink
+/// was `ComposerController` by name until M6's editor became the second screen
+/// to record* (ADR-065); now whoever taps the microphone owns the take.
 ///
 /// **`keepAlive`, and it is the only screen-state controller that is** —
 /// ADR-057. A take begins before the sheet exists and finishes after it has
@@ -28,10 +30,12 @@ final recordingControllerProvider = RecordingControllerProvider._();
 
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
 ///
-/// **It hands the result to `ComposerController` rather than returning it**,
+/// **It hands the result to a [RecordingSink] rather than returning it**,
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
-/// downstream of it to give a value to. That also keeps every §3.4 and §3.5
-/// rule in a controller, where a test can reach it without a widget (ADR-031).
+/// downstream of it to give a value to. That also keeps every §3.4 rule in a
+/// controller, where a test can reach it without a widget (ADR-031). *The sink
+/// was `ComposerController` by name until M6's editor became the second screen
+/// to record* (ADR-065); now whoever taps the microphone owns the take.
 ///
 /// **`keepAlive`, and it is the only screen-state controller that is** —
 /// ADR-057. A take begins before the sheet exists and finishes after it has
@@ -44,10 +48,12 @@ final class RecordingControllerProvider
     extends $NotifierProvider<RecordingController, RecordingState> {
   /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
   ///
-  /// **It hands the result to `ComposerController` rather than returning it**,
+  /// **It hands the result to a [RecordingSink] rather than returning it**,
   /// because the sheet is a modal and not a route (ADR-011): there is nothing
-  /// downstream of it to give a value to. That also keeps every §3.4 and §3.5
-  /// rule in a controller, where a test can reach it without a widget (ADR-031).
+  /// downstream of it to give a value to. That also keeps every §3.4 rule in a
+  /// controller, where a test can reach it without a widget (ADR-031). *The sink
+  /// was `ComposerController` by name until M6's editor became the second screen
+  /// to record* (ADR-065); now whoever taps the microphone owns the take.
   ///
   /// **`keepAlive`, and it is the only screen-state controller that is** —
   /// ADR-057. A take begins before the sheet exists and finishes after it has
@@ -84,14 +90,16 @@ final class RecordingControllerProvider
 }
 
 String _$recordingControllerHash() =>
-    r'a510701c84309ff0dcb849efc0e1e066b92fa8b8';
+    r'b54f184671ed1b72162466484a47a21765ee7baa';
 
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
 ///
-/// **It hands the result to `ComposerController` rather than returning it**,
+/// **It hands the result to a [RecordingSink] rather than returning it**,
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
-/// downstream of it to give a value to. That also keeps every §3.4 and §3.5
-/// rule in a controller, where a test can reach it without a widget (ADR-031).
+/// downstream of it to give a value to. That also keeps every §3.4 rule in a
+/// controller, where a test can reach it without a widget (ADR-031). *The sink
+/// was `ComposerController` by name until M6's editor became the second screen
+/// to record* (ADR-065); now whoever taps the microphone owns the take.
 ///
 /// **`keepAlive`, and it is the only screen-state controller that is** —
 /// ADR-057. A take begins before the sheet exists and finishes after it has

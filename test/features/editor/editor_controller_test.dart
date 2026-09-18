@@ -9,12 +9,17 @@ import 'package:chit/domain/models/audio_edit.dart';
 import 'package:chit/domain/models/chit.dart';
 import 'package:chit/domain/models/editor_state.dart';
 import 'package:chit/domain/repositories/chit_repository.dart';
+import 'package:chit/domain/services/audio_player.dart';
+import 'package:chit/domain/services/audio_recorder.dart';
+import 'package:chit/features/composer/application/recording_controller.dart';
 import 'package:chit/features/editor/application/editor_controller.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
+import '../../support/fake_audio_player.dart';
+import '../../support/fake_audio_recorder.dart';
 import '../../support/fake_clock.dart';
 
 /// The editor through a bare `ProviderContainer` — ADR-031, TASKS.md D11.
@@ -28,6 +33,8 @@ void main() {
   late AppDatabase db;
   late FakeClock clock;
   late ChitRepository repo;
+  late FakeAudioPlayer player;
+  late FakeAudioRecorder recorder;
   late ProviderContainer container;
 
   /// Thursday 17 September 2026, 3pm.
@@ -42,16 +49,21 @@ void main() {
       audio: AudioStore(Future<Directory>.value(root)),
       clock: clock,
     );
+    player = FakeAudioPlayer();
+    recorder = FakeAudioRecorder();
     container = ProviderContainer(
       overrides: [
         clockProvider.overrideWithValue(clock),
         chitRepositoryProvider.overrideWithValue(repo),
+        audioPlayerProvider.overrideWithValue(player),
+        audioRecorderProvider.overrideWithValue(recorder),
       ],
     );
   });
 
   tearDown(() async {
     container.dispose();
+    await recorder.dispose();
     await db.close();
     if (root.existsSync()) await root.delete(recursive: true);
   });
@@ -237,5 +249,232 @@ void main() {
 
       expect((await repo.byId(both.id))!.audioPath, both.audioPath);
     });
+  });
+
+  group('the voice, staged until Save — D5, D6', () {
+    /// A take on disk, as the recorder would leave it.
+    Future<Recording> aTake([String name = 'new-take']) async {
+      final File file = File(p.join(root.path, '$name.m4a'));
+      await file.writeAsString('a different take');
+      return Recording(
+        tempPath: file.path,
+        duration: const Duration(seconds: 21),
+      );
+    }
+
+    File storedFileOf(Chit chit) =>
+        File(p.join(root.path, 'audio', '${chit.id}.m4a'));
+
+    test('Remove stages a removal and touches no file', () async {
+      final Chit both = await given('Words too.', recorded: true);
+      final EditorController editor = await open(both);
+
+      await editor.removeAudio();
+
+      expect(stateOf(both).audio, const AudioEdit.remove());
+      expect(stateOf(both).hasAudio, isFalse, reason: 'the microphone returns');
+      expect(stateOf(both).audioPath, isNull);
+      expect(stateOf(both).isDirty, isTrue);
+      expect(stateOf(both).canSave, isTrue, reason: 'the words remain');
+      expect(storedFileOf(both).existsSync(), isTrue, reason: 'staged only');
+      expect((await repo.byId(both.id))!.hasAudio, isTrue);
+    });
+
+    test('removing a recording-only chit\'s take withholds Save', () async {
+      final Chit voice = await given(null, recorded: true);
+      final EditorController editor = await open(voice);
+
+      await editor.removeAudio();
+
+      expect(stateOf(voice).holdsAnything, isFalse);
+      expect(stateOf(voice).canSave, isFalse);
+      expect(
+        stateOf(voice).shouldPromptOnLeave,
+        isTrue,
+        reason: 'Cancel is still a change to abandon',
+      );
+    });
+
+    test('Remove stops the recording sounding', () async {
+      final Chit both = await given('Words too.', recorded: true);
+      final EditorController editor = await open(both);
+      await player.play(id: both.id, path: both.audioPath!);
+      expect(player.now.playing, isTrue);
+
+      await editor.removeAudio();
+
+      expect(player.now, Playback.silent);
+    });
+
+    test(
+      'a kept take is staged as a replacement, and the pill plays it',
+      () async {
+        final Chit both = await given('Words too.', recorded: true);
+        final EditorController editor = await open(both);
+        final Recording take = await aTake();
+
+        editor.keepRecording(take);
+
+        expect(stateOf(both).audio, isA<ReplaceAudio>());
+        expect(stateOf(both).hasAudio, isTrue);
+        expect(stateOf(both).audioPath, take.tempPath, reason: 'absolute');
+        expect(stateOf(both).audioDuration, take.duration);
+        expect(stateOf(both).isDirty, isTrue);
+      },
+    );
+
+    test('a take that wrote nothing is nothing kept', () async {
+      final Chit both = await given('Words too.', recorded: true);
+      final EditorController editor = await open(both);
+
+      editor.keepRecording(null);
+
+      expect(stateOf(both).audio, const AudioEdit.keep());
+      expect(stateOf(both).isDirty, isFalse);
+    });
+
+    test(
+      'a take recorded and removed again on a text-only chit is no change',
+      () async {
+        final Chit words = await given('Only words.');
+        final EditorController editor = await open(words);
+        final Recording take = await aTake();
+
+        editor.keepRecording(take);
+        expect(stateOf(words).isDirty, isTrue);
+        await editor.removeAudio();
+
+        expect(stateOf(words).audio, const AudioEdit.keep());
+        expect(stateOf(words).isDirty, isFalse);
+        expect(
+          File(take.tempPath).existsSync(),
+          isFalse,
+          reason: 'a staged take nobody will move is discarded',
+        );
+      },
+    );
+
+    test(
+      'abandoning discards a staged take and leaves the row alone',
+      () async {
+        final Chit both = await given('Words too.', recorded: true);
+        final EditorController editor = await open(both);
+        final Recording take = await aTake();
+        editor.keepRecording(take);
+
+        await editor.abandon();
+
+        expect(File(take.tempPath).existsSync(), isFalse);
+        expect(storedFileOf(both).existsSync(), isTrue);
+        expect(await repo.byId(both.id), both);
+      },
+    );
+
+    test('saving a replacement moves it in and moves updatedAt', () async {
+      final Chit both = await given('Words too.', recorded: true);
+      final EditorController editor = await open(both);
+      final Recording take = await aTake();
+      editor.keepRecording(take);
+
+      clock.moveTo(DateTime(2026, 9, 18, 8, 0));
+      await editor.save();
+
+      final Chit edited = (await repo.byId(both.id))!;
+      expect(edited.audioDuration, take.duration);
+      expect(edited.updatedAt, DateTime(2026, 9, 18, 8, 0));
+      expect(edited.text, both.text);
+      expect(File(take.tempPath).existsSync(), isFalse, reason: 'moved');
+      expect(storedFileOf(both).readAsStringSync(), 'a different take');
+    });
+
+    test('saving a removal clears the row and deletes the file', () async {
+      final Chit both = await given('Words too.', recorded: true);
+      final EditorController editor = await open(both);
+      await editor.removeAudio();
+
+      await editor.save();
+
+      final Chit edited = (await repo.byId(both.id))!;
+      expect(edited.hasAudio, isFalse);
+      expect(storedFileOf(both).existsSync(), isFalse);
+    });
+
+    test('saving stops a recording that is about to move', () async {
+      final Chit both = await given('Words too.', recorded: true);
+      final EditorController editor = await open(both);
+      editor.keepRecording(await aTake());
+      await player.play(id: both.id, path: both.audioPath!);
+
+      await editor.save();
+
+      expect(player.now, Playback.silent);
+    });
+
+    test(
+      'a take started for the editor lands in the editor — ADR-065',
+      () async {
+        // The whole point of the sink: the same recording controller, the same
+        // sheet, and Stop & keep arrives here rather than on the open chit.
+        final Chit words = await given('Only words.');
+        final EditorController editor = await open(words);
+        final RecordingController sheet = container.read(
+          recordingControllerProvider.notifier,
+        );
+
+        expect(await sheet.start(into: editor), isTrue);
+        await sheet.stopAndKeep();
+
+        expect(stateOf(words).audio, isA<ReplaceAudio>());
+        expect(stateOf(words).audioPath, recorder.take!.tempPath);
+      },
+    );
+
+    test('a cancelled take leaves the editor as it was', () async {
+      final Chit words = await given('Only words.');
+      final EditorController editor = await open(words);
+      final RecordingController sheet = container.read(
+        recordingControllerProvider.notifier,
+      );
+
+      await sheet.start(into: editor);
+      await sheet.cancel();
+
+      expect(stateOf(words).audio, const AudioEdit.keep());
+      expect(stateOf(words).isDirty, isFalse);
+    });
+
+    test('a refusal at the tap is recorded on the editor', () async {
+      final Chit words = await given('Only words.');
+      final EditorController editor = await open(words);
+      recorder.permitted = false;
+
+      expect(
+        await container
+            .read(recordingControllerProvider.notifier)
+            .start(into: editor),
+        isFalse,
+      );
+
+      expect(stateOf(words).microphoneRefused, isTrue);
+    });
+
+    test(
+      'a refused microphone is said, and unsaid once one is allowed',
+      () async {
+        final Chit words = await given('Only words.');
+        final EditorController editor = await open(words);
+
+        editor.microphoneWasRefused();
+        expect(stateOf(words).microphoneRefused, isTrue);
+        expect(
+          stateOf(words).isDirty,
+          isFalse,
+          reason: 'a refusal is not an edit',
+        );
+
+        editor.recordingStarted();
+        expect(stateOf(words).microphoneRefused, isFalse);
+      },
+    );
   });
 }

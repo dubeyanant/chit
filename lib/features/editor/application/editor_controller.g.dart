@@ -20,6 +20,11 @@ part of 'editor_controller.dart';
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
 ///
+/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// an [AudioEdit] that the repository applies at Save and that Cancel throws
+/// away. It cannot be otherwise — a chit with neither words nor a take is a
+/// row the database refuses — and it is what makes Cancel honest.
+///
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
 /// controller (ADR-057) nothing here outlives the screen. **Every decision the
@@ -41,6 +46,11 @@ final editorControllerProvider = EditorControllerFamily._();
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
 ///
+/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// an [AudioEdit] that the repository applies at Save and that Cancel throws
+/// away. It cannot be otherwise — a chit with neither words nor a take is a
+/// row the database refuses — and it is what makes Cancel honest.
+///
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
 /// controller (ADR-057) nothing here outlives the screen. **Every decision the
@@ -59,6 +69,11 @@ final class EditorControllerProvider
   /// **Null means the chit is gone.** The screen leaves rather than drawing
   /// nothing — an id can outlive its row across a delete, and a blank screen
   /// with a back arrow is a dead end that says nothing about why.
+  ///
+  /// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+  /// an [AudioEdit] that the repository applies at Save and that Cancel throws
+  /// away. It cannot be otherwise — a chit with neither words nor a take is a
+  /// row the database refuses — and it is what makes Cancel honest.
   ///
   /// Keyed by id so two chits opened in one session are two states, and
   /// auto-disposed so leaving the screen forgets it: unlike the recording
@@ -101,7 +116,7 @@ final class EditorControllerProvider
   }
 }
 
-String _$editorControllerHash() => r'10588c7125fdf1f44ffb8873c68bb57988ca8082';
+String _$editorControllerHash() => r'cffdee3ea677306b957ded69ba9487dedbf2dc25';
 
 /// A saved chit being edited — **ADR-017, ADR-062**.
 ///
@@ -114,6 +129,11 @@ String _$editorControllerHash() => r'10588c7125fdf1f44ffb8873c68bb57988ca8082';
 /// **Null means the chit is gone.** The screen leaves rather than drawing
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
+///
+/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// an [AudioEdit] that the repository applies at Save and that Cancel throws
+/// away. It cannot be otherwise — a chit with neither words nor a take is a
+/// row the database refuses — and it is what makes Cancel honest.
 ///
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording
@@ -151,6 +171,11 @@ final class EditorControllerFamily extends $Family
   /// nothing — an id can outlive its row across a delete, and a blank screen
   /// with a back arrow is a dead end that says nothing about why.
   ///
+  /// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+  /// an [AudioEdit] that the repository applies at Save and that Cancel throws
+  /// away. It cannot be otherwise — a chit with neither words nor a take is a
+  /// row the database refuses — and it is what makes Cancel honest.
+  ///
   /// Keyed by id so two chits opened in one session are two states, and
   /// auto-disposed so leaving the screen forgets it: unlike the recording
   /// controller (ADR-057) nothing here outlives the screen. **Every decision the
@@ -175,6 +200,11 @@ final class EditorControllerFamily extends $Family
 /// **Null means the chit is gone.** The screen leaves rather than drawing
 /// nothing — an id can outlive its row across a delete, and a blank screen
 /// with a back arrow is a dead end that says nothing about why.
+///
+/// **Everything done to the recording is staged** (TASKS.md D6): `audio` is
+/// an [AudioEdit] that the repository applies at Save and that Cancel throws
+/// away. It cannot be otherwise — a chit with neither words nor a take is a
+/// row the database refuses — and it is what makes Cancel honest.
 ///
 /// Keyed by id so two chits opened in one session are two states, and
 /// auto-disposed so leaving the screen forgets it: unlike the recording

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions.dart';
-import '../../../core/theme/chit_colors.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../domain/services/audio_player.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/microphone.dart';
 import '../../../shared/widgets/slip.dart';
 import '../application/composer_controller.dart';
 import '../application/recording_controller.dart';
@@ -282,7 +282,9 @@ class _ActionRow extends ConsumerWidget {
           duration: motion.fade(ChitPace.exit),
           switchInCurve: motion.curve,
           switchOutCurve: motion.curve,
-          child: hasAudio ? const SizedBox.shrink() : const _Microphone(),
+          child: hasAudio
+              ? const SizedBox.shrink()
+              : const _OpenChitMicrophone(),
         ),
         if (!hasAudio) SizedBox(width: context.space.s2),
         Expanded(
@@ -302,141 +304,6 @@ class _ActionRow extends ConsumerWidget {
       ],
     );
   }
-}
-
-/// The way in that is not typing — BEHAVIOUR.md §3.2 and §3.4.
-///
-/// It leads the action row at the full 54px because §4.1 makes it an equal of
-/// the field rather than a secondary action, and its target does not shrink
-/// when text appears (§6.4).
-///
-/// *It was drawn in M2 and deliberately not marked up as a control, because
-/// §6.4 does not allow one that does nothing.* M5 group D gave it its action,
-/// its label and its pressed wash together.
-class _Microphone extends ConsumerStatefulWidget {
-  const _Microphone();
-
-  /// 54px — one of the four dimensions DESIGN-SYSTEM.md §6.3 allows off the
-  /// scale, and **its target does not shrink when text appears** (§6.4).
-  static const double size = 54;
-
-  /// The stroke the icon set holds, in the prototype's 20-unit box.
-  static const double _strokeInViewBox = 1.22;
-
-  /// The icon's own box, drawn at 20 of the 54.
-  static const double _icon = 20;
-
-  @override
-  ConsumerState<_Microphone> createState() => _MicrophoneState();
-}
-
-class _MicrophoneState extends ConsumerState<_Microphone> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Semantics(
-      button: true,
-      label: 'Record',
-      child: GestureDetector(
-        onTapDown: (TapDownDetails _) => setState(() => _pressed = true),
-        onTapUp: (TapUpDetails _) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        onTap: _record,
-        child: SizedBox.square(
-          key: OpenChit.microphone,
-          dimension: _Microphone.size,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: _pressed
-                  ? colors.inkWash(
-                      colors.slip,
-                      opacity: ChitColors.micPressedWash,
-                    )
-                  : null,
-              border: Border.all(color: colors.hair),
-              borderRadius: BorderRadius.circular(context.space.radius),
-            ),
-            child: Center(
-              child: CustomPaint(
-                size: const Size.square(_Microphone._icon),
-                painter: _MicrophonePainter(
-                  colour: colors.inkMuted,
-                  strokeWidth: _Microphone._strokeInViewBox,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Ask, start, then raise the sheet — and on a refusal, none of the three.
-  ///
-  /// The refusal is already recorded by the time `start` answers `false`
-  /// (TASKS.md D2), so there is nothing to decide here: the sheet does not
-  /// open and the composer says so on its own.
-  Future<void> _record() async {
-    // The keyboard would otherwise sit under the sheet for the whole take.
-    FocusManager.instance.primaryFocus?.unfocus();
-
-    final bool began = await ref
-        .read(recordingControllerProvider.notifier)
-        .start();
-    if (!began || !mounted) return;
-
-    await showRecordingSheet(context, ref);
-  }
-}
-
-/// The microphone glyph, in the prototype's own 20-unit box.
-class _MicrophonePainter extends CustomPainter {
-  const _MicrophonePainter({required this.colour, required this.strokeWidth});
-
-  final Color colour;
-  final double strokeWidth;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = colour
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    canvas
-      // <rect x=7.2 y=2.2 width=5.6 height=9.4 rx=2.8/>
-      ..drawRRect(
-        RRect.fromRectAndRadius(
-          const Rect.fromLTWH(7.2, 2.2, 5.6, 9.4),
-          const Radius.circular(2.8),
-        ),
-        paint,
-      )
-      // <path d="M4.4 9.2a5.6 5.6 0 0 0 11.2 0M10 14.8v3"/>
-      ..drawPath(
-        Path()
-          ..moveTo(4.4, 9.2)
-          // The cup hangs below the capsule and meets the stem at 14.8, so
-          // the semicircle goes left → down → right: counter-clockwise on a
-          // screen, which is the SVG's `sweep-flag 0`.
-          ..arcToPoint(
-            const Offset(15.6, 9.2),
-            radius: const Radius.circular(5.6),
-            clockwise: false,
-          )
-          ..moveTo(10, 14.8)
-          ..lineTo(10, 17.8),
-        paint,
-      );
-  }
-
-  @override
-  bool shouldRepaint(_MicrophonePainter oldDelegate) =>
-      oldDelegate.colour != colour || oldDelegate.strokeWidth != strokeWidth;
 }
 
 /// **Save chit**, once the chit holds something.
@@ -466,5 +333,34 @@ class _CommitControls extends ConsumerWidget {
       label: 'Save chit',
       onPressed: ref.read(composerControllerProvider.notifier).save,
     );
+  }
+}
+
+/// The open chit's microphone: the shared [Microphone], with the take sent
+/// to the composer (ADR-065).
+class _OpenChitMicrophone extends ConsumerWidget {
+  const _OpenChitMicrophone();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Microphone(
+    key: OpenChit.microphone,
+    onRecord: () => _record(context, ref),
+  );
+
+  /// Ask, start, then raise the sheet — and on a refusal, none of the three.
+  ///
+  /// The refusal is already recorded by the time `start` answers `false`
+  /// (TASKS.md D2), so there is nothing to decide here: the sheet does not
+  /// open and the composer says so on its own.
+  Future<void> _record(BuildContext context, WidgetRef ref) async {
+    // The keyboard would otherwise sit under the sheet for the whole take.
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final bool began = await ref
+        .read(recordingControllerProvider.notifier)
+        .start(into: ref.read(composerControllerProvider.notifier));
+    if (!began || !context.mounted) return;
+
+    await showRecordingSheet(context, ref);
   }
 }

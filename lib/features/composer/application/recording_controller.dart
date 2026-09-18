@@ -5,16 +5,18 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/clock.dart';
 import '../../../domain/models/recording_state.dart';
 import '../../../domain/services/audio_recorder.dart';
-import 'composer_controller.dart';
+import 'recording_sink.dart';
 
 part 'recording_controller.g.dart';
 
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
 ///
-/// **It hands the result to `ComposerController` rather than returning it**,
+/// **It hands the result to a [RecordingSink] rather than returning it**,
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
-/// downstream of it to give a value to. That also keeps every §3.4 and §3.5
-/// rule in a controller, where a test can reach it without a widget (ADR-031).
+/// downstream of it to give a value to. That also keeps every §3.4 rule in a
+/// controller, where a test can reach it without a widget (ADR-031). *The sink
+/// was `ComposerController` by name until M6's editor became the second screen
+/// to record* (ADR-065); now whoever taps the microphone owns the take.
 ///
 /// **`keepAlive`, and it is the only screen-state controller that is** —
 /// ADR-057. A take begins before the sheet exists and finishes after it has
@@ -47,6 +49,10 @@ class RecordingController extends _$RecordingController {
   /// When the take began, or `null` when none is running.
   DateTime? _startedAt;
 
+  /// Who the take is for — chosen at [start] and held for the take's life
+  /// (ADR-065). Null between takes.
+  RecordingSink? _sink;
+
   @override
   RecordingState build() {
     // Read here rather than in each method so that a disposal can still close
@@ -68,17 +74,17 @@ class RecordingController extends _$RecordingController {
   /// The microphone's tap: permission, then both services — TASKS.md D2.
   ///
   /// `true` when the sheet should open. A `false` from either the ask or the
-  /// start leaves it closed and marks the composer refused; they are one
+  /// start leaves it closed and marks the owner refused; they are one
   /// outcome here because from the sheet's side they are one event, and
   /// `AudioRecorder` already refuses to tell them apart.
-  Future<bool> start() async {
+  ///
+  /// [into] is who gets the take — the open chit or the editor (ADR-065).
+  Future<bool> start({required RecordingSink into}) async {
     assert(_startedAt == null, 'one take at a time — BEHAVIOUR.md §3.2');
 
     final AudioRecorder recorder = ref.read(audioRecorderProvider);
     if (!await recorder.requestPermission() || !await recorder.start()) {
-      if (ref.mounted) {
-        ref.read(composerControllerProvider.notifier).microphoneWasRefused();
-      }
+      if (ref.mounted) into.microphoneWasRefused();
       return false;
     }
 
@@ -88,15 +94,16 @@ class RecordingController extends _$RecordingController {
     }
 
     state = const RecordingState();
+    _sink = into;
     _startedAt = ref.read(clockProvider).now();
     _ticking = Timer.periodic(tick, (Timer _) => _tick());
     _levels = recorder.levels.listen(_onLevel);
 
-    ref.read(composerControllerProvider.notifier).recordingStarted();
+    into.recordingStarted();
     return true;
   }
 
-  /// **Stop & keep** — the take goes to the open chit.
+  /// **Stop & keep** — the take goes to whoever started it.
   Future<void> stopAndKeep() async {
     if (_startedAt == null) return;
     // Cleared before the await, so a second press while the platform is still
@@ -110,7 +117,9 @@ class RecordingController extends _$RecordingController {
     _release();
     if (!ref.mounted) return;
 
-    ref.read(composerControllerProvider.notifier).keepRecording(take);
+    final RecordingSink? owner = _sink;
+    _sink = null;
+    owner?.keepRecording(take);
     state = const RecordingState();
   }
 
@@ -128,7 +137,9 @@ class RecordingController extends _$RecordingController {
     if (!ref.mounted) return;
 
     state = const RecordingState();
-    ref.read(composerControllerProvider.notifier).recordingCancelled();
+    final RecordingSink? owner = _sink;
+    _sink = null;
+    owner?.recordingCancelled();
   }
 
   void _tick() {

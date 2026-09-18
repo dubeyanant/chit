@@ -62,7 +62,8 @@ the first. The text stays editable.
 **A kept take is dropped by Remove, beside the pill** (ADR-060). The microphone comes back when
 it goes, so recording again is the way to a different take rather than a second control that
 would silently overwrite the first. Remove does not touch the words: a recording is not words,
-and removing one is not an edit to anything written.
+and removing one is not an edit to anything written. The same control sits on a saved chit's
+pill in the editor, where it is staged until Save (§4.5).
 
 **A refused microphone raises nothing and explains once.** The sheet does not open, the
 microphone stays where it is and stays tappable, and the line *"The microphone isn't allowed.
@@ -494,5 +495,14 @@ quiet one always lets go, the bright one always keeps**, and dragging, tapping t
 pressing back keeps. Three acts, three words: *Discard* throws away something in flight, *Cancel*
 abandons an edit, *Delete this chit* destroys a record.
 
-*As of M6 group D*, **Remove** on the pill, the microphone's return, and *Delete this chit*
-below the slip are still to come — groups E and F in `docs/TASKS.md`.
+**The recording is removable and replaceable, and every change to it is staged until Save**
+(ADR-063, ADR-065). **Remove** beside the pill is the same control as the open chit's; here it
+stages a removal, the pill goes, and the microphone comes back — §3.2's rule, on this screen.
+A take kept from the sheet is staged as a replacement and the pill plays it from where it sits
+until Save moves it in. Cancel throws all of it away and the row is exactly as it was. A removal
+that leaves the chit with nothing withholds Save, so a recording-only chit whose take is removed
+is left with Cancel and *Delete this chit* — the honest pair, since what remains is no longer a
+chit. A refused microphone says the same line it says on the open chit (§3.2).
+
+*As of M6 group E*, *Delete this chit* below the slip is still to come — group F in
+`docs/TASKS.md`.

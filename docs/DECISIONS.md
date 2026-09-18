@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Sixty-one records, not sixty-four: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty-two records, not sixty-five: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -82,6 +82,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-062 | The editor is a route above the tab shell | M6 group B — one task, one way out; a one-shot read, not a stream; a missing row pops the screen |
 | ADR-063 | An edit is one write, a recording can be removed or replaced, and a chit can be deleted | M6 group C — reverses ADR-014's audio half; the invariant is checked before any file moves |
 | ADR-064 | The prompt is a slip-style sheet; three acts, three words; delete confirms and has no undo | M6 group D — the first confirmation in the app, and the idiom every later one inherits. The quiet weight always lets go |
+| ADR-065 | A take has one owner, chosen at the tap | M6 group E — `RecordingSink`; the composer and the editor both implement it; the microphone moves to `shared/` |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -1055,3 +1056,23 @@ backend, so an undo would be a whole feature pretending to be a nicety, and the 
 recording when there is one. Cost: saving a removed recording is destructive behind one tap —
 reversible until Save, then not — and the prompt budget was spent on Delete instead; if that
 reads wrong on a handset the fix is a second question, not a softer Remove.
+
+---
+
+## ADR-065 — A take has one owner, chosen at the tap
+
+`RecordingController.start` takes a **`RecordingSink`** — the four things a sheet can tell the
+screen under it: refused, started, keep this, cancelled — and holds it for the take's life, so
+Stop & keep and every cancel land on whoever asked. *It called `ComposerController` by name
+until M6's editor became the second screen to record*; the alternatives were a second recording
+controller for the editor (two copies of ADR-057's keep-alive dance and the level window) or
+`stopAndKeep` returning the take for the caller to route (which leaves refused-and-started with
+nowhere to go). `ComposerController` and `EditorController` both implement the sink, and the
+recording sheet is untouched — it still talks to the one controller. The microphone widget moved
+to `shared/widgets/` at the same time, for ARCHITECTURE.md §2's reason: a second screen wanted
+it. In the editor a kept take is **staged** as `AudioEdit.replace` (D6) and the pill plays it
+from its temp path — absolute, as ADR-008 already allows — until Save moves it in; Cancel
+discards the temp file, and a take recorded and removed again on a text-only chit is no change
+at all. Cost: the sink is held by a keep-alive controller and the editor's is auto-disposed, so
+a take whose owner has gone is dropped on the floor rather than delivered — acceptable because
+the sheet is modal over the editor and the owner cannot go while it is up.

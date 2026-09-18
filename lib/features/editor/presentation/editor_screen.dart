@@ -10,8 +10,11 @@ import '../../../shared/day_label.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/microphone.dart';
 import '../../../shared/widgets/prompt_sheet.dart';
 import '../../../shared/widgets/slip.dart';
+import '../../composer/application/recording_controller.dart';
+import '../../composer/presentation/recording_sheet.dart';
 import '../../today/application/today_controller.dart';
 import '../application/editor_controller.dart';
 
@@ -107,6 +110,9 @@ Future<void> leaveEditor(BuildContext context, WidgetRef ref, String id) async {
       letGo: 'Discard',
     );
     if (!discard) return;
+    // A staged take is a temp file nobody will move now; the row itself was
+    // never touched.
+    await ref.read(editorControllerProvider(id).notifier).abandon();
   }
 
   if (context.mounted) context.pop();
@@ -146,16 +152,27 @@ class _Editor extends ConsumerWidget {
                 AmbientStampRow.saved(stamp: chit.stamp),
                 SizedBox(height: space.s4),
                 _Field(id: id),
-                if (state.hasAudio && chit.hasAudio) ...<Widget>[
+                // The stored recording, or a staged replacement — the state
+                // knows which (ADR-008: relative for the first, absolute for
+                // the second). **Remove** stages; nothing touches the file
+                // until Save (D6).
+                if (state.hasAudio) ...<Widget>[
                   SizedBox(height: space.s4),
                   AudioPill(
                     id: chit.id,
-                    path: chit.audioPath!,
-                    duration: chit.audioDuration ?? Duration.zero,
+                    path: state.audioPath!,
+                    duration: state.audioDuration ?? Duration.zero,
+                    onRemove: ref
+                        .read(editorControllerProvider(id).notifier)
+                        .removeAudio,
                   ),
                 ],
                 SizedBox(height: space.s4),
                 _ActionRow(id: id, state: state),
+                if (state.microphoneRefused) ...<Widget>[
+                  SizedBox(height: space.s2),
+                  const _MicrophoneNote(),
+                ],
               ],
             ),
           ),
@@ -237,35 +254,95 @@ class _ActionRow extends ConsumerWidget {
     final motion = context.motion;
     final space = context.space;
 
-    return AnimatedSwitcher(
-      duration: motion.fade(ChitPace.routine),
-      reverseDuration: motion.fade(ChitPace.exit),
-      switchInCurve: motion.curve,
-      switchOutCurve: motion.curve,
-      child: state.isDirty
-          ? Row(
-              children: <Widget>[
-                QuietButton(
-                  label: 'Cancel',
-                  onPressed: () => leaveEditor(context, ref, id),
-                ),
-                if (state.canSave) ...<Widget>[
-                  SizedBox(width: space.s2),
-                  Expanded(
-                    child: PrimaryButton(
-                      label: 'Save chit',
-                      onPressed: () async {
-                        await ref
-                            .read(editorControllerProvider(id).notifier)
-                            .save();
-                        if (context.mounted) context.pop();
-                      },
-                    ),
-                  ),
-                ],
-              ],
-            )
-          : const SizedBox.shrink(),
+    return Row(
+      children: <Widget>[
+        // **The microphone comes back whenever the chit holds no recording**
+        // — BEHAVIOUR.md §3.2's rule, on this screen: a chit holds one take,
+        // so the way to a different one is to remove the first. It fades as
+        // Today's does (DESIGN-SYSTEM.md §6.3, routine change).
+        AnimatedSwitcher(
+          duration: motion.fade(ChitPace.exit),
+          switchInCurve: motion.curve,
+          switchOutCurve: motion.curve,
+          child: state.hasAudio
+              ? const SizedBox.shrink()
+              : _EditorMicrophone(id: id),
+        ),
+        if (!state.hasAudio) SizedBox(width: space.s2),
+        Expanded(
+          child: AnimatedSwitcher(
+            duration: motion.fade(ChitPace.routine),
+            reverseDuration: motion.fade(ChitPace.exit),
+            switchInCurve: motion.curve,
+            switchOutCurve: motion.curve,
+            child: state.isDirty
+                ? Row(
+                    children: <Widget>[
+                      QuietButton(
+                        label: 'Cancel',
+                        onPressed: () => leaveEditor(context, ref, id),
+                      ),
+                      if (state.canSave) ...<Widget>[
+                        SizedBox(width: space.s2),
+                        Expanded(
+                          child: PrimaryButton(
+                            label: 'Save chit',
+                            onPressed: () async {
+                              await ref
+                                  .read(editorControllerProvider(id).notifier)
+                                  .save();
+                              if (context.mounted) context.pop();
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The editor's microphone: the shared [Microphone], with the take staged
+/// on this chit rather than attached to the open one (ADR-065).
+class _EditorMicrophone extends ConsumerWidget {
+  const _EditorMicrophone({required this.id});
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) =>
+      Microphone(onRecord: () => _record(context, ref));
+
+  Future<void> _record(BuildContext context, WidgetRef ref) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final bool began = await ref
+        .read(recordingControllerProvider.notifier)
+        .start(into: ref.read(editorControllerProvider(id).notifier));
+    if (!began || !context.mounted) return;
+
+    await showRecordingSheet(context, ref);
+  }
+}
+
+/// The line beside a refused microphone — the open chit's, word for word
+/// (ADR-056). Under the action row for the reason it is there too.
+class _MicrophoneNote extends StatelessWidget {
+  const _MicrophoneNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      child: Text(
+        "The microphone isn't allowed. You can turn it on in your phone's "
+        'settings.',
+        style: context.type.failNote,
+      ),
     );
   }
 }

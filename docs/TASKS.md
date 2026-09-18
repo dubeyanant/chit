@@ -103,21 +103,21 @@ settings screen (open item 22).
 - [x] Tests: the controller's `shouldPromptOnLeave`, and that answering *discard* leaves the row
       exactly as it was.
 
-## E. The voice in the editor
+## E. The voice in the editor ✅
 
-- [ ] `Remove` on the editor's pill — **staged** (D6). The row is not written until Save, and
+- [x] `Remove` on the editor's pill — **staged** (D6). The row is not written until Save, and
       Cancel takes it back.
-- [ ] The microphone returns to the editor's action row whenever the chit holds no recording,
+- [x] The microphone returns to the editor's action row whenever the chit holds no recording,
       reusing the recording sheet unchanged. A new take is staged the same way.
-- [ ] Save withheld when a removal leaves the chit holding nothing; Cancel and *Delete this
+- [x] Save withheld when a removal leaves the chit holding nothing; Cancel and *Delete this
       chit* are what is left (D7).
 - [x] `AudioEdit.remove` and `.replace` through `update` — **built and tested in group C** with
       the repository. *The plan said the old file would ride the sweep; it is deleted after the
       row is written instead*, so a removed recording does not sit on disk until the next
       launch, and the sweep is the backstop for a delete that fails (ADR-063).
-- [ ] A playing recording is stopped before its file stops being the row's — `stopIf`, as
+- [x] A playing recording is stopped before its file stops being the row's — `stopIf`, as
       `save()` already does.
-- [ ] Tests: the controller's legality rule; the repository's remove and replace paths; that a
+- [x] Tests: the controller's legality rule; the repository's remove and replace paths; that a
       chit with no text and no take cannot be written.
 
 ## F. Delete this chit

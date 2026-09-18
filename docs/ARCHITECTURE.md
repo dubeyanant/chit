@@ -77,6 +77,10 @@ so threading it down from three screens would be the same fact copied three time
 taking a callback, because both screens that draw it would pass the same one — go_router owns
 navigation (CLAUDE.md §4.2) and a destination is not something a row should have to be told.
 
+**`Microphone` takes a callback**, by contrast, because the two screens that draw it start the
+same take and send it to different owners (ADR-065) — what differs is exactly the thing a
+callback carries.
+
 `Slip` draws its own `PerforatedEdge`, since a slip and its tear are one object. `ThreadRail`
 draws only the line; each row places its own `ThreadNode` on it, because where a node falls is
 the row's business, not the rail's.
@@ -315,6 +319,11 @@ closes the sheet.
 
 It is the one screen controller that is `keepAlive` (ADR-057): a take begins on the microphone's
 tap, before the sheet exists, and finishes after it has gone.
+
+**Who gets the take is decided at the tap** (ADR-065). `start` takes a `RecordingSink` — the
+four things a sheet can tell the screen under it — and holds it for the take's life;
+`ComposerController` attaches a kept take to the open chit, `EditorController` stages it as
+`AudioEdit.replace`. The sheet itself talks to the one recording controller and knows neither.
 
 **The sheet's Discard, and Remove on the open chit's pill**, both delete the temp file through
 `ChitRepository.discardTemp`, the counterpart of `save`'s `audioTempPath`; nothing moves to

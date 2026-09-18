@@ -20,7 +20,10 @@ mixin _$EditorState {
 /// stamp, the day, the id.
  Chit get chit;/// The field's live content.
  String get text;/// What has been done to the recording, **staged until Save** (D6).
- AudioEdit get audio;
+ AudioEdit get audio;/// Whether the microphone has been refused on this screen — the same
+/// line as the open chit's (ADR-056), cleared by a later tap that gets as
+/// far as recording.
+ bool get microphoneRefused;
 /// Create a copy of EditorState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -32,20 +35,20 @@ $EditorStateCopyWith<EditorState> get copyWith => _$EditorStateCopyWithImpl<Edit
 @override
 bool operator ==(Object other) {
   final _this = this as EditorState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EditorState&&(identical(other.chit, _this.chit) || other.chit == _this.chit)&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.audio, _this.audio) || other.audio == _this.audio));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EditorState&&(identical(other.chit, _this.chit) || other.chit == _this.chit)&&(identical(other.text, _this.text) || other.text == _this.text)&&(identical(other.audio, _this.audio) || other.audio == _this.audio)&&(identical(other.microphoneRefused, _this.microphoneRefused) || other.microphoneRefused == _this.microphoneRefused));
 }
 
 
 @override
 int get hashCode {
   final _this = this as EditorState;
-  return Object.hash(runtimeType,_this.chit,_this.text,_this.audio);
+  return Object.hash(runtimeType,_this.chit,_this.text,_this.audio,_this.microphoneRefused);
 }
 
 @override
 String toString() {
   final _this = this as EditorState;
-  return 'EditorState(chit: ${_this.chit}, text: ${_this.text}, audio: ${_this.audio})';
+  return 'EditorState(chit: ${_this.chit}, text: ${_this.text}, audio: ${_this.audio}, microphoneRefused: ${_this.microphoneRefused})';
 }
 
 
@@ -56,7 +59,7 @@ abstract mixin class $EditorStateCopyWith<$Res>  {
   factory $EditorStateCopyWith(EditorState value, $Res Function(EditorState) _then) = _$EditorStateCopyWithImpl;
 @useResult
 $Res call({
- Chit chit, String text, AudioEdit audio
+ Chit chit, String text, AudioEdit audio, bool microphoneRefused
 });
 
 
@@ -73,12 +76,13 @@ class _$EditorStateCopyWithImpl<$Res>
 
 /// Create a copy of EditorState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? chit = null,Object? text = null,Object? audio = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? chit = null,Object? text = null,Object? audio = null,Object? microphoneRefused = null,}) {
   return _then(EditorState(
 chit: null == chit ? _self.chit : chit // ignore: cast_nullable_to_non_nullable
 as Chit,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,audio: null == audio ? _self.audio : audio // ignore: cast_nullable_to_non_nullable
-as AudioEdit,
+as AudioEdit,microphoneRefused: null == microphoneRefused ? _self.microphoneRefused : microphoneRefused // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of EditorState
@@ -181,10 +185,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Chit chit,  String text,  AudioEdit audio)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Chit chit,  String text,  AudioEdit audio,  bool microphoneRefused)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EditorState() when $default != null:
-return $default(_that.chit,_that.text,_that.audio);case _:
+return $default(_that.chit,_that.text,_that.audio,_that.microphoneRefused);case _:
   return orElse();
 
 }
@@ -202,10 +206,10 @@ return $default(_that.chit,_that.text,_that.audio);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Chit chit,  String text,  AudioEdit audio)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Chit chit,  String text,  AudioEdit audio,  bool microphoneRefused)  $default,) {final _that = this;
 switch (_that) {
 case _EditorState():
-return $default(_that.chit,_that.text,_that.audio);case _:
+return $default(_that.chit,_that.text,_that.audio,_that.microphoneRefused);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -222,10 +226,10 @@ return $default(_that.chit,_that.text,_that.audio);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Chit chit,  String text,  AudioEdit audio)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Chit chit,  String text,  AudioEdit audio,  bool microphoneRefused)?  $default,) {final _that = this;
 switch (_that) {
 case _EditorState() when $default != null:
-return $default(_that.chit,_that.text,_that.audio);case _:
+return $default(_that.chit,_that.text,_that.audio,_that.microphoneRefused);case _:
   return null;
 
 }
@@ -237,7 +241,7 @@ return $default(_that.chit,_that.text,_that.audio);case _:
 
 
 class _EditorState extends EditorState {
-  const _EditorState({required this.chit, required this.text, this.audio = const AudioEdit.keep()}): super._();
+  const _EditorState({required this.chit, required this.text, this.audio = const AudioEdit.keep(), this.microphoneRefused = false}): super._();
   
 
 /// The row when the editor opened. The baseline every *dirty* is measured
@@ -248,6 +252,10 @@ class _EditorState extends EditorState {
 @override final  String text;
 /// What has been done to the recording, **staged until Save** (D6).
 @override@JsonKey() final  AudioEdit audio;
+/// Whether the microphone has been refused on this screen — the same
+/// line as the open chit's (ADR-056), cleared by a later tap that gets as
+/// far as recording.
+@override@JsonKey() final  bool microphoneRefused;
 
 /// Create a copy of EditorState
 /// with the given fields replaced by the non-null parameter values.
@@ -259,18 +267,18 @@ _$EditorStateCopyWith<_EditorState> get copyWith => __$EditorStateCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EditorState&&(identical(other.chit, chit) || other.chit == chit)&&(identical(other.text, text) || other.text == text)&&(identical(other.audio, audio) || other.audio == audio));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EditorState&&(identical(other.chit, chit) || other.chit == chit)&&(identical(other.text, text) || other.text == text)&&(identical(other.audio, audio) || other.audio == audio)&&(identical(other.microphoneRefused, microphoneRefused) || other.microphoneRefused == microphoneRefused));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,chit,text,audio);
+    return Object.hash(runtimeType,chit,text,audio,microphoneRefused);
 }
 
 @override
 String toString() {
-    return 'EditorState(chit: $chit, text: $text, audio: $audio)';
+    return 'EditorState(chit: $chit, text: $text, audio: $audio, microphoneRefused: $microphoneRefused)';
 }
 
 
@@ -281,7 +289,7 @@ abstract mixin class _$EditorStateCopyWith<$Res> implements $EditorStateCopyWith
   factory _$EditorStateCopyWith(_EditorState value, $Res Function(_EditorState) _then) = __$EditorStateCopyWithImpl;
 @override @useResult
 $Res call({
- Chit chit, String text, AudioEdit audio
+ Chit chit, String text, AudioEdit audio, bool microphoneRefused
 });
 
 
@@ -298,12 +306,13 @@ class __$EditorStateCopyWithImpl<$Res>
 
 /// Create a copy of EditorState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? chit = null,Object? text = null,Object? audio = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? chit = null,Object? text = null,Object? audio = null,Object? microphoneRefused = null,}) {
   return _then(_EditorState(
 chit: null == chit ? _self.chit : chit // ignore: cast_nullable_to_non_nullable
 as Chit,text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,audio: null == audio ? _self.audio : audio // ignore: cast_nullable_to_non_nullable
-as AudioEdit,
+as AudioEdit,microphoneRefused: null == microphoneRefused ? _self.microphoneRefused : microphoneRefused // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
