@@ -150,6 +150,19 @@ class EditorController extends _$EditorController implements RecordingSink {
     await _discardStaged(current.audio);
   }
 
+  /// **Delete this chit** — the row and its recording, for good (ADR-064,
+  /// open item 9). Whatever was staged goes with it: a replacement's temp
+  /// file is discarded, and a playing recording is stopped before its file is.
+  Future<void> delete() async {
+    final EditorState? current = _current;
+    if (current == null) return;
+
+    await abandon();
+    if (!ref.mounted) return;
+
+    await ref.read(chitRepositoryProvider).delete(current.chit.id);
+  }
+
   Future<void> _discardStaged(AudioEdit audio) async {
     if (audio case ReplaceAudio(:final String tempPath)) {
       await ref.read(chitRepositoryProvider).discardTemp(tempPath);

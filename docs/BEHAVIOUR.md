@@ -461,7 +461,13 @@ tab bar** (ADR-062): one task, one way out.
   │ Didn't sleep. Room too cold, again.    │
   │                                        │
   │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]           Remove    │
+  │                                        │
+  │           Cancel   ┌───────────────┐   │       ← once something has changed
+  │                    │  Save chit    │   │
+  │                    └───────────────┘   │
   └────────────────────────────────────────┘
+
+              Delete this chit                     ← quiet, apart, below the slip
 ```
 
 The header is a back arrow and the day — *Today*, *Yesterday*, or the weekday and date, the
@@ -504,5 +510,9 @@ that leaves the chit with nothing withholds Save, so a recording-only chit whose
 is left with Cancel and *Delete this chit* — the honest pair, since what remains is no longer a
 chit. A refused microphone says the same line it says on the open chit (§3.2).
 
-*As of M6 group E*, *Delete this chit* below the slip is still to come — group F in
-`docs/TASKS.md`.
+**Delete this chit** sits below the slip, quiet and apart from the action row: the one
+destructive act on the screen is a step of the scale away from Save, not an inch from it. It is
+named in full so it cannot be read as Discard. It asks — *Delete this chit?*, with *The
+recording goes with it.* when there is one — and answering Delete removes the row and the
+recording for good, then returns to where the chit was opened from. **There is no undo**
+(ADR-064): there is no trash and no backend, and the prompt is the whole of the protection.

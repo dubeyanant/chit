@@ -6,7 +6,7 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M6 — the chit editor — is under way; groups A to E
+**Last updated:** 18 September 2026. **M6 — the chit editor — is built and unseen; groups A to F
 are done.**
 [TASKS.md](TASKS.md) is cut for it, in seven groups, and the cut is **wider than
 [BUILD-PLAN.md](BUILD-PLAN.md) M6 as written** — the owner asked for three things the plan did
@@ -61,8 +61,13 @@ path. To get there the recording controller stopped naming `ComposerController` 
 untouched — and the microphone moved to `shared/widgets/`. A recording-only chit whose take is
 removed is left with Cancel alone until group F adds *Delete this chit*.
 
-**Next is group F** — *Delete this chit* below the slip, behind the prompt, calling the
-`delete` that group C built. Then G, the handset pass, which is most of what is left.
+**Group F is committed.** *Delete this chit* sits below the slip, quiet and a step of the scale
+from Save; it asks with the prompt sheet — naming the recording when there is one — and calls
+the `delete` group C built, taking a staged take and a playing recording with it. Open item 9
+is closed. **Everything M6 builds is built**; what is left is looking at it.
+
+**Next is group G** — the handset pass. Nothing in M6 has been on a device yet, and the list of
+what a test could not settle has grown with every group; it is in the *Next* section below.
 
 *M5 — voice — was signed off on a handset earlier the same day.* A chit can be spoken as well as
 typed: the microphone opens a recording sheet, the take is attached to the open chit, and it
@@ -120,10 +125,10 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
 | **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
-| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A to E done**. ADR-017, ADR-060 to ADR-065. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
+| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A to F done, G — the handset pass — is what remains**. ADR-017, ADR-060 to ADR-065. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
 | M7 — motion and the floors | ⬜ | |
 
-**488 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
+**491 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
 anything the app still does.* **Schema is v1 again and there are no migrations** — an install
 carrying an older shape is reinstalled.
@@ -137,34 +142,38 @@ bundle of item 6 is the only part chit chose. Nothing about shipping has been de
 
 ---
 
-## Next: M6 group F — Delete this chit
+## Next: M6 group G — the handset pass
 
-**Groups A to E are done and nothing is half-built.** [TASKS.md](TASKS.md) is the working
-list; its **D1–D12 table is where this milestone's answers live**. The session that picks up
-group F:
+**Everything M6 builds is built and nothing is half-built.** What is left is the pass no test
+can make (ADR-031). Seed first — `flutter run --dart-define=CHIT_SEED=seed`, `=clear` after.
+**M6 changes no schema**, so nobody has to uninstall. [TASKS.md](TASKS.md) group G is the
+checklist; the things below are what the six groups each said a device would have to settle,
+gathered in one place:
 
-1. **Puts *Delete this chit* below the slip**, in `QuietButton`'s weight and apart from the
-   action row (D8): distance from Save is the first defence, the prompt the second. Named in
-   full — the owner asked for that specifically, so a reader cannot take it for Discard.
-2. **Asks with the prompt sheet** — *Delete this chit?*, and *The recording goes with it.* as
-   the detail line when the chit has one → Delete · Keep it. No undo (D10).
-3. **Calls `ChitRepository.delete`**, which exists and is tested since group C, and lands
-   back where the editor was opened from. A staged take is discarded first — `abandon()`.
-4. **Closes open item 9**, which is half-closed already.
-5. **Then group G** — the handset pass, which is most of what is left of the milestone.
+1. **Today's row without Discard** — does microphone and Save read as complete, and is Remove
+   beside the pill findable? (Group A.)
+2. **A chit row as a button** — does it read as tappable when the only affordance is the
+   press, and is the 6% wash visible without being loud? The stamp should lift to `--ink-muted`
+   while held. (Group B, ADR-061.)
+3. **The editor's field** — seeded from a chit, does the caret land where a thumb expects?
+   Does Save arrive with the first real change and not with a trailing space? (Group C.)
+4. **The prompt sheet** — does *Keep this edit?* read as a question rather than an error, and
+   does the system back gesture raise it? Under reduced motion it should arrive without a
+   rise. (Group D, ADR-064.)
+5. **A staged replacement plays from the pill** — the pill has never played an absolute path
+   from a saved chit's row before. Then Save, and play it again from the thread. (Group E.)
+6. **A recording-only chit with its take removed** — Cancel alone in the row, *Delete this
+   chit* below, no Save. Does that read as intended or as broken? (Group E, D7.)
+7. **Delete** — the prompt names the recording, the chit is gone from Today, the strip and the
+   calendar, and landing is where the editor was opened from — the archive keeps its filter.
+   (Group F.)
+8. **The stamp never moves** — edit a seeded chit from days ago; it must not relight a tile or
+   move on the strip. (BUILD-PLAN.md M6's done-when, and the owner's *no metadata* rule.)
 
-**What groups A to E left for a device, not for a test** (ADR-031) — all on group G's list:
-that a row of microphone and Save reads as complete without Discard; that Remove beside the
-pill is findable; that a chit row reads as tappable at all; that the pressed wash is visible
-without being loud; that the editor's field keeps its caret where a thumb expects it; that
-the prompt sheet reads as a question rather than an error; and **that a staged replacement
-actually plays from the pill** — the pill has never played an absolute path from a saved
-chit's row before.
+**Read BUILD-PLAN.md M5's four lessons before fixing anything a device turns up.** Two of
+M5's four handset bugs were a fake or its harness behaving better than the real thing.
 
-**M6 changes no schema**, so nobody has to uninstall. Seed before looking at anything —
-`flutter run --dart-define=CHIT_SEED=seed`, `=clear` after.
-
-The old *Next* is in git under `7607425`; it said to build group E, and group E is built.
+The old *Next* is in git under `fbcd0d1`; it said to build group F, and group F is built.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M6.
@@ -198,10 +207,9 @@ they are cited from other documents — so a closed item keeps its number and sh
 8. **OPEN-QUESTIONS.md §8.3 (does Today carry enough rhythm) is still open**, and now
    answerable — the rhythm signal it is about exists and can be lived with for a week. *§8.2,
    re-transcription, was retired with ADR-058.*
-9. ~~Nothing deletes a chit yet.~~ **Half closed 18 September 2026** by M6 group C:
-   `ChitRepository.delete` removes the row and the file together and has its tests. The
-   control that calls it — *Delete this chit*, behind a prompt — is group F, and the item
-   closes with it.
+9. ~~Nothing deletes a chit yet.~~ **Closed 18 September 2026** by M6 groups C and F:
+   `ChitRepository.delete` removes the row and the file together, and *Delete this chit* in the
+   editor calls it behind a prompt with no undo (ADR-064).
 10. ~~The debug seeder of DATA-MODEL.md §7 does not exist.~~ **Closed 17 September 2026** by
     M4 group A. `flutter run --dart-define=CHIT_SEED=seed` writes twenty chits over six weeks,
     `=clear` takes them off again; DATA-MODEL.md §7 has the shape of the fixture.

@@ -120,16 +120,16 @@ settings screen (open item 22).
 - [x] Tests: the controller's legality rule; the repository's remove and replace paths; that a
       chit with no text and no take cannot be written.
 
-## F. Delete this chit
+## F. Delete this chit ✅
 
 - [x] `ChitRepository.delete(id)` — the row and the file together (open item 9). **Built and
       tested in group C** beside `update`; the screen's half is below.
-- [ ] *Delete this chit* below the slip, in `QuietButton`'s weight and apart from the action
+- [x] *Delete this chit* below the slip, in `QuietButton`'s weight and apart from the action
       row: distance from Save is the first defence, and the prompt is the second.
-- [ ] *Delete this chit?*, and *"The recording goes with it."* on a chit that has one →
+- [x] *Delete this chit?*, and *"The recording goes with it."* on a chit that has one →
       Delete · Keep it. No undo (D10).
-- [ ] Deleting lands back where the editor was opened from.
-- [ ] Tests: the row goes, the file goes, the thread and the calendar re-emit without it.
+- [x] Deleting lands back where the editor was opened from.
+- [x] Tests: the row goes, the file goes, the thread and the calendar re-emit without it.
 
 ## G. Handset pass and sign-off
 

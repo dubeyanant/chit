@@ -251,6 +251,48 @@ void main() {
     });
   });
 
+  group('delete — open item 9, D10', () {
+    File storedFileOf(Chit chit) =>
+        File(p.join(root.path, 'audio', '${chit.id}.m4a'));
+
+    test('the row and the recording go, and the player stops', () async {
+      final Chit both = await given('Gone soon.', recorded: true);
+      final EditorController editor = await open(both);
+      await player.play(id: both.id, path: both.audioPath!);
+
+      await editor.delete();
+
+      expect(await repo.byId(both.id), isNull);
+      expect(storedFileOf(both).existsSync(), isFalse);
+      expect(player.now, Playback.silent);
+    });
+
+    test('a staged replacement goes with it', () async {
+      final Chit words = await given('Only words.');
+      final EditorController editor = await open(words);
+      final File take = File(p.join(root.path, 'staged.m4a'));
+      await take.writeAsString('never moved');
+      editor.keepRecording(
+        Recording(tempPath: take.path, duration: const Duration(seconds: 3)),
+      );
+
+      await editor.delete();
+
+      expect(await repo.byId(words.id), isNull);
+      expect(take.existsSync(), isFalse, reason: 'nobody will move it now');
+    });
+
+    test('unsaved words are simply gone — there is no undo', () async {
+      final Chit chit = await given('Original.');
+      final EditorController editor = await open(chit);
+      editor.edit('Edited and never saved.');
+
+      await editor.delete();
+
+      expect(await repo.byId(chit.id), isNull);
+    });
+  });
+
   group('the voice, staged until Save — D5, D6', () {
     /// A take on disk, as the recorder would leave it.
     Future<Recording> aTake([String name = 'new-take']) async {

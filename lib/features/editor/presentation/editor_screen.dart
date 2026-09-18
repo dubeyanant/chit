@@ -176,9 +176,50 @@ class _Editor extends ConsumerWidget {
               ],
             ),
           ),
+          // **Apart from the action row, and below the slip** (ADR-064): the
+          // one destructive act on the screen sits a step of the scale away
+          // from Save, not an inch from it. Distance is the first defence and
+          // the prompt is the second.
+          SizedBox(height: space.s6),
+          Center(
+            child: _DeleteControl(id: id, hasRecording: chit.hasAudio),
+          ),
         ],
       ),
     );
+  }
+}
+
+/// **Delete this chit** — named in full, so it cannot be read as Discard
+/// (TASKS.md D8), and behind the prompt with no undo (D10). Closes open
+/// item 9.
+class _DeleteControl extends ConsumerWidget {
+  const _DeleteControl({required this.id, required this.hasRecording});
+
+  final String id;
+
+  /// Whether the stored row has a recording — what the prompt names. A staged
+  /// replacement goes too, but it was never the chit's.
+  final bool hasRecording;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => QuietButton(
+    label: 'Delete this chit',
+    onPressed: () => _delete(context, ref),
+  );
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final bool delete = await showPromptSheet(
+      context,
+      question: 'Delete this chit?',
+      detail: hasRecording ? 'The recording goes with it.' : null,
+      keep: 'Keep it',
+      letGo: 'Delete',
+    );
+    if (!delete) return;
+
+    await ref.read(editorControllerProvider(id).notifier).delete();
+    if (context.mounted) context.pop();
   }
 }
 
