@@ -4,11 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/extensions.dart';
 import '../../../core/theme/chit_motion.dart';
+import '../../../domain/models/audio_edit.dart';
 import '../../../domain/models/chit.dart';
 import '../../../domain/models/editor_state.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
+import '../../../shared/widgets/arrival.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/focus_ring.dart';
 import '../../../shared/widgets/microphone.dart';
 import '../../../shared/widgets/prompt_sheet.dart';
 import '../../../shared/widgets/slip.dart';
@@ -169,13 +172,22 @@ class _Editor extends ConsumerWidget {
                   // touches the file until Save (D6).
                   if (state.hasAudio) ...<Widget>[
                     SizedBox(height: space.s4),
-                    AudioPill(
-                      id: chit.id,
-                      path: state.audioPath!,
-                      duration: state.audioDuration ?? Duration.zero,
-                      onRemove: ref
-                          .read(editorControllerProvider(id).notifier)
-                          .removeAudio,
+                    // **A staged replacement rises, the stored one does not**
+                    // (§6.3). Opening a chit that already had a recording is
+                    // not an arrival; recording a new one over it is, and the
+                    // pill remounts at that moment because a removal took the
+                    // old one out of the tree first.
+                    Arrival(
+                      from: Offset(0, space.s4),
+                      play: state.audio is ReplaceAudio,
+                      child: AudioPill(
+                        id: chit.id,
+                        path: state.audioPath!,
+                        duration: state.audioDuration ?? Duration.zero,
+                        onRemove: ref
+                            .read(editorControllerProvider(id).notifier)
+                            .removeAudio,
+                      ),
                     ),
                   ],
                   SizedBox(height: space.s4),
@@ -432,17 +444,24 @@ class _Header extends ConsumerWidget {
           child: Semantics(
             button: true,
             label: 'Back',
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              // The same exit as the system gesture: it asks when something
-              // has changed. Cancel, in the row below, does not.
-              onTap: () => leaveEditor(context, ref, id, ask: true),
-              child: Padding(
-                // `s3` on every side takes the 20px glyph to 44px, §6.4's
-                // floor; the translate above puts the glyph itself on the
-                // gutter.
-                padding: EdgeInsets.all(space.s3),
-                child: Icon(Icons.arrow_back, size: 20, color: colors.inkMuted),
+            child: FocusRing(
+              onActivate: () => leaveEditor(context, ref, id, ask: true),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                // The same exit as the system gesture: it asks when something
+                // has changed. Cancel, in the row below, does not.
+                onTap: () => leaveEditor(context, ref, id, ask: true),
+                child: Padding(
+                  // `s3` on every side takes the 20px glyph to 44px, §6.4's
+                  // floor; the translate above puts the glyph itself on the
+                  // gutter.
+                  padding: EdgeInsets.all(space.s3),
+                  child: Icon(
+                    Icons.arrow_back,
+                    size: 20,
+                    color: colors.inkMuted,
+                  ),
+                ),
               ),
             ),
           ),

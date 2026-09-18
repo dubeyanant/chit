@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/extensions.dart';
-import '../../core/theme/chit_colors.dart';
+import 'focus_ring.dart';
 
 /// The way in that is not typing — BEHAVIOUR.md §3.2 and §3.4.
 ///
@@ -15,7 +15,7 @@ import '../../core/theme/chit_colors.dart';
 /// the open chit when the editor became the second screen to want it
 /// (ARCHITECTURE.md §2). What a tap does is [onRecord]'s — the two screens
 /// start the same take and send it to different owners (ADR-065).
-final class Microphone extends StatefulWidget {
+final class Microphone extends StatelessWidget {
   /// A microphone whose tap runs [onRecord].
   const Microphone({required this.onRecord, super.key});
 
@@ -33,43 +33,30 @@ final class Microphone extends StatefulWidget {
   final Future<void> Function() onRecord;
 
   @override
-  State<Microphone> createState() => _MicrophoneState();
-}
-
-class _MicrophoneState extends State<Microphone> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
     final colors = context.colors;
 
     return Semantics(
       button: true,
       label: 'Record',
-      child: GestureDetector(
-        onTapDown: (TapDownDetails _) => setState(() => _pressed = true),
-        onTapUp: (TapUpDetails _) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        onTap: widget.onRecord,
-        child: SizedBox.square(
-          dimension: Microphone.size,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: _pressed
-                  ? colors.inkWash(
-                      colors.slip,
-                      opacity: ChitColors.micPressedWash,
-                    )
-                  : null,
-              border: Border.all(color: colors.hair),
-              borderRadius: BorderRadius.circular(context.space.radius),
-            ),
-            child: Center(
-              child: CustomPaint(
-                size: const Size.square(Microphone._icon),
-                painter: _MicrophonePainter(
-                  colour: colors.inkMuted,
-                  strokeWidth: Microphone._strokeInViewBox,
+      child: FocusRing(
+        onActivate: onRecord,
+        child: GestureDetector(
+          onTap: onRecord,
+          child: SizedBox.square(
+            dimension: Microphone.size,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(color: colors.hair),
+                borderRadius: BorderRadius.circular(context.space.radius),
+              ),
+              child: Center(
+                child: CustomPaint(
+                  size: const Size.square(Microphone._icon),
+                  painter: _MicrophonePainter(
+                    colour: colors.inkMuted,
+                    strokeWidth: Microphone._strokeInViewBox,
+                  ),
                 ),
               ),
             ),

@@ -18,39 +18,16 @@ maps every section to its file.
 Two are still open. The numbering is stable — §8.1, §8.2 and §8.3 are referred to across the
 docs — so a question that gets answered keeps its number.
 
-### 8.1 Where a saved chit is edited — **settled, 14 September 2026**
+### 8.1 Where a saved chit is edited — **settled**
 
-A saved chit opens in **an editor of its own**, not inline in the thread. The thread is a
-reading surface, and Today already carries a live writing surface at the top of it; a second,
-differently-behaved editable field in the rows below would make it ambiguous which one a tap
-is about to put the cursor in.
-
-**Leaving with unsaved changes asks.** The prompt offers to keep the edit or to discard it.
-Quitting outright — answering *discard*, or the app being killed — cancels the edit and
-returns to Today, and nothing is written.
-
-The prompt exists because editing a saved chit is not like writing a new one. Abandoning an
-open chit throws away something that was never a record, and gets no confirmation (§3.1) —
-*which is why the open chit's Discard could go without one either* (ADR-060). Discarding an
-edit throws away a change to something that **is** a record, and gets one.
-
-*This section said a chit's audio was never editable and never removable.* **Reversed on
-18 September 2026** (ADR-063): the recording is removable and replaceable from the editor,
-like the words. What an edit still cannot touch is the moment — the stamp and the day.
-
-The affordance in the thread arrives with the editor, in the same change — until then a chit
-in the thread is still not tappable, because a pointer that leads nowhere is worse than none.
+An editor of its own, above the tab shell, reached by holding a chit; leaving with changes
+asks. Built as M6 — BEHAVIOUR.md §4.5, ADR-017, ADR-061 to ADR-064. The recording is editable
+there too (ADR-063); the moment is not.
 
 ### 8.2 Re-transcription — retired
 
-*Should a recording that produced nothing be re-transcribable later?* There is nothing to
-re-attempt: transcription was removed in M5 (ADR-058) after recognising nothing on a handset,
-and `textOrigin`, which existed so a second attempt could refuse to overwrite the user's own
-words, went with it. **The number is not reused** — it is cited from other documents and from
-git history.
-
-Bringing transcription back is a product decision that would open a new question with a new
-number, not this one again.
+There is no transcription to re-attempt (ADR-058). The number is kept because it is cited;
+bringing a speech engine back is a product decision that would open a new question.
 
 ### 8.3 Does Today carry enough rhythm? — open
 

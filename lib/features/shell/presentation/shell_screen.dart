@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../core/extensions.dart';
 import '../../../core/theme/chit_motion.dart';
+import '../../../shared/widgets/focus_ring.dart';
 import '../../../shared/widgets/wordmark.dart';
 
 /// The frame both tabs sit inside: the masthead above, the tab bar below.
@@ -125,38 +126,45 @@ class _Tab extends StatelessWidget {
     return Semantics(
       selected: selected,
       button: true,
-      child: InkWell(
-        onTap: onTap,
-        // The prototype's tab measures 43.5px, half a pixel under the floor
-        // §6.4 sets with no exceptions. Sizing it to the target rather than to
-        // its contents is the whole fix, and it costs half a pixel of bar.
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: space.minTouchTarget),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // The pip is ink, not the accent: a tab you are already looking
-              // at is not a thing that is happening (ADR-022).
-              AnimatedContainer(
-                duration: motion.fade(ChitPace.routine),
-                curve: motion.curve,
-                width: space.s1,
-                height: space.s1,
-                decoration: BoxDecoration(
-                  color: selected ? colors.ink : Colors.transparent,
-                  shape: BoxShape.circle,
+      // A plain tap, where an `InkWell` used to ripple — a ripple is
+      // Material's acknowledgement, not this design's (ADR-069). The pip and
+      // the label moving to `--ink` are what answers the press.
+      child: FocusRing(
+        onActivate: onTap,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          // The prototype's tab measures 43.5px, half a pixel under the floor
+          // §6.4 sets with no exceptions. Sizing it to the target rather than
+          // to its contents is the whole fix, and it costs half a pixel of bar.
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: space.minTouchTarget),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                // The pip is ink, not the accent: a tab you are already looking
+                // at is not a thing that is happening (ADR-022).
+                AnimatedContainer(
+                  duration: motion.fade(ChitPace.routine),
+                  curve: motion.curve,
+                  width: space.s1,
+                  height: space.s1,
+                  decoration: BoxDecoration(
+                    color: selected ? colors.ink : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-              SizedBox(height: space.s2),
-              AnimatedDefaultTextStyle(
-                duration: motion.fade(ChitPace.routine),
-                curve: motion.curve,
-                style: context.type.tabLabel.copyWith(
-                  color: selected ? colors.ink : colors.inkFaint,
+                SizedBox(height: space.s2),
+                AnimatedDefaultTextStyle(
+                  duration: motion.fade(ChitPace.routine),
+                  curve: motion.curve,
+                  style: context.type.tabLabel.copyWith(
+                    color: selected ? colors.ink : colors.inkFaint,
+                  ),
+                  child: Text(label),
                 ),
-                child: Text(label),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -79,9 +79,9 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   /// Inner dividers — **on [paper] only**, where it measures 1.13:1.
   ///
   /// It measures 1.0145:1 on [slip] and would not be seen. v6 brightened the
-  /// chit surface onto it; nothing draws this pair any more, and the one
-  /// place that did — Discard's pressed background — takes
-  /// [discardPressedWash] instead.
+  /// chit surface onto it; nothing draws this pair any more, and the one place
+  /// that did — Discard's pressed background — has no wash at all since
+  /// ADR-071 took the app's press feedback off.
   final Color hairSoft;
 
   /// The one accent, as a mark — and only on what is live (ADR-022): the ring
@@ -129,44 +129,12 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   static const double pillWash = 0.035;
 
   /// An audio pill under a finger — 8%.
-  static const double pillPressedWash = 0.08;
 
   /// **Save chit** — 7%, over a border in [inkMuted]. The brightest of the
   /// three controls at the foot of the open chit, and still not a fill.
   static const double saveWash = 0.07;
 
   /// The microphone under a finger — 10%.
-  static const double micPressedWash = 0.10;
-
-  /// **The quiet button** under a finger — 6%. The recording sheet's Discard,
-  /// **Remove** on a pill, and *Show every day*. *Named for the open chit's
-  /// Discard, which was its first user and is gone* (ADR-060).
-  ///
-  /// v6 pressed it in [hairSoft], which measures 1.0145:1 on [slip] and is in
-  /// practice not drawn at all; this measures 1.17:1. It is the quietest of
-  /// the controls, so it is the quietest of the washes — but a press
-  /// that shows nothing reads as a control that did nothing, and under reduced
-  /// motion, where the depress is gone (DESIGN-SYSTEM.md §6.4), this wash is
-  /// the *only* acknowledgement the press produces.
-  ///
-  /// **The label lifts to [ink] while it is held.** The quiet label is
-  /// [inkFaint], which clears the floor on a bare chit at 4.56:1 and falls
-  /// under it on any wash at all — 4.12:1 at even 4%. The prototype already
-  /// brightens the label on hover for the same reason, so this is that rule
-  /// applied to the state a phone actually has.
-  static const double discardPressedWash = 0.06;
-
-  /// **A chit in the thread** under a finger — 6%, ADR-061.
-  ///
-  /// The same figure as [discardPressedWash] and deliberately not the same
-  /// token: the quiet button's wash is a property of that button, and this is
-  /// a property of a row that is the largest target in the app. They are free
-  /// to move apart, and a row is the one most likely to want to.
-  ///
-  /// **`--ink-faint` fails on it** — 4.42:1 against §6.4's 4.5 floor — which
-  /// is why the row's stamp lifts to [inkMuted] (5.65:1) while it is held.
-  /// Same rule as the quiet button's label, second place it was needed.
-  static const double rowPressedWash = 0.06;
 
   /// The calendar's four density steps, faintest first — 6, 12, 20 and 30%.
   ///

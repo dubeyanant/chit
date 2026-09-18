@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions.dart';
-import '../../../../core/theme/chit_motion.dart';
 import '../../../../core/theme/chit_space.dart';
 import '../../../../domain/models/chit.dart';
 import '../../application/timeline_provider.dart';
@@ -99,13 +98,23 @@ class _TimelineState extends ConsumerState<Timeline> {
   /// reporting its own movement.
   bool _settling = false;
 
+  /// Whether the strip has been put at now at least once.
+  ///
+  /// **The strip is not drawn until it has.** Where it rests is a function of
+  /// the viewport, so it cannot be known until the strip has been laid out —
+  /// which means the first frame lays it out at nought, showing the oldest day
+  /// two screens from where it belongs, and the frame after it jumps. That
+  /// flash is a handful of marks skating across the strip and it reads as a
+  /// fault (ADR-071). A frame of bare line nobody sees is the better trade.
+  bool _rested = false;
+
   @override
   void initState() {
     super.initState();
     _scroll.addListener(_onScroll);
     // The strip takes its resting position before the query has answered; the
     // width does not depend on the marks, only on how many days are drawn.
-    _restAtNow(animated: false);
+    _restAtNow();
   }
 
   @override
@@ -171,29 +180,26 @@ class _TimelineState extends ConsumerState<Timeline> {
   ///
   /// Post-frame because the resting offset is a function of the viewport, and
   /// there is no viewport until the strip has been laid out once.
-  void _restAtNow({required bool animated}) {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted || !_scroll.hasClients) return;
+  void _restAtNow() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Set before the clients check, so a strip that somehow never gets a
+      // scroll position is still drawn rather than hidden for good.
+      if (!_rested) setState(() => _rested = true);
+      if (!_scroll.hasClients) return;
 
       final double target = _restingOffset(_scroll.position);
-      // An authored arrival, so reduced motion makes it a jump rather than a
-      // slower slide — DESIGN-SYSTEM.md §6.4, and `travel` is what knows that.
-      final Duration travel = context.motion.travel(ChitPace.arrival);
 
       // The window may have changed shape under it, so where the centre was is
       // no longer a day anybody scrolled past.
       _settling = true;
       _dayUnderCentre = null;
 
-      if (!animated || travel == Duration.zero) {
-        _scroll.jumpTo(target);
-      } else {
-        await _scroll.animateTo(
-          target,
-          duration: travel,
-          curve: context.motion.curve,
-        );
-      }
+      // **It jumps, and it never slides** — ADR-024, reversed on the owner's
+      // third look at M7. A strip that scrolled itself into place drew the eye
+      // to the movement rather than to the mark, and read as a fault; the
+      // haptic and the tick at now are what say where you are.
+      _scroll.jumpTo(target);
 
       _settling = false;
     });
@@ -209,22 +215,14 @@ class _TimelineState extends ConsumerState<Timeline> {
     // smoothly to it. Watching the rows arrive rather than listening for a
     // save keeps this widget ignorant of the composer — it reacts to the thing
     // it actually draws.
+    // §4.1: saving puts a mark at the current time, and the strip is at now
+    // when it does. Whether the rows grew or merely re-emitted no longer
+    // matters, because resting is a jump either way (ADR-024).
     ref.listen(timelineChitsProvider, (
-      AsyncValue<List<Chit>>? previous,
-      AsyncValue<List<Chit>> next,
+      AsyncValue<List<Chit>>? _,
+      AsyncValue<List<Chit>> _,
     ) {
-      final int? before = switch (previous) {
-        AsyncData<List<Chit>>(:final List<Chit> value) => value.length,
-        _ => null,
-      };
-      final int after = switch (next) {
-        AsyncData<List<Chit>>(:final List<Chit> value) => value.length,
-        _ => 0,
-      };
-
-      // The first answer is the strip filling in, not a chit arriving: it
-      // takes its resting position rather than travelling to it.
-      _restAtNow(animated: before != null && after > before);
+      _restAtNow();
     });
 
     // Nothing is drawn until the database answers. An empty three days while
@@ -250,17 +248,24 @@ class _TimelineState extends ConsumerState<Timeline> {
               // as the window has days — one, two or three (ADR-032, ADR-035).
               final double content = constraints.maxWidth * window.dayCount;
 
-              return SingleChildScrollView(
-                controller: _scroll,
-                scrollDirection: Axis.horizontal,
-                physics: const ClampingScrollPhysics(),
-                child: SizedBox(
-                  width: content,
-                  child: _Strip(
-                    window: window,
-                    now: now,
-                    chits: chits,
+              // Laid out either way, so the resting offset is computable; drawn
+              // only once it has been computed. The wrapper is always here and
+              // only its opacity changes — a wrapper that comes and goes is a
+              // rebuild (ADR-070).
+              return Opacity(
+                opacity: _rested ? 1 : 0,
+                child: SingleChildScrollView(
+                  controller: _scroll,
+                  scrollDirection: Axis.horizontal,
+                  physics: const ClampingScrollPhysics(),
+                  child: SizedBox(
                     width: content,
+                    child: _Strip(
+                      window: window,
+                      now: now,
+                      chits: chits,
+                      width: content,
+                    ),
                   ),
                 ),
               );

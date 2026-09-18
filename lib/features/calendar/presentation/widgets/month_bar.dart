@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/extensions.dart';
+import '../../../../shared/widgets/focus_ring.dart';
 import '../../application/month_provider.dart';
 
 /// *September 2026*, and the chevrons — the head of the calendar.
@@ -94,17 +95,20 @@ class _Chevron extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: SizedBox.square(
-          dimension: space.minTouchTarget,
-          child: Center(
-            child: CustomPaint(
-              size: const Size.square(_glyphSize),
-              painter: _ChevronPainter(
-                color: context.colors.inkFaint,
-                pointsLeft: pointsLeft,
+      child: FocusRing(
+        onActivate: onTap,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox.square(
+            dimension: space.minTouchTarget,
+            child: Center(
+              child: CustomPaint(
+                size: const Size.square(_glyphSize),
+                painter: _ChevronPainter(
+                  color: context.colors.inkFaint,
+                  pointsLeft: pointsLeft,
+                ),
               ),
             ),
           ),

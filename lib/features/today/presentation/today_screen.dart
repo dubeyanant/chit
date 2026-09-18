@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/extensions.dart';
 import '../../../domain/models/chit.dart';
 import '../../../shared/widgets/day_thread.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
 import '../../composer/presentation/open_chit.dart';
 import '../application/today_controller.dart';
 import 'widgets/timeline.dart';
@@ -44,18 +45,32 @@ class TodayScreen extends ConsumerWidget {
             space.s8,
           ),
           sliver: SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // **The page arrives a block at a time on its first build**, and
+            // then this is a `Column` (§6.3). Each child carries the gap above
+            // it rather than sitting beside a `SizedBox`, because a spacer in
+            // the list would take a turn in the stagger.
+            child: StaggeredEntrance(
               children: <Widget>[
                 const _DateLine(),
                 // The timeline sits directly under the date, and its own line
                 // is what divides the header from the content — which is why
                 // neither the date above nor the slip below draws a rule.
                 // v6 tightened both of these gaps from 32 to 24 (§6.3).
-                SizedBox(height: space.s5),
-                const Timeline(),
-                SizedBox(height: space.s5),
-                const OpenChit(),
+                //
+                // **It arrives by scrolling to now and by nothing else**
+                // (ADR-070): the strip is the one block the page entrance
+                // draws straight through, because a widget cannot fade, rise
+                // and scroll at once and still look like one thing.
+                Unstaggered(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: space.s5),
+                    child: const Timeline(),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: space.s5),
+                  child: const OpenChit(),
+                ),
                 // The thread has nothing to say until the first frame the
                 // database answers on, and that frame is the one after this.
                 // Drawing "Nothing written yet today." while a day's chits are
@@ -64,10 +79,19 @@ class TodayScreen extends ConsumerWidget {
                 ...switch (chits) {
                   AsyncData<List<Chit>>(:final List<Chit> value) => <Widget>[
                     _EarlierHeading(count: value.length),
-                    if (value.isEmpty)
-                      const _EmptyNote()
-                    else
-                      DayThread(chits: value),
+                    if (value.isEmpty) const _EmptyNote(key: ValueKey('none')),
+                    // **The thread is mounted even on an empty day**, where it
+                    // draws nothing, and **it is keyed**. It tells a row that
+                    // was just written from one that was already there by
+                    // remembering what it drew last time, so it has to survive
+                    // the day's first save — and without a key it did not: the
+                    // note above it leaves on that save, every child below
+                    // shifts up a place, and a list matched by position hands
+                    // the thread's slot to a widget of another type and builds
+                    // it again from nothing. A thread that has just been built
+                    // has no last time, so the first chit of a day arrived
+                    // without its arrival and the second did not (ADR-071).
+                    DayThread(key: const ValueKey('thread'), chits: value),
                   ],
                   _ => const <Widget>[],
                 },
@@ -165,7 +189,7 @@ class _EarlierHeading extends StatelessWidget {
 /// and no invitation: an empty day looks empty, and the thing that invites is
 /// the open chit above it.
 class _EmptyNote extends StatelessWidget {
-  const _EmptyNote();
+  const _EmptyNote({super.key});
 
   @override
   Widget build(BuildContext context) {

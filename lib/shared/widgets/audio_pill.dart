@@ -5,6 +5,7 @@ import '../../core/extensions.dart';
 import '../../core/theme/chit_colors.dart';
 import '../../domain/services/audio_player.dart';
 import 'buttons.dart';
+import 'focus_ring.dart';
 
 /// A chit's recording, and the control that plays it — BEHAVIOUR.md §3.4.
 ///
@@ -110,8 +111,6 @@ const double _restingBars = 0.45;
 const double _unplayedBars = 0.22;
 
 class _AudioPillState extends ConsumerState<AudioPill> {
-  bool _pressed = false;
-
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -131,63 +130,68 @@ class _AudioPillState extends ConsumerState<AudioPill> {
       label: sounding
           ? 'Pause recording, ${AudioPill.figureFor(widget.duration)}'
           : 'Play recording, ${AudioPill.figureFor(widget.duration)}',
-      child: GestureDetector(
-        onTapDown: (TapDownDetails _) => setState(() => _pressed = true),
-        onTapUp: (TapUpDetails _) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        onTap: () => _toggle(sounding: sounding),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.inkWash(
-              colors.slip,
-              opacity: _pressed
-                  ? ChitColors.pillPressedWash
-                  : ChitColors.pillWash,
-            ),
-            // The border is the only thing that changes colour, and only while
-            // it sounds. Everything else on a thread stays ink.
-            border: Border.all(color: mine ? colors.seal : colors.hair),
-            borderRadius: BorderRadius.circular(space.radius),
-          ),
-          child: Padding(
-            // 13px by 12px in v6; both are `s3`, since a padding is a
-            // relationship (DESIGN-SYSTEM.md §6.3). At `s3` the pill measures
-            // 44px, exactly §6.4's floor.
-            padding: EdgeInsets.all(space.s3),
-            child: Row(
-              children: <Widget>[
-                _PlayGlyph(sounding: sounding, lit: mine),
-                SizedBox(width: space.s3),
-                Expanded(
-                  child: SizedBox(
-                    height: _waveHeight,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        for (int i = 0; i < AudioPill.wave.length; i++)
-                          _Bar(
-                            height:
-                                _waveHeight *
-                                (AudioPill.wave[i] * 0.06).clamp(_floor, 1),
-                            colour: mine ? colors.seal : colors.inkMuted,
-                            opacity: mine
-                                ? (i < lit ? 1 : _unplayedBars)
-                                : _restingBars,
-                          ),
-                      ],
+      child: FocusRing(
+        onActivate: () => _toggle(sounding: sounding),
+        child: GestureDetector(
+          onTap: () => _toggle(sounding: sounding),
+          // **`s3` around an 18px wave is 42px, and §6.4's floor is 44 with no
+          // exceptions** — found by M7 group D, after a comment here had
+          // claimed 44 for two milestones. The constraint is two pixels of
+          // paper and the padding stays on the scale; the alternative was a
+          // fourth spacing step invented for one control.
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: space.minTouchTarget),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.inkWash(
+                  colors.slip,
+                  opacity: ChitColors.pillWash,
+                ),
+                // The border is the only thing that changes colour, and only while
+                // it sounds. Everything else on a thread stays ink.
+                border: Border.all(color: mine ? colors.seal : colors.hair),
+                borderRadius: BorderRadius.circular(space.radius),
+              ),
+              child: Padding(
+                // 13px by 12px in v6; both are `s3`, since a padding is a
+                // relationship (DESIGN-SYSTEM.md §6.3).
+                padding: EdgeInsets.all(space.s3),
+                child: Row(
+                  children: <Widget>[
+                    _PlayGlyph(sounding: sounding, lit: mine),
+                    SizedBox(width: space.s3),
+                    Expanded(
+                      child: SizedBox(
+                        height: _waveHeight,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            for (int i = 0; i < AudioPill.wave.length; i++)
+                              _Bar(
+                                height:
+                                    _waveHeight *
+                                    (AudioPill.wave[i] * 0.06).clamp(_floor, 1),
+                                colour: mine ? colors.seal : colors.inkMuted,
+                                opacity: mine
+                                    ? (i < lit ? 1 : _unplayedBars)
+                                    : _restingBars,
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                    SizedBox(width: space.s3),
+                    Text(
+                      AudioPill.figureFor(
+                        mine ? playback.position : widget.duration,
+                      ),
+                      style: context.type.audioDuration.copyWith(
+                        color: mine ? colors.sealInk : colors.inkMuted,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: space.s3),
-                Text(
-                  AudioPill.figureFor(
-                    mine ? playback.position : widget.duration,
-                  ),
-                  style: context.type.audioDuration.copyWith(
-                    color: mine ? colors.sealInk : colors.inkMuted,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

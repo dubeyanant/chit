@@ -30,6 +30,18 @@ final class JustAudioPlayer implements AudioPlayer {
 
   Playback _now = Playback.silent;
 
+  /// True while [play] is swapping one recording for another.
+  ///
+  /// **The position stream goes on reporting the file that is leaving.** It is
+  /// a timer interpolating from the last event the platform sent, so while the
+  /// next file loads it still answers with the old one's playhead — and that
+  /// figure, attributed to the pill arriving, is a playhead that starts
+  /// halfway. `_onPosition`'s guard then holds it there until the new
+  /// recording catches up to it. *Seen on a handset: play one pill, play
+  /// another, come back to the first, and its wave is frozen where it was left
+  /// while the sound runs from the start underneath it.*
+  bool _switching = false;
+
   @override
   Stream<Playback> get playback async* {
     // The current state first, then the changes — a pill built while something
@@ -51,18 +63,29 @@ final class JustAudioPlayer implements AudioPlayer {
           return _report(_now);
         }
 
-        // **Whatever was sounding stops before the next file loads.** The
+        // **Whatever was sounding is paused before the next file loads.** The
         // plugin carries `playing` across a source change and its `play()`
         // returns early while it is set, so a pill tapped while another one
-        // sounded was loaded and heard but never reported *playing* under
-        // its own id: the border lit, the glyph stayed a triangle, and the
-        // next tap did nothing. `_now` moves first so the stop is reported
-        // under the new pill rather than as the old one pausing. *Seen on a
-        // handset on 18 September 2026; FakeAudioPlayer had it right all
-        // along, which is the M5 lesson about fakes read the other way.*
-        _now = Playback(id: id);
-        await _stopQuietly();
-        await _player.setFilePath(file.path);
+        // sounded was loaded and heard but never reported *playing* under its
+        // own id: the border lit, the glyph stayed a triangle, and the next
+        // tap did nothing. `_now` moves first, so the pause is reported under
+        // the new pill rather than as the old one stopping.
+        //
+        // **`pause` and not `stop`.** Both clear the flag; `stop` also tears
+        // the native player down and the next `setFilePath` builds a new one,
+        // which cost the first tap after launch its sound on a handset and
+        // no test could see — the plugin re-inits so quietly that a fake
+        // platform answers either way. `_platformInits` in the test is what
+        // holds the difference now.
+        // Nothing the old file has left to say is about this one.
+        _switching = true;
+        try {
+          _now = Playback(id: id);
+          await _pauseQuietly();
+          await _player.setFilePath(file.path);
+        } finally {
+          _switching = false;
+        }
       }
 
       // A pill pressed again at the end starts over rather than sitting on a
@@ -121,7 +144,7 @@ final class JustAudioPlayer implements AudioPlayer {
   }
 
   void _onPosition(Duration at) {
-    if (_now.id == null) return;
+    if (_now.id == null || _switching) return;
     // **A playhead never goes backwards while a take plays.** Nothing here
     // seeks mid-play — a finished take is reloaded, not rewound — so a
     // position lower than the last one is the platform correcting itself, not
@@ -143,6 +166,18 @@ final class JustAudioPlayer implements AudioPlayer {
       await _player.stop();
     } on Object {
       // The player is being put down; there is nothing to recover.
+    }
+  }
+
+  /// Clears the plugin's `playing` flag without releasing the native player.
+  ///
+  /// The difference from [_stopQuietly] is the whole of the fix above: a stop
+  /// releases the decoder, a pause does not.
+  Future<void> _pauseQuietly() async {
+    try {
+      await _player.pause();
+    } on Object {
+      // Nothing to tell. The state stream reports whatever happened.
     }
   }
 

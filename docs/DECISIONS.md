@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Sixty-four records, not sixty-seven: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty-nine records, not seventy-two: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -85,6 +85,11 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-065 | A take has one owner, chosen at the tap | M6 group E — `RecordingSink`; the composer and the editor both implement it; the microphone moves to `shared/` |
 | ADR-066 | No pin, now keeps up with a save, Cancel leaves at once, the editor fills the screen | the owner's first look at M6 — six calls, one record. Narrows ADR-016; reverses group D's Cancel |
 | ADR-067 | The recording sits above the words in the editor, a chit is held to open, and a pill that played without lighting | the owner's third look at M6 — two calls and one finding. Changes ADR-061 in place |
+| ADR-068 | The caret blinks under reduced motion, and that is a stated limit | closes open item 14 without a fix; §6.4 names the exception |
+| ADR-069 | Press feedback is one widget, and the depress is a token | M7 group A — `Pressable`; the tab bar's ripple goes. **Reversed by ADR-070**, which deletes the widget and the tokens |
+| ADR-070 | No press feedback; a row's box is always there; the strip arrives by scrolling | the owner's second look at M7 — three calls, and the middle one is why a recording in the thread would not play |
+| ADR-071 | Nothing answers a press; the strip jumps; a thread outlives its empty day | the owner's third look at M7 — the last wash goes, ADR-024's scroll is reversed, and the first chit of a day gets its arrival |
+| ADR-072 | Three bugs from the fourth look, and the one shape behind two of them | a stale playhead, a strip drawn before it rested, and a thread rebuilt because a list was matched by position |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -423,7 +428,8 @@ README §1 wants; three days is the smallest window where yesterday-versus-today
 without becoming a second calendar (§4.2 already is one). Costs: the home screen is no longer
 purely about today, the thread and timeline no longer share one query, a horizontal scroller sits
 inside a vertical page, and the prototype no longer shows the built target. How days are
-delineated was left open — later answered by ADR-050.
+delineated was left open — later answered by ADR-050. *Resting at now was an animated scroll
+until ADR-071 made it a jump: the travel drew the eye to the movement rather than to the mark.*
 
 ---
 
@@ -1121,3 +1127,100 @@ never reported playing and the tap that should have paused it did nothing. `Just
 now stops before it loads, and `just_audio_player_test.dart` stands a fake platform under the
 real plugin to hold it — M5's lesson about fakes read the other way, since `FakeAudioPlayer`
 had been honest and the adapter it stood in for was the one that lied.
+
+---
+
+## ADR-068 — The caret blinks under reduced motion, and that is a stated limit
+
+**Open item 14 closes as a limit written into §6.4, not as a fix.** chit draws no caret of its
+own (ADR-028), so the only one in the app is Flutter's, and the framework offers no public way
+to steady it that does not also hide it — `TickerMode(enabled: false)` zeroes its opacity and
+the deterministic-cursor switch is test-only. A stock Android keyboard blinks its own caret
+whatever the setting says, so a fix inside chit would steady one caret beside another that
+still blinks. Chosen over a framework issue and over a caret of our own, on the owner's call
+of 18 September 2026: neither is worth a day of v1. Cost: §6.4's *every ambient loop stops*
+has one exception it names.
+
+---
+
+## ADR-069 — Press feedback is one widget, and the depress is a token
+
+**`Pressable` owns the press** — the tap, the held state and the depress at `ChitPace.press` —
+and every control is built on it: both button weights, the microphone, the pill, the calendar's
+chevrons, the editor's back arrow and the tab bar. The two scale factors live in `ChitMotion`
+(`buttonDepress` 0.985, `pillDepress` 0.99) beside the pace table they belong to, and
+`ChitMotion.depress` answers 1 under reduced motion the way `travel` answers zero, so no widget
+checks the flag. Chosen over a depress added to each control by hand, which is how six controls
+end up with five feedbacks, and over Material's `InkWell`, whose ripple the tab bar had been
+carrying — a ripple is a second design language. **Superseded within the day by ADR-070**: the
+owner saw the depress and the wash together on a handset, called the colour artificial, and then
+asked for the whole effect gone, so `Pressable`, `ChitMotion.buttonDepress` and `pillDepress`
+are all deleted and every control is a plain tap. What survives of this record is the tab bar
+off `InkWell`, and the argument for one press widget if the app ever wants feedback again.
+
+---
+
+## ADR-070 — No press feedback; a row's box is always there; the strip arrives by scrolling
+
+Three calls from the owner's second look at M7, 18 September 2026, recorded together because
+one handset produced all three and two of them are the same mistake. **There is no press
+feedback at all** — the depress went with the wash, `Pressable` is deleted and every control is
+a plain tap again, because the owner saw the colour and called it artificial, then saw the sink
+and asked for it gone; a control's answer is now the thing it does, which on every screen here
+is visible. *ADR-069 built the widget and this reverses it; the pace stays in §6.3's table,
+drawing nothing, because ADR-020's rule is argued from it.* **A chit row's wash is a colour on a
+box that is always in the tree**, where it used to be a `DecoratedBox` added on press: swapping
+it in changed the shape of the tree, so Flutter rebuilt the subtree under it and disposed the
+audio pill's recogniser on the frame the finger landed — a recording in the thread could not be
+played at all. The hold made it certain, since `onLongPressDown` fires on the first pointer
+event where a tap's own `onTapDown` waits to see whether it has won. It is the rule the two
+arrivals of §6.3 are now written to as well: a wrapper that comes and goes is a rebuild, so
+`Arrival` stays and is told whether to play. **The timeline is drawn straight through the page's
+entrance** (`Unstaggered`), because it already arrives by scrolling to now (ADR-024) and a widget
+cannot fade, rise and scroll at once and still look like one thing; it also spares a moving
+viewport an `Opacity` layer per frame. Cost: with motion on, a control that is slow to respond
+now looks like nothing happened until it does, and §6.1's four pressed washes are kept as record
+and drawn by nothing but the chit row.
+
+---
+
+## ADR-071 — Nothing answers a press; the strip jumps; a thread outlives its empty day
+
+The owner's third look at M7, 18 September 2026, and the end of a line ADR-069 and ADR-070 were
+walking down. **A chit row draws nothing under a finger** — the last pressed wash in the app is
+gone with the four tokens that held them, and what says a hold has landed is the tick the phone
+gives when it is recognised. The thread is a page of writing and a page does not light up.
+`AmbientStampRow.lifted` goes with it, which was the cost ADR-061 named. **The strip jumps to
+now and never slides**, reversing ADR-024's second half: a strip that scrolled itself into place
+drew the eye to the movement instead of to the mark and read as a fault; the tick at now and the
+haptic are what say where you are, and they never needed the travel. **The thread is mounted on
+an empty day**, drawing nothing, because it tells a row that was just written from one that was
+already there by remembering what it drew last time — and a thread that appeared *with* the
+day's first chit had no last time, so the first chit of every day arrived without its arrival
+and the second did not. Chosen over giving the thread a flag from the screen, which would put
+the question of what is new somewhere that cannot answer it. Cost: §6.1's pressed rows are now
+prototype-only like the hover rows above them, and a control with a slow callback has nothing at
+all to say it heard the tap — the owner accepted that twice.
+
+---
+
+## ADR-072 — Three bugs from the fourth look, and the one shape behind two of them
+
+The owner's fourth handset look, 18 September 2026. **A pill coming back inherited the last
+one's playhead**: while the next file loads, `just_audio`'s position stream still answers with
+the one that is leaving, and that figure landing on the pill arriving is a playhead that starts
+halfway — after which `_onPosition`'s backwards guard (which exists so a short take's wave
+cannot snap backwards) holds it there until the sound catches up. Position reports are ignored
+while a source is being swapped, and `just_audio_player_test.dart` blocks a load and speaks for
+the old file to hold it. **The strip is not drawn until it has rested**: where it rests is a
+function of the viewport, so the first frame lays it out at nought — the oldest day, two screens
+from where it belongs — and the frame after jumps, which is a handful of marks skating across
+and reads as a fault. A frame of bare line nobody sees is the better trade, and it is what was
+left of ADR-071's *the strip never travels*. **The thread is keyed**, because the day's first
+save takes the empty note out of the list above it, every child below shifts up a place, and a
+list matched by position hands the thread's slot to a widget of another type and builds it again
+from nothing — so the thread forgot what it had drawn and the day's first chit arrived without
+its arrival. Chosen over making the note always present, which hides the sharper rule: **a list
+whose children come and go is matched by key or it is not matched at all**, which is the same
+shape as ADR-070's wrapper that came and went. Cost: two of the three can only be checked on a
+device (ADR-031), and they are the first three lines of M7's pass.

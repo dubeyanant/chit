@@ -84,10 +84,10 @@ Hierarchy that used to come from colour now comes from weight, and the weights a
 | Save | `--ink` 7%, border `--ink-muted` | the open chit | label in `--ink`, 10.85:1 |
 | Save, hover | `--ink` 13%, border `--ink` | the open chit | prototype only |
 | Microphone, hover | `--ink` 5% | the open chit | prototype only |
-| Microphone, pressed | `--ink` 10% | the open chit | |
-| Audio pill, pressed | `--ink` 8% | a chit, or the ground | |
-| **The quiet button**, pressed | `--ink` 6% | wherever one is | **label lifts to `--ink`** — see below |
-| **A chit in the thread**, pressed | `--ink` 6% | the ground | **stamp lifts to `--ink-muted`** — 4.42:1 faint, 5.65:1 muted (ADR-061) |
+| Microphone, pressed | `--ink` 10% | the open chit | prototype only — ADR-071 |
+| Audio pill, pressed | `--ink` 8% | a chit, or the ground | prototype only — ADR-071 |
+| The quiet button, pressed | `--ink` 6% | wherever one is | prototype only — ADR-071; the label lifted to `--ink` |
+| A chit in the thread, pressed | `--ink` 6% | the ground | prototype only — ADR-071; the stamp lifted to `--ink-muted`, 4.42:1 against 5.65:1 |
 | Calendar, one chit | `--ink` 6% | the ground | numeral in `--ink`, 12.66:1 |
 | Calendar, two | `--ink` 12% | the ground | 10.69:1 |
 | Calendar, three | `--ink` 20% | the ground | 8.31:1 |
@@ -104,20 +104,18 @@ pressed washes and no hover ones: a finger gets no hover, and pressure is the on
 touch has (the design log). The prototype runs in a browser and needs them; the phone app does
 not, and web is after v1 (ADR-019). That is when they get added — and measured.
 
-**A pressed wash is not decoration.** Under `prefers-reduced-motion` the 0.985 depress is gone
-(§6.4), so the wash is the *entire* acknowledgement a press produces, and one that cannot be
-seen makes a working control read as a dead one. That is why the quiet button has a wash at all:
-v6 pressed it in `--hair-soft`, which measures 1.0145:1 on a chit and is not drawn.
+**Nothing draws the four pressed rows above** — ADR-070 and ADR-071. The app has no press
+feedback at all: the owner saw a depress and a wash together on a handset, called the colour
+artificial, and took the whole effect off over two looks, the chit row's included. A control's
+answer is the thing it does, and a held row is answered by the phone's tick. The rows stay for
+the reason the hover rows below them do — as the record, and as what a browser will want — and
+`ChitColors` carries no token for any of them.
 
-**The chit row does the same thing for the same reason** (ADR-061). It is a button since M6 and
-its stamp is `--ink-faint`, which measures 4.42:1 on the 6% wash; `--ink-muted` measures 5.65:1,
-so the stamp lifts while the row is held. Two places faint ink meets a wash, one rule.
-
-**And why its label lifts.** The label is `--ink-faint`, which clears the floor on a bare
-chit at 4.56:1 and fails on *any* wash — 4.12:1 at even 4%, and the wash is 6%. So while it is
-held, the label goes to `--ink`. The prototype already brightens it on hover for the same
-reason; this is that rule applied to the state a phone actually has. A pressed state is a
-surface text sits on, and §6.4 does not make exceptions for surfaces that are brief.
+**And why text on a wash lifts.** `--ink-faint` clears the floor on a bare chit at 4.56:1 and
+fails on *any* wash — 4.12:1 at even 4%. So wherever a wash is drawn, the text on it goes up
+with it: the quiet button's label to `--ink`, a chit row's stamp to `--ink-muted`. *Neither wash
+is drawn any more (ADR-071), so neither lift is;* the rule is kept because **any new tinted
+surface inherits it**, and §6.4 makes no exception for a surface that is brief.
 
 ### 6.2 Typography
 
@@ -297,11 +295,20 @@ day-heading place the paragraph above already names.
 - **Motion** — 220ms `cubic-bezier(.2,0,0,1)` is the house pace. One rule governs the rest:
   **things arrive from where they came from, and settle.**
 
-  A saved chit falls *down* into the thread, because the composer sits above it. A kept
-  recording rises *up* into the open chit — the pill first, then the words it produced landing
-  in the field — because the recording sheet sits below. A saved chit's mark also brings the
+  A saved chit falls *down* into the thread, because the composer sits above it — a step of the
+  scale, and only the row that was not there a moment ago. A kept recording rises *up* into the
+  open chit because the recording sheet sits below; in the editor a staged replacement does the
+  same and a stored recording does not, since opening a chit is not an arrival. *This line read
+  "the pill first, then the words it produced landing in the field" until ADR-058 — there are no
+  words to land, and the pill is the whole of it.* A saved chit's mark also brings the
   **timeline** to it: the strip scrolls to now rather than jumping there, because a mark that
-  appears where you were not looking is a mark you have to find (ADR-024).
+  appears where you were not looking is a mark you have to find (ADR-024). **That is why the
+  strip is the one block the page's entrance draws straight through** (ADR-070): it already has
+  an arrival, and two at once read as a fault.
+
+  Both are `Arrival`, which is **told whether to play and never asked twice** — a wrapper that
+  came and went would change the shape of the tree and rebuild everything under it, which is how
+  a recording in the thread lost its tap (ADR-070).
 
   Those are the three moments in the app with any authorship; everything else is feedback. All
   three are travel, so all three collapse under reduced motion — the timeline jumps to now, and
@@ -310,7 +317,7 @@ day-heading place the paragraph above already names.
 
   | Kind | Pace |
   |---|---|
-  | Press feedback | 90ms; a 0.985 depress, 0.99 on the audio pill. On a phone there is no hover, so this is the only acknowledgement a finger gets |
+  | Press feedback | 90ms, and **nothing draws it** — ADR-070 took the depress and the wash off together, so a control's answer is the thing it does. The pace stays because ADR-020's rule is argued from it: 90ms is already quicker than the reduced target, so it is the fade reducing motion must not slow down |
   | Routine state change | 200–300ms — switching tab, Save arriving once the chit holds something |
   | Authored arrival | 340–460ms — a chit landing, a recording settling |
   | The idle prompt | 700ms, deliberately slower than everything else (§3.3) |
@@ -343,8 +350,11 @@ day-heading place the paragraph above already names.
   height reads as broken — and does not answer the microphone at all, because a wave that moves
   with a voice is still a wave that moves.
 
-  The staggered arrival (fade plus 6px rise, 55–60ms apart, capped) plays when a screen
-  is first built and then sheds itself. Returning to a tab costs a 200ms fade and nothing
+  The staggered arrival (fade plus 6px rise, **55ms** apart, capped at **eight** blocks) plays
+  when a screen is first built and then sheds itself — `StaggeredEntrance`, which takes a page's
+  blocks rather than a column's contents, since a spacer in the list would take a turn in the
+  stagger. The step is a token beside this table and the cap is the widget's, being a count of
+  children rather than a duration. Returning to a tab costs a 200ms fade and nothing
   more — Today is opened many times a day, and a re-run entrance would turn that into waiting.
   The stagger does run again when a tapped date actually rebuilds the archive, because there
   it explains why the list changed.
@@ -396,7 +406,11 @@ Enforced, and verified on every revision:
 - **Type** — functional text starts at **11.5px**. Quiet comes from weight and colour.
 - **Touch targets** — ≥44px, with no exceptions. The microphone is 54px, and its target is not
   reduced when the field has text in it.
-- **Focus** — every interactive element has a visible `:focus-visible` ring in `--seal`.
+- **Focus** — every interactive element has a visible ring in `--seal`, at the app's one 1.5px
+  stroke, and **only on keyboard or switch focus**. `FocusRing` draws it and gives the control
+  Enter and Space with it; a finger leaves no focus behind, so on a phone it costs nothing and
+  is drawn never. It is painted *over* the control rather than around it, so nothing moves when
+  focus arrives.
 - **Motion** — under `prefers-reduced-motion`, **movement collapses and feedback does not.**
   Travel, zoom and every ambient loop stop outright: the caret blink, the breathing record dot.
   **The live waveform stops too, and it is not a loop** — it is twenty levels the microphone
@@ -410,11 +424,10 @@ Enforced, and verified on every revision:
   thing still — a mark that stops by disappearing has taken the signal away along with the
   movement, which is the opposite of the sentence above.
 
-  **The caret is the one place this is currently not honoured, and it is not ours.** chit draws
-  no caret of its own (ADR-028), so the only one in the app is the framework's, and Flutter
-  offers no way to steady it that does not also hide it. PROGRESS.md open item 14 carries the
-  detail; M7's pass owns it. Worth knowing before anyone spends a day on it: a stock Android
-  keyboard blinks its caret whatever the animation setting says.
+  **The caret is the one stated exception, and it is not ours** (ADR-068). chit draws no caret
+  of its own (ADR-028), so the only one in the app is the framework's; Flutter offers no public
+  way to steady it that does not also hide it, and a stock Android keyboard blinks its own
+  whatever the setting says. It blinks, and this sentence is the whole of the answer.
 - **Semantics** — heading levels never skip, controls that do nothing are not marked up as
   controls, and anything the user typed is escaped before it reaches the DOM.
 

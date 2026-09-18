@@ -19,7 +19,7 @@ Read these four, in this order. It is about ten minutes and it is the whole cont
 
 | # | Read | For |
 |---|---|---|
-| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, what is on a handset, the device checklist, every open item. It is the present, not a log — git is the history. If you read one thing, read this |
+| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, the next task, every open item. It is the present, not a log — git is the history. If you read one thing, read this |
 | 2 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the two standing rules below, the engineering principles, the commit format |
 | 3 | **[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md)** | What "done" means for the milestone `PROGRESS.md` just named |
 | 4 | **[`docs/TASKS.md`](docs/TASKS.md)** | That milestone cut into buildable groups, with the decisions it turns on already settled |
@@ -28,12 +28,12 @@ Then read what that milestone points at, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
-> **Status:** in build, and **M6 — the editor — is under way** on top of five milestones signed
-> off on a handset. A chit can be typed or spoken, carries the time, the weather, what the phone
-> was doing and that a place was noted, and is read back on Today, on a scrolling timeline and
-> in a calendar of the months written. **Voice is recording and playback: there is no
-> transcription** (ADR-058). A saved chit opens from the thread and its words can be corrected;
-> the recording becomes removable and a chit deletable as M6 finishes.
+> **Status:** in build, and **M7 — motion and the floors — is under way**, the last milestone of
+> v1, on top of six signed off on a handset. A chit can be typed or spoken, carries the time,
+> the weather and what the phone was doing, and is read back on Today, on a scrolling timeline
+> and in a calendar of the months written. **Voice is recording and playback: there is no
+> transcription** (ADR-058). A saved chit is opened by holding it in the thread, and its words,
+> its recording and the chit itself can all be changed or destroyed.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 
@@ -163,10 +163,10 @@ chit/
 
 | File | Answers | Read it |
 |---|---|---|
-| [`docs/PROGRESS.md`](docs/PROGRESS.md) | **Where the build stands and what is next.** The status board, what the last session did, and every open item | First. Always |
+| [`docs/PROGRESS.md`](docs/PROGRESS.md) | **Where the build stands and what is next.** The status board, the next task, and every open item | First. Always |
 | [`CLAUDE.md`](CLAUDE.md) | How to work here — the two standing rules, the engineering principles, the commit format, the commands | Second, before writing anything |
-| [`docs/TASKS.md`](docs/TASKS.md) | **The current milestone, cut into groups that can each be built, tested and committed on their own.** Holds one milestone at a time and is replaced wholesale when the next starts; `PROGRESS.md` keeps the history | Third, when you are about to write code |
-| [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) | The order it gets built in, M0 to M7, and what "done" means for each | Starting a milestone |
+| [`docs/TASKS.md`](docs/TASKS.md) | **The current milestone, cut into groups that can each be built, tested and committed on their own.** Holds one milestone at a time and is replaced wholesale when the next starts; git keeps the history | Third, when you are about to write code |
+| [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) | The order it gets built in, what "done" means for the milestone that is open, and what the finished ones taught | Starting a milestone |
 | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
 | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | **§6 and §7** — the palette, the three faces, the spacing, the motion, the accessibility floors, and the prototype | Drawing anything |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How it is put together — the three layers, the folder map, the Riverpod conventions, the data flow behaviour by behaviour | Adding a file and unsure where it goes |
@@ -215,7 +215,13 @@ draws and nothing else, which is what lets a screen compose them freely. Two ear
 `AudioPill` watches the one player, and `ChitRow` pushes the editor (ADR-061). `PromptSheet`
 is the app's one confirmation (ADR-064) — a question and two answers, asked by `showPromptSheet`
 and deciding nothing itself. `Microphone` is the 54px control of §4.1, moved here when the
-editor became the second screen to record (ADR-065). Beside them,
+editor became the second screen to record (ADR-065). **No control answers a press with anything
+of its own** — ADR-071 took the app's press feedback off, so what says a tap landed is what the
+tap does. `StaggeredEntrance` is how a page arrives, one block at a time and once, with
+`Unstaggered` for
+the one block it draws straight through; `Arrival` is §6.3's two authored moments, a saved chit
+falling into the thread and a recording rising into the open chit (ADR-070); and `FocusRing` is
+§6.4's focus floor, the ring and the Enter that go with it. Beside them,
 `lib/shared/day_label.dart` is the one function that names a day — *Today*, *Yesterday*,
 *Friday 11 September* — so the archive's headings and the editor's cannot disagree.
 
@@ -239,7 +245,7 @@ some of it was real and could not come back.
 | `test/core/theme/contrast_test.dart` | §6.4's contrast floor: every text token against every surface it sits on, **composited**. Also the negative cases — `--seal` failing as text on a chit is why `--seal-ink` exists, and `--ink-faint` failing on the audio pill's wash is why the pill's duration is set in `--ink-muted`. It locks §6.1's quoted figures to ±0.01 so the prose and the arithmetic cannot drift apart. **Since M6 it also decides rather than checks**: the pressed chit row's 4.42:1 is why ADR-061 lifts the stamp |
 | `test/core/theme/chit_type_test.dart` | ADR-015: every style sets `fontVariations`, not `fontWeight` alone. The three faces of §6.2 are the only families used, the चित्त mark is the only thing set in Devanagari, tabular figures are on everything that counts or keeps time, no functional text is under 11.5px |
 | `test/core/theme/chit_motion_test.dart` | §6.4's reduced-motion rule: movement collapses, feedback does not. The suite that found ADR-020 |
-| `test/core/theme/widget_constants_test.dart` | The dimensions §6.3 lets a widget spell out as a compile-time constant instead of reading from `ChitSpace` — and the rule that keeps them honest: **a constant copied off the scale still equals it**. The perforation's strip and the thread node's halo are both `s1` written by hand, because a painter and a layout caller each need them before there is a `BuildContext`. Also v6's exact figures, 1.55px on an 8px pitch and the 7px mark, and that the rail's centre stays *derived* from the mark rather than set beside it |
+| `test/core/theme/widget_constants_test.dart` | The dimensions §6.3 lets a widget spell out as a compile-time constant instead of reading from `ChitSpace` — and the rule that keeps them honest: **a constant copied off the scale still equals it**. The perforation's strip and the thread node's halo are both `s1` written by hand, because a painter and a layout caller each need them before there is a `BuildContext`. Also v6's exact figures, 1.55px on an 8px pitch and the 7px mark, and that the rail's centre stays *derived* from the mark rather than set beside it. **Since M7 group D it also holds §6.4's floors that are arithmetic** — the 44px target, the microphone above it, a button's padding clearing it, and the pill's *not* clearing it, which is the assertion that found a control two pixels under the floor after a comment had claimed it was exactly on. Also that the focus ring is drawn at the app's one 1.5px stroke, the caret's and the tick's |
 | `test/core/clock_is_the_only_now_test.dart` | ADR-012: nothing in `lib/` calls `DateTime.now()` except `SystemClock` |
 | `test/domain/chit_test.dart` | The invariant of §5 where it fails first: a chit with neither text nor audio, text without a provenance, half a coordinate and a recording without a length cannot be *built*. Also `localDayOf` across a midnight |
 | `test/data/db/chits_table_test.dart` | The same invariant where it survives a release build — the table's check constraints, every one of them exercised by writing the row by hand, around the repository. Also that the primary key survived being declared beside them |
@@ -254,6 +260,7 @@ some of it was real and could not come back.
 | `test/features/composer/composer_controller_test.dart` | **ADR-040's reversal**, which fails silently — a stamp taken at the wrong moment is still a plausible time, and only a clock moved across the save can tell. The row carries the save time and not the open time; a chit opened at 23:58 and saved at 00:05 lands on the *new* day; and ADR-042's half: the save returns without waiting on a capture that never comes back, and the patch that follows moves neither `createdAt` nor `updatedAt`. **Since M5 it also carries §3.4**: **Remove** deleting the temp take and leaving the words alone (ADR-060), a recording with no words saving and coming back as a chit, and the take stopping when Save moves its file — while a chit playing in the thread is left alone |
 | `test/features/editor/editor_controller_test.dart` | **The editor's rules, held to their meaning without a screen** (ADR-031, TASKS.md D11). Dirty is *differs from what was loaded* — a character typed and deleted, or a trailing space the save would trim, is not a change; Save needs a change *and* a chit to write, so emptying a text-only chit withholds it while still raising the leave prompt; a save moves `updatedAt` and nothing about the moment; and the **null that means the row has gone**, which is why the screen pops rather than drawing an empty slip. **Since group E it holds the voice too**: Remove stages and touches no file, a kept take is staged and the pill plays it from its temp path, a take recorded and removed again is no change, abandoning discards the temp and leaves the row alone, and a save moves a replacement in or deletes a removal — stopping the player first. And delete: the row, the recording, a staged take and the player all go, and unsaved words with them |
 | `test/shared/day_label_test.dart` | *Today*, *Yesterday*, then the weekday and date — with the year only when it is not this one. It moved out of `ArchiveDay` when the editor's header wanted the same phrase, so it now guards both callers |
+| `test/shared/staggered_entrance_test.dart` | **The arithmetic of a page's entrance** (ADR-031): the first block starts at once, each one after it a step later, and the wait stops growing at the cap — which is what keeps a thirty-chit day an entrance rather than a queue. Then the run's length, that an empty list takes no time so a run cannot shed itself before its content arrives, and §6.4 reaching it — under reduced motion every block starts together and the page still fades in at 220ms |
 | `test/features/composer/audio_pill_test.dart` | ADR-031 again: what the pill *computes*, never how it looks. The figure, and a playhead that lights nothing at the start, half the bars halfway, everything at the end, and does not run off the end of the list when `just_audio` reports a position past the duration or a row has lost its length. Then the rule the one player exists for — a second pill takes the first one off, a pause keeps its playhead, a vanished file leaves the player silent, and the end is silence rather than a full playhead |
 | `test/features/composer/live_wave_test.dart` | ADR-054 as amended: **a bar is its level.** The floor at silence, the full height at full scale, linear between, clamped outside; and the window always full so a sheet that has just opened draws a row of ticks rather than three bars floating, filling from the right with the newest reading last |
 | `test/features/composer/recording_controller_test.dart` | The sheet's take without a sheet (ADR-031): **the take surviving the permission round-trip with nothing listening** — ADR-057's bug, and the container here deliberately has no listener — either kind of refusal closing the sheet, the elapsed figure read off the clock rather than counted, the wave keeping only its window, Stop & keep leaving the field alone, and a sheet that vanished without cancelling still closing the microphone |
