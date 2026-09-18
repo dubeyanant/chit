@@ -373,7 +373,6 @@ void main() {
       localDay: Chit.localDayOf(at),
       updatedAt: at,
       text: id,
-      textOrigin: TextOrigin.typed,
     );
 
     test('keeps the order it was given and splits on the day', () {

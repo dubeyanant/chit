@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-four records, not fifty-seven: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Fifty-five records, not fifty-eight: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -25,7 +25,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-002 | Three layers, and the dependency rule | `features` never imports `data` |
 | ADR-003 | Drift over a document store | nearly every screen is an aggregate query |
 | ADR-004 | Local-only for v1, with the seams for sync | no backend, no account, client-generated ids |
-| ADR-005 | Speech-to-text runs on the device | nothing leaves the phone; §3.5 is what failure looks like |
+| ADR-005 | ~~Speech-to-text runs on the device~~ | **removed by ADR-058** — it recognised nothing on a handset, and the feature went with it |
 | ADR-006 | A denormalised local day on every chit | what "today" means, decided once at write time |
 | ADR-007 | Ambient capture is best-effort and never blocks | a signal that does not arrive is null, and is not drawn |
 | ADR-008 | Audio on the filesystem, path in the row | relative paths, always |
@@ -70,11 +70,12 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-050 | A day boundary is the tick at now, hanging below the line | the same height and weight; `s1` hid behind a mark written near midnight |
 | ADR-051 | New ADRs are short | the template shrinks from here — CLAUDE.md §0.2 |
 | ADR-052 | The recorder times a take on the clock and reports a level, not decibels | M5 group A — the file is not opened until playback; the waveform draws a number |
-| ADR-053 | The recogniser streams a split transcript, has no error table, and waits one beat | M5 group B — §3.4's lighter word is in the data; any error is §3.5; Stop & keep waits 900 ms for the last word |
-| ADR-054 | A kept take can be words with no file, and Discard lets it go through the repository | M5 group C — the two plugins fail apart; one door owns the temp file; the wave is a window of levels, **amended in group D from the single level it first held** |
+| ADR-053 | ~~The recogniser streams a split transcript~~ | **removed by ADR-058** with the recogniser it describes |
+| ADR-054 | Discard lets a take go through the repository, and the wave is a window of levels | M5 group C — one door owns the temp file; the wave is twenty levels, **amended in group D from the single level it first held** |
 | ADR-055 | The sheet keeps both of v6's controls, and every other way out is a cancel | M5 group D — Discard beside Stop & keep; one path ends the take; a scrim token that is meant to fail |
-| ADR-056 | §3.5's note is a block above the field, and a refusal names the OS | M5 group F — it takes the prompt's turn, not its overlay; the phone's settings are the only way back |
+| ADR-056 | A refusal names the OS | M5 group F — the phone's settings are the only way back. *Its §3.5 half went with ADR-058* |
 | ADR-057 | The recording controller is the one screen controller that is kept alive | a take outlives the sheet; auto-disposed it was collected mid-`start` and no sheet ever opened |
+| ADR-058 | Transcription is removed, and a chit's words are always typed | the whole feature, not a flag; `textOrigin` goes too, in a v2 → v3 migration |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -118,8 +119,9 @@ repository directly — ADR-002 is the layer rule that follows from this.
 and `features` (controllers, widgets); `domain` imports from neither, and `features` never
 imports `data` — over a flat `lib/models` + `lib/screens`, the usual shape for an app this size.
 Two things need the seam: the app is local-only now but will not stay that way (ADR-004), and
-the speech recognizer must be replaceable by a fake, since BEHAVIOUR.md §3.5 only exists when
-recognition produces nothing and there is no other way to reach it in a test. Cost: more files
+the platform services must be replaceable by fakes, since a microphone a test can refuse is the
+only way to reach the composer's refusal path at all. *The example this record was written from
+was the speech recogniser, which ADR-058 removed.* Cost: more files
 per feature, and some interfaces with exactly one implementation for a long time.
 
 ---
@@ -151,19 +153,17 @@ expensive version of this decision.
 
 ---
 
-## ADR-005 — Speech-to-text runs on the device
+## ADR-005 — Speech-to-text runs on the device — REMOVED
 
-Recognition runs on the handset with nothing leaving the device — `speech_to_text` with
-`SpeechListenOptions(onDevice: true)` — over Google Cloud Speech-to-Text, which BEHAVIOUR.md §3.4
-originally named. Cloud recognition means every recorded thought leaves the device in an app
-whose whole premise is a private journal, and needs a credential ADR-004 already deferred; the
-accuracy argument for it has also weakened now that the transcript is editable (ADR-013), since a
-worse engine only costs a few seconds of correction rather than a permanent error.
-`domain/services/speech_recognizer.dart` keeps the interface — not for an engine swap, but
-because a fake is the only way to test §3.5. Cost: on-device models are less accurate, vary by
-handset, and may not exist at all for some devices or languages — offline English-Hindi
-code-switching in particular should be expected to be poor. No model available is not a distinct
-error state; it resolves to the same §3.5 path as a mishearing.
+**Removed by ADR-058.** Recognition ran on the handset with nothing leaving the device —
+`speech_to_text` with `SpeechListenOptions(onDevice: true)` — over Google Cloud Speech-to-Text,
+because cloud recognition means every recorded thought leaves the device in an app whose whole
+premise is a private journal, and needs a credential ADR-004 had already deferred. **The cost
+this record stated is what ended it:** on-device models are less accurate, vary by handset and
+may not exist at all for some devices or languages, with offline English-Hindi code-switching
+expected to be poor. On the first handset it ran on it recognised nothing. The record stays
+rather than going, because ADR-013 and ADR-014 cite it and a dangling citation is worse than a
+struck-through one.
 
 ---
 
@@ -254,25 +254,23 @@ discovered. Cost: one indirection, everywhere.
 
 ## ADR-013 — A chit is text, audio, or both
 
-`text` and `audioPath` are independently nullable with at least one present; a recording's
-transcript lands in an editable field and the audio is kept regardless of what happens to the
-words, with a `textOrigin` column recording `typed | transcript | transcriptEdited` — over an
-exclusive `source: typed | spoken` with the transcript locked. Speech recognition mishears names
-and breaks on code-switching, and a transcript that cannot be corrected is a record that is
-quietly wrong; moving the guarantee to the audio — never editable, never removable, always
-playable — protects the moment without holding the words hostage. Cost: four legal row shapes
-instead of two, an invariant the database can only partly express, and a provenance column
-nothing yet reads (kept for OPEN-QUESTIONS.md §8.2's future re-transcription).
+`text` and `audioPath` are independently nullable with at least one present — over an exclusive
+`source: typed | spoken`, because the guarantee belongs to the audio (never editable, never
+removable, always playable) rather than to the words, which stay the user's. **The provenance
+half of this record is gone** (ADR-058): it also carried a `textOrigin` column recording
+`typed | transcript | transcriptEdited`, whose whole purpose was to say whether words came from
+the recogniser, and there is no recogniser. What survives is the shape: three legal rows rather
+than four, and an invariant the database can only partly express.
 
 ---
 
 ## ADR-014 — Saved chits are editable; their audio is not
 
-`ChitRepository` gains an update path for `text` (and `textOrigin`, which becomes
-`transcriptEdited` on a changed transcript) and no path that changes or removes `audioPath` on an
-existing chit. Once the transcript is editable before Save (ADR-013), there is no principled
-reason text stops being the user's the moment it is saved — a typo found the next morning is the
-same typo. Text is what the chit says and belongs to the user; audio is what was said and belongs
+`ChitRepository` gains an update path for `text` — *and for `textOrigin` until ADR-058 removed
+it* — and no path that changes or removes `audioPath` on an existing chit. There is no
+principled reason text stops being the user's the moment it is saved: a typo found the next
+morning is the same typo. Text is what the chit says and belongs to the user; audio is what was
+said and belongs
 to the moment: a chit can gain text but never lose a recording, and deleting the whole chit is
 the only way to remove one. Whether the editor is inline or its own screen was left to
 OPEN-QUESTIONS.md §8.1, settled by ADR-017. `updatedAt` stops being written once and forgotten;
@@ -330,7 +328,7 @@ and before polish, so the editor handles a chit that already has an audio pill f
 
 `windows/`, `linux/` and `macos/` are deleted from the repository; `web/` stays, untouched. The
 app is a phone app — a microphone that is an equal to the keyboard, ambient weather and location,
-on-device speech are all phone capabilities — and three desktop scaffolds nobody builds only go
+and a recording kept on the device are all phone capabilities — and three desktop scaffolds nobody builds only go
 stale and invite a plugin to be chosen for desktop support it doesn't need. `web/` survives
 because README §10 actually plans responsive web later, and deleting it now would only mean
 regenerating it. Cost: restoring a desktop target later means `flutter create --platforms=...`
@@ -823,51 +821,36 @@ in whole seconds and does not show it.
 
 ---
 
-## ADR-053 — The recogniser streams a split transcript, has no error table, and waits one beat
+## ADR-053 — The recogniser streams a split transcript — REMOVED
 
-`SpeechRecognizer.start()` returns a `Stream<Transcript>` whose values carry the committed words
-and the one still being revised, so §3.4's lighter-ink word is a property of the data rather than
-a guess in the widget; the split is made in `data` because *the last word of a partial* is a fact
-about the plugin's results, not about chit. The stream is the only source of the transcript —
-`stop()` returns nothing and the sheet keeps what it last saw — over a `stop()` that also answers
-the words, which would have been the same value arriving twice. **There is no error-code table**,
-though TASKS.md group B expected one: Android marks every error permanent and stops listening as
-it reports one, so distinguishing `error_no_match` from the rest would describe one platform's
-vocabulary and change nothing D5 does not already say — any error closes the stream, keeping
-whatever was heard. `stop()` then waits up to 900 ms for the recogniser's last word, with the
-plugin's own final-result timeout cut from two seconds to 450 ms so its promotion lands inside
-that; this is the one place the app waits on a signal (ADR-007 refuses everywhere else) and the
-exception is ARCHITECTURE.md §6's — ambient signals fail silently, the user's content does not,
-and the final word is the one most likely wrong. Cost: Stop & keep can hold the sheet for a
-beat on a platform that has stopped answering, and a shortened final timeout promotes a partial
-the platform might still have improved.
+**Removed by ADR-058, with the recogniser it describes.** It settled three things about
+`SpeechRecognizer`: the stream carried committed words and the one still being revised, so
+§3.4's lighter-ink word was a property of the data rather than a guess in the widget; there was
+**no error-code table**, because Android marks every error permanent and stops listening as it
+reports one, so any error simply closed the stream; and `stop()` waited up to 900 ms for the
+last word, the one place in the app that ever waited on a signal. Git holds the code. The record
+stays because ADR-054 and ADR-055 cite it.
 
 ---
 
-## ADR-054 — A kept take can be words with no file, and Discard lets it go through the repository
+## ADR-054 — Discard lets a take go through the repository, and the wave is a window of levels
 
-Three calls from M5 group C, all about what the composer does with a finished take.
-`ComposerController.keepRecording` takes a **nullable** `Recording`, over TASKS.md's required
-one: the recorder and the recogniser are two plugins that fail apart, so a take can come back as
-words with no file, and dropping heard words because the *other* plugin failed is the silent
-content loss ARCHITECTURE.md §6 says never happens — the chit becomes a text chit with a
-transcript origin, which README §5 already allows. `sttFailed` is therefore `recording != null &&
-words.isEmpty` rather than just the empty half, because §3.5's note promises a recording was
-kept and must not appear when none was. **Discard deletes the temp file through
-`ChitRepository.discardTemp`**, over a method on `AudioRecorder` or a direct call to
-`AudioStore`: `features` cannot reach `data` at all (ARCHITECTURE.md §1), and `save` already
-takes a temp path *in*, so one door owns the file's whole lifetime instead of two. Last,
-Last, `RecordingState` holds **the last twenty levels, one per bar of the live wave** — *this
-originally said one level and no history, on the reading that v6's wave is twenty fixed bars each
-bobbing on its own loop; group D drew the bars from the microphone instead, so the wave is the
-shape of what was just said rather than one loudness split twenty ways.* At the recorder's 80ms
-sampling that window is the last 1.6 seconds. It is data and not an ambient loop, so nothing
-about it takes a period from `ChitMotion.loop`; under reduced motion it draws v6's fixed heights
-at rest and ignores the microphone, because a wave that moves with a voice is still a wave that
-moves. Cost: the audio pill's wave is **not** this — it is v6's fixed shape on every pill,
-because the envelope of a saved recording would mean decoding the file to draw a control 18px
-tall, and a chit written before anyone stored levels has no envelope at all. What the pill's
-bars carry is the playhead.
+**Discard deletes the temp file through `ChitRepository.discardTemp`**, over a method on
+`AudioRecorder` or a direct call to `AudioStore`: `features` cannot reach `data` at all
+(ARCHITECTURE.md §1), and `save` already takes a temp path *in*, so one door owns the file's
+whole lifetime instead of two. `RecordingState` holds **the last twenty levels, one per bar of
+the live wave** — *this originally kept a single number, on the reading that v6's wave is twenty
+fixed bars each bobbing on its own loop; group D drew the bars from the microphone instead, so
+the wave is the shape of what was just said rather than one loudness split twenty ways.* At the
+recorder's 80 ms sampling that window is the last 1.6 seconds. It is data and not an ambient
+loop, so nothing about it takes a period from `ChitMotion.loop`; under reduced motion it draws
+v6's fixed heights at rest and ignores the microphone, because a wave that moves with a voice is
+still a wave that moves. Cost: the audio pill's wave is **not** this — it is v6's fixed shape on
+every pill, because the envelope of a saved recording would mean decoding the file to draw a
+control 18px tall, and a chit written before anyone stored levels has no envelope at all. What
+the pill's bars carry is the playhead. *A third call — `keepRecording` taking a nullable
+`Recording` so a take could be words with no file — went with ADR-058: there is no second plugin
+to fail apart from, and a take that wrote nothing is simply nothing kept.*
 
 ---
 
@@ -889,22 +872,18 @@ one control that commits, with nothing on screen saying why.
 
 ---
 
-## ADR-056 — §3.5's note is a block above the field, and a refusal names the OS
+## ADR-056 — A refused microphone names the OS
 
-Two placements from M5 group F. The note *"Speech wasn't recognised. Your recording is kept."*
-is its own block between the stamp and the page, as v6 draws it — over the prompt's overlay,
-which ARCHITECTURE.md §4.3 had said it would share. In the overlay it would have to disappear at
-the first keystroke, while the recording it explains is still kept and still unrecognised; a
-block survives whatever is typed under it. What the note does take from the prompt is its
-*turn* — `_armPrompt` refuses to fire while `sttFailed`, so the two never stack, which is all
-TASKS.md meant by *in the prompt's place*. The refused-microphone line sits **under the action
-row** rather than beside the microphone: once the chit holds anything the row is microphone,
-Discard and Save, and a line that had to move when a word was typed is worse than one below the
-row it explains. It reads *"The microphone isn't allowed. You can turn it on in your phone's
-settings."* and **names the OS on purpose** — ADR-041 spends the app's one dialog on location and
-never asks again, so until there is a settings screen (open item 22) the phone's own is the only
-way back, and a line that stated the state without the way out would leave it to be guessed at.
-Both are `ChitType.failNote`, and neither animates: M5 defers every authored arrival to M7.
+The line sits **under the action row** rather than beside the microphone: once the chit holds
+anything the row is microphone, Discard and Save, and a line that had to move when a word was
+typed is worse than one below the row it explains. It reads *"The microphone isn't allowed. You
+can turn it on in your phone's settings."* and **names the OS on purpose** — ADR-041 spends the
+app's one dialog on location and never asks again, so until there is a settings screen (open
+item 22) the phone's own is the only way back, and a line that stated the state without the way
+out would leave it to be guessed at. It is `ChitType.failNote` and does not animate: M5 defers
+every authored arrival to M7. *This record also placed §3.5's "Speech wasn't recognised" note as
+a block above the field rather than in the prompt's overlay; that note went with ADR-058, and
+`_armPrompt` no longer has anything to stand aside for.*
 
 ---
 
@@ -924,3 +903,23 @@ ways out of a take reset it again. Cost: `ref.onDispose` now only runs when the 
 so it guards an app torn down mid-take rather than a sheet that vanished. **The test that should
 have caught this added a listener for symmetry with the composer**, which is the only reason the
 bug reached a device; that listener is gone, and ten tests fail without this line.
+
+---
+
+## ADR-058 — Transcription is removed, and a chit's words are always typed
+
+`speech_to_text`, `SpeechRecognizer`, `OnDeviceSpeechRecognizer`, the sheet's transcript, the
+§3.5 failure note and the `chits.text_origin` column are all deleted — the whole feature, not
+disabled behind a flag. **It recognised nothing on the first handset it ran on**, which is the
+outcome ADR-005 had already named as its cost: on-device models vary by handset, may not exist
+for a language at all, and are worst at exactly the English-Hindi code-switching that is ordinary
+speech here. A transcript that is usually absent and occasionally wrong is a worse record than an
+honest recording, and it was charging a plugin, an iOS permission, a schema column, a failure
+path and two open items for the privilege. The recording is the record now; anything a chit says
+in words was typed. **`textOrigin` goes with it** in a v2 → v3 migration, because with no
+recogniser every chit's words are typed and a column with one value is a column nobody can read
+anything from — nothing visible is lost, since it was never drawn. *Kept over disabling it:* a
+dormant recogniser is a plugin to keep building, a permission to keep explaining and a branch to
+keep testing, for a feature nobody has asked to come back. Cost: git is now the only record of
+how any of it worked, **ADR-005 and ADR-013 are edited rather than deleted** because other
+records cite them, and §3.5 and OPEN-QUESTIONS §8.2 are retired with their numbers unreused.

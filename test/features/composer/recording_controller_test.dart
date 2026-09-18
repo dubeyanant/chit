@@ -2,7 +2,6 @@ import 'package:chit/core/clock.dart';
 import 'package:chit/domain/models/composer_state.dart';
 import 'package:chit/domain/models/recording_state.dart';
 import 'package:chit/domain/services/audio_recorder.dart';
-import 'package:chit/domain/services/speech_recognizer.dart';
 import 'package:chit/features/composer/application/composer_controller.dart';
 import 'package:chit/features/composer/application/recording_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,18 +9,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_audio_recorder.dart';
 import '../../support/fake_clock.dart';
-import '../../support/fake_speech_recognizer.dart';
 
-/// **The sheet's two services, without a sheet** — BEHAVIOUR.md §3.4, ADR-031.
+/// **The sheet's take, without a sheet** — BEHAVIOUR.md §3.4, ADR-031.
 ///
-/// What is worth testing here is the choreography rather than any value: the
-/// order the two are started and stopped in, what happens when one fails and
-/// the other does not, and where the words end up. None of it is visible on
-/// screen, and all of it is wrong in ways that look fine.
+/// What is worth testing here is the choreography rather than any value: when
+/// the recorder is started and stopped, what a refusal does, and where the
+/// take ends up. None of it is visible on screen, and all of it is wrong in
+/// ways that look fine.
 void main() {
   late FakeClock clock;
   late FakeAudioRecorder recorder;
-  late FakeSpeechRecognizer recognizer;
 
   /// When the microphone is tapped.
   final DateTime began = DateTime(2026, 9, 18, 21, 4);
@@ -29,7 +26,6 @@ void main() {
   setUp(() {
     clock = FakeClock(began);
     recorder = FakeAudioRecorder();
-    recognizer = FakeSpeechRecognizer();
   });
 
   tearDown(() => recorder.dispose());
@@ -39,7 +35,6 @@ void main() {
       overrides: [
         clockProvider.overrideWithValue(clock),
         audioRecorderProvider.overrideWithValue(recorder),
-        speechRecognizerProvider.overrideWithValue(recognizer),
       ],
     );
     addTearDown(container.dispose);
@@ -61,7 +56,7 @@ void main() {
   RecordingController sheetOf(ProviderContainer c) =>
       c.read(recordingControllerProvider.notifier);
 
-  /// Lets the streams deliver what was put on them.
+  /// Lets the level stream deliver what was put on it.
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
   group('the microphone is tapped', () {
@@ -85,7 +80,7 @@ void main() {
       );
     });
 
-    test('a granted microphone starts both services', () async {
+    test('a granted microphone opens the sheet', () async {
       final ProviderContainer container = containerOf();
 
       expect(await sheetOf(container).start(), isTrue);
@@ -171,92 +166,52 @@ void main() {
       expect(kept.first, 1 / window, reason: 'the oldest reading dropped off');
       expect(kept.last, 1);
     });
-
-    test('the transcript accrues with its pending word', () async {
-      final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
-
-      recognizer.hear(committed: 'missed the last', pending: 'train');
-      await settle();
-
-      final Transcript heard = container
-          .read(recordingControllerProvider)
-          .transcript;
-      expect(heard.committed, 'missed the last');
-      expect(heard.pending, 'train');
-      expect(heard.words, 'missed the last train');
-    });
-
-    test('a recogniser that never starts is noted and nothing else', () async {
-      final ProviderContainer container = containerOf();
-      recognizer.canHear = false;
-
-      expect(await sheetOf(container).start(), isTrue);
-      await settle();
-
-      final RecordingState sheet = container.read(recordingControllerProvider);
-      expect(sheet.recognitionGaveUp, isTrue);
-      expect(
-        recorder.running,
-        isTrue,
-        reason: 'the take goes on — §3.5 keeps the audio',
-      );
-    });
   });
 
   group('Stop & keep', () {
-    test('hands the take and the words to the open chit', () async {
+    test('hands the take to the open chit', () async {
       final ProviderContainer container = containerOf();
       await sheetOf(container).start();
 
-      recognizer.heard('missed the last train');
-      await settle();
       await sheetOf(container).stopAndKeep();
 
       final ComposerState chit = container.read(composerControllerProvider);
-      expect(chit.text, 'missed the last train');
       expect(chit.audioTempPath, 'take-1.m4a');
       expect(chit.audioDuration, const Duration(seconds: 12));
       expect(chit.isRecording, isFalse);
-      expect(recognizer.stops, 1);
     });
 
-    test('keeps a word that was still being revised', () async {
-      // Stop & keep can land mid-revision, and a word being revised is still
-      // a word that was said.
+    test('leaves the field alone — a take is not words', () async {
+      // §3.4: a chit can hold words, a recording, or both, and keeping a take
+      // is not an edit to what was written.
       final ProviderContainer container = containerOf();
-      await sheetOf(container).start();
+      container
+          .read(composerControllerProvider.notifier)
+          .edit('Train 20 late.');
 
-      recognizer.hear(committed: 'missed the last', pending: 'train');
-      await settle();
+      await sheetOf(container).start();
       await sheetOf(container).stopAndKeep();
 
-      expect(
-        container.read(composerControllerProvider).text,
-        'missed the last train',
-      );
+      final ComposerState chit = container.read(composerControllerProvider);
+      expect(chit.text, 'Train 20 late.');
+      expect(chit.hasAudio, isTrue);
     });
 
-    test('does not wait on a recogniser that already gave up', () async {
+    test('a take that wrote nothing keeps nothing', () async {
       final ProviderContainer container = containerOf();
-      recognizer.canHear = false;
+      recorder.take = null;
       await sheetOf(container).start();
-      await settle();
 
       await sheetOf(container).stopAndKeep();
 
-      expect(recognizer.stops, 0, reason: 'there was nothing left to stop');
-      expect(
-        container.read(composerControllerProvider).sttFailed,
-        isTrue,
-        reason: 'the audio is kept and the field is empty — §3.5',
-      );
+      final ComposerState chit = container.read(composerControllerProvider);
+      expect(chit.hasAudio, isFalse);
+      expect(chit.isRecording, isFalse, reason: 'the sheet still closes');
     });
 
     test('leaves the sheet back where it started', () async {
       final ProviderContainer container = containerOf();
       await sheetOf(container).start();
-      recognizer.heard('one');
       recorder.emitLevel(0.9);
       await settle();
 
@@ -271,13 +226,14 @@ void main() {
     test('a second press does nothing at all', () async {
       final ProviderContainer container = containerOf();
       await sheetOf(container).start();
-      recognizer.heard('one');
-      await settle();
 
       await sheetOf(container).stopAndKeep();
       await sheetOf(container).stopAndKeep();
 
-      expect(container.read(composerControllerProvider).text, 'one');
+      expect(
+        container.read(composerControllerProvider).audioTempPath,
+        'take-1.m4a',
+      );
     });
   });
 
@@ -285,8 +241,6 @@ void main() {
     test('cancel keeps nothing and deletes the take', () async {
       final ProviderContainer container = containerOf();
       await sheetOf(container).start();
-      recognizer.heard('never mind');
-      await settle();
 
       await sheetOf(container).cancel();
 
@@ -295,7 +249,6 @@ void main() {
       expect(chit.audioTempPath, isNull);
       expect(chit.isRecording, isFalse);
       expect(recorder.cancels, 1);
-      expect(recognizer.stops, 1);
     });
 
     test(
@@ -308,7 +261,6 @@ void main() {
           overrides: [
             clockProvider.overrideWithValue(clock),
             audioRecorderProvider.overrideWithValue(recorder),
-            speechRecognizerProvider.overrideWithValue(recognizer),
           ],
         );
         container.listen(composerControllerProvider, (ComposerState? _, _) {});
@@ -321,7 +273,6 @@ void main() {
 
         expect(recorder.running, isFalse);
         expect(recorder.cancels, 1);
-        expect(recognizer.stops, 1);
       },
     );
   });

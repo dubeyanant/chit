@@ -64,6 +64,66 @@ void main() {
     await db.close();
   });
 
+  test('a v2 database migrates to the v3 that was committed', () async {
+    // v3 drops `chits.text_origin` and the check constraint naming it
+    // (ADR-058). SQLite cannot drop a column a constraint mentions, so the
+    // step rebuilds the table — and a rebuild is exactly the kind of migration
+    // that runs without throwing while producing the wrong shape.
+    final DatabaseConnection connection = await verifier.startAt(2);
+    final AppDatabase db = AppDatabase(connection);
+
+    await verifier.migrateAndValidate(db, 3);
+    await db.close();
+  });
+
+  test('a phone still on v1 arrives at v3 in one go', () async {
+    // The step is cumulative rather than a chain of pairs: an install that has
+    // been sitting on v1 since M1 needs the column added *and* the table
+    // rebuilt, in that order, on the one upgrade it ever runs.
+    final DatabaseConnection connection = await verifier.startAt(1);
+    final AppDatabase db = AppDatabase(connection);
+
+    await verifier.migrateAndValidate(db, 3);
+    await db.close();
+  });
+
+  test('a chit written at v2 keeps its words when provenance goes', () async {
+    // The claim `migrateAndValidate` does not make: it checks the shape that
+    // comes out, not that the rows already there came through it. A table
+    // rebuild is where chits get lost, and this is the only thing that would
+    // notice.
+    final InitializedSchema schema = await verifier.schemaAt(2);
+
+    schema.rawDatabase.execute(
+      'INSERT INTO chits (id, created_at, local_day, body, text_origin, '
+      'audio_path, audio_ms, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      <Object>[
+        'written-before-m5',
+        1757980000000,
+        20260915,
+        'the rain has not stopped',
+        'transcript',
+        'audio/written-before-m5.m4a',
+        9000,
+        1757980000000,
+      ],
+    );
+
+    final AppDatabase db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 3);
+    await db.close();
+
+    final Map<String, Object?> row = schema.rawDatabase.select(
+      'SELECT body, audio_path, audio_ms, local_day FROM chits WHERE id = ?',
+      <Object>['written-before-m5'],
+    ).single;
+
+    expect(row['body'], 'the rain has not stopped');
+    expect(row['audio_path'], 'audio/written-before-m5.m4a');
+    expect(row['audio_ms'], 9000);
+    expect(row['local_day'], 20260915, reason: 'ADR-006: never recomputed');
+  });
+
   test('a chit written at v1 survives the upgrade, with a null motion', () async {
     // What a migration is actually for, and the claim `migrateAndValidate`
     // does not make: it checks the *shape* that comes out, not that the rows
@@ -109,12 +169,12 @@ void main() {
   });
 
   test('an upgrade with no step refuses loudly', () async {
-    // v1 → v2 exists now. v2 → v3 does not, and what is checked here is that
-    // the strategy fails rather than opening a database whose shape nobody has
-    // looked at. This assertion moves up a version every time one ships.
+    // v3 is the last one that exists. v3 → v4 does not, and what is checked
+    // here is that the strategy fails rather than opening a database whose
+    // shape nobody has looked at. This assertion moves up every time one ships.
     final AppDatabase db = AppDatabase(NativeDatabase.memory());
     await expectLater(
-      db.migration.onUpgrade(Migrator(db), 2, 3),
+      db.migration.onUpgrade(Migrator(db), 3, 4),
       throwsA(isA<StateError>()),
     );
     await db.close();

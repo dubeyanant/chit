@@ -44,7 +44,6 @@ final class ChitRepositoryImpl implements ChitRepository {
   Future<Chit> save({
     required AmbientStamp stamp,
     String? text,
-    TextOrigin? textOrigin,
     String? audioTempPath,
     Duration? audioDuration,
   }) async {
@@ -55,9 +54,6 @@ final class ChitRepositoryImpl implements ChitRepository {
       final String trimmed => trimmed,
     };
 
-    if (words != null && textOrigin == null) {
-      throw ArgumentError.notNull('textOrigin');
-    }
     if ((audioTempPath == null) != (audioDuration == null)) {
       throw ArgumentError(
         'a recording has a length; a length without a recording is nothing',
@@ -84,7 +80,6 @@ final class ChitRepositoryImpl implements ChitRepository {
       localDay: Chit.localDayOf(stamp.capturedAt),
       updatedAt: _clock.now(),
       text: words,
-      textOrigin: words == null ? null : textOrigin,
       audioPath: audioPath,
       audioDuration: audioDuration,
       weather: stamp.weather,
@@ -100,7 +95,6 @@ final class ChitRepositoryImpl implements ChitRepository {
         localDay: chit.localDay,
         updatedAt: chit.updatedAt.millisecondsSinceEpoch,
         body: Value<String?>(chit.text),
-        textOrigin: Value<TextOrigin?>(chit.textOrigin),
         audioPath: Value<String?>(chit.audioPath),
         audioMs: Value<int?>(chit.audioDuration?.inMilliseconds),
         weather: Value<WeatherCondition?>(chit.weather),
@@ -114,11 +108,7 @@ final class ChitRepositoryImpl implements ChitRepository {
   }
 
   @override
-  Future<void> updateText({
-    required String id,
-    required String text,
-    required TextOrigin textOrigin,
-  }) async {
+  Future<void> updateText({required String id, required String text}) async {
     final String words = text.trim();
     if (words.isEmpty) {
       throw ArgumentError.value(
@@ -131,7 +121,6 @@ final class ChitRepositoryImpl implements ChitRepository {
     final int written = await _dao.updateTextOf(
       id: id,
       text: words,
-      textOrigin: textOrigin,
       updatedAt: _clock.now(),
     );
 
@@ -210,7 +199,6 @@ final class ChitRepositoryImpl implements ChitRepository {
     localDay: row.localDay,
     updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
     text: row.body,
-    textOrigin: row.textOrigin,
     audioPath: row.audioPath,
     audioDuration: row.audioMs == null
         ? null

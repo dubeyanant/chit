@@ -38,14 +38,13 @@ abstract interface class ChitRepository {
   Future<Chit> save({
     required AmbientStamp stamp,
     String? text,
-    TextOrigin? textOrigin,
     String? audioTempPath,
     Duration? audioDuration,
   });
 
   /// Changes what a chit says. ADR-014.
   ///
-  /// Touches `text`, `textOrigin` and `updatedAt`, and can touch nothing else:
+  /// Touches `text` and `updatedAt`, and can touch nothing else:
   /// `createdAt`, `localDay` and `audioPath` are not parameters, so an edit
   /// cannot move a chit in the thread, relight a calendar tile, or lose a
   /// recording. Text is what the chit *says* and belongs to the user; audio is
@@ -57,11 +56,7 @@ abstract interface class ChitRepository {
   /// goes away.
   ///
   /// Throws [StateError] if no chit has that [id].
-  Future<void> updateText({
-    required String id,
-    required String text,
-    required TextOrigin textOrigin,
-  });
+  Future<void> updateText({required String id, required String text});
 
   /// Corrects a chit's ambience after the row was written — **ADR-042**.
   ///

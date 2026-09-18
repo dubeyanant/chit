@@ -141,12 +141,10 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
   Future<int> updateTextOf({
     required String id,
     required String text,
-    required TextOrigin textOrigin,
     required DateTime updatedAt,
   }) => (update(chits)..where(($ChitsTable t) => t.id.equals(id))).write(
     ChitsCompanion(
       body: Value<String?>(text),
-      textOrigin: Value<TextOrigin?>(textOrigin),
       updatedAt: Value<int>(updatedAt.millisecondsSinceEpoch),
     ),
   );

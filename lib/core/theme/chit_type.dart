@@ -43,8 +43,6 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.tabLabel,
     required this.sheetState,
     required this.sheetTime,
-    required this.transcript,
-    required this.engineNote,
     required this.calendarDay,
     required this.calendarWeekday,
     required this.monthSummary,
@@ -156,8 +154,9 @@ final class ChitType extends ThemeExtension<ChitType> {
         height: 1.62,
       ),
 
-      // BEHAVIOUR.md §3.5's line. Set beside the body, never written into it, which
-      // is why it is a style of its own rather than [composerGhost].
+      // The line beside a refused microphone. Set beside the body, never
+      // written into it, which is why it is a style of its own rather than
+      // [composerGhost].
       failNote: _serif(
         size: 16.5,
         weight: 400,
@@ -226,19 +225,6 @@ final class ChitType extends ThemeExtension<ChitType> {
         color: colors.ink,
         letterSpacingEm: -0.01,
         tabularFigures: true,
-      ),
-      transcript: _serif(
-        size: 18,
-        weight: 400,
-        color: colors.ink,
-        height: 1.55,
-      ),
-      engineNote: _sans(
-        size: 13,
-        weight: 400,
-        color: colors.inkFaint,
-        height: 1.45,
-        letterSpacingEm: 0.01,
       ),
 
       // The calendar. The numeral is [ink] on every density step and never
@@ -444,7 +430,7 @@ final class ChitType extends ThemeExtension<ChitType> {
   /// The prompt that waits five seconds over the empty field.
   final TextStyle composerGhost;
 
-  /// "Speech wasn't recognised. Your recording is kept."
+  /// "The microphone isn't allowed..." beside the action row.
   final TextStyle failNote;
 
   /// "earlier", and the other section labels.
@@ -475,12 +461,6 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   /// The recording clock.
   final TextStyle sheetTime;
-
-  /// The transcript accruing on the recording sheet.
-  final TextStyle transcript;
-
-  /// The line under the recording sheet's actions.
-  final TextStyle engineNote;
 
   /// A numeral in the month grid.
   final TextStyle calendarDay;
@@ -528,8 +508,6 @@ final class ChitType extends ThemeExtension<ChitType> {
     tabLabel,
     sheetState,
     sheetTime,
-    transcript,
-    engineNote,
     calendarDay,
     calendarWeekday,
     monthSummary,
@@ -560,8 +538,6 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? tabLabel,
     TextStyle? sheetState,
     TextStyle? sheetTime,
-    TextStyle? transcript,
-    TextStyle? engineNote,
     TextStyle? calendarDay,
     TextStyle? calendarWeekday,
     TextStyle? monthSummary,
@@ -590,8 +566,6 @@ final class ChitType extends ThemeExtension<ChitType> {
       tabLabel: tabLabel ?? this.tabLabel,
       sheetState: sheetState ?? this.sheetState,
       sheetTime: sheetTime ?? this.sheetTime,
-      transcript: transcript ?? this.transcript,
-      engineNote: engineNote ?? this.engineNote,
       calendarDay: calendarDay ?? this.calendarDay,
       calendarWeekday: calendarWeekday ?? this.calendarWeekday,
       monthSummary: monthSummary ?? this.monthSummary,
@@ -625,8 +599,6 @@ final class ChitType extends ThemeExtension<ChitType> {
       tabLabel: TextStyle.lerp(tabLabel, other.tabLabel, t)!,
       sheetState: TextStyle.lerp(sheetState, other.sheetState, t)!,
       sheetTime: TextStyle.lerp(sheetTime, other.sheetTime, t)!,
-      transcript: TextStyle.lerp(transcript, other.transcript, t)!,
-      engineNote: TextStyle.lerp(engineNote, other.engineNote, t)!,
       calendarDay: TextStyle.lerp(calendarDay, other.calendarDay, t)!,
       calendarWeekday: TextStyle.lerp(
         calendarWeekday,

@@ -172,8 +172,11 @@ codebase, because a principle nobody can fail is a principle nobody is following
   exists. A new `WeatherCondition` should light up as a missing case at compile time — so
   switches over sealed types and enums are **exhaustive, with no `default:`**. A `default:` is
   how a new variant ships silently wrong.
-- **Liskov.** A fake used in a test must be honest. `FakeSpeechRecognizer` that "fails" must
-  fail the way the real one does — the §3.5 path is only tested if the substitute cannot lie.
+- **Liskov.** A fake used in a test must be honest. `FakeAudioRecorder` that "refuses" must
+  refuse the way the real one does — a `false`, never an exception — and `FakeAudioPlayer` must
+  replay its current state to a new listener because the real one does. A test only means
+  something if the substitute cannot lie, and both times a fake lied here it cost a handset pass
+  (ADR-057, and the pill nobody could pause).
 - **Interface segregation.** `context.colors`, `context.type`, `context.space` and
   `context.motion` are four accessors, not one `context.theme` returning everything. A widget
   that needs a colour should not be able to reach motion.

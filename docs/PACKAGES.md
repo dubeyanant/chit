@@ -21,7 +21,6 @@ resolution, so the two can be compared.
 | `freezed_annotation` | `^3.1.0` | immutable models: value equality, `copyWith`, and a private constructor that can assert its invariant |
 | `record` | ✓ `^7.1.1` | recording to a temp file — mono AAC in an `.m4a`, behind `RecordAudioRecorder` (ADR-052). It also owns the microphone permission ask |
 | `just_audio` | ✓ `^0.10.6` | playback behind the audio pill |
-| `speech_to_text` | ✓ `^7.4.0` | on-device transcription (ADR-005) |
 | `geolocator` | `^14.0.3` | the fix behind the pin — precise, falling back to coarse (ADR-016); also owns the location permission flow, and its **last known** fix is what the weather call uses so the two signals stay parallel (ADR-025). **Its `Position` also carries `speed`, `speedAccuracy` and `altitude`, which is the whole of motion capture** (ADR-037) — the reason chit needs no motion-sensor package and no second permission |
 | `http` | `^1.2.2` | one call, to Open-Meteo |
 | `intl` | `^0.20.2` | dates and the tabular-figure formats of DESIGN-SYSTEM.md §6.2 |
@@ -58,29 +57,6 @@ dependencies.
 The practical consequence is a good one: `NativeDatabase.memory()` opens in `flutter test` on
 the host with no setup and no downloaded binary, which is what lets every repository test run
 against a real SQLite.
-
-### On `speech_to_text` and offline recognition
-
-ADR-005 requires that nothing leaves the device. The package supports this through
-`SpeechListenOptions(onDevice: true)` — its own documentation is unambiguous: *"if true the
-listen attempts to recognize locally with speech never leaving the device. If it cannot do this
-the listen attempt will fail."*
-
-Failing is the behaviour we want; silently falling back to a server is not. So:
-
-- Pass `onDevice: true` on **every** listen call, with no fallback path that omits it. There
-  should be exactly one call site.
-- A failed listen is not a special case — it resolves to BEHAVIOUR.md §3.5 along with "heard nothing"
-  and "no model installed" (ARCHITECTURE §4.4).
-- Check `initialize()` and the available locales at startup, but do not gate the microphone on
-  the result. The user should be able to record whatever the engine can do; the audio is kept
-  either way.
-
-Under the hood this is Android's on-device `SpeechRecognizer` and iOS's `SFSpeechRecognizer`
-with `requiresOnDeviceRecognition`. On Android the model is the one the system dictation uses,
-which means it may need to be downloaded through the OS's own language settings first — worth
-verifying on a low-end handset early, because it is the case most likely to surprise a user in
-India and the one hardest to reproduce on a developer's phone.
 
 ---
 
@@ -128,8 +104,11 @@ opens instantly and works offline. See ADR-009.
 **`dio`** — `http` is enough for one endpoint, and ADR-005 removed the second one. Revisit only
 if the app grows a backend.
 
-**A cloud speech engine** (`google_speech`, or Google Cloud STT behind a proxy) — ADR-005.
-Reopening it is a privacy decision, not a package decision.
+**Any speech engine at all**, cloud or on-device. `speech_to_text` **was** here and came out with
+the feature (ADR-058): on-device recognition produced nothing on the first handset it ran on,
+which is the cost ADR-005 had already stated. A cloud engine (`google_speech`, or Google Cloud
+STT behind a proxy) was refused before that on privacy grounds and still is — reopening either
+is a product decision, not a package one.
 
 **`flutter_activity_recognition` / `sensors_plus`** — the two ways to read motion from the
 sensors rather than from the fix, and **ADR-037 took neither**. `sensors_plus` gives raw
@@ -176,20 +155,20 @@ Done in one pass in M0a rather than discovered one plugin at a time. What is in 
 
 **Android** (`android/app/src/main/AndroidManifest.xml`)
 `RECORD_AUDIO`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (precise first, coarse as the
-fallback — ADR-016), `INTERNET`. Plus a `<queries>` entry for `android.speech.RecognitionService`,
-without which `speech_to_text` cannot see the recognition service at all from targetSdk 30.
+fallback — ADR-016), `INTERNET`. *A `<queries>` entry for `android.speech.RecognitionService`
+was here too, and went with ADR-058.*
 
 `minSdk = 24`, in `android/app/build.gradle.kts`. That is `record_android`'s floor and the
-highest of any plugin here — `speech_to_text` asks 21, `path_provider` 21, `just_audio` 16.
+highest of any plugin here — `path_provider` asks 21, `just_audio` 16.
 
 **iOS** (`ios/Runner/Info.plist`)
-`NSMicrophoneUsageDescription`, `NSSpeechRecognitionUsageDescription`,
-`NSLocationWhenInUseUsageDescription`, written in chit's own voice; they are the only copy in
-the app the design never sees. `IPHONEOS_DEPLOYMENT_TARGET` is 15.0 from the scaffold, above
-every plugin's floor (`speech_to_text` 13.0, `just_audio` 12.0, `geolocator_apple` 11.0), so it
-was left alone.
+`NSMicrophoneUsageDescription` and `NSLocationWhenInUseUsageDescription`, written in chit's own
+voice; they are the only copy in the app the design never sees.
+*`NSSpeechRecognitionUsageDescription` went with ADR-058 — one fewer permission to explain.*
+`IPHONEOS_DEPLOYMENT_TARGET` is 15.0 from the scaffold, above every plugin's floor
+(`just_audio` 12.0, `geolocator_apple` 11.0), so it was left alone.
 
-Both location strings should say what BEHAVIOUR.md §3.6 says the app does with it: it records that a
-place was there, and never shows which one. The speech string can say something no other app's
-can — that recognition happens on the phone and the recording is not sent anywhere. It is true,
-it is unusual, and it is the sentence most likely to earn the permission.
+Both location strings should say what BEHAVIOUR.md §3.6 says the app does with it: it records
+that a place was there, and never shows which one. The microphone string says the thing that is
+unusual and true and most likely to earn the permission — that the recording stays on the phone
+and is not sent anywhere.

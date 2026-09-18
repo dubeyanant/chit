@@ -51,11 +51,6 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <!-- Required from targetSdk 30 so speech_to_text can see the
-             on-device recognition service at all (ADR-005). -->
-        <intent>
-            <action android:name="android.speech.RecognitionService"/>
-        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>

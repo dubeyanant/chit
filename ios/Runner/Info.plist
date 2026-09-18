@@ -28,8 +28,6 @@
 	     design never sees, so they are written in chit's own voice. -->
 	<key>NSMicrophoneUsageDescription</key>
 	<string>chit records a chit when you tap the microphone. The recording is kept on this phone and stays attached to what you wrote.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>chit turns a recording into words on this phone. Nothing you say is sent anywhere, and it works with no connection at all.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>chit notes that you were somewhere when you wrote, so a chit carries where it came from. It never shows the place by name.</string>
 	<key>LSRequiresIPhoneOS</key>

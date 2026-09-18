@@ -39,12 +39,16 @@ what the chit says, never what was said.
 The affordance in the thread arrives with the editor, in the same change — until then a chit
 in the thread is still not tappable, because a pointer that leads nowhere is worse than none.
 
-### 8.2 Re-transcription — open
+### 8.2 Re-transcription — retired
 
-If a recording produced nothing — no model on the handset, or speech the engine could not
-read — should the user be able to ask for another attempt later? The data model allows it,
-and `textOrigin` exists so that an attempt can refuse to overwrite words the user typed
-themselves.
+*Should a recording that produced nothing be re-transcribable later?* There is nothing to
+re-attempt: transcription was removed in M5 (ADR-058) after recognising nothing on a handset,
+and `textOrigin`, which existed so a second attempt could refuse to overwrite the user's own
+words, went with it. **The number is not reused** — it is cited from other documents and from
+git history.
+
+Bringing transcription back is a product decision that would open a new question with a new
+number, not this one again.
 
 ### 8.3 Does Today carry enough rhythm? — open
 

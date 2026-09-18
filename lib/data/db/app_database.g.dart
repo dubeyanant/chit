@@ -59,15 +59,6 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  @override
-  late final GeneratedColumnWithTypeConverter<TextOrigin?, String> textOrigin =
-      GeneratedColumn<String>(
-        'text_origin',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      ).withConverter<TextOrigin?>($ChitsTable.$convertertextOriginn);
   static const VerificationMeta _audioMsMeta = const VerificationMeta(
     'audioMs',
   );
@@ -133,7 +124,6 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
     localDay,
     body,
     audioPath,
-    textOrigin,
     audioMs,
     weather,
     lat,
@@ -241,12 +231,6 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
         DriftSqlType.string,
         data['${effectivePrefix}audio_path'],
       ),
-      textOrigin: $ChitsTable.$convertertextOriginn.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}text_origin'],
-        ),
-      ),
       audioMs: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}audio_ms'],
@@ -283,10 +267,6 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
     return $ChitsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<TextOrigin, String, String> $convertertextOrigin =
-      const EnumNameConverter<TextOrigin>(TextOrigin.values);
-  static JsonTypeConverter2<TextOrigin?, String?, String?>
-  $convertertextOriginn = JsonTypeConverter2.asNullable($convertertextOrigin);
   static JsonTypeConverter2<WeatherCondition, String, String>
   $converterweather = const EnumNameConverter<WeatherCondition>(
     WeatherCondition.values,
@@ -310,14 +290,11 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
   /// `yyyymmdd`, device-local, computed once at write time (ADR-006).
   final int localDay;
 
-  /// What the chit says. `NULL` only for BEHAVIOUR.md §3.5.
+  /// What the chit says. `NULL` on a chit that is only a recording.
   final String? body;
 
   /// The recording, relative to the app documents directory (ADR-008).
   final String? audioPath;
-
-  /// Where the words came from. `NULL` exactly when the text is.
-  final TextOrigin? textOrigin;
 
   /// How long the recording runs, in milliseconds.
   final int? audioMs;
@@ -351,7 +328,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     required this.localDay,
     this.body,
     this.audioPath,
-    this.textOrigin,
     this.audioMs,
     this.weather,
     this.lat,
@@ -370,11 +346,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     }
     if (!nullToAbsent || audioPath != null) {
       map['audio_path'] = Variable<String>(audioPath);
-    }
-    if (!nullToAbsent || textOrigin != null) {
-      map['text_origin'] = Variable<String>(
-        $ChitsTable.$convertertextOriginn.toSql(textOrigin),
-      );
     }
     if (!nullToAbsent || audioMs != null) {
       map['audio_ms'] = Variable<int>(audioMs);
@@ -408,9 +379,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
       audioPath: audioPath == null && nullToAbsent
           ? const Value.absent()
           : Value(audioPath),
-      textOrigin: textOrigin == null && nullToAbsent
-          ? const Value.absent()
-          : Value(textOrigin),
       audioMs: audioMs == null && nullToAbsent
           ? const Value.absent()
           : Value(audioMs),
@@ -437,9 +405,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
       localDay: serializer.fromJson<int>(json['localDay']),
       body: serializer.fromJson<String?>(json['body']),
       audioPath: serializer.fromJson<String?>(json['audioPath']),
-      textOrigin: $ChitsTable.$convertertextOriginn.fromJson(
-        serializer.fromJson<String?>(json['textOrigin']),
-      ),
       audioMs: serializer.fromJson<int?>(json['audioMs']),
       weather: $ChitsTable.$converterweathern.fromJson(
         serializer.fromJson<String?>(json['weather']),
@@ -461,9 +426,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
       'localDay': serializer.toJson<int>(localDay),
       'body': serializer.toJson<String?>(body),
       'audioPath': serializer.toJson<String?>(audioPath),
-      'textOrigin': serializer.toJson<String?>(
-        $ChitsTable.$convertertextOriginn.toJson(textOrigin),
-      ),
       'audioMs': serializer.toJson<int?>(audioMs),
       'weather': serializer.toJson<String?>(
         $ChitsTable.$converterweathern.toJson(weather),
@@ -483,7 +445,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     int? localDay,
     Value<String?> body = const Value.absent(),
     Value<String?> audioPath = const Value.absent(),
-    Value<TextOrigin?> textOrigin = const Value.absent(),
     Value<int?> audioMs = const Value.absent(),
     Value<WeatherCondition?> weather = const Value.absent(),
     Value<double?> lat = const Value.absent(),
@@ -496,7 +457,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     localDay: localDay ?? this.localDay,
     body: body.present ? body.value : this.body,
     audioPath: audioPath.present ? audioPath.value : this.audioPath,
-    textOrigin: textOrigin.present ? textOrigin.value : this.textOrigin,
     audioMs: audioMs.present ? audioMs.value : this.audioMs,
     weather: weather.present ? weather.value : this.weather,
     lat: lat.present ? lat.value : this.lat,
@@ -511,9 +471,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
       localDay: data.localDay.present ? data.localDay.value : this.localDay,
       body: data.body.present ? data.body.value : this.body,
       audioPath: data.audioPath.present ? data.audioPath.value : this.audioPath,
-      textOrigin: data.textOrigin.present
-          ? data.textOrigin.value
-          : this.textOrigin,
       audioMs: data.audioMs.present ? data.audioMs.value : this.audioMs,
       weather: data.weather.present ? data.weather.value : this.weather,
       lat: data.lat.present ? data.lat.value : this.lat,
@@ -531,7 +488,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
           ..write('localDay: $localDay, ')
           ..write('body: $body, ')
           ..write('audioPath: $audioPath, ')
-          ..write('textOrigin: $textOrigin, ')
           ..write('audioMs: $audioMs, ')
           ..write('weather: $weather, ')
           ..write('lat: $lat, ')
@@ -549,7 +505,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     localDay,
     body,
     audioPath,
-    textOrigin,
     audioMs,
     weather,
     lat,
@@ -566,7 +521,6 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
           other.localDay == this.localDay &&
           other.body == this.body &&
           other.audioPath == this.audioPath &&
-          other.textOrigin == this.textOrigin &&
           other.audioMs == this.audioMs &&
           other.weather == this.weather &&
           other.lat == this.lat &&
@@ -581,7 +535,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
   final Value<int> localDay;
   final Value<String?> body;
   final Value<String?> audioPath;
-  final Value<TextOrigin?> textOrigin;
   final Value<int?> audioMs;
   final Value<WeatherCondition?> weather;
   final Value<double?> lat;
@@ -595,7 +548,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     this.localDay = const Value.absent(),
     this.body = const Value.absent(),
     this.audioPath = const Value.absent(),
-    this.textOrigin = const Value.absent(),
     this.audioMs = const Value.absent(),
     this.weather = const Value.absent(),
     this.lat = const Value.absent(),
@@ -610,7 +562,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     required int localDay,
     this.body = const Value.absent(),
     this.audioPath = const Value.absent(),
-    this.textOrigin = const Value.absent(),
     this.audioMs = const Value.absent(),
     this.weather = const Value.absent(),
     this.lat = const Value.absent(),
@@ -628,7 +579,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     Expression<int>? localDay,
     Expression<String>? body,
     Expression<String>? audioPath,
-    Expression<String>? textOrigin,
     Expression<int>? audioMs,
     Expression<String>? weather,
     Expression<double>? lat,
@@ -643,7 +593,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
       if (localDay != null) 'local_day': localDay,
       if (body != null) 'body': body,
       if (audioPath != null) 'audio_path': audioPath,
-      if (textOrigin != null) 'text_origin': textOrigin,
       if (audioMs != null) 'audio_ms': audioMs,
       if (weather != null) 'weather': weather,
       if (lat != null) 'lat': lat,
@@ -660,7 +609,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     Value<int>? localDay,
     Value<String?>? body,
     Value<String?>? audioPath,
-    Value<TextOrigin?>? textOrigin,
     Value<int?>? audioMs,
     Value<WeatherCondition?>? weather,
     Value<double?>? lat,
@@ -675,7 +623,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
       localDay: localDay ?? this.localDay,
       body: body ?? this.body,
       audioPath: audioPath ?? this.audioPath,
-      textOrigin: textOrigin ?? this.textOrigin,
       audioMs: audioMs ?? this.audioMs,
       weather: weather ?? this.weather,
       lat: lat ?? this.lat,
@@ -703,11 +650,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     }
     if (audioPath.present) {
       map['audio_path'] = Variable<String>(audioPath.value);
-    }
-    if (textOrigin.present) {
-      map['text_origin'] = Variable<String>(
-        $ChitsTable.$convertertextOriginn.toSql(textOrigin.value),
-      );
     }
     if (audioMs.present) {
       map['audio_ms'] = Variable<int>(audioMs.value);
@@ -745,7 +687,6 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
           ..write('localDay: $localDay, ')
           ..write('body: $body, ')
           ..write('audioPath: $audioPath, ')
-          ..write('textOrigin: $textOrigin, ')
           ..write('audioMs: $audioMs, ')
           ..write('weather: $weather, ')
           ..write('lat: $lat, ')
@@ -793,7 +734,6 @@ typedef $$ChitsTableCreateCompanionBuilder = ChitsCompanion Function({
   required int localDay,
   Value<String?> body,
   Value<String?> audioPath,
-  Value<TextOrigin?> textOrigin,
   Value<int?> audioMs,
   Value<WeatherCondition?> weather,
   Value<double?> lat,
@@ -808,7 +748,6 @@ typedef $$ChitsTableUpdateCompanionBuilder = ChitsCompanion Function({
   Value<int> localDay,
   Value<String?> body,
   Value<String?> audioPath,
-  Value<TextOrigin?> textOrigin,
   Value<int?> audioMs,
   Value<WeatherCondition?> weather,
   Value<double?> lat,
@@ -849,12 +788,6 @@ class $$ChitsTableFilterComposer extends Composer<_$AppDatabase, $ChitsTable> {
   ColumnFilters<String> get audioPath => $composableBuilder(
     column: $table.audioPath,
     builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<TextOrigin?, TextOrigin, String>
-  get textOrigin => $composableBuilder(
-    column: $table.textOrigin,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<int> get audioMs => $composableBuilder(
@@ -924,11 +857,6 @@ class $$ChitsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get textOrigin => $composableBuilder(
-    column: $table.textOrigin,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<int> get audioMs => $composableBuilder(
     column: $table.audioMs,
     builder: (column) => ColumnOrderings(column),
@@ -984,12 +912,6 @@ class $$ChitsTableAnnotationComposer
   GeneratedColumn<String> get audioPath =>
       $composableBuilder(column: $table.audioPath, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<TextOrigin?, String> get textOrigin =>
-      $composableBuilder(
-        column: $table.textOrigin,
-        builder: (column) => column,
-      );
-
   GeneratedColumn<int> get audioMs =>
       $composableBuilder(column: $table.audioMs, builder: (column) => column);
 
@@ -1042,7 +964,6 @@ class $$ChitsTableTableManager
                 Value<int> localDay = const Value.absent(),
                 Value<String?> body = const Value.absent(),
                 Value<String?> audioPath = const Value.absent(),
-                Value<TextOrigin?> textOrigin = const Value.absent(),
                 Value<int?> audioMs = const Value.absent(),
                 Value<WeatherCondition?> weather = const Value.absent(),
                 Value<double?> lat = const Value.absent(),
@@ -1056,7 +977,6 @@ class $$ChitsTableTableManager
                 localDay: localDay,
                 body: body,
                 audioPath: audioPath,
-                textOrigin: textOrigin,
                 audioMs: audioMs,
                 weather: weather,
                 lat: lat,
@@ -1072,7 +992,6 @@ class $$ChitsTableTableManager
                 required int localDay,
                 Value<String?> body = const Value.absent(),
                 Value<String?> audioPath = const Value.absent(),
-                Value<TextOrigin?> textOrigin = const Value.absent(),
                 Value<int?> audioMs = const Value.absent(),
                 Value<WeatherCondition?> weather = const Value.absent(),
                 Value<double?> lat = const Value.absent(),
@@ -1086,7 +1005,6 @@ class $$ChitsTableTableManager
                 localDay: localDay,
                 body: body,
                 audioPath: audioPath,
-                textOrigin: textOrigin,
                 audioMs: audioMs,
                 weather: weather,
                 lat: lat,

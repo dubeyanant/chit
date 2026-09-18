@@ -79,7 +79,6 @@ void main() {
   Future<Chit> chitAt(DateTime when, String text) => repo.save(
     stamp: AmbientStamp(capturedAt: when),
     text: text,
-    textOrigin: TextOrigin.typed,
   );
 
   // Both helpers read into a typed local before the `!`. Written as

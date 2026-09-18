@@ -39,8 +39,8 @@ final class Recording {
 ///
 /// One take at a time. The sheet asks for permission, starts, watches
 /// [levels] for its waveform, and either [stop]s and keeps what came back or
-/// [cancel]s. The recogniser is a separate service listening beside this one
-/// (ADR-005); nothing here knows about words.
+/// [cancel]s. Nothing here knows about words — a recording is the record
+/// (ADR-058).
 ///
 /// **It never throws.** A refusal, a platform that fell over and a take that
 /// wrote nothing all answer as a `false` or a `null`, because the sheet has

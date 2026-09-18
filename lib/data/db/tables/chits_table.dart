@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 
-import '../../../domain/models/chit.dart';
 import '../../../domain/models/motion_state.dart';
 import '../../../domain/models/weather_condition.dart';
 
@@ -41,14 +40,11 @@ class Chits extends Table {
   /// `yyyymmdd`, device-local, computed once at write time (ADR-006).
   IntColumn get localDay => integer()();
 
-  /// What the chit says. `NULL` only for BEHAVIOUR.md §3.5.
+  /// What the chit says. `NULL` on a chit that is only a recording.
   TextColumn get body => text().nullable()();
 
   /// The recording, relative to the app documents directory (ADR-008).
   TextColumn get audioPath => text().nullable()();
-
-  /// Where the words came from. `NULL` exactly when the text is.
-  TextColumn get textOrigin => textEnum<TextOrigin>().nullable()();
 
   /// How long the recording runs, in milliseconds.
   IntColumn get audioMs => integer().nullable()();
@@ -90,7 +86,6 @@ class Chits extends Table {
   @override
   List<String> get customConstraints => <String>[
     'CHECK (body IS NOT NULL OR audio_path IS NOT NULL)',
-    'CHECK ((body IS NULL) = (text_origin IS NULL))',
     'CHECK (body IS NULL OR length(trim(body)) > 0)',
     'CHECK ((audio_path IS NULL) = (audio_ms IS NULL))',
     'CHECK ((lat IS NULL) = (lon IS NULL))',

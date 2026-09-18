@@ -25,7 +25,7 @@ features
 
 The rule: **`features` never imports `data`.** A widget watches a controller; the controller
 depends on a repository *interface*; Riverpod supplies the implementation at the root — which
-is what lets §3.5's failure path be tested with a recognizer that can be told to hear nothing,
+is what lets a refused microphone be tested with a recorder that can be told to refuse,
 and lets a sync layer appear later (ADR-004) without a screen noticing.
 
 ---
@@ -43,7 +43,7 @@ lib/
 │   ├── motion/      speed + accuracy + altitude → one of the four states
 │   ├── weather/     WMO code + is_day + wind → one of the five words
 │   ├── repositories/   the ChitRepository interface
-│   └── services/    interfaces only — speech, audio, weather, location, first-run, ambient capture and signals
+│   └── services/    interfaces only — audio in and out, weather, location, first-run, ambient capture and signals
 ├── data/
 │   ├── db/          the Drift database, table, DAO and migrations
 │   ├── audio/       AudioStore — temp → permanent, delete, orphan sweep; the recorder over `record`,
@@ -52,7 +52,6 @@ lib/
 │   ├── weather/     Open-Meteo, mapped via domain/weather
 │   ├── location/    the fix, and the one ask
 │   ├── preferences/ shared_preferences (ADR-041)
-│   ├── speech/      the on-device recognizer
 │   └── repositories/   the ChitRepository implementation
 ├── features/        one folder per screen — shell, today, composer, calendar, editor, onboarding —
 │                     each split application/ (controllers) and presentation/ (widgets)
@@ -74,9 +73,6 @@ so threading it down from three screens would be the same fact copied three time
 `Slip` draws its own `PerforatedEdge`, since a slip and its tear are one object. `ThreadRail`
 draws only the line; each row places its own `ThreadNode` on it, because where a node falls is
 the row's business, not the rail's.
-
-`TextOrigin` lives in `models/chit.dart`, not its own file — it is half of the invariant that
-file already asserts.
 
 **Every file that belongs under a folder above exists**, even ahead of the milestone that fills
 it — which then holds a doc comment naming that milestone, nothing else. An empty named file
@@ -165,12 +161,10 @@ would give the open chit a loading state, and *nothing about capture may delay t
 ```
 class ComposerState {
   String        text;          // the field's live content; the user owns it throughout
-  TextOrigin?   textOrigin;    // typed | transcript | transcriptEdited
   String?       audioTempPath; // set once a recording is kept
   Duration?     audioDuration;
   AmbientStamp  stamp;
   bool          isRecording;   // the sheet is up
-  bool          sttFailed;     // drives the §3.5 note, and nothing else
   bool          microphoneRefused; // drives the line under the action row
   bool          showPrompt;    // the five seconds of §3.3 have run
 }
@@ -183,17 +177,12 @@ otherwise.
 
 **What the transitions must preserve** (§3.4):
 
-- Keeping a recording **appends** its transcript to the field, never replaces it. Empty field →
-  `textOrigin` becomes `transcript`; typed text already there → `transcriptEdited`.
-- Any keystroke on `transcript` moves it to `transcriptEdited`, once, never back.
+- Keeping a recording **leaves the field exactly as it was**. A recording is not words.
 - `audioTempPath` is set by recording and cleared only by Discard; editing `text` never touches
   it.
 - The microphone is available on an empty or half-written chit, unavailable only while
   `isRecording` or once `audioTempPath` is set — one row holds one recording, so a second take
   would silently destroy the first (DESIGN-SYSTEM.md §6.4).
-
-`sttFailed` drives §3.5's note and nothing else — never a value of `text`, since `text` is bound
-to an editable field the user would have to clear a note out of.
 
 ### 4.1a The timeline is three providers, and only one touches the database
 
@@ -296,9 +285,8 @@ announced as a label, and shown on Material's schedule rather than after five se
 overlay sits over the field's box, sharing its first baseline.
 
 **Nothing else is in that overlay** — an earlier drawn blinking caret came out with ADR-028; the
-caret on first tap is the framework's, and **§3.5's note is a block above the field rather than a
-second thing in here** (ADR-056). It takes the prompt's *turn*, not its position: `_armPrompt`
-will not raise one while `sttFailed`, so the two never stack.
+caret on first tap is the framework's. *ADR-056 put §3.5's failure note in a block above the
+field rather than in here, and ADR-058 removed the note altogether.*
 
 **Which words are offered is `Prompts.forStamp`** (ADR-029), pure, over the stamp already held.
 `ComposerState.prompt` is a getter, not a stored field, so it cannot drift from the moment it is
@@ -308,22 +296,17 @@ you are sitting in* rather than the moment the row will later be stamped with (A
 
 ### 4.4 Recording
 
-`AudioRecorder` writes to a temp file. `SpeechRecognizer` — on-device, `onDevice: true`, no
-network path (ADR-005) — streams partial results into a *pending* transcript held by the
-recording sheet, not `text`; the sheet shows it accruing, last word in lighter ink.
+`AudioRecorder` writes to a temp file, and that is the whole of it — **there is no recogniser**
+(ADR-058).
 
-**Stop & keep** appends the pending transcript to the field under §4.1's rules. An empty or
-absent transcript sets `sttFailed` instead, leaving the field untouched and the audio attached —
-both outcomes keep the audio (ADR-013). Three causes all resolve to `sttFailed` — nothing heard,
-on-device recognition refused, no model for the language — and share one branch; from the
-user's side they are the same event. **The recogniser has no error branch at all** (ADR-053):
-anything the platform calls an error closes the stream, keeping the words already heard, so an
-empty transcript is the only thing §3.5 ever tests.
+`RecordingController` owns the sheet's state: the elapsed figure off the clock and the last
+twenty levels the wave draws. **Stop & keep attaches the take and leaves the field alone** — a
+recording is not words. It hands the result to `ComposerController` rather than returning it,
+since a modal sheet has nothing downstream to return to, and a take that wrote nothing simply
+closes the sheet.
 
-`RecordingController` runs both services and owns the sheet's state — the elapsed figure off the
-clock, the level, the pending transcript, and whether the recogniser gave up. It hands the result
-to `ComposerController` rather than returning it, since a modal sheet has nothing downstream to
-return to. A take that comes back as **words with no file** keeps the words (ADR-054).
+It is the one screen controller that is `keepAlive` (ADR-057): a take begins on the microphone's
+tap, before the sheet exists, and finishes after it has gone.
 
 **Discard** deletes the temp file through `ChitRepository.discardTemp`, the counterpart of
 `save`'s `audioTempPath`; nothing moves to permanent storage until Save (ADR-008).
@@ -358,7 +341,7 @@ rather than silently overwriting it (§3.2).
 `ChitRepository.save()` writes the row and, when there is a recording, moves the audio into
 place — one call, ordered so a failed file move never leaves a row pointing at nothing.
 
-`updateText()` is the ADR-014 counterpart: it changes only `text`, `textOrigin` and `updatedAt`
+`updateText()` is the ADR-014 counterpart: it changes only `text` and `updatedAt`
 — `createdAt`, `localDay` and `audioPath` are not parameters, so an edit cannot move a chit in
 the thread, relight a calendar tile, or lose a recording.
 
@@ -449,7 +432,6 @@ rest (ADR-027).
 | What fails | What the user sees |
 |---|---|
 | Weather or location | that field is absent from the stamp. No message. |
-| Speech recognition — heard nothing, refused on-device, no model, or anything else the platform reports | `sttFailed` — the audio is kept, the field is empty and theirs to type in, the note explains |
 | Microphone permission refused | the sheet does not open; the microphone explains once and stays available |
 | Audio file missing at playback | the chit renders; the pill is absent |
 | A database write | the only case that gets a visible failure, because the user's words are at stake |
@@ -468,14 +450,14 @@ without a widget belongs in a controller or a pure function instead.
 What is tested:
 
 - **Repository and DAO**, against `NativeDatabase.memory()` — the at-least-one invariant, the
-  `textOrigin` pairing, `localDay` across a midnight and a timezone change, audio move-on-save
+  `localDay` across a midnight and a timezone change, audio move-on-save
   and delete-on-discard, `updateText` touching nothing else. Plus the migration, against the
   snapshots in `drift_schemas/`.
 - **Models**, where §5's invariant fails first (a chit that cannot be *built*) and again at the
   table's check constraints, which survive a release build with asserts compiled out.
 - **Controllers and services**, on a bare `ProviderContainer` with a fake clock and hand-written
   fakes — the five-second timer, `canSave`, ADR-007's parallel capture and its timeouts, and
-  §4.1's transcript rules.
+  §4.1's rules for what a kept take does and does not touch.
 - **Pure functions** — the prompt book, the WMO mapping, the count-to-density scale, the
   timeline position for a time.
 - **The accessibility floors of DESIGN-SYSTEM.md §6.4, as arithmetic** — contrast of every text

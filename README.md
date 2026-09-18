@@ -83,8 +83,7 @@ Everything in the product follows from that:
 | People write in bursts, not sessions | A chit is short. The composer is always open on the home screen. |
 | A day holds many chits | The home screen is a thread of today. |
 | Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready. **One exception, once:** a fresh install opens on a screen explaining what is captured, and asks (ADR-041). |
-| Speaking is often faster than typing | The composer is one surface: a live field, a microphone beside it. |
-| Speech gets names, places and code-switching wrong | Whatever the machine hears lands in the field, where it can be fixed. |
+| Speaking is often faster than typing | The composer is one surface: a live field, a microphone beside it. A chit holds words, a recording, or both. |
 | The moment matters as much as the words | Time, weather, motion and location are recorded with every chit. |
 | The habit survives on rhythm, not scores | Rhythm is shown as shape and colour; the app keeps no score. |
 
@@ -117,9 +116,8 @@ A chit is text, audio, or both:
 |---|---|
 | `id` | |
 | `createdAt` | drives both the timeline and the day grouping |
-| `text` | what the chit says. Typed, transcribed, or transcribed and then corrected. **Null when a recording produced nothing and the user wrote nothing.** |
+| `text` | what the chit says, typed. **Null on a chit that is only a recording.** |
 | `audioPath` | present whenever a recording was kept |
-| `textOrigin` | `typed` \| `transcript` \| `transcriptEdited` — where the words came from |
 | `weather` | a condition word |
 | `location` | stored; surfaced in the UI only as the pin |
 | `motion` | what the phone was doing — `stationary`, `walking`, `traveling`, `flying`. Read off the same fix as `location` (ADR-037). Drawn as an icon, and `stationary` is not drawn at all |
@@ -127,18 +125,17 @@ A chit is text, audio, or both:
 `text` and `audioPath` are independently nullable and **at least one of them is always
 present** — a chit with neither is not a chit, and is what §3.1 refuses to save.
 
-That leaves four shapes, all ordinary:
+That leaves three shapes, all ordinary:
 
 | | `text` | `audioPath` |
 |---|---|---|
-| typed | ● | — |
-| recorded and transcribed | ● | ● |
-| recorded, transcript corrected | ● | ● |
-| recorded, nothing recognised (§3.5) | — | ● |
+| words alone | ● | — |
+| words and a recording | ● | ● |
+| a recording alone | — | ● |
 
-`textOrigin` is provenance, not behaviour: nothing in the UI reads differently because of it.
-It exists so that a future re-transcription (§8.2) can tell whether it would be overwriting the
-machine's words or the user's.
+**A chit does not record where its words came from.** It used to — `textOrigin` said whether they
+were typed, transcribed, or a transcript the user had corrected — and it went with transcription
+in M5 (ADR-058). Every chit's words are typed, so there was nothing left to distinguish.
 
 
 ---
@@ -238,19 +235,18 @@ some of it was real and could not come back.
 | `test/core/clock_is_the_only_now_test.dart` | ADR-012: nothing in `lib/` calls `DateTime.now()` except `SystemClock` |
 | `test/domain/chit_test.dart` | The invariant of §5 where it fails first: a chit with neither text nor audio, text without a provenance, half a coordinate and a recording without a length cannot be *built*. Also `localDayOf` across a midnight |
 | `test/data/db/chits_table_test.dart` | The same invariant where it survives a release build — the table's check constraints, every one of them exercised by writing the row by hand, around the repository. Also that the primary key survived being declared beside them |
-| `test/data/chit_repository_test.dart` | **M1's statement of done.** All four legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, `updateText` provably touching nothing but `text`, `textOrigin` and `updatedAt`, and every query of DATA-MODEL.md §4 as it arrived — the timeline's range, the calendar's day summaries, the archive's paging, and the written months the chevrons step through |
+| `test/data/chit_repository_test.dart` | **M1's statement of done.** All three legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, `updateText` provably touching nothing but `text` and `updatedAt`, and every query of DATA-MODEL.md §4 as it arrived — the timeline's range, the calendar's day summaries, the archive's paging, and the written months the chevrons step through |
 | `test/data/audio_store_test.dart` | ADR-008: a recording is moved rather than copied, its stored path is relative and uses forward slashes, discarding twice is not a failure, and the orphan sweep deletes what no chit claims |
 | `test/data/record_audio_recorder_test.dart` | ADR-052, the two rules the recorder holds without a microphone: the waveform's level is 0 at the silence floor and 1 at full scale, linear between and clamped past either end, with a non-finite reading as silence; a take's path is under the cache with the extension the store keeps and distinct for two takes a microsecond apart. Also that a `Recording` cannot have no length or no file |
-| `test/data/on_device_speech_recognizer_test.dart` | ADR-053, the one rule the recogniser holds without a platform: on a partial result the last word is the one still being heard and everything behind it is committed, a settled result has no pending word, and whitespace a platform pads a result with changes neither. Also that an empty result is `Transcript.nothing`, which is the §3.5 branch, and that both halves go into the field — Stop & keep can land mid-revision. **No error-code table**: every error ends the take, so there is no mapping to walk |
-| `test/data/debug_seeder_test.dart` | DATA-MODEL.md §7's seeder, and the two claims that fail quietly on a handset: **seeding twice writes nothing**, and **clearing removes exactly the seeded rows and recordings** while a chit somebody wrote is left alone. Also that the fixture reaches all four shapes of §5, every weather word and all three motion marks — because a seeder that skips §3.5's recording is a seeder that hides the state most likely to be forgotten |
+| `test/data/debug_seeder_test.dart` | DATA-MODEL.md §7's seeder, and the two claims that fail quietly on a handset: **seeding twice writes nothing**, and **clearing removes exactly the seeded rows and recordings** while a chit somebody wrote is left alone. Also that the fixture reaches all three shapes of §5, every weather word and all three motion marks — because a seeder that skips the recording-with-no-words hides the shape most likely to be forgotten |
 | `test/data/open_meteo_service_test.dart` | **The one call the app makes to the outside world**, with no network in the suite — every failure is produced on purpose against a fake `http.Client`. A 500, a body that is not JSON, JSON of the wrong shape, a client that throws and one that never comes back all resolve to the same `null` (ADR-007). It also pins two things that would break silently: that the request asks for **`wind_speed_unit=ms`**, since 8 km/h is a still day and 8 m/s is a windy one; and that it reads the **last known** fix and never `currentFix`, which is what keeps ADR-025's two signals parallel |
 | `test/data/db/migration_test.dart` | DATA-MODEL.md §6: a database created at v1 is the v1 that was committed to `drift_schemas/`, the schema the code expects is the one `createAll()` writes, and bumping `schemaVersion` without dumping a snapshot beside it fails. **Since v2 it also runs a real migration**: v1 → v2 adds `chits.motion` (ADR-037), and a chit written at v1 comes through it readable with a null motion — which `migrateAndValidate` does not check, since it inspects the shape and not the rows |
 | `test/domain/services/ambient_capture_test.dart` | ADR-007, clause by clause: the two signals go out **in parallel** rather than one after the other, each under its own timeout, and **a signal that does not arrive is null** — whether it hung, threw, or simply had nothing to say. Since ADR-040 the time is no longer part of it; what is left is the half with the failure modes |
 | `test/domain/services/ambient_signals_test.dart` | **ADR-042, by counting.** *Captured twice and never in between* is invisible when it is wrong — an implementation that polled would pass every assertion about values in this repository and show up only as battery on somebody's phone. So this counts how many times the services were asked: reading the held value asks nothing, `prime` asks once, `refresh` asks again and replaces rather than merges |
-| `test/features/composer/composer_controller_test.dart` | **ADR-040's reversal**, which fails silently — a stamp taken at the wrong moment is still a plausible time, and only a clock moved across the save can tell. The row carries the save time and not the open time; a chit opened at 23:58 and saved at 00:05 lands on the *new* day; and ADR-042's half: the save returns without waiting on a capture that never comes back, and the patch that follows moves neither `createdAt` nor `updatedAt`. **Since M5 it also carries §3.4 and §3.5**: the transcript appended after words already in the field, the origin slide that only goes one way, all three failures landing on `sttFailed` with the audio kept, words kept when the file is the half that failed, Discard deleting the temp take, and a recording with no words saving and coming back as a chit |
+| `test/features/composer/composer_controller_test.dart` | **ADR-040's reversal**, which fails silently — a stamp taken at the wrong moment is still a plausible time, and only a clock moved across the save can tell. The row carries the save time and not the open time; a chit opened at 23:58 and saved at 00:05 lands on the *new* day; and ADR-042's half: the save returns without waiting on a capture that never comes back, and the patch that follows moves neither `createdAt` nor `updatedAt`. **Since M5 it also carries §3.4**: Discard deleting the temp take, a recording with no words saving and coming back as a chit, and the take stopping when Save moves its file — while a chit playing in the thread is left alone |
 | `test/features/composer/audio_pill_test.dart` | ADR-031 again: what the pill *computes*, never how it looks. The figure, and a playhead that lights nothing at the start, half the bars halfway, everything at the end, and does not run off the end of the list when `just_audio` reports a position past the duration or a row has lost its length. Then the rule the one player exists for — a second pill takes the first one off, a pause keeps its playhead, a vanished file leaves the player silent, and the end is silence rather than a full playhead |
 | `test/features/composer/live_wave_test.dart` | ADR-054 as amended: **a bar is its level.** The floor at silence, the full height at full scale, linear between, clamped outside; and the window always full so a sheet that has just opened draws a row of ticks rather than three bars floating, filling from the right with the newest reading last |
-| `test/features/composer/recording_controller_test.dart` | The sheet's choreography without a sheet (ADR-031): both services started on one tap and either refusal closing it, the elapsed figure read off the clock rather than counted, the transcript accruing with its pending word, the recogniser stopped before the recorder at Stop & keep and skipped once it has given up, and a sheet that vanished without cancelling still closing the microphone |
+| `test/features/composer/recording_controller_test.dart` | The sheet's take without a sheet (ADR-031): **the take surviving the permission round-trip with nothing listening** — ADR-057's bug, and the container here deliberately has no listener — either kind of refusal closing the sheet, the elapsed figure read off the clock rather than counted, the wave keeping only its window, Stop & keep leaving the field alone, and a sheet that vanished without cancelling still closing the microphone |
 | `test/features/onboarding/first_run_controller_test.dart` | **ADR-041's one promise: the app asks once.** The claim a future change breaks silently, since re-asking every launch is annoying rather than broken. Every refusal settles it and none of them is an error; **Not now** never raises a dialog at all; a grant is what primes the launch capture; and the screen is never owed twice whichever button ended it |
 | `test/domain/prompts_test.dart` | The prompt book of ADR-029, and two kinds of claim that fail differently. The **choice** — most specific first, the small hours treated as their own part of the day, stable for one chit and varied across chits, and never dependent on the machine's time zone. And the **copy**, which fails quietly: every prompt is a question, none of them shouts or instructs, nothing is said twice, and none is long enough to wrap the field. Since ADR-037 it also holds the rung above weather: a chit opened on the move is asked about the move, and `stationary` is asked exactly what a chit with no motion at all is asked |
 | `test/domain/motion/motion_ladder_test.dart` | **ADR-037's arithmetic**, which is where M3's motion correctness lives. Every band and both sides of every floor; the altitude rule that keeps a 300 km/h train off an aeroplane; and the gate — a speed whose error is larger than itself degrades to `stationary`, so noise can slow a chit down and can never put a plane on one. Also the three ways a platform says *no reading*: null, negative and NaN |
@@ -265,7 +261,6 @@ some of it was real and could not come back.
 | `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand. It also counts its reads, which is how ADR-021's *stamped when opened* is checked: when the clock was read is the thing that matters, and no assertion on the value can see it |
 | `test/support/fake_audio_recorder.dart` | Not a suite — an `AudioRecorder` that can be told to refuse. It refuses the way the real one refuses, with a `false` or a `null` and never an exception, because a fake that can fail in a way the real one cannot tests a path the app does not have |
 | `test/support/fake_audio_player.dart` | Not a suite — an `AudioPlayer` driven by hand, with one loaded pill at a time because that is the whole reason the interface exists. A path in its `missing` set leaves it silent with no error, which is exactly what the real one does with a file that has vanished |
-| `test/support/fake_speech_recognizer.dart` | Not a suite — a `SpeechRecognizer` that can be told to hear nothing. It has no error to inject, because `OnDeviceSpeechRecognizer` has none either (ADR-053): a missing model, a refused on-device request and a silent take are all one closed stream, which is exactly §3.5's claim |
 | `test/data/db/generated/schema.dart`, `test/data/db/generated/schema_v1.dart`, `test/data/db/generated/schema_v2.dart` | Not suites — written by `drift_dev schema generate` from `drift_schemas/`, and read by the migration test. Generated, so excluded from analysis like any `*.g.dart` |
 
 The pattern, set in M0b and worth keeping: **a rule that fails silently gets a test that checks
@@ -307,10 +302,10 @@ variable rather than static cuts, and what it costs — weight has to be applied
 | `drift_schemas/` | One JSON snapshot per schema version, taken with `drift_dev schema dump` and committed. `drift_schema_v1.json` is the shape that shipped as v1 and `drift_schema_v2.json` the one that added `chits.motion` (ADR-037); **once a version has reached a real handset its snapshot is never edited** — DATA-MODEL.md §6 |
 | [`analysis_options.yaml`](analysis_options.yaml) | The engineering principles of `CLAUDE.md` §4.1 in the form the machine can check: strict casts, inference and raw types; exhaustive switches and unawaited futures as errors; immutability and documentation rules. `riverpod_lint` runs inside `flutter analyze` through the `plugins:` key — no separate command, and `docs/PACKAGES.md` says why there cannot be one |
 | [`pubspec.yaml`](pubspec.yaml) | Dependencies and the font declarations. Every entry is justified in [`docs/PACKAGES.md`](docs/PACKAGES.md) |
-| `android/app/src/main/AndroidManifest.xml` | `RECORD_AUDIO`, both location permissions (ADR-016), `INTERNET`, and the `android.speech.RecognitionService` queries intent `speech_to_text` needs from targetSdk 30 |
+| `android/app/src/main/AndroidManifest.xml` | `RECORD_AUDIO`, both location permissions (ADR-016) and `INTERNET`. *It also carried a `<queries>` intent for `android.speech.RecognitionService`, which went with transcription — ADR-058.* |
 | `android/app/build.gradle.kts` | `minSdk 24` — `record_android`'s floor, the highest of any plugin — and the `com.infiniteants.chit` application id |
 | `android/gradle.properties` | `kotlin.incremental=false`. Without it every plugin's Kotlin compile fails to close its caches on Windows; `docs/PROGRESS.md` has the detail |
-| `ios/Runner/Info.plist` | The microphone, speech-recognition and location usage strings — the only copy in the app the design never sees, so they are written in chit's voice |
+| `ios/Runner/Info.plist` | The microphone and location usage strings — the only copy in the app the design never sees, so they are written in chit's voice |
 
 Android and iOS only — ADR-019. The desktop scaffolds went in M0a; `web/` is kept because
 responsive web is planned after v1, and no layout work is being spent on it yet.

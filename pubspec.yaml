@@ -30,7 +30,6 @@ dependencies:
   # Voice — ADR-005
   record: ^7.1.1
   just_audio: ^0.10.6
-  speech_to_text: ^7.4.0
 
   # Ambient capture
   geolocator: ^14.0.3

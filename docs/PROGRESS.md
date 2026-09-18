@@ -6,80 +6,57 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026, **with M5 under way — groups A to F done. Everything voice
-does is built; only the handset pass is left.** The two platform seams (A, B), the logic bare and
-tested before a widget existed (C), the recording sheet (D), the pill with playback (E) and the
-two notes (F). **Two handset runs have happened and found four bugs, all now fixed** — see below.
-**Recording and playback are both confirmed working on a phone.** Transcription is not: nothing
-was recognised on the device, which is what item 32 was about.
+**Last updated:** 18 September 2026. **M5 is voice, and voice is now recording and playback
+only — transcription was built, taken to a handset, and removed** (ADR-058). Groups A to F are
+done; group G, the handset pass, is what is left. **Recording and playback are both confirmed
+working on a phone.**
 
-**Group D — the sheet.** A modal, not a route (ADR-011): the tear edge, `LISTENING` beside the
-record dot, the elapsed figure, the live wave, the transcript with its pending word in
-`--ink-faint`, and **two controls, Discard and Stop & keep, as v6 draws them** rather than
-TASKS.md's one (**ADR-055**). Every other way out — the drag, the scrim, the back gesture —
-cancels through the same path, so a dismissal nobody wired up cannot leave a microphone running.
-Stop & keep holds the sheet for ADR-053's beat rather than closing and losing the words to a
-disposed `Ref`. The record dot is `ChitMotion.loop`'s **first caller**, at §6.3's 1.2s and not
-v6's 1.6s, which **closes item 17**. A `--scrim` token came with it: the one colour in the
-palette meant to fail §6.4, at 2.07:1.
+## Transcription is gone, and what that means
 
-**The live wave is drawn from the microphone, not looped.** Each bar is a level the recorder
-reported — the last twenty, newest at the right, which at 80ms sampling is a 1.6-second window.
-That amends ADR-054, which had kept a single number on the reading that v6's wave is twenty bars
-bobbing on their own loops; a browser has no microphone, and this does. Under reduced motion it
-draws v6's fixed heights at rest and ignores the level, because a wave that moves with a voice is
-still a wave that moves.
+It recognised nothing on the first device it ran on. That is the cost ADR-005 stated when it
+chose on-device recognition — models vary by handset, may not exist for a language, and are
+worst at the English-Hindi code-switching that is ordinary speech here — and the owner's call
+was to remove the feature rather than chase the engine. **A transcript that is usually absent
+and occasionally wrong is a worse record than a recording that is simply kept.**
 
-**Group E — the pill.** One `AudioPlayer` for the whole app, so a thread with three recordings
-can never sound three at once; a stored path is relative and a take's is absolute, and
-`JustAudioPlayer` is the one place that difference is resolved. The pill is on the open chit, in
-the thread and in the archive at once, because all three are `ChitRow`. **Item 31 closes**: a
-recording with no words now reads as a recording. *The pill's own bars are v6's fixed shape and
-not this recording's envelope* — decoding a file to draw a control 18px tall, for chits that
-never stored levels, buys nothing; what the bars carry is the playhead.
+Deleted: `speech_to_text`, `SpeechRecognizer` and `OnDeviceSpeechRecognizer`, the sheet's
+transcript and engine note, §3.5's failure note and `sttFailed`, the Android `<queries>` intent,
+the iOS speech permission, and **`chits.text_origin`** — provenance existed only to say whether
+words came from the recogniser, so with no recogniser it stored one value forever. That last one
+is a **v2 → v3 migration** that rebuilds the table; a chit's words, recording, times and
+ambience all come through it, and there is a test that writes a v2 row and reads it back after.
 
-**Group F — the two notes, and nothing on the composer is now a state without a word for it.**
-The microphone retires once a take is kept (it went in with group D; §3.2 says a chit holds one
-recording, and a microphone left beside the pill would have replaced it silently). §3.5's note
-is **a block above the page rather than the prompt's overlay**, which ARCHITECTURE.md had said it
-would share: in the overlay it would vanish at the first keystroke while the recording it
-explains is still kept and still unrecognised. It takes the prompt's *turn* instead — the
-controller refuses to raise one while `sttFailed`. And a refused microphone now says *"The
-microphone isn't allowed. You can turn it on in your phone's settings."* under the action row,
-**naming the OS on purpose**, because ADR-041 spends the app's one dialog on location and open
-item 22 says there is nowhere else to send anybody. **ADR-056.**
+Three things it took with it that were costing real risk: item 32 (could two plugins share one
+microphone at all), item 33 (a recognition session ending mid-take), and item 36 (a second
+permission dialog landing over the sheet). None of them can happen now.
 
-**The first handset pass found two things and the second found two more; all four are fixed.** *The microphone opened and no
-sheet ever appeared* — `recordingControllerProvider` was auto-disposed and **nothing in the app
-watches it between the tap and the sheet being built**, so Riverpod collected it during the
-permission round-trip, `Ref.mounted` went false, and `start` cancelled the take it had just
-begun. It is `keepAlive` now (**ADR-057**). *The test that should have caught it added a listener
-for symmetry with the composer*, which is exactly the lifetime the app does not have; that
-listener is gone and ten tests fail without the fix. **The lesson generalises: a test helper that
-holds a provider open is a claim about the app, and it has to be true.**
+**§3.5 and OPEN-QUESTIONS §8.2 are retired with their numbers unreused**, since both are cited
+from elsewhere. **`design/chit-app-v6.html` was deliberately left alone** and still draws the
+transcript in the sheet — where the prototype and BEHAVIOUR.md §3.4 disagree, §3.4 is right.
 
-**The second run confirmed recording and playback both work** — a chit recorded on the phone
-played back, and the seeded tone played from the calendar. It found two more, both in the
-player. *A take went on sounding after Save*, with the pill that could have stopped it no longer
-drawn anywhere: Save hands the file to `AudioStore`, which renames it out of the cache, so
-`ComposerController` now stops the player first — `stopIf(Playback.openChit)`, named so that a
-chit playing in the thread is not silenced by a save. *And after that, no pill could be paused
-at all*: `playback` was a broadcast stream carrying only changes, so any pill built after a
-recording started — the archive is rebuilt on every tab change — drew itself as though nothing
-were playing, and its one control became a play button that did nothing. **The stream gives
-every listener the current state first now**, and the fake replays the same way, because a fake
-that only carried changes is what let this pass a test and fail on a phone.
+## Four handset bugs, all fixed
 
-*None of the seeded recordings played*, because `DebugSeeder` wrote thirty-eight bytes of ASCII —
-a file no decoder can open, which is a pill that does nothing (§6.4) and is indistinguishable
-from broken playback. It writes a real tone now, at the length each row claims, and the
-second run played one back from the calendar — so **item 37 is answered on Android** and open
-only for iOS.
+**The microphone opened and no sheet appeared.** `recordingControllerProvider` was auto-disposed
+and nothing in the app watches it between the tap and the sheet being built, so Riverpod
+collected it during the permission round-trip, `Ref.mounted` went false, and `start` cancelled
+the take it had just begun. It is `keepAlive` now (**ADR-057**). *The test that should have
+caught it added a listener for symmetry with the composer* — a lifetime the app does not have.
 
-Three risks no test can settle, all for group G. Item 32 — whether Android lets `record` capture
-beside the recognition service. **Item 33** — the platform ends a recognition session on its own
-after a short pause, so a long take's transcript can stop accruing while the recording runs on.
-And items 34 to 36, which the sheet's first real use will answer at the same time.
+**No seeded recording played.** `DebugSeeder` wrote thirty-eight bytes of ASCII, which is a pill
+that does nothing (§6.4) and is indistinguishable from broken playback. It writes a real tone
+now, at the length each row claims.
+
+**A take went on sounding after Save**, with the pill that could have stopped it no longer drawn
+anywhere. `ComposerController` stops the player before the file moves — `stopIf(openChit)`, so a
+chit playing in the thread is not silenced by somebody saving.
+
+**Then no pill could be paused at all.** `playback` was a broadcast stream carrying only changes,
+so any pill built after a recording started drew itself as though nothing were playing and its
+one control became a play button that did nothing. Every listener gets the current state first
+now, and the fake replays the same way.
+
+**Both fake-related bugs are the same mistake**: a fake that behaves better than the real thing
+turns a test into a claim about nothing. CLAUDE.md §4.1's Liskov rule now names both.
 
 Earlier the same day, **M4 was signed off on a handset**. The fourth seeded look checked the
 third look's six fixes and everything else in M4's groups F and G, and the owner's verdict was
@@ -119,43 +96,42 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
-| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A to F of seven done — only the handset pass is left. ADR-052 to ADR-056 |
+| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A to F done — **transcription removed** (ADR-058); the handset pass is left. ADR-052 to ADR-058 |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**473 tests, `flutter analyze` clean, `dart format` clean.** A debug APK was built at the end of
-groups D to F; the first handset run found the two bugs above. The release APK has not been
-rebuilt since M3's sign-off.
+**450 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 — the
+tests that went were the recogniser's, not coverage lost.* **Schema is v3.** The release APK has
+not been rebuilt since M3's sign-off.
 
 ---
 
 ## Next: M5 — voice, group G. The handset, and nothing else
 
 [TASKS.md](TASKS.md) is M5's and groups A to F are ticked. **There is no more code to write
-before a device sees this**, and seven of the eight things still open can only be settled by
-one. The order matters:
+before a device sees this.** Two passes have happened and found four bugs; what is left is the
+rest of group G's list.
 
-1. **D1 first, before anything else about voice is believed.** Record while recognising on a
-   real Android handset and play the take back. If the file is silence, **stop** and write the
-   finding here before touching anything: the fallback — recognition without a kept file, or a
-   file without live words — is a decision for an ADR, not a fix to make on the spot (item 32).
-2. **Item 33 on the same take.** Record for two minutes with a natural pause in the middle and
-   see where the transcript stops. No re-listen loop was built, because the seam between two
-   sessions is where words get duplicated or dropped.
-3. **Then the rest of group G's list**, and item 18 on the same walk since one is being taken.
-4. **What only a device can show, beyond the list.** Whether the wave answers a voice at all —
-   it is drawn from real `record` amplitudes and nothing in the suite can say whether those read
-   as a wave or as noise (item 34). The beat the sheet holds on Stop & keep (item 35). Reduced
-   motion, where the dot rests and the wave freezes at v6's fixed heights.
-5. **Seeds to look at a pill in the thread** — `flutter run --dart-define=CHIT_SEED=seed`, then
-   the 23:55 row of 15 September, which is §3.5's recording with no words and the row item 31
-   was about. `=clear` takes it off.
+**Clear and re-seed first** — `--dart-define=CHIT_SEED=clear`, then `=seed`. Rows from before
+18 September point at the old ASCII placeholder files and at a v2 schema.
 
-**The questions M5 cannot be signed off with open are items 32, 33, 34, 35 and 36**, and every
-one of them is a fact about a phone rather than a choice anybody can make at a desk.
+1. **A recording that survives a restart.** Save one, kill the app, reopen, play it. Nothing has
+   checked that the file survives `AudioStore.keep` and a cold start together.
+2. **Does the wave answer a voice, or pin at the top?** Item 34, and the only thing left that
+   could make the sheet read as broken. The -60 dBFS floor is arithmetic nobody has measured
+   against a real microphone.
+3. **A refused microphone** — the sheet stays closed, the line shows once, the microphone stays
+   tappable. Needs a fresh install or a revoked permission.
+4. **A typed chit recorded into**, keeping both. And **reduced motion**, where the dot rests and
+   the wave freezes at v6's fixed heights.
+5. **Item 18 on the same walk**, since one is being taken.
 
-The old *Next* is in git under `ce65bbb`; it said to finish group F, and group F is finished.
+Items 32, 33 and 36 were retired with transcription — the risks they described cannot happen
+with one plugin. **Item 35 went too**: Stop & keep no longer waits for a last word, so the sheet
+closes as soon as the recorder does.
 
+The old *Next* is in git under `065721b`; it said to take D1 to a handset, and D1 no longer
+exists.
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M5.
 
@@ -174,9 +150,10 @@ they are cited from other documents — so a closed item keeps its number and sh
 2. ~~Two colours with no token.~~ **Closed 15 Sep 2026 by v6** (ADR-022).
 3. ~~`sqlite3_flutter_libs` resolves to `0.6.0+eol`.~~ **Closed 15 Sep 2026.** PACKAGES.md has
    the detail.
-4. **`speech_to_text` applies the Kotlin Gradle Plugin,** and the build warns that future Flutter
-   versions will fail on plugins that do. Harmless on 3.47.4. Check before any Flutter upgrade,
-   since ADR-005 makes that package hard to swap.
+4. ~~`speech_to_text` applies the Kotlin Gradle Plugin.~~ **Closed 18 September 2026** — the
+   package went with ADR-058. The Gradle warning it caused is gone with it. *Other plugins may
+   do the same thing; check the build output before any Flutter upgrade rather than trusting
+   this line.*
 5. **Developer Mode on Windows.** `flutter pub get` warns that plugin builds need symlink
    support. Not blocking — the APK builds.
 6. **Font bundle is ~1.8 MB,** of which Noto Serif Devanagari is 758 KB to draw one word.
@@ -184,9 +161,9 @@ they are cited from other documents — so a closed item keeps its number and sh
 7. **`public_member_api_docs` is on.** Valuable in `domain`, `data` and `core`; noise on a
    zero-argument widget constructor. If it becomes a real tax the answer is a nested
    `analysis_options.yaml` under `lib/features/`, not turning it off everywhere.
-8. **OPEN-QUESTIONS.md §8.2 (re-transcription) and §8.3 (does Today carry enough rhythm) are
-   still open.** §8.3 is now answerable — the rhythm signal it is about exists and can be lived
-   with for a week.
+8. **OPEN-QUESTIONS.md §8.3 (does Today carry enough rhythm) is still open**, and now
+   answerable — the rhythm signal it is about exists and can be lived with for a week. *§8.2,
+   re-transcription, was retired with ADR-058.*
 9. **Nothing deletes a chit yet,** so the orphan sweep has little to collect. When a delete
    arrives it goes in the repository, removes the row and the file together, and gets its own
    test.
@@ -330,27 +307,6 @@ they are cited from other documents — so a closed item keeps its number and sh
     15 September is a recording rather than a blank. The third look's verdict was *an empty
     chit, not sure what it is*; **whether it now reads as a recording has not been looked at**,
     and it is on group G's seeded pass.
-32. **Two plugins want one microphone, and nothing in the suite can say whether Android will
-    let them share it.** `speech_to_text` takes no file and no stream, so the only way to keep
-    the audio *and* recognise it is to run `record` and the recogniser at the same time
-    (TASKS.md D1). On Android the recognition service is another app's process, and since
-    Android 10 the platform silences the earlier of two ordinary captures — which would leave
-    the kept file silent while the transcript looks fine. iOS has no such rule. **Check it
-    first, in group G, by playing a take back**; if the file is silence, the fallback is a
-    decision for an ADR — recognition without a kept file, or a file without live words —
-    and not a fix to make on the spot.
-33. **A recognition session ends on its own, and a long take may stop transcribing halfway.**
-    Both platforms end a listen session after a pause with no speech — on Android the pause is
-    a system minimum of one to three seconds that `pauseFor` cannot lengthen, and the whole
-    session has a platform ceiling of its own. The recording keeps running, so a two-minute
-    chit could come back with twenty seconds of words and a full file. Nothing in the suite can
-    say how short that is in practice, and group B did **not** build a re-listen loop, because
-    a loop that restarts the recogniser mid-sentence loses the sentence and may not be needed
-    at all. **Check it in group G, on the same walk as item 32**: record for two minutes with a
-    natural pause in the middle and see where the transcript stops. If it stops early, the
-    honest fix is restarting the listen on the `done` status while the take is still running —
-    which is a decision for an ADR, since the seam between two sessions is where words get
-    duplicated or dropped.
 34. **Nobody knows whether the live wave answers a voice or just pins at the top.**
     `RecordAudioRecorder.levelOf` maps dBFS to 0–1 linearly from a **-60 dBFS floor**, and that
     floor is arithmetic rather than a measurement — no microphone has ever fed it. If a normal
@@ -361,23 +317,12 @@ they are cited from other documents — so a closed item keeps its number and sh
     speaking normally and while nearly silent.** If it pins, the fix is the floor — raising it
     toward -40 compresses the useful range into the visible one — and it is one constant with a
     test beside it (`record_audio_recorder_test.dart`).
-35. **Stop & keep holds the sheet for up to 900ms and nothing on screen says why.** ADR-053
-    waits for the recogniser's last word, which is the one most likely to be wrong; ADR-055
-    keeps the sheet up while it happens because closing first drops the take. Usually it is far
-    less than 900ms — the plugin promotes a partial at 450ms — but nobody has felt it. **If it
-    reads as lag**, the honest options are a shorter grace, or the state line changing from
-    `LISTENING` to something while it finishes, which is a word and not a spinner.
-36. **Two plugins may want two permissions, and the second could arrive mid-take.** `record`
-    asks for the microphone when the microphone is tapped (D2), and then the recogniser's
-    `initialize()` runs *after* the take has started. On iOS speech recognition is a separate
-    permission from the microphone, so a first run could raise a system dialog **over the
-    recording sheet while it is recording**; on Android the recognition service may ask for
-    nothing at all. Both usage strings are in the Info.plist already (PACKAGES.md), so this is
-    about *when* the dialog appears rather than whether it can. **Check it on a fresh install in
-    group G.** If a dialog lands mid-take the fix is to initialise the recogniser before
-    starting the recorder, so any ask happens before the sheet opens — which is a change to
-    `RecordingController.start`'s order and to ADR-053's *lazily, once*, and is a decision
-    rather than a patch.
+
+**Items 32, 33, 35 and 36 are retired.** All four were about a recogniser — whether two plugins could
+share a microphone, a session ending mid-take, the beat Stop & keep waited for a last word, and a
+second permission dialog landing over the sheet. **ADR-058 removed the recogniser, and none of
+them can happen now.** The numbers are not reused.
+
 37. **The seeded recordings are WAVs wearing an `.m4a` extension, and iOS may refuse them.**
     ADR-008 fixes the stored extension and nothing encodes AAC in Dart, so `DebugSeeder` writes
     a valid WAV under the name the store keeps. Android's extractor sniffs the content and

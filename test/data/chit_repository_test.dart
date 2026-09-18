@@ -70,21 +70,18 @@ void main() {
       final Chit saved = await repo.save(
         stamp: stampAt(morning),
         text: 'Train 20 late.',
-        textOrigin: TextOrigin.typed,
       );
 
       final Chit? read = await repo.byId(saved.id);
       expect(read, saved);
       expect(read!.text, 'Train 20 late.');
-      expect(read.textOrigin, TextOrigin.typed);
       expect(read.hasAudio, isFalse);
     });
 
-    test('recorded and transcribed', () async {
+    test('words and a recording', () async {
       final Chit saved = await repo.save(
         stamp: stampAt(morning),
         text: 'Train 20 late.',
-        textOrigin: TextOrigin.transcript,
         audioTempPath: await aRecording(),
         audioDuration: const Duration(seconds: 9),
       );
@@ -96,21 +93,19 @@ void main() {
       expect(read.audioDuration, const Duration(seconds: 9));
     });
 
-    test('recorded, transcript corrected', () async {
+    test('a recording added to a chit that had words', () async {
       final Chit saved = await repo.save(
         stamp: stampAt(morning),
         text: 'Train 20 late.',
-        textOrigin: TextOrigin.transcriptEdited,
         audioTempPath: await aRecording(),
         audioDuration: const Duration(seconds: 9),
       );
 
       final Chit read = (await repo.byId(saved.id))!;
-      expect(read.textOrigin, TextOrigin.transcriptEdited);
       expect(read.hasAudio, isTrue);
     });
 
-    test('recorded, nothing recognised — BEHAVIOUR.md §3.5', () async {
+    test('a recording with no words is a chit — README §5', () async {
       final Chit saved = await repo.save(
         stamp: stampAt(morning),
         audioTempPath: await aRecording(),
@@ -119,7 +114,6 @@ void main() {
 
       final Chit read = (await repo.byId(saved.id))!;
       expect(read.text, isNull);
-      expect(read.textOrigin, isNull);
       expect(read.hasAudio, isTrue);
     });
 
@@ -133,7 +127,6 @@ void main() {
           motion: MotionState.traveling,
         ),
         text: 'Train 20 late.',
-        textOrigin: TextOrigin.typed,
       );
 
       final AmbientStamp stamp = (await repo.byId(saved.id))!.stamp;
@@ -152,7 +145,6 @@ void main() {
         final Chit saved = await repo.save(
           stamp: AmbientStamp(capturedAt: morning, motion: motion),
           text: 'Train 20 late.',
-          textOrigin: TextOrigin.typed,
         );
 
         expect(
@@ -167,7 +159,6 @@ void main() {
       final Chit saved = await repo.save(
         stamp: stampAt(morning),
         text: 'Train 20 late.',
-        textOrigin: TextOrigin.typed,
       );
 
       final Chit read = (await repo.byId(saved.id))!;
@@ -191,18 +182,7 @@ void main() {
 
     test('a field of nothing but spaces, with no recording', () {
       expect(
-        () => repo.save(
-          stamp: stampAt(morning),
-          text: '   \n  ',
-          textOrigin: TextOrigin.typed,
-        ),
-        throwsA(isA<ArgumentError>()),
-      );
-    });
-
-    test('words with no provenance', () {
-      expect(
-        () => repo.save(stamp: stampAt(morning), text: 'Train 20 late.'),
+        () => repo.save(stamp: stampAt(morning), text: '   \n  '),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -240,7 +220,6 @@ void main() {
       final Chit saved = await repo.save(
         stamp: stampAt(morning),
         text: '   ',
-        textOrigin: TextOrigin.transcript,
         audioTempPath: await aRecording(),
         audioDuration: const Duration(seconds: 9),
       );
@@ -248,7 +227,6 @@ void main() {
       // Nothing partial, approximate or placeholder is written — and a
       // provenance for words that do not exist is exactly that.
       expect(saved.text, isNull);
-      expect(saved.textOrigin, isNull);
       expect(saved.hasAudio, isTrue);
       expect((await repo.byId(saved.id))!.text, isNull);
     });
@@ -259,7 +237,6 @@ void main() {
       final Chit saved = await repo.save(
         stamp: stampAt(morning),
         text: '  Train 20 late.\n',
-        textOrigin: TextOrigin.typed,
       );
 
       expect(saved.text, 'Train 20 late.');
@@ -272,7 +249,6 @@ void main() {
       final Chit saved = await repo.save(
         stamp: stampAt(morning),
         text: 'Train 20 late.',
-        textOrigin: TextOrigin.typed,
       );
 
       expect(saved.localDay, 20260915);
@@ -283,12 +259,10 @@ void main() {
       final Chit before = await repo.save(
         stamp: stampAt(DateTime(2026, 9, 14, 23, 59)),
         text: 'Still the 14th.',
-        textOrigin: TextOrigin.typed,
       );
       final Chit after = await repo.save(
         stamp: stampAt(DateTime(2026, 9, 15, 0, 1)),
         text: 'Now the 15th.',
-        textOrigin: TextOrigin.typed,
       );
 
       expect(before.localDay, 20260914);
@@ -306,7 +280,6 @@ void main() {
       final Chit saved = await repo.save(
         stamp: stampAt(DateTime(2026, 9, 15, 0, 20)),
         text: 'Late one.',
-        textOrigin: TextOrigin.typed,
       );
 
       final DateTime elsewhere = saved.createdAt.subtract(
@@ -329,15 +302,10 @@ void main() {
       final Chit saved = await repo.save(
         stamp: stampAt(DateTime(2026, 9, 15, 0, 20)),
         text: 'Late one.',
-        textOrigin: TextOrigin.typed,
       );
 
       clock.moveTo(DateTime(2026, 9, 16, 8, 0));
-      await repo.updateText(
-        id: saved.id,
-        text: 'Late one, corrected.',
-        textOrigin: TextOrigin.typed,
-      );
+      await repo.updateText(id: saved.id, text: 'Late one, corrected.');
 
       // A typo found the next morning is the same typo. Correcting it must not
       // relight a calendar tile (ADR-014).
@@ -405,7 +373,6 @@ void main() {
           motion: MotionState.stationary,
         ),
         text: 'Train 20 late.',
-        textOrigin: TextOrigin.typed,
       );
       clock.moveTo(DateTime(2026, 9, 16, 8, 0));
     });
@@ -430,7 +397,6 @@ void main() {
       // a field dropped from the model would pass that comparison happily.
       expect(patched.id, original.id);
       expect(patched.text, original.text);
-      expect(patched.textOrigin, original.textOrigin);
       expect(patched.audioPath, original.audioPath);
       expect(patched.audioDuration, original.audioDuration);
     });
@@ -455,21 +421,23 @@ void main() {
       expect(patched.localDay, original.localDay);
     });
 
-    test('updatedAt does not move — ADR-014 reserves it for the text', () async {
-      // The clock has moved on by an hour in setUp, so an implementation that
-      // stamped this the way `updateText` does would be caught here. A signal
-      // arriving late is not an edit anybody made, and OPEN-QUESTIONS.md §8.2's
-      // re-transcription is the thing that would be misled by the difference.
-      await repo.updateAmbient(
-        id: original.id,
-        weather: WeatherCondition.clear,
-        lat: null,
-        lon: null,
-        motion: null,
-      );
+    test(
+      'updatedAt does not move — ADR-014 reserves it for the text',
+      () async {
+        // The clock has moved on by an hour in setUp, so an implementation that
+        // stamped this the way `updateText` does would be caught here. A signal
+        // arriving late is not an edit anybody made, and an edit is the user's act.
+        await repo.updateAmbient(
+          id: original.id,
+          weather: WeatherCondition.clear,
+          lat: null,
+          lon: null,
+          motion: null,
+        );
 
-      expect((await repo.byId(original.id))!.updatedAt, original.updatedAt);
-    });
+        expect((await repo.byId(original.id))!.updatedAt, original.updatedAt);
+      },
+    );
 
     test(
       'a null clears what was there — the whole reading replaces it',
@@ -526,7 +494,6 @@ void main() {
           lon: 72.8777,
         ),
         text: 'Trane 20 late.',
-        textOrigin: TextOrigin.transcript,
         audioTempPath: await aRecording(),
         audioDuration: const Duration(seconds: 9),
       );
@@ -534,16 +501,11 @@ void main() {
     });
 
     test('touches text, textOrigin and updatedAt — and nothing else', () async {
-      await repo.updateText(
-        id: original.id,
-        text: 'Train 20 late.',
-        textOrigin: TextOrigin.transcriptEdited,
-      );
+      await repo.updateText(id: original.id, text: 'Train 20 late.');
 
       final Chit edited = (await repo.byId(original.id))!;
 
       expect(edited.text, 'Train 20 late.');
-      expect(edited.textOrigin, TextOrigin.transcriptEdited);
       expect(edited.updatedAt, DateTime(2026, 9, 16, 8, 0));
 
       // Everything else, field by field rather than by comparing a copyWith:
@@ -559,11 +521,7 @@ void main() {
     });
 
     test('the recording is still there afterwards', () async {
-      await repo.updateText(
-        id: original.id,
-        text: 'Train 20 late.',
-        textOrigin: TextOrigin.transcriptEdited,
-      );
+      await repo.updateText(id: original.id, text: 'Train 20 late.');
 
       // Text is what the chit says and belongs to the user; audio is what was
       // said and belongs to the moment. Nothing here may touch the second.
@@ -580,7 +538,6 @@ void main() {
       await repo.updateText(
         id: voiceOnly.id,
         text: 'What the machine could not read.',
-        textOrigin: TextOrigin.typed,
       );
 
       final Chit edited = (await repo.byId(voiceOnly.id))!;
@@ -590,33 +547,22 @@ void main() {
 
     test('refuses to empty a chit', () {
       expect(
-        () => repo.updateText(
-          id: original.id,
-          text: '   ',
-          textOrigin: TextOrigin.transcriptEdited,
-        ),
+        () => repo.updateText(id: original.id, text: '   '),
         throwsA(isA<ArgumentError>()),
       );
     });
 
     test('refuses an id that is not a chit', () {
       expect(
-        () => repo.updateText(
-          id: 'no-such-chit',
-          text: 'Train 20 late.',
-          textOrigin: TextOrigin.typed,
-        ),
+        () => repo.updateText(id: 'no-such-chit', text: 'Train 20 late.'),
         throwsA(isA<StateError>()),
       );
     });
   });
 
   group('the queries of DATA-MODEL.md §4', () {
-    Future<Chit> chitAt(DateTime when, String text) => repo.save(
-      stamp: stampAt(when),
-      text: text,
-      textOrigin: TextOrigin.typed,
-    );
+    Future<Chit> chitAt(DateTime when, String text) =>
+        repo.save(stamp: stampAt(when), text: text);
 
     test('a day reads newest first', () async {
       final Chit first = await chitAt(DateTime(2026, 9, 15, 9, 0), 'First.');
@@ -808,11 +754,7 @@ void main() {
       final Chit newest = await chitAt(DateTime(2026, 9, 15, 9, 0), 'Two.');
 
       clock.moveTo(DateTime(2026, 9, 20, 8, 0));
-      await repo.updateText(
-        id: oldest.id,
-        text: 'One, corrected.',
-        textOrigin: TextOrigin.typed,
-      );
+      await repo.updateText(id: oldest.id, text: 'One, corrected.');
 
       // The archive orders on createdAt and never on updatedAt: a chit belongs
       // to the moment it was written.

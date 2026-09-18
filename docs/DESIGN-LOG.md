@@ -125,7 +125,13 @@ stopped looking equal for reasons no one could name by reading the code. Effecti
 about 1.22px. Any new icon has to be normalised the same way; matching the number in the
 markup is not the same as matching the weight in the eye.
 
-## A spoken chit stayed spoken — reversed
+## A spoken chit stayed spoken — reversed, then moot
+
+**Both sides of this argument are now history**: transcription itself was removed in M5
+(ADR-058), so there is no transcript to lock or to edit. What survives from it is the
+resolution — *the audio carries the moment* — which is now the whole of how a recording works.
+The entry is kept because the argument it records will be made again if transcription ever
+returns.
 
 **This rule is gone.** The transcript is editable, a chit can hold both audio and text, and
 there is no lock line. What follows is why it existed and why it did not survive, because the
@@ -151,7 +157,12 @@ The cost is a schema where `text` and `audioPath` are both nullable with only "a
 enforced, and a `textOrigin` marker so a future re-transcription can tell the machine's words
 from the user's. That is more state than `source: typed | spoken`, and it is the right trade.
 
-## Failed transcription keeps the voice
+## Failed transcription keeps the voice — moot, and vindicated
+
+**There is no engine any more** (ADR-058). Read this as the entry that turned out to be right
+about the engine and was overtaken by how right it was: transcription recognised nothing on the
+first handset it ran on, and the rule below — *the recording is the real artefact* — is now not
+a failure path but the only path.
 
 When the engine returns nothing usable, the audio is kept and **nothing is written into the
 field automatically.** Nothing partial or approximate.
@@ -320,7 +331,12 @@ to 5.82:1, `--seal` from 4.23:1 to 4.09:1. Nothing fell through a floor, but `--
 slip is now the tightest pair in the app, and the entry above about `--ink-faint` sitting on
 two surfaces is the reason it survived. **A surface token is never a local change.**
 
-## Speech stays on the device
+## Speech stays on the device — and then stopped happening at all
+
+**Removed in M5** (ADR-058). The cost this entry states plainly at its end — *on some devices or
+some languages there will be no model at all* — is exactly what happened on the first handset,
+and the feature went rather than the principle. The entry stays because it is the argument
+against a cloud engine, and that argument is unchanged.
 
 Recognition runs on the handset — the same on-device dictation a phone keyboard uses. An
 earlier version of this design named Google Cloud Speech-to-Text, which would have been more
@@ -441,7 +457,20 @@ settings screen to re-enable from. That is the price of never nagging, and a way
 
 ## Open threads
 
-See OPEN-QUESTIONS.md §8. The one closest to the surface is re-transcription: a chit whose audio was kept
-without text is a natural candidate for a second attempt — on a better model, or once a
-language pack is installed. The data model already allows it, and `textOrigin` is there so that
-an attempt can refuse to overwrite words the user typed themselves.
+See OPEN-QUESTIONS.md §8. *Re-transcription used to be the thread closest to the surface; it was
+retired with transcription itself (ADR-058), and §8.2 says so.* What is left open there is
+whether Today carries enough rhythm.
+
+## The recording is the record
+
+Transcription was built and removed inside one milestone (ADR-058). It recognised nothing on the
+first handset it ran on, which is what the entry above had said would happen on some devices,
+and the honest reading was that a transcript which is usually absent and occasionally wrong is a
+worse record than a recording that is simply kept.
+
+What went with it is more than a plugin: a permission to explain, a schema column, a failure
+state, a note to word, and two open questions about whether two plugins could share a microphone
+at all. What is left is smaller and true — **a chit holds words you typed, a recording you made,
+or both**, and neither pretends to be the other. That is very close to where *A spoken chit
+stayed spoken* started, arrived at from the opposite direction: not because the machine's words
+had to be protected from the user, but because the machine had nothing to say.

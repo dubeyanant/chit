@@ -10,12 +10,6 @@ part of 'recording_controller.dart';
 // ignore_for_file: type=lint, type=warning
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
 ///
-/// **Two services, one take** (TASKS.md D1). The recogniser takes no file and
-/// no stream, so the only way to keep the audio *and* have words is to run
-/// both at once; this is the thing that runs them, and neither knows the other
-/// exists. Whether a phone will let them share the microphone is open item 32
-/// and nothing here can settle it.
-///
 /// **It hands the result to `ComposerController` rather than returning it**,
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
 /// downstream of it to give a value to. That also keeps every §3.4 and §3.5
@@ -34,12 +28,6 @@ final recordingControllerProvider = RecordingControllerProvider._();
 
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
 ///
-/// **Two services, one take** (TASKS.md D1). The recogniser takes no file and
-/// no stream, so the only way to keep the audio *and* have words is to run
-/// both at once; this is the thing that runs them, and neither knows the other
-/// exists. Whether a phone will let them share the microphone is open item 32
-/// and nothing here can settle it.
-///
 /// **It hands the result to `ComposerController` rather than returning it**,
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
 /// downstream of it to give a value to. That also keeps every §3.4 and §3.5
@@ -55,12 +43,6 @@ final recordingControllerProvider = RecordingControllerProvider._();
 final class RecordingControllerProvider
     extends $NotifierProvider<RecordingController, RecordingState> {
   /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
-  ///
-  /// **Two services, one take** (TASKS.md D1). The recogniser takes no file and
-  /// no stream, so the only way to keep the audio *and* have words is to run
-  /// both at once; this is the thing that runs them, and neither knows the other
-  /// exists. Whether a phone will let them share the microphone is open item 32
-  /// and nothing here can settle it.
   ///
   /// **It hands the result to `ComposerController` rather than returning it**,
   /// because the sheet is a modal and not a route (ADR-011): there is nothing
@@ -102,15 +84,9 @@ final class RecordingControllerProvider
 }
 
 String _$recordingControllerHash() =>
-    r'a31c8233a5d7e83c1242ecfc923f858cdb1b1b93';
+    r'a510701c84309ff0dcb849efc0e1e066b92fa8b8';
 
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
-///
-/// **Two services, one take** (TASKS.md D1). The recogniser takes no file and
-/// no stream, so the only way to keep the audio *and* have words is to run
-/// both at once; this is the thing that runs them, and neither knows the other
-/// exists. Whether a phone will let them share the microphone is open item 32
-/// and nothing here can settle it.
 ///
 /// **It hands the result to `ComposerController` rather than returning it**,
 /// because the sheet is a modal and not a route (ADR-011): there is nothing

@@ -14,7 +14,6 @@ import 'package:chit/domain/services/ambient_signals.dart';
 import 'package:chit/domain/services/audio_player.dart';
 import 'package:chit/domain/services/audio_recorder.dart';
 import 'package:chit/domain/services/location_service.dart';
-import 'package:chit/domain/services/speech_recognizer.dart';
 import 'package:chit/domain/services/weather_service.dart';
 import 'package:chit/features/composer/application/composer_controller.dart';
 import 'package:drift/native.dart';
@@ -321,225 +320,6 @@ void main() {
     });
   });
 
-  group('BEHAVIOUR.md §3.4: the transcript joins what is already there', () {
-    /// A take of [words], twelve seconds long, written to [tempPath].
-    ({Recording recording, Transcript transcript}) takeOf(
-      String words, {
-      String tempPath = 'take-1.m4a',
-    }) => (
-      recording: Recording(
-        tempPath: tempPath,
-        duration: const Duration(seconds: 12),
-      ),
-      transcript: Transcript(committed: words),
-    );
-
-    test('an empty field takes the words and the transcript origin', () {
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      final ({Recording recording, Transcript transcript}) take = takeOf(
-        'missed the last train',
-      );
-      composer.keepRecording(
-        recording: take.recording,
-        transcript: take.transcript,
-      );
-
-      final ComposerState chit = container.read(composerControllerProvider);
-      expect(chit.text, 'missed the last train');
-      expect(chit.textOrigin, TextOrigin.transcript);
-      expect(chit.audioTempPath, 'take-1.m4a');
-      expect(chit.audioDuration, const Duration(seconds: 12));
-      expect(chit.sttFailed, isFalse);
-    });
-
-    test('a field with words in it keeps them, and the words are joined', () {
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      composer.edit('Train 20 late.');
-      final ({Recording recording, Transcript transcript}) take = takeOf(
-        'still on the platform',
-      );
-      composer.keepRecording(
-        recording: take.recording,
-        transcript: take.transcript,
-      );
-
-      final ComposerState chit = container.read(composerControllerProvider);
-      expect(chit.text, 'Train 20 late. still on the platform');
-      expect(
-        chit.textOrigin,
-        TextOrigin.transcriptEdited,
-        reason: 'part typed and part heard has had a hand in it',
-      );
-    });
-
-    test('a field holding only spaces is an empty field', () {
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      composer.edit('   ');
-      final ({Recording recording, Transcript transcript}) take = takeOf(
-        'nearly home',
-      );
-      composer.keepRecording(
-        recording: take.recording,
-        transcript: take.transcript,
-      );
-
-      final ComposerState chit = container.read(composerControllerProvider);
-      expect(chit.text, 'nearly home');
-      expect(chit.textOrigin, TextOrigin.transcript);
-    });
-
-    test('the origin slides once, on the first keystroke, and never back', () {
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      final ({Recording recording, Transcript transcript}) take = takeOf(
-        'missed the last train',
-      );
-      composer.keepRecording(
-        recording: take.recording,
-        transcript: take.transcript,
-      );
-
-      composer.edit('missed the last trainn');
-      expect(
-        container.read(composerControllerProvider).textOrigin,
-        TextOrigin.transcriptEdited,
-      );
-
-      composer.edit('missed the last train');
-      expect(
-        container.read(composerControllerProvider).textOrigin,
-        TextOrigin.transcriptEdited,
-        reason: 'a one-way move — putting it back does not undo the hand',
-      );
-    });
-
-    test('emptying the field clears the origin, and typing again is typed', () {
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      final ({Recording recording, Transcript transcript}) take = takeOf(
-        'missed the last train',
-      );
-      composer.keepRecording(
-        recording: take.recording,
-        transcript: take.transcript,
-      );
-
-      composer.edit('');
-      expect(container.read(composerControllerProvider).textOrigin, isNull);
-
-      composer.edit('walked instead');
-      expect(
-        container.read(composerControllerProvider).textOrigin,
-        TextOrigin.typed,
-        reason: 'nothing of the recogniser is left in the field',
-      );
-    });
-  });
-
-  group('BEHAVIOUR.md §3.5: the voice survives alone', () {
-    test('no words and a recording keeps the audio and says so', () {
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      composer.keepRecording(
-        recording: Recording(
-          tempPath: 'take-1.m4a',
-          duration: const Duration(seconds: 9),
-        ),
-        transcript: Transcript.nothing,
-      );
-
-      final ComposerState chit = container.read(composerControllerProvider);
-      expect(chit.sttFailed, isTrue);
-      expect(chit.text, isEmpty, reason: 'nothing partial is ever written');
-      expect(chit.textOrigin, isNull);
-      expect(chit.audioTempPath, 'take-1.m4a');
-      expect(chit.canSave, isTrue, reason: 'a recording is a chit');
-    });
-
-    test('the note takes the prompt place rather than sharing it', () async {
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      composer.keepRecording(
-        recording: Recording(
-          tempPath: 'take-1.m4a',
-          duration: const Duration(seconds: 9),
-        ),
-        transcript: Transcript.nothing,
-      );
-
-      // The five seconds would otherwise come round and put the prompt under
-      // the note, which §3.5 gives that space to.
-      composer.edit('a');
-      composer.edit('');
-      await Future<void>.delayed(ComposerController.idle * 1.2);
-
-      expect(container.read(composerControllerProvider).showPrompt, isFalse);
-    });
-
-    test('words with no file keep the words rather than losing them', () {
-      // The recorder and the recogniser fail apart. Dropping heard words
-      // because the *other* plugin failed would be a silent content loss.
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      composer.keepRecording(
-        recording: null,
-        transcript: const Transcript(committed: 'nearly home'),
-      );
-
-      final ComposerState chit = container.read(composerControllerProvider);
-      expect(chit.text, 'nearly home');
-      expect(chit.textOrigin, TextOrigin.transcript);
-      expect(chit.audioTempPath, isNull);
-      expect(
-        chit.sttFailed,
-        isFalse,
-        reason: 'the note promises a recording was kept, and none was',
-      );
-    });
-
-    test('neither a file nor words changes nothing', () {
-      final ProviderContainer container = containerOf();
-      final ComposerController composer = container.read(
-        composerControllerProvider.notifier,
-      );
-
-      composer.edit('Train 20 late.');
-      composer.keepRecording(recording: null, transcript: Transcript.nothing);
-
-      final ComposerState chit = container.read(composerControllerProvider);
-      expect(chit.text, 'Train 20 late.');
-      expect(chit.sttFailed, isFalse);
-      expect(chit.isRecording, isFalse);
-    });
-  });
-
   group('Discard takes the recording with it — ADR-008', () {
     test('the temp file is deleted and the state is clear', () async {
       final ProviderContainer container = containerOf();
@@ -551,20 +331,14 @@ void main() {
       await take.writeAsString('audio');
 
       composer.keepRecording(
-        recording: Recording(
-          tempPath: take.path,
-          duration: const Duration(seconds: 9),
-        ),
-        transcript: Transcript.nothing,
+        Recording(tempPath: take.path, duration: const Duration(seconds: 9)),
       );
-      expect(container.read(composerControllerProvider).sttFailed, isTrue);
 
       await composer.discard();
 
       expect(take.existsSync(), isFalse);
       final ComposerState fresh = container.read(composerControllerProvider);
       expect(fresh.audioTempPath, isNull);
-      expect(fresh.sttFailed, isFalse);
       expect(fresh.canSave, isFalse);
     });
 
@@ -605,11 +379,7 @@ void main() {
       await take.writeAsString('audio');
 
       composer.keepRecording(
-        recording: Recording(
-          tempPath: take.path,
-          duration: const Duration(seconds: 9),
-        ),
-        transcript: const Transcript(committed: 'nearly home'),
+        Recording(tempPath: take.path, duration: const Duration(seconds: 9)),
       );
       await player.play(id: Playback.openChit, path: take.path);
       expect(player.now.playing, isTrue);
@@ -666,11 +436,7 @@ void main() {
       await take.writeAsString('audio');
 
       composer.keepRecording(
-        recording: Recording(
-          tempPath: take.path,
-          duration: const Duration(seconds: 9),
-        ),
-        transcript: Transcript.nothing,
+        Recording(tempPath: take.path, duration: const Duration(seconds: 9)),
       );
 
       clock.moveTo(savedAt);
@@ -678,7 +444,6 @@ void main() {
 
       final Chit stored = await onlyChit();
       expect(stored.text, isNull);
-      expect(stored.textOrigin, isNull);
       expect(stored.audioPath, isNotNull);
       expect(stored.audioDuration, const Duration(seconds: 9));
       expect(take.existsSync(), isFalse, reason: 'moved, not copied');

@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../prompts.dart';
 import 'ambient_stamp.dart';
-import 'chit.dart';
 
 part 'composer_state.freezed.dart';
 
@@ -34,12 +33,8 @@ abstract class ComposerState with _$ComposerState {
     /// later (ADR-007); [AmbientStamp.capturedAt] does not move when they do.
     required AmbientStamp stamp,
 
-    /// The field's live content. The user owns it throughout — the recogniser
-    /// writes into it once and never again (BEHAVIOUR.md §3.4.1).
+    /// The field's live content, and the user's throughout.
     @Default('') String text,
-
-    /// Where those words came from. `null` while there are none.
-    TextOrigin? textOrigin,
 
     /// Whether the five-second prompt is being offered — BEHAVIOUR.md §3.3.
     ///
@@ -56,13 +51,6 @@ abstract class ComposerState with _$ComposerState {
 
     /// Whether the recording sheet is up. **M5.**
     @Default(false) bool isRecording,
-
-    /// Drives the note of BEHAVIOUR.md §3.5 and nothing else. **M5.**
-    ///
-    /// The note is a property of the state and never a value of [text]: a
-    /// failure written into the field is a failure the user has to delete
-    /// before they can write.
-    @Default(false) bool sttFailed,
 
     /// Whether the microphone has been refused — TASKS.md D2. **M5.**
     ///

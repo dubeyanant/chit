@@ -84,25 +84,24 @@ void main() {
       expect(await recordings(), hasLength(4));
     });
 
-    test('covers all four shapes of README §5', () async {
+    test('covers all three shapes of README §5', () async {
       await seeder.seed();
       final List<Chit> chits = await seeded();
 
-      bool typed(Chit c) =>
-          c.hasText && !c.hasAudio && c.textOrigin == TextOrigin.typed;
-      bool transcript(Chit c) =>
-          c.hasAudio && c.textOrigin == TextOrigin.transcript;
-      bool corrected(Chit c) =>
-          c.hasAudio && c.textOrigin == TextOrigin.transcriptEdited;
-      bool unrecognised(Chit c) => c.hasAudio && !c.hasText;
-
-      expect(chits.where(typed), isNotEmpty);
-      expect(chits.where(transcript), isNotEmpty);
-      expect(chits.where(corrected), isNotEmpty);
       expect(
-        chits.where(unrecognised),
+        chits.where((Chit c) => c.hasText && !c.hasAudio),
+        isNotEmpty,
+        reason: 'words alone',
+      );
+      expect(
+        chits.where((Chit c) => c.hasText && c.hasAudio),
+        isNotEmpty,
+        reason: 'words and a recording',
+      );
+      expect(
+        chits.where((Chit c) => c.hasAudio && !c.hasText),
         hasLength(1),
-        reason: 'the §3.5 chit is the one most likely to be forgotten',
+        reason: 'a recording alone, the shape most likely to be forgotten',
       );
     });
 
@@ -191,7 +190,6 @@ void main() {
       final Chit mine = await repo.save(
         stamp: AmbientStamp(capturedAt: afternoon),
         text: 'Mine, not seeded.',
-        textOrigin: TextOrigin.typed,
       );
       await seeder.seed();
 
