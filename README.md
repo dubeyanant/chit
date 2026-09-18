@@ -28,13 +28,11 @@ Then read what that milestone points at, and open
 [`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
 **[§10](#10-the-map) is the map: every file in the repository and why it exists.**
 
-> **Status:** in build, and **M3 is part way through.** Today is a screen a person can use: a
-> chit can be typed, saved and read back after a restart, and the strip above it carries a mark
-> for every chit where its time falls. A chit now also records **what the phone was doing**
-> (ADR-037), the stamp draws **one ranked ambient fact** rather than two (ADR-038), a fresh
-> install asks for location behind a screen of its own (ADR-041), and a chit is stamped when it
-> is **saved** rather than when it was opened (ADR-040). Weather and location are still fixed
-> fakes — M3's remaining groups are what take them out.
+> **Status:** in build, and **M5 is done** — five milestones signed off on a handset. A chit can
+> be typed or spoken, carries the time, the weather, what the phone was doing and that a place
+> was noted, and is read back on Today, on a scrolling timeline and in a calendar of the months
+> written. **Voice is recording and playback: there is no transcription** (ADR-058). Next is
+> **M6**, the editor for a saved chit.
 >
 > This line is a courtesy and goes stale. `docs/PROGRESS.md` is the one that is kept true.
 

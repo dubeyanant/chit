@@ -185,7 +185,7 @@ device list is the only net for this class:
 
 ---
 
-## M5 — Voice
+## M5 — Voice ✅ done, 18 September 2026
 
 The largest milestone. The microphone has been on screen since M2; this is what happens when it
 is pressed.
@@ -211,6 +211,29 @@ the "no language model installed" device test that used to close this milestone.
 **Done when** a recording saves, replays after a restart, and a chit that was typed can then be
 recorded into and keeps both; when a recording plays from the thread and the calendar; and when
 a refused microphone leaves the composer usable and explains itself.
+
+**Signed off on a handset on 18 September 2026**, on the third look. What it taught, beside the
+standing lesson that a device is the only net for this class of failure:
+
+- **A feature can be built correctly and still be the wrong feature.** Transcription passed
+  every test it had, on a fake that behaved exactly as specified, and recognised nothing the
+  first time a real microphone was pointed at it. ADR-005 had written that outcome down as a
+  cost two milestones earlier. **A stated cost is a prediction, and it is worth re-reading before
+  the code that pays it is written**, not after.
+- **A fake that behaves better than the real thing turns a test into a claim about nothing.**
+  This cost two handset passes in one day. `FakeSpeechRecognizer` was honest and the tests that
+  used it still proved nothing, because the *harness around it* was not: a listener added to a
+  provider "for symmetry" gave the controller a lifetime the app does not have (ADR-057), and a
+  fake player that carried only changes hid a pill nobody could pause. CLAUDE.md §4.1's Liskov
+  rule now names both, because the rule as written covered the fake and not its scaffolding.
+- **Removing a feature removed four open risks.** Items 32, 33, 35 and 36 were all about a
+  recogniser — two plugins sharing a microphone, a session ending mid-take, a beat spent waiting
+  for a last word, a second permission dialog. None survived ADR-058. *The cheapest way to
+  answer a hard question is sometimes to stop asking it.*
+- **A seeded fixture has to be as real as what it stands in for.** `DebugSeeder` wrote
+  thirty-eight bytes of ASCII where a recording should be, which was fine for four milestones
+  and became a pill that did nothing the moment one existed — indistinguishable, from the
+  outside, from playback being broken.
 
 ---
 

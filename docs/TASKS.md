@@ -95,18 +95,25 @@ Android `<queries>` intent and the iOS speech permission are all gone. Git holds
       under the action row, said once and naming the OS (ADR-056).
 - [x] *The §3.5 failure note was built here and removed with transcription.*
 
-## G. Handset pass and sign-off
+## G. Handset pass and sign-off ✅
 
-*What no test can settle. Two passes have happened; four bugs were found and fixed.*
+*What no test can settle. Three passes; four bugs found and fixed.*
 
 - [x] A chit recorded on a handset, and played back.
 - [x] A seeded recording played from the calendar.
-- [ ] **A recording that survives a restart** — saved, app killed, reopened, played.
-- [ ] A typed chit recorded into, keeping both.
-- [ ] A refused microphone: the sheet stays closed, the line shows once, the microphone stays.
-- [ ] **Does the wave answer a voice, or pin at the top?** Item 34 — the -60 dBFS floor is
-      arithmetic nobody has measured against a real microphone.
-- [ ] Reduced motion on: the dot at rest, the wave at v6's fixed heights.
-- [ ] Item 18 against a real `Position`, since a walk is being taken anyway.
-- [ ] Item 37 on iOS, if there is ever an iOS build: the seeded tone is a WAV in an `.m4a`.
-- [ ] Sign off in PROGRESS.md and BUILD-PLAN.md; replace this file when M6 starts.
+- [x] **A recording that survives a restart** — saved, app killed, reopened, played.
+- [x] A typed chit recorded into, keeping both.
+- [x] A refused microphone: the sheet stays closed, the line shows, the microphone stays.
+- [x] **The wave answers a voice** — item 34 closed. The -60 dBFS floor was arithmetic nobody
+      had measured against a real microphone, and it reads as loudness.
+- [x] Reduced motion on: the dot at rest, the wave at v6's fixed heights.
+- [x] **Signed off 18 September 2026.** BUILD-PLAN.md M5 carries what it taught.
+
+Not done here, and neither blocks M5:
+
+- Item 18 against a real `Position` — an M3 question riding along on a walk that has not
+  happened. It is about motion, not voice.
+- Item 37 on iOS, if there is ever an iOS build: the seeded tone is a WAV in an `.m4a`.
+
+**This file is replaced when M6 starts** (CLAUDE.md §2). Until then it is the record of a
+finished milestone.

@@ -6,58 +6,24 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M5 is voice, and voice is now recording and playback
-only — transcription was built, taken to a handset, and removed** (ADR-058). Groups A to F are
-done; group G, the handset pass, is what is left. **Recording and playback are both confirmed
-working on a phone.**
+**Last updated:** 18 September 2026. **M5 — voice — is done and signed off on a handset.** A
+chit can now be spoken as well as typed: the microphone opens a recording sheet, the take is
+attached to the open chit, and it plays back from a pill on Today, in the calendar's archive and
+on the open chit itself. **Next is M6, the chit editor** — and its first job is cutting
+[TASKS.md](TASKS.md), which still holds M5's groups.
 
-## Transcription is gone, and what that means
+**Voice is recording and playback. There is no transcription** (ADR-058): it was built, taken to
+a handset, recognised nothing, and removed — the cost ADR-005 had stated two milestones earlier.
+A chit holds words you typed, a recording you made, or both, and neither pretends to be the
+other. **There are no database migrations either** (ADR-059), while the app lives on one
+development phone: a schema change means uninstalling, and the app says so rather than opening a
+database it cannot trust.
 
-It recognised nothing on the first device it ran on. That is the cost ADR-005 stated when it
-chose on-device recognition — models vary by handset, may not exist for a language, and are
-worst at the English-Hindi code-switching that is ordinary speech here — and the owner's call
-was to remove the feature rather than chase the engine. **A transcript that is usually absent
-and occasionally wrong is a worse record than a recording that is simply kept.**
-
-Deleted: `speech_to_text`, `SpeechRecognizer` and `OnDeviceSpeechRecognizer`, the sheet's
-transcript and engine note, §3.5's failure note and `sttFailed`, the Android `<queries>` intent,
-the iOS speech permission, and **`chits.text_origin`** — provenance existed only to say whether
-words came from the recogniser, so with no recogniser it stored one value forever. That last one
-was a **v2 → v3 migration** that rebuilt the table — *and then ADR-059 removed migrations
-altogether*, since the app has never been installed anywhere but the owner's own phone and there
-are no rows anybody would miss. `schemaVersion` is back to 1 and an older install is reinstalled.
-
-Three things it took with it that were costing real risk: item 32 (could two plugins share one
-microphone at all), item 33 (a recognition session ending mid-take), and item 36 (a second
-permission dialog landing over the sheet). None of them can happen now.
-
-**§3.5 and OPEN-QUESTIONS §8.2 are retired with their numbers unreused**, since both are cited
-from elsewhere. **`design/chit-app-v6.html` was deliberately left alone** and still draws the
-transcript in the sheet — where the prototype and BEHAVIOUR.md §3.4 disagree, §3.4 is right.
-
-## Four handset bugs, all fixed
-
-**The microphone opened and no sheet appeared.** `recordingControllerProvider` was auto-disposed
-and nothing in the app watches it between the tap and the sheet being built, so Riverpod
-collected it during the permission round-trip, `Ref.mounted` went false, and `start` cancelled
-the take it had just begun. It is `keepAlive` now (**ADR-057**). *The test that should have
-caught it added a listener for symmetry with the composer* — a lifetime the app does not have.
-
-**No seeded recording played.** `DebugSeeder` wrote thirty-eight bytes of ASCII, which is a pill
-that does nothing (§6.4) and is indistinguishable from broken playback. It writes a real tone
-now, at the length each row claims.
-
-**A take went on sounding after Save**, with the pill that could have stopped it no longer drawn
-anywhere. `ComposerController` stops the player before the file moves — `stopIf(openChit)`, so a
-chit playing in the thread is not silenced by somebody saving.
-
-**Then no pill could be paused at all.** `playback` was a broadcast stream carrying only changes,
-so any pill built after a recording started drew itself as though nothing were playing and its
-one control became a play button that did nothing. Every listener gets the current state first
-now, and the fake replays the same way.
-
-**Both fake-related bugs are the same mistake**: a fake that behaves better than the real thing
-turns a test into a claim about nothing. CLAUDE.md §4.1's Liskov rule now names both.
+What the handset confirmed, over three passes: a recording that survives a restart, a wave that
+answers loudness, a refused microphone that explains itself and leaves the composer usable,
+recording into a chit that already had words, and reduced motion holding the dot still and the
+wave frozen. **BUILD-PLAN.md M5 carries what the milestone taught**, and two of its four lessons
+are about fakes rather than features.
 
 Earlier the same day, **M4 was signed off on a handset**. The fourth seeded look checked the
 third look's six fixes and everything else in M4's groups F and G, and the owner's verdict was
@@ -97,48 +63,55 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
-| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A to F done — **transcription removed** (ADR-058), **migrations removed** (ADR-059); the handset pass is left. ADR-052 to ADR-059 |
-| M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
+| **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
+| **M6** — the chit editor | 🔜 next | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017). TASKS.md is cut for it first |
 | M7 — motion and the floors | ⬜ | |
 
 **441 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
 anything the app still does.* **Schema is v1 again and there are no migrations** — an install
-carrying an older shape is reinstalled. The release APK has not been rebuilt since M3's
-sign-off.
+carrying an older shape is reinstalled.
+
+**Both APKs build at M5's sign-off**, release included — which matters because item 25 was a
+release-only failure that a debug build could not see. The release APK is **59 MB as a fat APK
+across three ABIs**, of which any one device's share is about 22 MB: three copies of
+`libflutter.so`, `libapp.so` and `libsqlite3.so` are nearly all of it, and the 1.8 MB font
+bundle of item 6 is the only part chit chose. Nothing about shipping has been decided, so no
+`--split-per-abi` and no bundle yet.
 
 ---
 
-## Next: M5 — voice, group G. The handset, and nothing else
+## Next: M6 — the chit editor
 
-[TASKS.md](TASKS.md) is M5's and groups A to F are ticked. **There is no more code to write
-before a device sees this.** Two passes have happened and found four bugs; what is left is the
-rest of group G's list.
+**M5 is signed off and nothing is half-built.** [BUILD-PLAN.md](BUILD-PLAN.md) M6 is the next
+milestone and [TASKS.md](TASKS.md) still holds M5's groups — **cut M6 into groups and replace
+that file first** (CLAUDE.md §2). The session that does:
 
-**Uninstall the app first, then seed.** There are no migrations any more (ADR-059) and the
-database on the phone is a v3 one with a `text_origin` column and its check constraint; the app
-will refuse to open it and say so. After reinstalling, `--dart-define=CHIT_SEED=seed` — the old
-seeded rows go with the old database, so there is nothing to clear.
+1. **Reads BUILD-PLAN.md M6 and ADR-017.** The editor is a screen, and leaving it with unsaved
+   changes asks. *The prompt is as much the point of the milestone as the editor is*: discarding
+   an open chit needs no confirmation and gets none (§3.1), and discarding an edit to a **record**
+   does.
+2. **Knows what M2 and M4 have been holding back.** A chit in the thread has no pointer, no focus
+   stop and no button semantics, on Today and in the archive both, because until now there was
+   nowhere for a tap to go. All of that arrives with the screen it leads to, in one change —
+   `DayThread`'s `ChitRow` is the one widget, so both screens gain it together.
+3. **Calls `ChitRepository.updateText()` at last.** It has existed since M1 precisely so this
+   milestone does not have to grow one in a hurry, and it takes `text` and `updatedAt` and
+   nothing else — an edit provably cannot move a chit in the thread, relight a calendar tile, or
+   lose a recording. There is already a test proving it.
+4. **Leaves the audio alone.** No control offers to remove or replace it — not disabled, not
+   present (ADR-014). Editing changes what the chit says, never what was said.
+5. **Reads the four lessons in BUILD-PLAN.md M5 before writing a fake.** Two of M5's four handset
+   bugs were a fake or its harness behaving better than the real thing.
 
-1. **A recording that survives a restart.** Save one, kill the app, reopen, play it. Nothing has
-   checked that the file survives `AudioStore.keep` and a cold start together.
-2. **Does the wave answer a voice, or pin at the top?** Item 34, and the only thing left that
-   could make the sheet read as broken. The -60 dBFS floor is arithmetic nobody has measured
-   against a real microphone.
-3. **A refused microphone** — the sheet stays closed, the line shows once, the microphone stays
-   tappable. Needs a fresh install or a revoked permission.
-4. **A typed chit recorded into**, keeping both. And **reduced motion**, where the dot rests and
-   the wave freezes at v6's fixed heights.
-5. **Item 18 on the same walk**, since one is being taken.
+**Seed before looking at anything** — `flutter run --dart-define=CHIT_SEED=seed`, and `=clear`
+afterwards. There are no migrations now (ADR-059), so **a schema change means uninstalling the
+app**, and the seeded rows go with it.
 
-Items 32, 33 and 36 were retired with transcription — the risks they described cannot happen
-with one plugin. **Item 35 went too**: Stop & keep no longer waits for a last word, so the sheet
-closes as soon as the recorder does.
+The old *Next* is in git under `ca43d1b`; it said to take M5 to a handset, and M5 is signed off.
 
-The old *Next* is in git under `065721b`; it said to take D1 to a handset, and D1 no longer
-exists.
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
-M5.
+M6.
 
 ---
 
@@ -236,8 +209,11 @@ they are cited from other documents — so a closed item keeps its number and sh
 22. **A refusal is a dead end, and a way back is owed.** ADR-041 spends the app's one permission
     ask on the first-run screen and never asks again (ADR-016). There is no settings screen, so
     an install that refused — or that tapped **Not now** — can only re-enable location through
-    the OS. That is the correct trade today and it stops being correct the moment there is
-    anywhere sensible to put a control. BEHAVIOUR.md §4.1's settings sketch is where it lands.
+    the OS. **M5 narrowed this to location.** A refused *microphone* now says so and names the
+    phone's settings (ADR-056), which is the honest interim; location still says nothing at all,
+    because the refusal happened on a screen the user will never see again. That is the correct
+    trade today and it stops being correct the moment there is anywhere sensible to put a
+    control. BEHAVIOUR.md §4.1's settings sketch is where it lands.
 23. **The preview on the open chit goes stale without bound.** ADR-042 captures at launch and at
     a stale save, so a phone left open all day with nothing written draws the launch weather on
     the slip indefinitely. A chit *written* on it is fine — ADR-045's window will have expired,
@@ -312,16 +288,11 @@ they are cited from other documents — so a closed item keeps its number and sh
     15 September is a recording rather than a blank. The third look's verdict was *an empty
     chit, not sure what it is*; **whether it now reads as a recording has not been looked at**,
     and it is on group G's seeded pass.
-34. **Nobody knows whether the live wave answers a voice or just pins at the top.**
-    `RecordAudioRecorder.levelOf` maps dBFS to 0–1 linearly from a **-60 dBFS floor**, and that
-    floor is arithmetic rather than a measurement — no microphone has ever fed it. If a normal
-    speaking voice sits around -15 dBFS the whole wave lives in its top quarter and reads as
-    twenty bars at full height, which says nothing; if the plugin's `Amplitude.current` is
-    already normalised on one platform and raw dBFS on the other, the two handsets draw
-    different waves from the same voice. **Check it in group G by watching the sheet while
-    speaking normally and while nearly silent.** If it pins, the fix is the floor — raising it
-    toward -40 compresses the useful range into the visible one — and it is one constant with a
-    test beside it (`record_audio_recorder_test.dart`).
+34. ~~Nobody knows whether the live wave answers a voice or just pins at the top.~~ **Closed
+    18 September 2026 on a handset** — it answers loudness. `RecordAudioRecorder.levelOf`'s
+    -60 dBFS floor was arithmetic nobody had measured against a real microphone, and it happens
+    to be right. If a future handset draws twenty bars at full height whatever is said, that
+    constant is the first suspect and raising it toward -40 is the fix.
 
 **Items 32, 33, 35 and 36 are retired.** All four were about a recogniser — whether two plugins could
 share a microphone, a session ending mid-take, the beat Stop & keep waited for a last word, and a
