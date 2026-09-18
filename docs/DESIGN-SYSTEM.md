@@ -56,11 +56,11 @@ surface inherits that, and §6.4 makes no exception for a surface that is brief.
 Grotesk** is UI metadata, stamps and buttons. **Noto Serif Devanagari** is the चित्त mark and nothing
 else. Section labels are lowercase serif italic with a hairline running off to the right.
 
-**The चित्त mark is two styles, because it does two jobs**: 11.5px in `--ink-faint` beside the
-wordmark, where it is a name, and 13px at half that strength at the foot of Today, where it is a
-full stop on the day — larger so it is noticed, quieter so it is not read. It is the one place a
-colour token is used at part strength, allowed because the mark is decoration and excluded from
-semantics, so §6.4's floor for *functional* text does not reach it.
+**The wordmark is the app's name and nothing beside it** — *Chitta*, serif, in `--ink-muted`
+(ADR-074). **The चित्त mark is one style**, 13px at half `--ink-faint` at the foot of Today, where it
+is a full stop on the day — larger than the metadata so it is noticed, quieter so it is not read. It
+is the one place a colour token is used at part strength, allowed because the mark is decoration and
+excluded from semantics, so §6.4's floor for *functional* text does not reach it.
 
 **Uppercase appears in one place: `LISTENING`** on the recording sheet — a state, shown while a
 thing is happening, which should read as a signal rather than as words. The ambient stamp is

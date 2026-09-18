@@ -97,3 +97,10 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     git at `ff78077`. Leaving it until *after* that install is how somebody's chits go.
 40. **The press pace draws nothing.** `ChitPace.press` is in §6.3's table with no caller since
     ADR-070, kept because ADR-020's rule is argued from it and because web hover will want it.
+41. **The app is called Chitta and the code is called `chit`** (ADR-074). The drawer, the top bar,
+    `MaterialApp.title` and the iOS usage strings carry the name; `pubspec.yaml`, every
+    `package:chit/` import, `ChitApp` and the repository carry the short one. Not a leftover — and
+    **the Drift file is `chit`**, where a rename would be every existing database left behind.
+42. **The launcher icon is still Flutter's default.** The owner's artwork exists but has only been
+    supplied at 240px, which is under the 432px an Android adaptive foreground needs and well under
+    iOS's 1024px. Nothing is wired up until a 1024px export lands.

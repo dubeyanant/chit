@@ -86,19 +86,11 @@ void main() {
       final Iterable<TextStyle> deva = type.styles.where(
         (TextStyle s) => s.fontFamily == ChitType.devanagariFamily,
       );
-      expect(deva, hasLength(2));
-      expect(
-        deva,
-        unorderedEquals(<TextStyle>[type.devanagariMark, type.closingMark]),
-      );
+      expect(deva, unorderedEquals(<TextStyle>[type.closingMark]));
     });
 
-    test('the closing mark is the larger and the quieter of the two', () {
-      expect(
-        type.closingMark.fontSize,
-        greaterThan(type.devanagariMark.fontSize!),
-      );
-      expect(type.closingMark.color!.a, lessThan(type.devanagariMark.color!.a));
+    test('the closing mark is drawn at part strength', () {
+      expect(type.closingMark.color!.a, lessThan(colors.inkFaint.a));
     });
   });
 

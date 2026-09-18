@@ -1,9 +1,10 @@
-# chit
+# Chitta
 
 A private journal for things that hit you during the day.
 
-The name is a wordplay. **चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field where
-impressions land. A **chit** is also a small slip of paper you scribble on and keep.
+**चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field where impressions land; a
+**chit** is a small slip of paper you scribble on and keep. **The app is Chitta and one entry is a
+chit** — the repository, the Dart package and these documents keep the short name.
 
 ## 0. Start here
 
@@ -25,7 +26,7 @@ hundred citations depend on it. **Never renumber.**
 
 | | Section | Lives in |
 |---|---|---|
-| §0 §1 §2 §5 §10 | Start here · What chit is · Core concepts · Data model · The map | this file |
+| §0 §1 §2 §5 §10 | Start here · What Chitta is · Core concepts · Data model · The map | this file |
 | **§3 §4** | **Behaviour specification · Screens** | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) |
 | **§6 §7** | **Design system · The prototype (retired)** | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
 | **§8 §9** | **The three hard questions · Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
@@ -35,16 +36,16 @@ disagrees, that document is wrong and is fixed in the change that found it. Both
 every change closes the loop on the docs it made untrue, and nothing that has stopped earning its
 place gets committed — live in [`CLAUDE.md`](CLAUDE.md) §0.
 
-## 1. What chit is
+## 1. What Chitta is
 
-chit assumes **you write when something hits you**: several times a day, in a few words, and then
+Chitta assumes **you write when something hits you**: several times a day, in a few words, and then
 you get on with your life. Everything follows from that:
 
 | Assumption | Consequence |
 |---|---|
 | People write in bursts, not sessions | A chit is short. The composer is always open on the home screen |
 | A day holds many chits | The home screen is a thread of today |
-| Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready. **One exception, once:** a fresh install explains what is captured, and asks (ADR-041) |
+| Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready. **One exception, once:** a fresh install says what to expect, explains what is captured, and asks (ADR-041, ADR-074) |
 | Speaking is often faster than typing | One surface: a live field, a microphone beside it. A chit holds words, a recording, or both |
 | The moment matters as much as the words | Time, weather, motion and location are recorded with every chit |
 | The habit survives on rhythm, not scores | Rhythm is shape and colour; the app keeps no score |

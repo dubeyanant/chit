@@ -1,6 +1,6 @@
 # Behaviour
 
-**What chit does** (§3) **and what it looks like doing it** (§4). This file and
+**What Chitta does** (§3) **and what it looks like doing it** (§4). This file and
 [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) are the design authority alongside the [README](../README.md);
 where another document disagrees, that document is wrong.
 
@@ -77,9 +77,9 @@ it.
 
 ## 4. Screens
 
-**4.1 Today (home).** The wordmark and the चित्त mark, then weekday and date on **one line at 26px**
-— the weekday italic and faint, the date in full ink. Then the timeline, the open chit on its
-visible second slip, the day's thread, and the चित्त mark closing the day.
+**4.1 Today (home).** The wordmark — *Chitta*, and nothing beside it — then weekday and date on
+**one line at 26px**, the weekday italic and faint, the date in full ink. Then the timeline, the
+open chit on its visible second slip, the day's thread, and the चित्त mark closing the day.
 
 *The action row.* The microphone leads it at the foot of the slip, full 54px; **Save** arrives to
 its right once the chit holds anything, and an untouched chit shows only the microphone. **Remove**
@@ -135,11 +135,15 @@ uppercase in the app), the elapsed figure in tabular figures, twenty waveform st
 **Discard** and **Stop & keep**. **Every other way out is Discard's** — the drag, the scrim and the
 back gesture all cancel, so nothing is kept and the take is deleted (ADR-055).
 
-**4.4 First run.** **Once in the life of an install** (ADR-041): the wordmark, then a slip with a
-chit's tear edge saying that a chit is stamped with the time and — if you let it — the weather,
-whether you were moving, and that a place was recorded; that it never shows where, and that none of
-it leaves the phone. Then **Allow**, which raises the system dialog and then opens Today, and **Not
-now**, which opens Today and **raises nothing** — a quiet option that still summoned a system prompt
+**4.4 First run.** **Once in the life of an install** (ADR-041): the wordmark, then two slips on a
+chit's tear edge and two answers. **The first says what to expect** (ADR-074) — that the page is
+always open and a few words then **Save** make a chit; that the microphone speaks one instead and
+the take is kept rather than transcribed; and that a chit is opened again by **holding** it, the one
+gesture nothing on a screen can advertise. **The second asks**: a chit is stamped with the time and
+— if you let it — the weather, whether you were moving, and that a place was recorded; it never
+shows where, and none of it leaves the phone. **The screen scrolls** where two slips and two answers
+outgrow a short phone. Then **Allow**, which raises the system dialog and then opens Today, and
+**Not now**, which opens Today and **raises nothing** — a quiet option that still summoned a system prompt
 would be a dark pattern wearing a polite label. Whatever the answer the app opens, a refusal is not
 an error state, and **neither is asked again** (ADR-016). A bare system prompt cannot say what it
 buys; this screen makes the case — *so a chit can remember what the weather was* — before the
