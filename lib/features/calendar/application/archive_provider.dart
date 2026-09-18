@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/models/chit.dart';
 import '../../../domain/repositories/chit_repository.dart';
+import '../../../shared/day_label.dart';
 import 'month_provider.dart';
 
 part 'archive_provider.g.dart';
@@ -25,16 +26,8 @@ final class ArchiveDay {
   /// when it is not the one [today] is in, because a journal is read close
   /// to when it was written and a year on every heading would be the app
   /// counting for the reader.
-  String label({required int today}) {
-    if (localDay == today) return 'Today';
-
-    final DateTime date = Chit.dateOf(localDay);
-    final DateTime now = Chit.dateOf(today);
-    if (date == Chit.startOfLocalDay(now, offsetDays: -1)) return 'Yesterday';
-
-    final String dayAndMonth = DateFormat('EEEE d MMMM').format(date);
-    return date.year == now.year ? dayAndMonth : '$dayAndMonth ${date.year}';
-  }
+  String label({required int today}) =>
+      dayLabel(localDay: localDay, today: today);
 
   @override
   bool operator ==(Object other) =>

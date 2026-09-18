@@ -55,7 +55,10 @@ lib/
 │   └── repositories/   the ChitRepository implementation
 ├── features/        one folder per screen — shell, today, composer, calendar, editor, onboarding —
 │                     each split application/ (controllers) and presentation/ (widgets)
-└── shared/widgets/  the chit vocabulary used by more than one feature
+└── shared/
+    ├── widgets/     the chit vocabulary used by more than one feature
+    └── day_label.dart   *Today* / *Yesterday* / *Friday 11 September* — the archive's headings
+                          and the editor's, one function so they cannot disagree
 ```
 
 `shared/widgets` holds pieces used by more than one feature; a widget used by one screen lives
@@ -69,6 +72,10 @@ treatment as Today* is true by construction — one widget, not two that look al
 **`AudioPill` is the one that watches a provider**, and it is a control rather than a piece of
 vocabulary: which pill is lit is a property of the app's one player, not of the row it sits on,
 so threading it down from three screens would be the same fact copied three times.
+
+**`ChitRow` is the one that navigates** (ADR-061). It pushes the editor itself rather than
+taking a callback, because both screens that draw it would pass the same one — go_router owns
+navigation (CLAUDE.md §4.2) and a destination is not something a row should have to be told.
 
 `Slip` draws its own `PerforatedEdge`, since a slip and its tear are one object. `ThreadRail`
 draws only the line; each row places its own `ThreadNode` on it, because where a node falls is

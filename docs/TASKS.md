@@ -14,7 +14,7 @@ below is that last one, on Today, before the editor exists at all.
 
 **Deliberately not in M6:** `@person` and `#hashtag` — the owner wants them and they are
 OPEN-QUESTIONS.md §9 item 8, not this milestone. What M6 owes them is only that it does not box
-them in; D11 says how. Also not here: authored motion on the editor's entry and exit (M7), and a
+them in; D12 says how. Also not here: authored motion on the editor's entry and exit (M7), and a
 settings screen (open item 22).
 
 ---
@@ -38,40 +38,45 @@ settings screen (open item 22).
 
 ---
 
-## A. Today's Discard goes; the pill gains `Remove`
+## A. Today's Discard goes; the pill gains `Remove` ✅
 
 *Before the editor exists. It is a change to the composer, and it is what makes the pill's
 `Remove` one control rather than two that look alike.*
 
-- [ ] `ComposerController.discard()` deleted. `removeTake()` in its place: stops the player,
+- [x] `ComposerController.discard()` deleted. `removeTake()` in its place: stops the player,
       deletes the temp file through `discardTemp`, clears the take, and re-arms the five seconds
       if the chit is now empty.
-- [ ] `microphoneRefused` was cleared by Discard and now has no clearer. It clears on `save()`
+- [x] `microphoneRefused` was cleared by Discard and now has no clearer. It clears on `save()`
       — `_openChit()` already returns a fresh state — and on the next `recordingStarted()`.
-- [ ] `AudioPill` gains an optional `onRemove`. Absent on a chit in the thread and in the
+- [x] `AudioPill` gains an optional `onRemove`. Absent on a chit in the thread and in the
       archive, present on the open chit and in the editor. `QuietButton`'s weight.
-- [ ] `_CommitControls` becomes Save alone; `_ActionRow` is the microphone and Save.
-- [ ] Tests: `composer_controller_test.dart` for `removeTake` — the take goes, the file is
+- [x] `_CommitControls` becomes Save alone; `_ActionRow` is the microphone and Save.
+- [x] Tests: `composer_controller_test.dart` for `removeTake` — the take goes, the file is
       deleted, the microphone comes back, the prompt re-arms on an emptied chit, and the chit's
       text is untouched.
-- [ ] Docs: BEHAVIOUR.md §3.1, §3.2, §3.4 and §4.1's sketch; DESIGN-SYSTEM.md §6.3 where the
+- [x] Docs: BEHAVIOUR.md §3.1, §3.2, §3.4 and §4.1's sketch; DESIGN-SYSTEM.md §6.3 where the
       pace table names Discard; ARCHITECTURE.md §4; **ADR-060**; README.md §10 if a file moves;
       PROGRESS.md.
 
-## B. The affordance and the route
+## B. The affordance and the route ✅
 
 *The editor as a place you can get to and read. No editing yet.*
 
-- [ ] `ChitRow` becomes a button: pointer, focus stop, button semantics, and the tap. On Today
+- [x] `ChitRow` becomes a button: pointer, focus stop, button semantics, and the tap. On Today
       **and** in the archive, in this change — one widget, so both screens gain it together.
       This is what M2 and M4 have been holding back.
-- [ ] The comment D12 asks for, at the `Text` that becomes a `Text.rich`.
-- [ ] `ChitRoute` gains the editor: a route **above** the shell (D3), taking a chit id.
-- [ ] `editor_screen.dart` — back arrow and the chit's day in Today's one-line treatment, then
+- [x] The comment D12 asks for, at the `Text` that becomes a `Text.rich`.
+- [x] `ChitRoute` gains the editor: a route **above** the shell (D3), taking a chit id.
+- [x] `editor_screen.dart` — back arrow and the chit's day in Today's one-line treatment, then
       the slip: the saved stamp, the text, the pill. Read-only.
-- [ ] `editor_controller.dart` — loads the chit through `ChitRepository.byId`, which has existed
+- [x] `editor_controller.dart` — loads the chit through `ChitRepository.byId`, which has existed
       since M1 for this. A missing id lands back where it came from rather than drawing nothing.
-- [ ] Tests: the controller through a bare `ProviderContainer` — loads, and the missing-id case.
+- [x] Tests: the controller through a bare `ProviderContainer` — loads, and the missing-id case.
+- [x] `shared/day_label.dart` — *Today* / *Yesterday* / *Friday 11 September* moved off
+      `ArchiveDay` so the editor's header and the archive's headings are one function.
+- [x] `ChitColors.rowPressedWash`, and the stamp lifting to `--ink-muted` under it. **The
+      contrast test decided this rather than checking it**: `--ink-faint` measures 4.42:1 on the
+      wash and fails §6.4's floor (ADR-061).
 
 ## C. Editing the text
 

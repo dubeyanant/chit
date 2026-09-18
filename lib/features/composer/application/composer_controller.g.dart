@@ -18,7 +18,8 @@ part of 'composer_controller.dart';
 ///
 /// **This screen captures nothing** (ADR-042). *It used to drive an
 /// `open()`/`settle()` pair on every chit open, which meant four taps of
-/// Discard made four network calls.* Capture now happens twice in the life of
+/// Discard — itself gone since ADR-060 — made four network calls.* Capture now
+/// happens twice in the life of
 /// the app — at launch and at save — and what the slip draws is whatever
 /// `AmbientSignals` is holding.
 ///
@@ -45,7 +46,8 @@ final composerControllerProvider = ComposerControllerProvider._();
 ///
 /// **This screen captures nothing** (ADR-042). *It used to drive an
 /// `open()`/`settle()` pair on every chit open, which meant four taps of
-/// Discard made four network calls.* Capture now happens twice in the life of
+/// Discard — itself gone since ADR-060 — made four network calls.* Capture now
+/// happens twice in the life of
 /// the app — at launch and at save — and what the slip draws is whatever
 /// `AmbientSignals` is holding.
 ///
@@ -70,7 +72,8 @@ final class ComposerControllerProvider
   ///
   /// **This screen captures nothing** (ADR-042). *It used to drive an
   /// `open()`/`settle()` pair on every chit open, which meant four taps of
-  /// Discard made four network calls.* Capture now happens twice in the life of
+  /// Discard — itself gone since ADR-060 — made four network calls.* Capture now
+  /// happens twice in the life of
   /// the app — at launch and at save — and what the slip draws is whatever
   /// `AmbientSignals` is holding.
   ///
@@ -111,7 +114,7 @@ final class ComposerControllerProvider
 }
 
 String _$composerControllerHash() =>
-    r'a78e2e040ff003fc74f1c7496e398c86fae7804f';
+    r'effa3e54d20dc4d6ae88df8bf4f0b971ed960dcc';
 
 /// The open chit's state.
 ///
@@ -123,7 +126,8 @@ String _$composerControllerHash() =>
 ///
 /// **This screen captures nothing** (ADR-042). *It used to drive an
 /// `open()`/`settle()` pair on every chit open, which meant four taps of
-/// Discard made four network calls.* Capture now happens twice in the life of
+/// Discard — itself gone since ADR-060 — made four network calls.* Capture now
+/// happens twice in the life of
 /// the app — at launch and at save — and what the slip draws is whatever
 /// `AmbientSignals` is holding.
 ///

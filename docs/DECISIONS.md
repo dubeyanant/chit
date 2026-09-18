@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-seven records, not sixty: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Fifty-nine records, not sixty-two: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -78,6 +78,8 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-058 | Transcription is removed, and a chit's words are always typed | the whole feature, not a flag; `textOrigin` goes with it |
 | ADR-059 | There are no migrations while there is nothing to migrate | `schemaVersion` pinned at 1; an old install is reinstalled. **Reverses the moment chit holds data somebody would miss** |
 | ADR-060 | The open chit's Discard goes; a recording is dropped from its pill | M6 group A — Discard's last unique job was the take, and the take is on the pill. The sheet's Discard stays |
+| ADR-061 | A chit in the thread is a button, and its stamp lifts under a finger | M6 group B — one widget, so Today and the archive gain the tap together. No long-press, no swipe |
+| ADR-062 | The editor is a route above the tab shell | M6 group B — one task, one way out; a one-shot read, not a stream; a missing row pops the screen |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -967,3 +969,40 @@ stays** (ADR-055) — the word means *throw away the take in progress*, which st
 emptying a half-written chit is now two gestures rather than one, and nobody has felt that on a
 handset; if it reads badly the honest answer is a clear affordance on the field, not Discard
 back in the row.
+
+---
+
+## ADR-061 — A chit in the thread is a button, and its stamp lifts under a finger
+
+**The whole chit row opens the editor**, on Today and in the archive both — over a chevron, an
+edit affordance beside the row, or a long-press. `ChitRow` is one widget, so the two screens
+gain the tap in the same change and cannot drift; the row *is* the target, so a marker pointing
+at something that large would only repeat what the press says. There is **no long-press and no
+swipe-to-delete**: the thread is a reading surface, delete lives in the editor (ADR-062), and a
+flick that destroys a memory has nothing to recover it from. The press is a **6% ink wash**
+(`rowPressedWash`), and it forced a second call — at 6% `--ink-faint` measures **4.42:1** and
+fails §6.4's floor, so **the row's stamp lifts to `--ink-muted` (5.65:1) while it is held**,
+exactly the rule §6.1 already states for the quiet button's label. `contrast_test.dart` holds
+both figures and is where the design was decided rather than merely checked. The wash gets its
+own token despite equalling `discardPressedWash`, because a button's press and the largest
+target in the app are free to want different weights. Cost: `AmbientStampRow.saved` now takes a
+`lifted` flag, which is presentation state reaching a piece of vocabulary — accepted because
+the alternative is a stamp that fails a contrast floor in the one state nobody screenshots.
+
+---
+
+## ADR-062 — The editor is a route above the tab shell
+
+The editor is a **sibling of `StatefulShellRoute`, pushed** — over a route inside the current
+tab's branch. It covers the tab bar, so editing is one task with one way out and a tab change
+cannot strand a half-typed edit in a branch nobody is looking at; being pushed makes the back
+gesture and the back arrow the same exit, which matters because ADR-017's prompt has to fire on
+both and one exit is easier to get right than three. It is **not a `ChitRoute`** — that enum is
+the list the tab bar is built from, so a constant there would be a third tab, the same reason
+`firstRunPath` sits outside it. The chit is named by a path parameter and loaded by a **one-shot
+read, not a stream**: the thread and the calendar watch because two tabs must never disagree
+(§7), but a row re-emitting under a caret is a screen fighting its own user, and the only thing
+that writes this row while the editor is open is the editor. A **null answer pops the screen**
+rather than drawing a slip with nothing on it, since an id outlives its row across a delete and
+a blank screen with a back arrow explains nothing. The header is a back arrow and the chit's
+day — not the wordmark, which would make somewhere you came into read as a second home.

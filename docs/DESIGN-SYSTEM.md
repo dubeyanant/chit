@@ -87,6 +87,7 @@ Hierarchy that used to come from colour now comes from weight, and the weights a
 | Microphone, pressed | `--ink` 10% | the open chit | |
 | Audio pill, pressed | `--ink` 8% | a chit, or the ground | |
 | **The quiet button**, pressed | `--ink` 6% | wherever one is | **label lifts to `--ink`** — see below |
+| **A chit in the thread**, pressed | `--ink` 6% | the ground | **stamp lifts to `--ink-muted`** — 4.42:1 faint, 5.65:1 muted (ADR-061) |
 | Calendar, one chit | `--ink` 6% | the ground | numeral in `--ink`, 12.66:1 |
 | Calendar, two | `--ink` 12% | the ground | 10.69:1 |
 | Calendar, three | `--ink` 20% | the ground | 8.31:1 |
@@ -107,6 +108,10 @@ not, and web is after v1 (ADR-019). That is when they get added — and measured
 (§6.4), so the wash is the *entire* acknowledgement a press produces, and one that cannot be
 seen makes a working control read as a dead one. That is why the quiet button has a wash at all:
 v6 pressed it in `--hair-soft`, which measures 1.0145:1 on a chit and is not drawn.
+
+**The chit row does the same thing for the same reason** (ADR-061). It is a button since M6 and
+its stamp is `--ink-faint`, which measures 4.42:1 on the 6% wash; `--ink-muted` measures 5.65:1,
+so the stamp lifts while the row is held. Two places faint ink meets a wash, one rule.
 
 **And why its label lifts.** The label is `--ink-faint`, which clears the floor on a bare
 chit at 4.56:1 and fails on *any* wash — 4.12:1 at even 4%, and the wash is 6%. So while it is

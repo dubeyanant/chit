@@ -6,7 +6,8 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M6 — the chit editor — is under way; group A is done.**
+**Last updated:** 18 September 2026. **M6 — the chit editor — is under way; groups A and B are
+done.**
 [TASKS.md](TASKS.md) is cut for it, in seven groups, and the cut is **wider than
 [BUILD-PLAN.md](BUILD-PLAN.md) M6 as written** — the owner asked for three things the plan did
 not have. A chit's recording becomes removable and replaceable, which **reverses ADR-014's
@@ -22,9 +23,22 @@ a chit it empties. The recording sheet keeps its own Discard (ADR-055); the word
 away the take in progress* and that still happens. **Nobody has looked at any of this on a
 handset** — group G.
 
-**Next is group B**: the chit row becomes a tap target on Today *and* in the archive, and the
-editor screen arrives above the tab shell as somewhere to read a chit. `lib/features/editor/`
-still holds the two placeholder files M1 left there.
+**Group B is committed.** A chit in the thread is now a button — the whole row, on Today and in
+the archive, since it is one widget (ADR-061) — and it opens the editor, a route **above** the
+tab shell (ADR-062). The screen only reads so far: back arrow, the chit's day, and the chit on
+the same slip under the same saved stamp. It cannot move the stamp and never will be able to;
+that is the *no metadata* rule made structural.
+
+**Group B's one real design finding is in `contrast_test.dart`, which decided rather than
+checked.** The row's 6% pressed wash puts `--ink-faint` at **4.42:1**, under §6.4's floor, so
+the stamp lifts to `--ink-muted` (5.65:1) while the row is held — the same rule §6.1 already
+had for the quiet button's label, now in its second place. A future session raising
+`rowPressedWash` has to move the stamp again or drop below the floor, and the test says so.
+
+**Next is group C** — editing the text: `EditorController`'s dirty rule, and
+`ChitRepository.updateText` becoming one transactional `update` that takes a sealed `AudioEdit`
+(TASKS.md C). Group D's prompt sheet follows it, and **the sheet is the app's first
+confirmation of any kind** — there is still no `showDialog` and no `SnackBar` anywhere.
 
 *M5 — voice — was signed off on a handset earlier the same day.* A chit can be spoken as well as
 typed: the microphone opens a recording sheet, the take is attached to the open chit, and it
@@ -82,10 +96,10 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
 | **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
-| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A done**. ADR-017, ADR-060 onward. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
+| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A and B done**. ADR-017, ADR-060 to ADR-062. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
 | M7 — motion and the floors | ⬜ | |
 
-**444 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
+**456 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
 anything the app still does.* **Schema is v1 again and there are no migrations** — an install
 carrying an older shape is reinstalled.
@@ -99,37 +113,37 @@ bundle of item 6 is the only part chit chose. Nothing about shipping has been de
 
 ---
 
-## Next: M6 group B — the affordance and the route
+## Next: M6 group C — editing the text
 
-**Group A is done and nothing is half-built.** [TASKS.md](TASKS.md) is the working list; its
-**D1–D12 table is where this milestone's answers live** and is worth reading before the code.
-The session that picks up group B:
+**Groups A and B are done and nothing is half-built.** [TASKS.md](TASKS.md) is the working
+list; its **D1–D12 table is where this milestone's answers live** and is worth reading before
+the code. The session that picks up group C:
 
-1. **Makes `ChitRow` a button** — pointer, focus stop, button semantics and the tap — on Today
-   **and** in the archive, in one change. One widget, so both screens gain it together; this is
-   what M2 and M4 have been holding back.
-2. **Leaves the door open for `@person` and `#hashtag`** (D12, OPEN-QUESTIONS.md §9 item 8). A
-   `TapGestureRecognizer` on a `TextSpan` beats an ancestor's tap, so the row can be a button
-   and still carry links later. A comment at the `Text` that becomes a `Text.rich`, and nothing
-   in the schema.
-3. **Puts the editor above the tab shell** (D3), not inside a branch — one task with one way
-   out, so a tab change cannot strand a half-typed edit.
-4. **Draws it read-only first**: back arrow and the chit's day, then the slip with the saved
-   stamp, the text and the pill. `ChitRepository.byId` has existed since M1 for exactly this.
-5. **Does not touch the stamp, ever** (D4). `createdAt`, `localDay` and the three ambient
-   fields are not parameters of anything the editor can call — that is the owner's *no metadata*
-   rule made structural rather than remembered.
-6. **Reads BUILD-PLAN.md M5's four lessons before writing a fake.** Two of M5's four handset
+1. **Gives `EditorController` the field and a dirty rule.** Dirty is *differs from what was
+   loaded*, not *was typed in* — typing a character and deleting it again is not a change, and
+   it is the difference between a prompt that means something and one people learn to dismiss.
+   The controller decides; the widget draws (D11), because ADR-031 means nothing decided in a
+   widget can be tested at all.
+2. **Turns `ChitRepository.updateText` into one transactional `update`** taking the text and a
+   sealed `AudioEdit` — `Keep`, `Remove`, `Replace`. Its old guarantee was that an edit could
+   not touch audio, and D5 takes that away; what replaces it is one write, exhaustively
+   switched, with the invariant asserted in one place. **`updatedAt` moves and nothing else
+   does** (D4) — that is the owner's *no metadata* rule, and there is already a test shape for
+   it in `chit_repository_test.dart`.
+3. **Shows Save only once something has changed** (D7), in `PrimaryButton`'s weight. Cancel
+   arrives beside it in group D, with the prompt it raises.
+4. **Reads BUILD-PLAN.md M5's four lessons before writing a fake.** Two of M5's four handset
    bugs were a fake or its harness behaving better than the real thing.
 
-**Two things group A left for the device, not for a test** (ADR-031): that a row of microphone
-and Save reads as complete without Discard, and that Remove beside the pill is findable. Both
-are on group G's list.
+**What groups A and B left for a device, not for a test** (ADR-031) — all on group G's list:
+that a row of microphone and Save reads as complete without Discard; that Remove beside the
+pill is findable; that a chit row reads as tappable at all, since the only affordance is the
+press; and that the pressed wash is visible without being loud.
 
 **M6 changes no schema**, so unlike ADR-059's usual cost nobody has to uninstall. Seed before
 looking at anything — `flutter run --dart-define=CHIT_SEED=seed`, `=clear` after.
 
-The old *Next* is in git under `0e7914a`; it said to cut TASKS.md for M6, and TASKS.md is cut.
+The old *Next* is in git under `ff15d5c`; it said to build group B, and group B is built.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M6.

@@ -316,6 +316,12 @@ happening, under it for where a day ended (ADR-036).
 
 The open chit rests on a visible second slip, offset behind it: a pad you tear from.
 
+**A chit in the thread opens** — the whole row, on Today and in the archive alike (ADR-061).
+Under a finger it takes a 6% ink wash and its stamp lifts from `--ink-faint` to `--ink-muted`,
+because faint ink fails the contrast floor on any wash at all (DESIGN-SYSTEM.md §6.1). No
+chevron: the row *is* the target. There is no long-press and no swipe — deleting a chit lives
+in the editor (§4.5), not a thumb's width from a scroll.
+
 The चित्त mark closes the day at the foot of the thread — it appears there and beside the
 wordmark, nowhere else.
 
@@ -356,6 +362,8 @@ Reached from the bottom tab bar.
   is the same widget). Each day is headed *Today*, *Yesterday*, or its weekday and date — the
   year only when it is not this one — over a hairline, with its count at the right. Paged as the
   reader nears the end. **An archive with nothing in it draws nothing.**
+  **A chit in the archive opens the editor**, exactly as it does on Today (§4.1, ADR-061) —
+  same widget, same press, same destination.
 - Tapping a date filters the archive to that day and frames the tile in ink; tapping again, or
   **Show every day**, clears it — the quiet button, Discard's weight. A filtered day with
   nothing in it reads *"Nothing written that day."*
@@ -437,3 +445,36 @@ screen (ADR-016). A refusal runs with no pin and no motion, and says nothing abo
 **Only location is asked for here.** The microphone belongs to §3.4, asked for the first time
 somebody taps it — asking at launch for a control this build does not yet have would undo the
 trust this screen exists to build.
+
+### 4.5 The chit editor
+
+Reached by tapping any chit in the thread — on Today or in the archive (§4.1). **It covers the
+tab bar** (ADR-062): one task, one way out.
+
+```
+  ←   Sunday 13 September                          ← back arrow, and the chit's day
+
+  ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐
+  │ 8:05 am   clear                        │       ← the saved stamp, unchanged and unchangeable
+  │                                        │
+  │ Didn't sleep. Room too cold, again.    │
+  │                                        │
+  │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]           Remove    │
+  └────────────────────────────────────────┘
+```
+
+The header is a back arrow and the day — *Today*, *Yesterday*, or the weekday and date, the
+same phrase the archive's headings use. **Not the wordmark**: this is somewhere you came into,
+not a second home.
+
+The chit sits on the same slip Today writes on, under the same `.saved` stamp the thread reads,
+because it is the same chit. **Nothing on this screen can move the stamp** — not the time, not
+the day, not the weather, the place or the motion. An edit changes what the chit says, never
+when or where it was written.
+
+**A chit whose row has gone leaves the screen** rather than drawing an empty slip. An id
+outlives its row across a delete, and a blank page with a back arrow explains nothing.
+
+*As of M6 group B this screen only reads.* The field, the action row — Cancel and **Save chit**,
+appearing once something has changed — **Remove** on the pill, and *Delete this chit* below the
+slip arrive in groups C to F; `docs/TASKS.md` has them and the decisions they turn on.

@@ -156,6 +156,18 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   /// applied to the state a phone actually has.
   static const double discardPressedWash = 0.06;
 
+  /// **A chit in the thread** under a finger — 6%, ADR-061.
+  ///
+  /// The same figure as [discardPressedWash] and deliberately not the same
+  /// token: the quiet button's wash is a property of that button, and this is
+  /// a property of a row that is the largest target in the app. They are free
+  /// to move apart, and a row is the one most likely to want to.
+  ///
+  /// **`--ink-faint` fails on it** — 4.42:1 against §6.4's 4.5 floor — which
+  /// is why the row's stamp lifts to [inkMuted] (5.65:1) while it is held.
+  /// Same rule as the quiet button's label, second place it was needed.
+  static const double rowPressedWash = 0.06;
+
   /// The calendar's four density steps, faintest first — 6, 12, 20 and 30%.
   ///
   /// How much ink went down on a day. The *mapping* from a chit count to one

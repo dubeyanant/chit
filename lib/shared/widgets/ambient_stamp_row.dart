@@ -34,7 +34,8 @@ final class AmbientStampRow extends StatelessWidget {
   /// The stamp on the chit being written. Brighter, and the one place the pin
   /// is drawn.
   const AmbientStampRow.open({required this.stamp, super.key})
-    : _onOpenChit = true;
+    : lifted = false,
+      _onOpenChit = true;
 
   /// The stamp under a chit in the thread. Quieter, and never pinned —
   /// though it does carry motion (ADR-039).
@@ -45,11 +46,25 @@ final class AmbientStampRow extends StatelessWidget {
   /// every chit.* **Motion is the opposite case and so it is drawn here**:
   /// almost no chit has one, so the two you wrote on a train stand out from
   /// the ten you wrote at home. Same argument, opposite outcome.
-  const AmbientStampRow.saved({required this.stamp, super.key})
-    : _onOpenChit = false;
+  ///
+  /// **[lifted] is the pressed state of the row it sits in** — ADR-061. A
+  /// chit row is a button since M6, and its 6% wash drops `--ink-faint` to
+  /// 4.42:1, under §6.4's floor. So while the row is held the stamp goes to
+  /// `--ink-muted` (5.65:1). It is exactly the rule §6.1 already states for
+  /// the quiet button's label, applied to the second place faint ink meets a
+  /// wash, and `contrast_test.dart` holds both figures.
+  const AmbientStampRow.saved({
+    required this.stamp,
+    this.lifted = false,
+    super.key,
+  }) : _onOpenChit = false;
 
   /// What was captured when the chit was opened.
   final AmbientStamp stamp;
+
+  /// Whether the row this stamp sits in is being held. Always false on the
+  /// open chit, which is not a button.
+  final bool lifted;
 
   /// Which of the two the row is. Private, and set by the constructors, so
   /// there is no way to ask for a pinned row in the thread.
@@ -61,7 +76,11 @@ final class AmbientStampRow extends StatelessWidget {
     final space = context.space;
 
     return DefaultTextStyle(
-      style: _onOpenChit ? type.ambientStamp : type.chitMeta,
+      style: _onOpenChit
+          ? type.ambientStamp
+          : lifted
+          ? type.chitMeta.copyWith(color: context.colors.inkMuted)
+          : type.chitMeta,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -99,7 +118,7 @@ final class AmbientStampRow extends StatelessWidget {
           // in for the word it displaced, so it weighs what that weighed.
           MotionFact(:final MotionState state) => MotionIcon(
             state: state,
-            colour: _onOpenChit
+            colour: _onOpenChit || lifted
                 ? context.colors.inkMuted
                 : context.colors.inkFaint,
             size: context.space.s3,
