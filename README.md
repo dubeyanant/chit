@@ -19,7 +19,7 @@ Read these four, in this order. It is about ten minutes and it is the whole cont
 
 | # | Read | For |
 |---|---|---|
-| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, what is on a handset, the device checklist, every open item. It is the present, not a log — git is the history. If you read one thing, read this |
+| 1 | **[`docs/PROGRESS.md`](docs/PROGRESS.md)** | **Where the build stands and what to do next.** The status board, the next task, every open item. It is the present, not a log — git is the history. If you read one thing, read this |
 | 2 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the two standing rules below, the engineering principles, the commit format |
 | 3 | **[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md)** | What "done" means for the milestone `PROGRESS.md` just named |
 | 4 | **[`docs/TASKS.md`](docs/TASKS.md)** | That milestone cut into buildable groups, with the decisions it turns on already settled |
@@ -163,10 +163,10 @@ chit/
 
 | File | Answers | Read it |
 |---|---|---|
-| [`docs/PROGRESS.md`](docs/PROGRESS.md) | **Where the build stands and what is next.** The status board, what the last session did, and every open item | First. Always |
+| [`docs/PROGRESS.md`](docs/PROGRESS.md) | **Where the build stands and what is next.** The status board, the next task, and every open item | First. Always |
 | [`CLAUDE.md`](CLAUDE.md) | How to work here — the two standing rules, the engineering principles, the commit format, the commands | Second, before writing anything |
-| [`docs/TASKS.md`](docs/TASKS.md) | **The current milestone, cut into groups that can each be built, tested and committed on their own.** Holds one milestone at a time and is replaced wholesale when the next starts; `PROGRESS.md` keeps the history | Third, when you are about to write code |
-| [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) | The order it gets built in, M0 to M7, and what "done" means for each | Starting a milestone |
+| [`docs/TASKS.md`](docs/TASKS.md) | **The current milestone, cut into groups that can each be built, tested and committed on their own.** Holds one milestone at a time and is replaced wholesale when the next starts; git keeps the history | Third, when you are about to write code |
+| [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) | The order it gets built in, what "done" means for the milestone that is open, and what the finished ones taught | Starting a milestone |
 | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
 | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | **§6 and §7** — the palette, the three faces, the spacing, the motion, the accessibility floors, and the prototype | Drawing anything |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How it is put together — the three layers, the folder map, the Riverpod conventions, the data flow behaviour by behaviour | Adding a file and unsure where it goes |

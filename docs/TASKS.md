@@ -1,21 +1,22 @@
 # Tasks — the current milestone, broken down
 
-**M6 — The chit editor.** What [BUILD-PLAN.md](BUILD-PLAN.md) M6 says is *done*, cut into groups
-that can each be built, tested and committed on their own.
+**M7 — Motion and the floors.** What [BUILD-PLAN.md](BUILD-PLAN.md) M7 says is *done*, cut into
+five groups that can each be built, tested and committed on their own. The last milestone of v1.
 
 This file holds **one milestone at a time** and is replaced wholesale when the next one starts.
 It is the working list; [PROGRESS.md](PROGRESS.md) is the handover.
 
-**Cut on 18 September 2026**, and the cut is wider than BUILD-PLAN.md M6 as written. Three
-things the owner asked for that the plan did not have: **a chit's recording can be removed and
-replaced**, which reverses ADR-014's second half; **a chit can be deleted**, which closes open
-item 9; and **Today's Discard goes**, replaced by a `Remove` on the audio pill. The first group
-below is that last one, on Today, before the editor exists at all.
+**Cut on 18 September 2026.** The authority is DESIGN-SYSTEM.md §6.3 (the pace table and the
+three authored moments) and §6.4 (the floors). Much of the groundwork exists: `ChitMotion`
+carries the five paces, `fade`/`travel`/`loop` already collapse under reduced motion and
+`chit_motion_test.dart` holds the re-timing floors; `BranchFade` gives a returning tab its
+200ms fade; the timeline already scrolls to now (`animateTo`, `jumpTo` under reduced motion);
+the record dot loops through `ChitMotion.loop`; the prompt and Save already fade. What is
+missing is the depress, the stagger, the two authored arrivals, focus rings, and the audit.
 
-**Deliberately not in M6:** `@person` and `#hashtag` — the owner wants them and they are
-OPEN-QUESTIONS.md §9 item 8, not this milestone. What M6 owes them is only that it does not box
-them in; D12 says how. Also not here: authored motion on the editor's entry and exit (M7), and a
-settings screen (open item 22).
+**Deliberately not in M7:** anything from OPEN-QUESTIONS.md §9, migrations (open item 38), a
+settings screen (item 22), the type comparison (item 1). M7 changes no schema and no behaviour;
+it changes how the existing behaviour arrives.
 
 ---
 
@@ -23,143 +24,99 @@ settings screen (open item 22).
 
 | | Decision | Where |
 |---|---|---|
-| **D1** | **Today's Discard goes entirely, and the audio pill gains `Remove`.** Text is cleared by select-all-delete; a kept take is dropped from the pill. Discard's one remaining job was the take, and the pill is where the take is | ADR-060, group A |
-| **D2** | **Holding a chit row opens the editor**, and the thread offers nothing else — a tap does nothing, and there is no swipe. The whole row is the target, on Today and in the archive, in one change. *A tap until the third look — ADR-067* | ADR-061, ADR-062 |
-| **D3** | **The editor covers the tab shell.** A route above it, not inside a branch: one task with one way out, so a tab change cannot strand a half-typed edit | ADR-011, ADR-062 |
-| **D4** | **The stamp cannot move.** `createdAt`, `localDay`, `weather`, `lat`, `lon` and `motion` are not parameters of anything the editor can call. `updatedAt` moves on any edit, text or audio | ADR-014 |
-| **D5** | **A chit's recording can be removed and replaced** — reverses ADR-014's second half, which said audio was neither editable nor removable anywhere. The pill's `Remove` is one control on both screens | ADR-063 |
-| **D6** | **Removing a recording in the editor is staged until Save**, and it cannot be otherwise: a row with neither words nor audio is one the check constraint refuses. It is also what makes Cancel honest | README §5, DATA-MODEL.md §2 |
-| **D7** | **Save appears only once something has changed**, and is withheld when the chit holds nothing — a removal that empties the chit leaves Cancel and Delete alone. Today's rule, on Today's own terms: a control arrives when there is something for it to do, and a retired one leaves rather than greys out | BEHAVIOUR.md §4.1 |
-| **D8** | **Three acts, three words.** *Discard* is gone; *Cancel* abandons an edit; *Delete this chit* destroys a record, named in full so it cannot be misread | ADR-064, CLAUDE.md §4.1 |
-| **D9** | **The prompt is a slip-style sheet, and it is the app's first confirmation.** No `showDialog` and no `SnackBar` exist anywhere yet, so whatever this is becomes the idiom every later prompt inherits | ADR-011, ADR-064 |
-| **D10** | **Delete confirms and there is no undo.** There is no trash and no backend, so an undo would be a whole feature pretending to be a nicety | ADR-064 |
-| **D11** | **The controller decides; the widget draws.** Whether to prompt, whether Save shows, whether the chit is still legal — all controller state, because ADR-031 means none of it can be tested through a screen | ADR-031 |
-| **D12** | **Nothing here boxes in `@person` and `#hashtag`.** A row that is a button can still carry tappable spans — a `TapGestureRecognizer` on a `TextSpan` wins the gesture arena against an ancestor — so `ChitRow`'s `Text` becomes a `Text.rich` later without restructuring. Nothing goes in the schema now | OPEN-QUESTIONS.md §9 |
+| **D1** | **Reduced motion is one flag, already resolved.** `context.motion.reduceMotion` comes from `MediaQuery.disableAnimationsOf`; every new animation reads `context.motion` and nothing else, and no widget checks the platform itself | ADR-020, §6.4 |
+| **D2** | **Press feedback is a depress on top of the wash, never instead of it.** 0.985 on the buttons and the microphone, 0.99 on the pill, at `ChitPace.press`; under reduced motion the depress collapses and the wash stays. The scale factors are named in `ChitMotion` and asserted in a test | §6.3's pace table |
+| **D3** | **The stagger runs on a screen's first build only, and sheds itself.** One widget in `shared/widgets/` owns it; a tab regaining visibility gets `BranchFade` and nothing more; the archive re-runs it only when a tapped date rebuilds the list. The delay per row and the cap are a pure function | §6.3 |
+| **D4** | **The two authored arrivals travel from where they came from**: a saved chit falls down into the thread, a kept recording rises up into the open chit. Both are `ChitPace.arrival` and both become a plain 220ms fade under reduced motion (`ChitMotion.fade` already does this) | §6.3, ADR-020 |
+| **D5** | **Focus rings are `--seal`, drawn by `FocusableActionDetector`, and only on keyboard or switch focus** — never on touch. One decoration in `shared/widgets/`, used by every control | §6.4 |
+| **D6** | **The caret (open item 14) is closed as a stated limit, not a fix.** Flutter offers no public way to steady the caret without hiding it, and the keyboard blinks regardless. §6.4 says so in one sentence, and the item closes. A framework issue is filed only if it costs nothing | §6.4, item 14 |
+| **D7** | **Arithmetic floors are tests; perceptual floors are a handset.** Target sizes named in `ChitSpace` and the two scale factors are asserted in `widget_constants_test.dart`; whether a target can be hit, whether the stagger reads as one movement and what a screen reader says are group E, written into PROGRESS.md as seen | ADR-031 |
 
 ---
 
-## A. Today's Discard goes; the pill gains `Remove` ✅
+## A. Press feedback
 
-*Before the editor exists. It is a change to the composer, and it is what makes the pill's
-`Remove` one control rather than two that look alike.*
+*The smallest group and the one every later group is felt through, so it goes first.*
 
-- [x] `ComposerController.discard()` deleted. `removeTake()` in its place: stops the player,
-      deletes the temp file through `discardTemp`, clears the take, and re-arms the five seconds
-      if the chit is now empty.
-- [x] `microphoneRefused` was cleared by Discard and now has no clearer. It clears on `save()`
-      — `_openChit()` already returns a fresh state — and on the next `recordingStarted()`.
-- [x] `AudioPill` gains an optional `onRemove`. Absent on a chit in the thread and in the
-      archive, present on the open chit and in the editor. `QuietButton`'s weight.
-- [x] `_CommitControls` becomes Save alone; `_ActionRow` is the microphone and Save.
-- [x] Tests: `composer_controller_test.dart` for `removeTake` — the take goes, the file is
-      deleted, the microphone comes back, the prompt re-arms on an emptied chit, and the chit's
-      text is untouched.
-- [x] Docs: BEHAVIOUR.md §3.1, §3.2, §3.4 and §4.1's sketch; DESIGN-SYSTEM.md §6.3 where the
-      pace table names Discard; ARCHITECTURE.md §4; **ADR-060**; README.md §10 if a file moves;
-      PROGRESS.md.
+- [ ] `ChitMotion` gains the two scale factors, `pressDepress` (0.985) and `pillDepress`
+      (0.99), and a `depress(ChitPace.press)` that is the full duration or zero under reduced
+      motion (D1, D2).
+- [ ] A `Pressable` in `shared/widgets/` — the depress, the wash callback and the tap in one
+      place — that `PrimaryButton`, `QuietButton`, `Microphone` and `AudioPill` are built on.
+      `ChitRow` keeps its hold and gains nothing here; its wash is its feedback.
+- [ ] The calendar's day tile keeps its own `AnimatedScale` on selection — that is a state, not
+      a press.
+- [ ] Tests: the factors and the pace in `widget_constants_test.dart` and `chit_motion_test.dart`;
+      that the depress is zero under reduced motion and the wash is not.
+- [ ] Docs: DESIGN-SYSTEM.md §6.3 if a figure moved; ARCHITECTURE.md §2 for the new widget;
+      README.md §10.
 
-## B. The affordance and the route ✅
+## B. The staggered entrance
 
-*The editor as a place you can get to and read. No editing yet.*
+- [ ] `StaggeredEntrance` in `shared/widgets/`: fade plus a 6px rise per child, 55–60ms apart,
+      capped at a row count named in `ChitMotion`; plays on first build, then sheds itself so a
+      rebuild costs nothing (D3).
+- [ ] Today's page and the archive use it; the open chit and the timeline are children of it,
+      not exceptions to it. `BranchFade` is untouched.
+- [ ] The archive re-runs it when a tapped date rebuilds the list, and only then.
+- [ ] Under reduced motion: a plain fade, no rise, `ChitMotion.fade(ChitPace.arrival)` (D1).
+- [ ] Tests: the delay for the n-th child, the cap, and that a shed entrance schedules nothing.
+- [ ] Docs: DESIGN-SYSTEM.md §6.3's stagger paragraph if anything about it moved; README.md §10.
 
-- [x] `ChitRow` becomes a button: pointer, focus stop, button semantics, and the tap. On Today
-      **and** in the archive, in this change — one widget, so both screens gain it together.
-      This is what M2 and M4 have been holding back.
-- [x] The comment D12 asks for, at the `Text` that becomes a `Text.rich`.
-- [x] `ChitRoute` gains the editor: a route **above** the shell (D3), taking a chit id.
-- [x] `editor_screen.dart` — back arrow and the chit's day in Today's one-line treatment, then
-      the slip: the saved stamp, the text, the pill. Read-only.
-- [x] `editor_controller.dart` — loads the chit through `ChitRepository.byId`, which has existed
-      since M1 for this. A missing id lands back where it came from rather than drawing nothing.
-- [x] Tests: the controller through a bare `ProviderContainer` — loads, and the missing-id case.
-- [x] `shared/day_label.dart` — *Today* / *Yesterday* / *Friday 11 September* moved off
-      `ArchiveDay` so the editor's header and the archive's headings are one function.
-- [x] `ChitColors.rowPressedWash`, and the stamp lifting to `--ink-muted` under it. **The
-      contrast test decided this rather than checking it**: `--ink-faint` measures 4.42:1 on the
-      wash and fails §6.4's floor (ADR-061).
+## C. The two authored arrivals
 
-## C. Editing the text ✅
+- [ ] **A saved chit falls down into the thread**: the new row arrives from above at
+      `ChitPace.arrival`, the rows below it settling, and the timeline's scroll to now is the
+      same moment (already built, ADR-024).
+- [ ] **A kept recording rises up into the open chit**: the pill arrives from below at
+      `ChitPace.arrival` when the sheet's *Stop & keep* lands it (D4). *§6.3 says "then its
+      words landing in the field" — there are no words since ADR-058; the pill is the whole of
+      it, and §6.3 is corrected.*
+- [ ] The editor's pill, arriving after a staged replacement, does the same.
+- [ ] Under reduced motion both are a fade at 220ms and nothing moves (D1, D4).
+- [ ] Tests: none beyond `chit_motion_test.dart`'s existing arrival floor; the rest is group E.
+- [ ] Docs: DESIGN-SYSTEM.md §6.3 for the words that no longer land; BEHAVIOUR.md §3.4 if the
+      moment is described there.
 
-- [x] `EditorController` gains the field and **dirty tracking**: dirty is *differs from what was
-      loaded*, not *was typed in*, so typing a character and deleting it again is not a change.
-- [x] `ChitRepository.updateText` becomes **`update`**, one transactional write taking the text
-      and a sealed `AudioEdit` — `Keep` (the default), `Remove`, `Replace`. Its guarantee was
-      that an edit could not touch audio, and D5 has taken that away; what replaces it is one
-      write, exhaustively switched, with the invariant asserted in one place. `updatedAt` moves;
-      nothing else does (D4).
-- [x] Save, in `PrimaryButton`'s weight, appearing only once dirty (D7).
-- [x] Tests: the controller's dirty rule; `chit_repository_test.dart` for `update` against
-      `NativeDatabase.memory()` — the text changes, `updatedAt` moves, `createdAt`, `localDay`
-      and the three ambient fields do not, and a blank text is refused.
+## D. The floors
 
-## D. The prompt sheet ✅
+- [ ] **Targets.** Every control at or above 44px: the back arrow, both button weights, the
+      pill, Remove, the calendar's tiles and month arrows, the timeline if it is a control at
+      all. Named dimensions go in `ChitSpace` and are asserted (D7).
+- [ ] **Focus rings.** A `--seal` ring on every control on keyboard focus, through one
+      decoration (D5). Never on touch.
+- [ ] **Semantics.** Heading levels never skip; every icon-only control has a label; a control
+      that does nothing is not marked up as one; `ExcludeSemantics` only under a labelled
+      parent; the live regions still say the right thing.
+- [ ] **The caret**: closed as D6 says, in §6.4 and PROGRESS.md item 14.
+- [ ] Tests: the target arithmetic in `widget_constants_test.dart`; `contrast_test.dart` for any
+      surface the depress or the ring touches.
+- [ ] Docs: DESIGN-SYSTEM.md §6.4; BEHAVIOUR.md §4 if a control gained a label worth naming.
 
-- [x] `shared/widgets/prompt_sheet.dart` — the app's first confirmation (D9). Rises like the
-      recording sheet: perforated top edge, `ChitSpace.sheetRadius`, the existing `--scrim`. A
-      question, and two answers in the two button weights. **It decides nothing** (D11).
-- [x] *Keep this edit?* → Keep · Discard, raised by Cancel, the back arrow and the system back
-      gesture alike. With nothing changed, all three just leave.
-- [x] `Cancel` beside Save, arriving with it (D7, D8).
-- [x] Tests: the controller's `shouldPromptOnLeave`, and that answering *discard* leaves the row
-      exactly as it was.
-
-## E. The voice in the editor ✅
-
-- [x] `Remove` on the editor's pill — **staged** (D6). The row is not written until Save, and
-      Cancel takes it back.
-- [x] The microphone returns to the editor's action row whenever the chit holds no recording,
-      reusing the recording sheet unchanged. A new take is staged the same way.
-- [x] Save withheld when a removal leaves the chit holding nothing; Cancel and *Delete this
-      chit* are what is left (D7).
-- [x] `AudioEdit.remove` and `.replace` through `update` — **built and tested in group C** with
-      the repository. *The plan said the old file would ride the sweep; it is deleted after the
-      row is written instead*, so a removed recording does not sit on disk until the next
-      launch, and the sweep is the backstop for a delete that fails (ADR-063).
-- [x] A playing recording is stopped before its file stops being the row's — `stopIf`, as
-      `save()` already does.
-- [x] Tests: the controller's legality rule; the repository's remove and replace paths; that a
-      chit with no text and no take cannot be written.
-
-## F. Delete this chit ✅
-
-- [x] `ChitRepository.delete(id)` — the row and the file together (open item 9). **Built and
-      tested in group C** beside `update`; the screen's half is below.
-- [x] *Delete this chit* below the slip, in `QuietButton`'s weight and apart from the action
-      row: distance from Save is the first defence, and the prompt is the second.
-- [x] *Delete this chit?*, and *"The recording goes with it."* on a chit that has one →
-      Delete · Keep it. No undo (D10).
-- [x] Deleting lands back where the editor was opened from.
-- [x] Tests: the row goes, the file goes, the thread and the calendar re-emit without it.
-
-## G. Handset pass and sign-off ✅
+## E. The device pass and the sign-off of v1
 
 *What no test can settle. Seed first — `flutter run --dart-define=CHIT_SEED=seed`, `=clear`
-after. There is no migration now (ADR-059), but M6 changes no schema, so nobody has to
-uninstall.*
+after. Write what was seen into PROGRESS.md group by group, not at the end.*
 
-- [x] A chit opened from Today, corrected, saved — and it has not moved in the thread, on the
-      strip, or on the calendar.
-- [x] The same from the archive, landing back in the archive with its filter intact.
-- [x] Leaving with changes: the prompt, both answers, and the back gesture. *Cancel no longer asks — ADR-066.*
-- [x] A recording removed on the **open chit** — the microphone comes back, the take is gone.
-- [x] A recording removed in the **editor** and cancelled: it is still there and still plays.
-- [x] A recording replaced, saved, and played back.
-- [x] A recording-only chit: remove the take, and Save is not offered.
-- [x] A chit deleted, recording and all.
-- [x] Reduced motion on: the prompt sheet arrives without a rise.
-- [x] Read BUILD-PLAN.md M5's four lessons before writing a fake. Two of M5's four handset bugs
-      were a fake or its harness behaving better than the real thing. *And one of M6's was the
-      real thing behaving worse than its fake — ADR-067.*
+- [ ] **Carried from M6 (ADR-067):** the editor's pill sits between the stamp and the words,
+      Remove beside it, on a stored recording and on a staged replacement alike.
+- [ ] **Carried from M6:** a chit opens on a hold, not a tap — the wash on touch, gone on a
+      scroll, a tick as it opens. A tap on the row does nothing; a tap on its pill still plays.
+- [ ] **Carried from M6:** two recordings on Today; tap one, then the other while the first
+      sounds. The second lights with the pause glyph, and the next tap pauses it.
+- [ ] The depress on every control, and that a phone reads it as acknowledgement rather than
+      as lag.
+- [ ] The stagger on Today's first build, reading as one movement; a tab switch costing a fade
+      and nothing more; the archive re-staggering on a tapped date and not on a scroll.
+- [ ] A chit falling into the thread and the strip scrolling to now; a recording rising into
+      the open chit.
+- [ ] **Reduced motion on, the whole app**: nothing travels, every fade survives, the prompt
+      still appears, the wave is a ragged static row, the record dot is still.
+- [ ] **A screen reader, the whole app** (TalkBack): every screen in reading order, every
+      control announced with what it does, headings never skipping, nothing announced that is
+      decoration.
+- [ ] Every target hit with a thumb, including the microphone with text in the field.
+- [ ] Then: BUILD-PLAN.md M7 signed off with what it taught, PROGRESS.md marks v1 done, and
+      this file is replaced by whatever comes after v1 — or by nothing.
 
-**Carried into M7's handset pass** — the third look's three asks are built (ADR-067) and the
-owner signed M6 off on 18 September 2026 without a fourth look, choosing to check them on M7's
-device pass instead. They are the first three boxes of that pass, whatever else it holds:
-
-- [ ] The editor's pill sits between the stamp and the words, Remove beside it — on a stored
-      recording and on a staged replacement alike.
-- [ ] A chit opens on a hold, not a tap: the wash on touch, gone on a scroll, a tick as it opens.
-      A tap on the row does nothing; a tap on its pill still plays.
-- [ ] Two recordings on Today: tap one, then the other while the first sounds. The second lights
-      with the pause glyph, and the next tap pauses it.
-
-**This file is replaced when M7 starts** (CLAUDE.md §2).
+**This file is replaced when the next milestone starts** (CLAUDE.md §2).
