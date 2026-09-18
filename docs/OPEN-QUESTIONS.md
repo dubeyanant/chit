@@ -49,7 +49,7 @@ then responsive web. Deliberately not on the list: **any speech engine, cloud or
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43;
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 48;
 retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
@@ -141,11 +141,3 @@ retired: 32, 33, 35, 36.**
     — but only if you know roughly when it was. **The thing that would answer this is search**, which
     is backlog items 2 and 8 wearing a different hat; the density grid is the only finding aid until
     then.
-48. **The `edited` word has not been seen on a handset** (ADR-080). The open chit's side was
-    checked on a CPH2707 release build — the line reads `raining` alone, no time, and the prompt
-    still fades in at five seconds — but `edited` needs a chit that has been saved and then
-    changed, and the pass was stopped before that: **driving the phone over `adb input` while
-    somebody is holding it types into whatever app is in front**, which is not a way to test. The
-    data side is pinned by tests; what nobody has looked at is the three-item line
-    `3:42 pm  raining  edited` at 11.5px, which is 038's ceiling and the one place the spacing
-    could read as crowded.
