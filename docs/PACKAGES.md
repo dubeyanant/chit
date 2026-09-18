@@ -20,7 +20,13 @@ first screen without it.
 **Development.** `build_runner` · `riverpod_generator` · `riverpod_lint`, enabled through `plugins:`
 rather than `custom_lint` (below) · `drift_dev` · `freezed` · `flutter_lints` ·
 `just_audio_platform_interface`, **only for `just_audio_player_test.dart`**, which stands a fake
-platform under the real plugin (ADR-067); already transitive, listed so the test may import it.
+platform under the real plugin (ADR-067); already transitive, listed so the test may import it ·
+`flutter_launcher_icons`, **run by hand and never at build time** — `dart run flutter_launcher_icons`
+rewrites the Android mipmaps, the iOS appiconset and the web icons from the two files in
+`assets/icon/` and the config block in `pubspec.yaml` (ADR-075); the output is committed, so a fresh
+clone builds without running it. **Read the `project.pbxproj` diff after every run** — 0.14.4 writes
+`AppIcon` into `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS`, which takes `YES` or
+`NO`; the setting it means is `ASSETCATALOG_COMPILER_APPICON_NAME`, already correct beside it.
 
 `json_serializable` is not listed: the only JSON is one Open-Meteo response, decoded by hand in one
 file. `drift_flutter` pulls `sqlite3_flutter_libs 0.6.0+eol` transitively; the marker is upstream's,
@@ -35,8 +41,16 @@ assets/fonts/
 ├── Newsreader/            Newsreader-VF.ttf         opsz 6–72, wght 200–800
 │                          Newsreader-Italic-VF.ttf  opsz 6–72, wght 200–800
 ├── HankenGrotesk/         HankenGrotesk-VF.ttf      wght 100–900
-└── NotoSerifDevanagari/   NotoSerifDevanagari-VF.ttf            ← the चित्त mark only
+└── NotoSerifDevanagari/   NotoSerifDevanagari-VF.ttf            ← चित्त only
+
+assets/icon/
+├── icon.png               1024²  the icon as drawn, opaque, square corners
+└── icon_foreground.png    1024²  the glyph alone, transparent — Android's adaptive layer
 ```
+
+**Neither is bundled into the app.** They are sources for `flutter_launcher_icons`, which is why
+they are not under `flutter: assets:`; the icon the phone draws is the generated set under
+`android/app/src/main/res/` and `ios/Runner/Assets.xcassets/`.
 
 Bundled rather than fetched (ADR-009) and **variable** rather than static cuts (ADR-015): the design
 uses Newsreader at 300–600 and Hanken Grotesk at 400/500/600, and relies on Newsreader's `opsz` axis
@@ -82,7 +96,7 @@ that walks `lib/` instead.
 **Android** — `RECORD_AUDIO`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (precise first,
 coarse as the fallback — ADR-016), `INTERNET`; `minSdk = 24`, `record_android`'s floor and the
 highest of any plugin here. **iOS** — `NSMicrophoneUsageDescription` and
-`NSLocationWhenInUseUsageDescription`, written in chit's own voice and the only copy in the app the
+`NSLocationWhenInUseUsageDescription`, written in Chitta's own voice and the only copy in the app the
 design never sees; `IPHONEOS_DEPLOYMENT_TARGET` is 15.0, above every plugin's floor. Both location
 strings should say what §3.6 says the app does: it records that a place was there, and never shows
 which one. The microphone string says the thing that is unusual, true and most likely to earn the

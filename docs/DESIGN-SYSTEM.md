@@ -50,6 +50,10 @@ either. A control's answer is the thing it does, and a held row is answered by t
 at even 4% — so wherever a tinted surface appears, the text on it goes up with it. Any new tinted
 surface inherits that, and §6.4 makes no exception for a surface that is brief.
 
+**The launcher icon shares the ground and nothing else** — an opening quote on `--paper`, drawn as
+artwork rather than assembled from tokens (ADR-075), so that the icon and the first screen it opens
+are one colour.
+
 ### 6.2 Typography
 
 **Newsreader** is the writing voice — dates, entry text, section labels, tab labels. **Hanken
