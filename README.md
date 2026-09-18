@@ -2,336 +2,146 @@
 
 A private journal for things that hit you during the day.
 
-The name is a wordplay. **चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field
-where impressions land. A **chit** is also a small slip of paper you scribble something on
-and keep. The app is both: a place where passing impressions get written down on small slips.
-
----
+The name is a wordplay. **चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field where
+impressions land. A **chit** is also a small slip of paper you scribble on and keep.
 
 ## 0. Start here
 
-**This file is the front door, not the whole house.** It holds what chit is (§1–§2) and what a
-chit is (§5), and §10 maps everything else. The behaviour specification, the design system and
-the open questions live in their own documents — they are still the design authority, they are
-just not all in one 500-line file.
+This file holds what chit is (§1–§2), what a chit is (§5), and the map (§10). Read
+[`CLAUDE.md`](CLAUDE.md) first for how to work here, then
+[`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) — what is open, what comes after v1, and the
+numbered items a session must know. **v1 is finished** (ADR-073), so there is no next task waiting.
 
-Read these two, then whatever the work touches. **v1 is finished** (ADR-073), so there is no
-next task waiting: a session starts from what is being asked for.
+> **Status: v1 is done.** A chit can be typed or spoken, carries the time, the weather and what the
+> phone was doing, and is read back on Today, on a scrolling timeline and in a calendar of the
+> months written. **Voice is recording and playback: there is no transcription** (ADR-058). A saved
+> chit is opened by holding it, and its words, its recording and the chit itself can be changed or
+> destroyed. **There are no database migrations** (ADR-059) — see OPEN-QUESTIONS.md item 38 before
+> installing it anywhere the chits would be missed.
 
-| # | Read | For |
-|---|---|---|
-| 1 | **[`CLAUDE.md`](CLAUDE.md)** | How to work here — the two standing rules below, the engineering principles, the commit format |
-| 2 | **[`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md)** | **What is not settled, what comes after v1, and everything known and unscheduled.** The nearest thing to a plan the repository still has |
-
-Then read whichever specification the work touches, and open
-[`design/chit-app-v6.html`](design/chit-app-v6.html) in a browser — it is the visual target.
-**[§10](#10-the-map) is the map: every file in the repository and why it exists.**
-
-> **Status: v1 is done** — seven milestones, all signed off on a handset (ADR-073). A chit can be
-> typed or spoken, carries the time, the weather and what the phone was doing, and is read back
-> on Today, on a scrolling timeline and in a calendar of the months written. **Voice is
-> recording and playback: there is no transcription** (ADR-058). A saved chit is opened by
-> holding it in the thread, and its words, its recording and the chit itself can all be changed
-> or destroyed. **There are no database migrations yet** (ADR-059) — see OPEN-QUESTIONS.md item 38
-> before installing it anywhere the chits would be missed.
-
-### Section numbers are stable, and global
-
-§1 to §10 are numbered once, across this file and the three documents that hold the rest of the
-specification. **A section keeps its number wherever it lives**, so a citation like §6.1 or
-§3.5 resolves the same way from any file, and the two hundred-odd cross-references in the docs
-and the source did not have to be rewritten when the specification was split.
-
-That is why the numbering here has gaps. It is not an omission:
+**Section numbers are global and stable.** §1 to §10 are numbered once across four files, and a
+section keeps its number wherever it lives, so §6.1 resolves the same way from anywhere. Roughly two
+hundred citations depend on it. **Never renumber.**
 
 | | Section | Lives in |
 |---|---|---|
-| §0 | Start here | this file |
-| §1 | What chit is | this file |
-| §2 | Core concepts | this file |
-| **§3** | **Behaviour specification** | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) |
-| **§4** | **Screens** | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) |
-| §5 | Data model | this file |
-| **§6** | **Design system** | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
-| **§7** | **The prototype** | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
-| **§8** | **The three hard questions** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
-| **§9** | **Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
-| §10 | The map | this file |
+| §0 §1 §2 §5 §10 | Start here · What chit is · Core concepts · Data model · The map | this file |
+| **§3 §4** | **Behaviour specification · Screens** | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) |
+| **§6 §7** | **Design system · The prototype (retired)** | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
+| **§8 §9** | **The three hard questions · Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
 
-### The standing rules
-
-Every change closes the loop on the docs it makes untrue, and nothing that has stopped earning
-its place gets committed. Both rules, in full, live in one place —
-[`CLAUDE.md`](CLAUDE.md) §0, §0.1 and §0.2 — and are not repeated here.
-
-If you are Claude Code, `CLAUDE.md` is already loaded: read `docs/OPEN-QUESTIONS.md` and start.
-
----
+**The design authority is this file, `BEHAVIOUR.md` and `DESIGN-SYSTEM.md`.** Where another document
+disagrees, that document is wrong and is fixed in the change that found it. Both standing rules —
+every change closes the loop on the docs it made untrue, and nothing that has stopped earning its
+place gets committed — live in [`CLAUDE.md`](CLAUDE.md) §0.
 
 ## 1. What chit is
 
-chit assumes **you write when something hits you**: several times a day, in a few words,
-and then you get on with your life.
+chit assumes **you write when something hits you**: several times a day, in a few words, and then
+you get on with your life. Everything follows from that:
 
-Everything in the product follows from that:
-
-| Assumption | Consequence in the design |
+| Assumption | Consequence |
 |---|---|
-| People write in bursts, not sessions | A chit is short. The composer is always open on the home screen. |
-| A day holds many chits | The home screen is a thread of today. |
-| Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready. **One exception, once:** a fresh install opens on a screen explaining what is captured, and asks (ADR-041). |
-| Speaking is often faster than typing | The composer is one surface: a live field, a microphone beside it. A chit holds words, a recording, or both. |
-| The moment matters as much as the words | Time, weather, motion and location are recorded with every chit. |
-| The habit survives on rhythm, not scores | Rhythm is shown as shape and colour; the app keeps no score. |
-
----
+| People write in bursts, not sessions | A chit is short. The composer is always open on the home screen |
+| A day holds many chits | The home screen is a thread of today |
+| Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready. **One exception, once:** a fresh install explains what is captured, and asks (ADR-041) |
+| Speaking is often faster than typing | One surface: a live field, a microphone beside it. A chit holds words, a recording, or both |
+| The moment matters as much as the words | Time, weather, motion and location are recorded with every chit |
+| The habit survives on rhythm, not scores | Rhythm is shape and colour; the app keeps no score |
 
 ## 2. Core concepts
 
-- **chit** — one entry. Text, a recording, or both. Timestamped and stamped with ambient
-  context.
-- **the open chit** — a blank chit at the top of the home screen: a field ready to type in,
-  with a microphone beside it. It becomes a record when the user saves it.
-- **the ambient stamp** — the time, one ambient fact and a location marker, carried by every
-  chit. The time is read when the chit is **saved** (ADR-040); the weather, the motion and the
-  fix are read once at launch and again at each save, never in between (ADR-042). The stamp on
-  the open chit is a preview of what will be recorded.
-- **the thread** — a day's chits, in order, hanging off a vertical rail. A day reads as one
-  continuous thing.
-- **the timeline** — a horizontal line under the date showing *when* chits landed, each mark
-  where its time actually falls. It covers today and the two days before it, midnight to
-  midnight, and scrolls; it rests at now (ADR-024).
-
-
----
+- **chit** — one entry. Text, a recording, or both. Timestamped and stamped with ambient context.
+- **the open chit** — a blank chit at the top of the home screen, which becomes a record when saved.
+- **the ambient stamp** — the time and one ambient fact, carried by every chit. The time is read
+  when the chit is **saved** (ADR-040); the weather, the motion and the fix are read at launch and
+  at each save, never in between (ADR-042). The stamp on the open chit is a preview.
+- **the thread** — a day's chits hanging off a vertical rail, so a day reads as one continuous thing.
+- **the timeline** — a horizontal line under the date showing *when* chits landed, each mark where
+  its time actually falls. Today and the two days before it; it scrolls and rests at now (ADR-024).
 
 ## 5. Data model
 
-A chit is text, audio, or both:
-
 | Field | Notes |
 |---|---|
-| `id` | |
-| `createdAt` | drives both the timeline and the day grouping |
-| `text` | what the chit says, typed. **Null on a chit that is only a recording.** |
+| `id`, `createdAt` | `createdAt` drives both the timeline and the day grouping |
+| `text` | what the chit says, typed. **Null on a chit that is only a recording** |
 | `audioPath` | present whenever a recording was kept |
 | `weather` | a condition word |
-| `location` | stored; **not surfaced in the UI** (ADR-066) — *it was a pin on the open chit until M6* |
-| `motion` | what the phone was doing — `stationary`, `walking`, `traveling`, `flying`. Read off the same fix as `location` (ADR-037). Drawn as an icon, and `stationary` is not drawn at all |
+| `location` | stored; **not surfaced in the UI** (ADR-066) |
+| `motion` | `stationary`, `walking`, `traveling`, `flying`, read off the same fix as `location` (ADR-037). Drawn as an icon, and `stationary` is not drawn at all |
 
-`text` and `audioPath` are independently nullable and **at least one of them is always
-present** — a chit with neither is not a chit, and is what §3.1 refuses to save.
-
-That leaves three shapes, all ordinary:
-
-| | `text` | `audioPath` |
-|---|---|---|
-| words alone | ● | — |
-| words and a recording | ● | ● |
-| a recording alone | — | ● |
-
-**A chit does not record where its words came from.** It used to — `textOrigin` said whether they
-were typed, transcribed, or a transcript the user had corrected — and it went with transcription
-in M5 (ADR-058). Every chit's words are typed, so there was nothing left to distinguish.
-
-
----
+`text` and `audioPath` are independently nullable and **at least one is always present** — a chit
+with neither is not a chit, and is what §3.1 refuses to save. That leaves three shapes, all
+ordinary: words alone, words and a recording, a recording alone. **A chit does not record where its
+words came from**; every chit's words are typed (ADR-058).
 
 ## 10. The map
 
-Everything in the repository and why it exists. Nothing here should be reachable only by `ls`:
-if a file matters, it has a line in this section — kept true by discipline, not by a test
-(CLAUDE.md §4.2: no test cases for documents).
+Every file and why it exists, kept true by hand rather than by a test (CLAUDE.md §4.2).
 
-```
-chit/
-├── README.md               this file — §0 says where to start, §10 is this map
-├── CLAUDE.md               how to work here: the two standing rules, the principles, the commits
-├── docs/                   §10.1 — eight documents, one question each
-├── lib/                    §10.2 — the Flutter source
-├── test/                   §10.3 — what is enforced rather than intended
-├── design/                 §10.4 — the prototype, and the visual target
-├── assets/fonts/           §10.5 — the three faces of §6.2
-├── analysis_options.yaml   §10.6 — CLAUDE.md §4.1 in the form the machine can check
-├── pubspec.yaml            §10.6 — every dependency, each justified in docs/PACKAGES.md
-└── android/  ios/  web/    §10.6 — platform configuration
-```
+**Documents.** [`CLAUDE.md`](CLAUDE.md) how to work here (**read first**) ·
+[`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) §8–§9, what is open and what comes after v1
+(**read second**) · [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) §3–§4 ·
+[`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) §6–§7 ·
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) layers, folders, providers, data flow, testing ·
+[`docs/DECISIONS.md`](docs/DECISIONS.md) every decision that would be expensive to reverse ·
+[`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) schema, invariants, queries, the seeder ·
+[`docs/PACKAGES.md`](docs/PACKAGES.md) every dependency and the platform config it implies —
+nothing enters `pubspec.yaml` without a line there ·
+[`docs/DESIGN-LOG.md`](docs/DESIGN-LOG.md) the constraints the design rests on.
 
-### 10.1 The documents
-
-| File | Answers | Read it |
-|---|---|---|
-| [`CLAUDE.md`](CLAUDE.md) | How to work here — the two standing rules, the engineering principles, the commit format, the commands | First, before writing anything |
-| [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) | **§8 and §9** — the questions still open, the feature backlog, what comes after v1, and the numbered items a session has to know. *It absorbed `PROGRESS.md`'s open items and `BUILD-PLAN.md`'s after-v1 list when those were deleted* | Second |
-| [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) | **§3 and §4** — the behaviour specification and the screens. What the app does and what it looks like doing it | Building any screen |
-| [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) | **§6 and §7** — the palette, the three faces, the spacing, the motion, the accessibility floors, and the prototype | Drawing anything |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How it is put together — the three layers, the folder map, the Riverpod conventions, the data flow behaviour by behaviour | Adding a file and unsure where it goes |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | The ADRs — every choice, what it was chosen over, what it costs. Indexed at its head, with a note saying where each retired number went | Before reversing something that looks arbitrary |
-| [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) | The schema, the invariants, the queries, and why there are no migrations (ADR-059). §5 here is the product-level version of the same thing | M1, and any change to a row |
-| [`docs/PACKAGES.md`](docs/PACKAGES.md) | Every dependency, why it is there, what it was chosen over, and the platform configuration each implies | Before adding a package. Nothing enters `pubspec.yaml` without a line there |
-| [`docs/DESIGN-LOG.md`](docs/DESIGN-LOG.md) | Why the design is what it is — including the arguments that were made and lost | Before changing something in §4 or §6 that looks arbitrary. Most of it is load-bearing |
-
-**The design authority is this file, `BEHAVIOUR.md` and `DESIGN-SYSTEM.md`** — §1 to §9 between
-them. Where any other document disagrees with those three, the disagreement is a bug in that
-document, fixed in the same change that found it.
-
-### 10.2 The source
-
-The three layers and the one rule are [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) §1; the
-file-by-file map is its §2. Every file listed there exists — the ones a milestone has not
-reached hold a doc comment naming the milestone that fills them.
+**Source.** The layer rule and the file-by-file map are ARCHITECTURE.md §1.
 
 ```
 lib/
-├── main.dart      runApp(ProviderScope(child: ChitApp()))
-├── app/           the application root and the router (ADR-011)
-├── core/          the design system, the clock, the BuildContext accessors
-├── domain/        models and interfaces. Pure Dart; imports neither of the two below
-├── data/          the implementations: Drift, files, network, platform plugins
-├── features/      one folder per screen — shell, today, composer, calendar, editor, onboarding
-└── shared/        widgets used by more than one feature
+├── main.dart   runApp(ProviderScope(child: ChitApp()))
+├── app/        the application root and the router (ADR-011)
+├── core/       the design system, the clock, the BuildContext accessors
+├── domain/     models and interfaces. Pure Dart; imports neither of the two below
+├── data/       the implementations: Drift, files, network, platform plugins
+├── features/   one per screen — shell, today, composer, calendar, editor, onboarding
+└── shared/     widgets used by more than one feature
 ```
 
-**`features` never imports `data`.** Widgets watch controllers, controllers depend on
-interfaces in `domain`, Riverpod supplies the implementations at the root — ADR-002.
+`lib/core/theme/` is §6 as four `ThemeExtension`s, reached through `context.colors`, `.type`,
+`.space` and `.motion` — four accessors rather than one, so a widget that needs a colour cannot
+reach motion. `lib/shared/widgets/` is the chit vocabulary: the slip and its tear edge, the stamp
+row and its motion marks, the rail and the thread over it, the wordmark, the two button weights, the
+microphone, the pill, the prompt sheet, `Arrival`, `StaggeredEntrance` and `FocusRing`.
 
-`lib/core/theme/` is §6 turned into four `ThemeExtension`s — `ChitColors`, `ChitType`,
-`ChitSpace` and `ChitMotion` — reached through `context.colors`, `.type`, `.space` and
-`.motion`, four accessors rather than one so a widget that needs a colour cannot reach motion.
+**Tests.** `flutter test`. **There are no widget tests, and there will not be** (ADR-031) — what can
+only be seen on a screen is seen on a handset and written into the commit. Suites sit beside what
+they guard, mirroring `lib/`, plus `test/support/` for the fakes and the WCAG arithmetic and
+`test/docs/` for the no-widget-test rule enforcing itself. What is covered is ARCHITECTURE.md §4.
+Three patterns worth keeping: **a rule that fails silently gets a test that checks a property, not
+an example** (asserting "no fade is slower than it was" caught a motion rule that was
+self-consistent and wrong); **an invariant worth having is worth holding in more than one place**,
+each tested where it lives; and **a fake must refuse whatever the real one refuses** — where the
+fault was *under* the fake, the test stands a fake platform under the real plugin (ADR-067).
 
-`lib/domain/` and `lib/data/` are the data spine of M1: the `Chit` model and its invariant, the
-one table, the DAO, and `ChitRepository` — the interface in `domain`, the implementation in
-`data`, and `main.dart` the one place the two are allowed to meet.
+**Assets and configuration.** `assets/fonts/` holds the three faces of §6.2 as **variable** fonts
+with an `OFL.txt` beside each (ADR-015 — weight must go through `fontVariations`, `fontWeight` alone
+being silently ignored). [`analysis_options.yaml`](analysis_options.yaml) is CLAUDE.md §4.1 in the
+form the machine can check, with `riverpod_lint` running inside `flutter analyze` through the
+`plugins:` key. `android/` carries `RECORD_AUDIO`, both location permissions and `INTERNET`,
+`minSdk 24` (`record_android`'s floor, the highest of any plugin), and `kotlin.incremental=false`,
+without which every plugin's Kotlin compile fails to close its caches on Windows.
+`ios/Runner/Info.plist` holds the microphone and location usage strings — the only copy in the app
+the design never sees. Android and iOS only (ADR-019); `web/` is kept because responsive web is
+planned after v1.
 
-`lib/shared/widgets/` is the chit vocabulary: the slip and its tear edge, the ambient stamp
-row and the three motion marks it can draw, the rail a day hangs off and the day's thread over
-it, the wordmark, and the two button weights of §6.1. They hold no state and read no provider — each takes what it
-draws and nothing else, which is what lets a screen compose them freely. Two earn exceptions:
-`AudioPill` watches the one player, and `ChitRow` pushes the editor (ADR-061). `PromptSheet`
-is the app's one confirmation (ADR-064) — a question and two answers, asked by `showPromptSheet`
-and deciding nothing itself. `Microphone` is the 54px control of §4.1, moved here when the
-editor became the second screen to record (ADR-065). **No control answers a press with anything
-of its own** — ADR-071 took the app's press feedback off, so what says a tap landed is what the
-tap does. `StaggeredEntrance` is how a page arrives, one block at a time and once, with
-`Unstaggered` for
-the one block it draws straight through; `Arrival` is §6.3's two authored moments, a saved chit
-falling into the thread and a recording rising into the open chit (ADR-070); and `FocusRing` is
-§6.4's focus floor, the ring and the Enter that go with it. Beside them,
-`lib/shared/day_label.dart` is the one function that names a day — *Today*, *Yesterday*,
-*Friday 11 September* — so the archive's headings and the editor's cannot disagree.
-
-`lib/features/editor/` is M6: the editor screen above the tab shell (ADR-062) and the
-controller behind it, whose `EditorState` getters are every rule the screen draws (ADR-031).
-
-### 10.3 The tests
-
-What is enforced rather than intended. `flutter test`.
-
-**There are no widget tests, and there will not be** — ADR-031. Nothing here builds a widget;
-what can only be seen on a screen is seen on a handset, and written up in the commit. Eight
-suites and three support files were deleted on 16 September 2026 when that was decided, taking
-the count from 251 tests to 171 — 164, plus the seven that came back as arithmetic the moment
-somebody looked at whether they had ever needed a widget. The ADR lists what was lost, because
-some of it was real and could not come back.
-
-| Suite | Guards |
-|---|---|
-| `test/core/theme/contrast_test.dart` | §6.4's contrast floor: every text token against every surface it sits on, **composited**. Also the negative cases — `--seal` failing as text on a chit is why `--seal-ink` exists, and `--ink-faint` failing on the audio pill's wash is why the pill's duration is set in `--ink-muted`. It locks §6.1's quoted figures to ±0.01 so the prose and the arithmetic cannot drift apart. **Since M6 it also decides rather than checks**: the pressed chit row's 4.42:1 is why ADR-061 lifts the stamp |
-| `test/core/theme/chit_type_test.dart` | ADR-015: every style sets `fontVariations`, not `fontWeight` alone. The three faces of §6.2 are the only families used, the चित्त mark is the only thing set in Devanagari, tabular figures are on everything that counts or keeps time, no functional text is under 11.5px |
-| `test/core/theme/chit_motion_test.dart` | §6.4's reduced-motion rule: movement collapses, feedback does not. The suite that found ADR-020 |
-| `test/core/theme/widget_constants_test.dart` | The dimensions §6.3 lets a widget spell out as a compile-time constant instead of reading from `ChitSpace` — and the rule that keeps them honest: **a constant copied off the scale still equals it**. The perforation's strip and the thread node's halo are both `s1` written by hand, because a painter and a layout caller each need them before there is a `BuildContext`. Also v6's exact figures, 1.55px on an 8px pitch and the 7px mark, and that the rail's centre stays *derived* from the mark rather than set beside it. **Since M7 group D it also holds §6.4's floors that are arithmetic** — the 44px target, the microphone above it, a button's padding clearing it, and the pill's *not* clearing it, which is the assertion that found a control two pixels under the floor after a comment had claimed it was exactly on. Also that the focus ring is drawn at the app's one 1.5px stroke, the caret's and the tick's |
-| `test/core/clock_is_the_only_now_test.dart` | ADR-012: nothing in `lib/` calls `DateTime.now()` except `SystemClock` |
-| `test/domain/chit_test.dart` | The invariant of §5 where it fails first: a chit with neither text nor audio, text without a provenance, half a coordinate and a recording without a length cannot be *built*. Also `localDayOf` across a midnight |
-| `test/data/db/chits_table_test.dart` | The same invariant where it survives a release build — the table's check constraints, every one of them exercised by writing the row by hand, around the repository. Also that the primary key survived being declared beside them |
-| `test/data/chit_repository_test.dart` | **M1's statement of done.** All three legal shapes round-tripping against a database in memory, every illegal one refused, `localDay` across a midnight and across a timezone change, audio moved on save, `update` writing the words and a sealed `AudioEdit` in one statement — remove, replace, keep — and touching nothing about the moment; `delete` taking the row and the file together, and every query of DATA-MODEL.md §4 as it arrived — the timeline's range, the calendar's day summaries, the archive's paging, and the written months the chevrons step through |
-| `test/data/audio_store_test.dart` | ADR-008: a recording is moved rather than copied, its stored path is relative and uses forward slashes, discarding twice is not a failure, and the orphan sweep deletes what no chit claims |
-| `test/data/record_audio_recorder_test.dart` | ADR-052, the two rules the recorder holds without a microphone: the waveform's level is 0 at the silence floor and 1 at full scale, linear between and clamped past either end, with a non-finite reading as silence; a take's path is under the cache with the extension the store keeps and distinct for two takes a microsecond apart. Also that a `Recording` cannot have no length or no file |
-| `test/data/just_audio_player_test.dart` | **The adapter over `just_audio`, with a fake platform under the real plugin** (ADR-067). A pill tapped while another sounds is reported playing under its own id and pauses on the next tap — the plugin carries `playing` across a source change, which is the bug the third look found; a paused pill resumes without reloading; a missing file leaves the player silent. The one place `FakeAudioPlayer` cannot stand in, because the fault was under it |
-| `test/data/debug_seeder_test.dart` | DATA-MODEL.md §7's seeder, and the two claims that fail quietly on a handset: **seeding twice writes nothing**, and **clearing removes exactly the seeded rows and recordings** while a chit somebody wrote is left alone. Also that the fixture reaches all three shapes of §5, every weather word and all three motion marks — because a seeder that skips the recording-with-no-words hides the shape most likely to be forgotten |
-| `test/data/open_meteo_service_test.dart` | **The one call the app makes to the outside world**, with no network in the suite — every failure is produced on purpose against a fake `http.Client`. A 500, a body that is not JSON, JSON of the wrong shape, a client that throws and one that never comes back all resolve to the same `null` (ADR-007). It also pins two things that would break silently: that the request asks for **`wind_speed_unit=ms`**, since 8 km/h is a still day and 8 m/s is a windy one; and that it reads the **last known** fix and never `currentFix`, which is what keeps ADR-025's two signals parallel |
-| `test/domain/services/ambient_capture_test.dart` | ADR-007, clause by clause: the two signals go out **in parallel** rather than one after the other, each under its own timeout, and **a signal that does not arrive is null** — whether it hung, threw, or simply had nothing to say. Since ADR-040 the time is no longer part of it; what is left is the half with the failure modes |
-| `test/domain/services/ambient_signals_test.dart` | **ADR-042, by counting.** *Captured twice and never in between* is invisible when it is wrong — an implementation that polled would pass every assertion about values in this repository and show up only as battery on somebody's phone. So this counts how many times the services were asked: reading the held value asks nothing, `prime` asks once, `refresh` asks again and replaces rather than merges |
-| `test/features/composer/composer_controller_test.dart` | **ADR-040's reversal**, which fails silently — a stamp taken at the wrong moment is still a plausible time, and only a clock moved across the save can tell. The row carries the save time and not the open time; a chit opened at 23:58 and saved at 00:05 lands on the *new* day; and ADR-042's half: the save returns without waiting on a capture that never comes back, and the patch that follows moves neither `createdAt` nor `updatedAt`. **Since M5 it also carries §3.4**: **Remove** deleting the temp take and leaving the words alone (ADR-060), a recording with no words saving and coming back as a chit, and the take stopping when Save moves its file — while a chit playing in the thread is left alone |
-| `test/features/editor/editor_controller_test.dart` | **The editor's rules, held to their meaning without a screen** (ADR-031). Dirty is *differs from what was loaded* — a character typed and deleted, or a trailing space the save would trim, is not a change; Save needs a change *and* a chit to write, so emptying a text-only chit withholds it while still raising the leave prompt; a save moves `updatedAt` and nothing about the moment; and the **null that means the row has gone**, which is why the screen pops rather than drawing an empty slip. **Since group E it holds the voice too**: Remove stages and touches no file, a kept take is staged and the pill plays it from its temp path, a take recorded and removed again is no change, abandoning discards the temp and leaves the row alone, and a save moves a replacement in or deletes a removal — stopping the player first. And delete: the row, the recording, a staged take and the player all go, and unsaved words with them |
-| `test/shared/day_label_test.dart` | *Today*, *Yesterday*, then the weekday and date — with the year only when it is not this one. It moved out of `ArchiveDay` when the editor's header wanted the same phrase, so it now guards both callers |
-| `test/shared/staggered_entrance_test.dart` | **The arithmetic of a page's entrance** (ADR-031): the first block starts at once, each one after it a step later, and the wait stops growing at the cap — which is what keeps a thirty-chit day an entrance rather than a queue. Then the run's length, that an empty list takes no time so a run cannot shed itself before its content arrives, and §6.4 reaching it — under reduced motion every block starts together and the page still fades in at 220ms |
-| `test/features/composer/audio_pill_test.dart` | ADR-031 again: what the pill *computes*, never how it looks. The figure, and a playhead that lights nothing at the start, half the bars halfway, everything at the end, and does not run off the end of the list when `just_audio` reports a position past the duration or a row has lost its length. Then the rule the one player exists for — a second pill takes the first one off, a pause keeps its playhead, a vanished file leaves the player silent, and the end is silence rather than a full playhead |
-| `test/features/composer/live_wave_test.dart` | ADR-054 as amended: **a bar is its level.** The floor at silence, the full height at full scale, linear between, clamped outside; and the window always full so a sheet that has just opened draws a row of ticks rather than three bars floating, filling from the right with the newest reading last |
-| `test/features/composer/recording_controller_test.dart` | The sheet's take without a sheet (ADR-031): **the take surviving the permission round-trip with nothing listening** — ADR-057's bug, and the container here deliberately has no listener — either kind of refusal closing the sheet, the elapsed figure read off the clock rather than counted, the wave keeping only its window, Stop & keep leaving the field alone, and a sheet that vanished without cancelling still closing the microphone |
-| `test/features/onboarding/first_run_controller_test.dart` | **ADR-041's one promise: the app asks once.** The claim a future change breaks silently, since re-asking every launch is annoying rather than broken. Every refusal settles it and none of them is an error; **Not now** never raises a dialog at all; a grant is what primes the launch capture; and the screen is never owed twice whichever button ended it |
-| `test/domain/prompts_test.dart` | The prompt book of ADR-029, and two kinds of claim that fail differently. The **choice** — most specific first, the small hours treated as their own part of the day, stable for one chit and varied across chits, and never dependent on the machine's time zone. And the **copy**, which fails quietly: every prompt is a question, none of them shouts or instructs, nothing is said twice, and none is long enough to wrap the field. Since ADR-037 it also holds the rung above weather: a chit opened on the move is asked about the move, and `stationary` is asked exactly what a chit with no motion at all is asked |
-| `test/domain/motion/motion_ladder_test.dart` | **ADR-037's arithmetic**, which is where M3's motion correctness lives. Every band and both sides of every floor; the altitude rule that keeps a 300 km/h train off an aeroplane; and the gate — a speed whose error is larger than itself degrades to `stationary`, so noise can slow a chit down and can never put a plane on one. Also the three ways a platform says *no reading*: null, negative and NaN |
-| `test/domain/weather/wmo_mapping_test.dart` | **M3's weather arithmetic.** The published WMO table walked rather than sampled, because an example-per-case test passes happily with half of it unmapped: every code resolves, no code is claimed by two sets, and an unrecognised one is `null` rather than a guess. Also the precedence — rain over wind, wind over a closed sky — and the two honest silences: a clear sky with no `is_day`, and a malformed wind reading |
-| `test/domain/ambient/ambient_fact_test.dart` | **ADR-038's ladder**, as the whole cross product rather than as chosen examples — four motion states against five conditions, plus the two null rows, each resolving to the rung the record names. A precedence bug is exactly what an example misses. It also pins the claim that made the change safe to ship: a chit written at a desk in the rain still reads `raining` |
-| `test/features/today/timeline_window_test.dart` | **The arithmetic the timeline rests on** (ADR-024): the window is three whole local days ending at the next midnight, an hour is the same width wherever it falls, and a moment outside it is `null` rather than clamped — which is the day arc's bug, where a chit at 00:20 and one at 5:00 landed on the same pixel. Also that the window slides at midnight, and that a chit falls off the far end when it does |
-| `test/features/today/timeline_providers_test.dart` | The seam between that arithmetic and the query under it, on a `ProviderContainer`: the strip asks for exactly the three days the window spans, it reads `todayProvider` rather than the clock a second time, and one save reaches both the strip and the thread — two queries over one table, and not two sources of truth |
-| `test/features/calendar/month_shape_test.dart` | **The arithmetic the month grid rests on** (BEHAVIOUR.md §4.2), with no widget near it: the grid starts on a Sunday, the current month is drawn up to today and stops while a past month draws in full, **only the weeks with something in them are drawn**, a quiet week between two written ones included in what goes, and the August the second pass looked at loses its bare middle row (ADR-048), the chevrons' destinations are the nearest written month either side or null at the floor and at the current month, a row outside the month is ignored rather than drawn on a wrong tile, density is four steps and four or more is the fourth, and the summary reads *22 chits over eleven days* and is singular twice for one chit on one day. Also the archive's day labels — *Today*, *Yesterday*, then the weekday and date with the year only when it is not this one — grouping by day, and that `Chit.dateOf` inverts `localDayOf` |
-| `test/features/calendar/calendar_providers_test.dart` | The calendar's wiring on a `ProviderContainer` over real Drift: the month asks for exactly its own days and re-queries when navigated, **the chevrons skip empty months and have nowhere to go on a fresh install** (ADR-047), next lands on the current month whether or not it was written in, a selected day narrows the archive to one query and the same tile or **Show every day** widens it, changing the month clears the selection, the archive pages, **the drawn month and the archive hold their last answer while the next is in flight** (ADR-049) — and **one save reaches the grid, the summary and the archive** with nothing keeping them in step, which is OPEN-QUESTIONS.md M4's statement of done as far as a test can hold it |
-| `test/docs/no_widget_tests_test.dart` | ADR-031, which is otherwise a rule in a file nobody has to read: no `testWidgets`, `pumpWidget` or `WidgetTester` anywhere under `test/`. The suite it replaced grew one reasonable-looking widget test at a time, which is how it would come back |
-| `test/support/contrast.dart` | Not a suite — the WCAG arithmetic, in one place so every check uses the same maths |
-| `test/support/fake_clock.dart` | Not a suite — the `Clock` of ADR-012 that a test moves by hand. It also counts its reads, which is how ADR-021's *stamped when opened* is checked: when the clock was read is the thing that matters, and no assertion on the value can see it |
-| `test/support/fake_audio_recorder.dart` | Not a suite — an `AudioRecorder` that can be told to refuse. It refuses the way the real one refuses, with a `false` or a `null` and never an exception, because a fake that can fail in a way the real one cannot tests a path the app does not have |
-| `test/support/fake_audio_player.dart` | Not a suite — an `AudioPlayer` driven by hand, with one loaded pill at a time because that is the whole reason the interface exists. A path in its `missing` set leaves it silent with no error, which is exactly what the real one does with a file that has vanished |
-
-The pattern, set in M0b and worth keeping: **a rule that fails silently gets a test that checks
-a property, not an example.** `chit_motion_test.dart` asserting "no fade is slower than it was"
-is what caught a motion rule that was self-consistent and wrong.
-
-M1 adds a second pattern: **an invariant worth having is worth holding in more than one place.**
-README §5's one-of rule is an assert, a check constraint and a repository refusal, and each of
-the three is tested where it lives — because an assert is compiled out of a release build, a
-constraint says nothing about *why*, and a repository is one caller among however many a later
-milestone adds.
-
-### 10.4 The prototype
-
-| File | |
-|---|---|
-| [`design/chit-app-v6.html`](design/chit-app-v6.html) | The interactive design prototype and **the visual target**. One self-contained file, no build step — open it in any browser. §7 says what is live in it and what is deliberately not wired |
-
-When in doubt about a pixel, open v6. The type scale, the spacing steps and the motion pace
-table were all read from the prototype.
-
-*v5 and v4 sat here until 16 September 2026 and were deleted.* Both were superseded — v5 by
-ADR-022's accent rule, v4 before that by §3.2 and §3.4 — and a superseded prototype beside the
-live one invites being opened by mistake. `git log --oneline -- design/` finds the commit that
-removed them, if the *before* half of ADR-022 is ever wanted as a file rather than as the
-argument the ADR already makes in words.
-
-### 10.5 Assets
-
-`assets/fonts/` holds the three faces of §6.2 as **variable** fonts with an `OFL.txt` beside
-each: Newsreader (upright and italic), Hanken Grotesk, Noto Serif Devanagari. ADR-015 says why
-variable rather than static cuts, and what it costs — weight has to be applied through
-`fontVariations`, because `fontWeight` alone is silently ignored.
-
-### 10.6 Configuration
-
-| File | |
-|---|---|
-| [`analysis_options.yaml`](analysis_options.yaml) | The engineering principles of `CLAUDE.md` §4.1 in the form the machine can check: strict casts, inference and raw types; exhaustive switches and unawaited futures as errors; immutability and documentation rules. `riverpod_lint` runs inside `flutter analyze` through the `plugins:` key — no separate command, and `docs/PACKAGES.md` says why there cannot be one |
-| [`pubspec.yaml`](pubspec.yaml) | Dependencies and the font declarations. Every entry is justified in [`docs/PACKAGES.md`](docs/PACKAGES.md) |
-| `android/app/src/main/AndroidManifest.xml` | `RECORD_AUDIO`, both location permissions (ADR-016) and `INTERNET`. *It also carried a `<queries>` intent for `android.speech.RecognitionService`, which went with transcription — ADR-058.* |
-| `android/app/build.gradle.kts` | `minSdk 24` — `record_android`'s floor, the highest of any plugin — and the `com.infiniteants.chit` application id |
-| `android/gradle.properties` | `kotlin.incremental=false`. Without it every plugin's Kotlin compile fails to close its caches on Windows; `docs/OPEN-QUESTIONS.md` has the detail |
-| `ios/Runner/Info.plist` | The microphone and location usage strings — the only copy in the app the design never sees, so they are written in chit's voice |
-
-Android and iOS only — ADR-019. The desktop scaffolds went in M0a; `web/` is kept because
-responsive web is planned after v1, and no layout work is being spent on it yet.
-
-### 10.7 Running it
+**Running it.**
 
 ```bash
 flutter pub get
-dart run build_runner watch      # leave running while working
-flutter analyze                  # must be clean before a commit
+dart run build_runner watch                 # leave running while working
+flutter analyze                             # must be clean before a commit
 flutter test
-flutter run                      # an Android device or emulator
-flutter run --dart-define=CHIT_SEED=seed    # the same build with six weeks of chits — DATA-MODEL.md §7
+flutter run                                 # an Android device or emulator
+flutter run --dart-define=CHIT_SEED=seed    # six weeks of chits — DATA-MODEL.md §6
 flutter run --dart-define=CHIT_SEED=clear   # and the same build with them taken off again
 ```
 
-Targets: Android and iOS. Responsive web comes later — the current design is mobile at 390×844.
-
-On Windows, `flutter pub get` warns unless **Developer Mode** is enabled; plugin builds need
-symlink support. `start ms-settings:developers`.
+The design is mobile at 390×844. On Windows, `flutter pub get` warns unless **Developer Mode** is
+enabled — plugin builds need symlink support. `start ms-settings:developers`.
