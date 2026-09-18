@@ -6,7 +6,7 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M6 — the chit editor — is built and unseen; groups A to F
+**Last updated:** 18 September 2026. **M6 — the chit editor — has had its first look on a handset; groups A to F
 are done.**
 [TASKS.md](TASKS.md) is cut for it, in seven groups, and the cut is **wider than
 [BUILD-PLAN.md](BUILD-PLAN.md) M6 as written** — the owner asked for three things the plan did
@@ -66,8 +66,16 @@ from Save; it asks with the prompt sheet — naming the recording when there is 
 the `delete` group C built, taking a staged take and a playing recording with it. Open item 9
 is closed. **Everything M6 builds is built**; what is left is looking at it.
 
-**Next is group G** — the handset pass. Nothing in M6 has been on a device yet, and the list of
-what a test could not settle has grown with every group; it is in the *Next* section below.
+**Group G, the first look, is in — the owner took the `m6-preview` build on a handset** and passed
+six of the eight checks: the row without Discard, the tappable chit row, the prompt sheet, a
+replaced take playing from the pill, delete, and the stamp never moving. Two were not
+understood and stay open — see *Next*. **Six things came back to fix, all fixed** (ADR-066): the
+pin is gone from the open chit (location still stored), the tick at now is re-read on every
+save, Cancel is always shown and leaves at once, the editor's slip fills the screen with
+*Delete this chit* pinned below it, the header says *Editing*, and Save chit is *Save*. **Two
+reports could not be reproduced from the code**: that Today's Save and the microphone
+"are broken". Nothing in the suite or the analyser finds a fault and no device was attached;
+the editor's action row was rebuilt for the other fixes, so the second build is the test.
 
 *M5 — voice — was signed off on a handset earlier the same day.* A chit can be spoken as well as
 typed: the microphone opens a recording sheet, the take is attached to the open chit, and it
@@ -125,10 +133,10 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
 | **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
-| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A to F done, G — the handset pass — is what remains**. ADR-017, ADR-060 to ADR-065. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
+| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A to F done, G half done** — the owner passed six of eight device checks; two are still to look at. ADR-017, ADR-060 to ADR-066. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
 | M7 — motion and the floors | ⬜ | |
 
-**491 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
+**492 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
 anything the app still does.* **Schema is v1 again and there are no migrations** — an install
 carrying an older shape is reinstalled.
@@ -142,38 +150,31 @@ bundle of item 6 is the only part chit chose. Nothing about shipping has been de
 
 ---
 
-## Next: M6 group G — the handset pass
+## Next: M6 group G — the second look
 
-**Everything M6 builds is built and nothing is half-built.** What is left is the pass no test
-can make (ADR-031). Seed first — `flutter run --dart-define=CHIT_SEED=seed`, `=clear` after.
-**M6 changes no schema**, so nobody has to uninstall. [TASKS.md](TASKS.md) group G is the
-checklist; the things below are what the six groups each said a device would have to settle,
-gathered in one place:
+**Everything M6 builds is built, and the first look is in.** A second seeded build carries the
+six fixes of ADR-066. What the owner should look at on it:
 
-1. **Today's row without Discard** — does microphone and Save read as complete, and is Remove
-   beside the pill findable? (Group A.)
-2. **A chit row as a button** — does it read as tappable when the only affordance is the
-   press, and is the 6% wash visible without being loud? The stamp should lift to `--ink-muted`
-   while held. (Group B, ADR-061.)
-3. **The editor's field** — seeded from a chit, does the caret land where a thumb expects?
-   Does Save arrive with the first real change and not with a trailing space? (Group C.)
-4. **The prompt sheet** — does *Keep this edit?* read as a question rather than an error, and
-   does the system back gesture raise it? Under reduced motion it should arrive without a
-   rise. (Group D, ADR-064.)
-5. **A staged replacement plays from the pill** — the pill has never played an absolute path
-   from a saved chit's row before. Then Save, and play it again from the thread. (Group E.)
-6. **A recording-only chit with its take removed** — Cancel alone in the row, *Delete this
-   chit* below, no Save. Does that read as intended or as broken? (Group E, D7.)
-7. **Delete** — the prompt names the recording, the chit is gone from Today, the strip and the
-   calendar, and landing is where the editor was opened from — the archive keeps its filter.
-   (Group F.)
-8. **The stamp never moves** — edit a seeded chit from days ago; it must not relight a tile or
-   move on the strip. (BUILD-PLAN.md M6's done-when, and the owner's *no metadata* rule.)
+1. **Today's Save and the microphone.** Reported broken on the first build; not reproducible
+   from the code, and no device was attached to check. If either still fails on the second
+   build, what is needed is *what happens* — nothing, a flash, a stuck sheet — since the
+   suite cannot see it and the code reads as correct.
+2. **The editor's field** (first-look item 3, not answered): seeded from a chit, does the caret
+   land where a thumb expects, and does Save arrive with the first real change and not with a
+   trailing space?
+3. **A recording-only chit with its take removed** (first-look item 6, not answered): Cancel
+   in the row, *Delete this chit* below, and no Save — does that read as intended, or as
+   broken?
+4. **The six fixes themselves**: no pin; now moving to the save; Cancel always there and
+   leaving at once; the slip filling the screen with Delete pinned; *Editing*; *Save*.
 
-**Read BUILD-PLAN.md M5's four lessons before fixing anything a device turns up.** Two of
-M5's four handset bugs were a fake or its harness behaving better than the real thing.
+**Passed on the first look** (18 September 2026): the row without Discard; the chit row as a
+button; the prompt sheet; a replaced take playing from the pill; delete; and the stamp never
+moving. TASKS.md G carries the ticks.
 
-The old *Next* is in git under `fbcd0d1`; it said to build group F, and group F is built.
+**Read BUILD-PLAN.md M5's four lessons before fixing anything a device turns up.**
+
+The old *Next* is in git under `e1dd954`; it listed the first look's eight checks.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M6.

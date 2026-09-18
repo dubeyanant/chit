@@ -132,20 +132,20 @@ land on this rather than on something unrelated.
 | Time | `3:42 pm` |
 | Weather condition | a word — `raining`, `clear`, `overcast`, `windy`, `clear night` |
 | Motion | an icon — a walking figure, a car, a plane. Never a word (ADR-039) |
-| Location | a pin symbol on the open chit — the fact of a place, never its name |
+| Location | **not drawn** (ADR-066) — captured and stored with every chit, and never a name, a coordinate or a map |
 
 The facts sit on one line, lowercase, spaced apart with no separators, in the same words and
 case wherever they appear. The open chit's line is `--ink-muted`; a saved chit's is
 `--ink-faint` — the chit being written is brighter than the ones already written, the only
 difference between them.
 
-Conditions are words because "raining" is a feeling and a temperature reading is not. For
-location, knowing *that* a place was recorded is enough context — the pin says so and stops.
+Conditions are words because "raining" is a feeling and a temperature reading is not.
 
-**The pin is drawn on the open chit only.** Every chit carries a location, so a pin on all of
-them would distinguish nothing; on the open chit it means something present tense — *this is
-being noted, now.* Location is still captured and stored for every chit (README §5); only the
-thread stopped drawing it as a constant.
+**Location is not drawn at all** (ADR-066). *A pin sat on the open chit until 18 September
+2026*, on the argument that there it meant something present tense; the owner found a mark on
+every chit jarring, and a mark that can never be absent says nothing. Location is still
+captured and stored for every chit, exactly as before (README §5) — the fix and the motion it
+carries are the same signal — it is simply not shown.
 
 **Motion is drawn in the thread as well** — the same argument, reversed (ADR-039). Almost no
 chit has a motion, so a mark on two out of twelve carries real information. It is an icon rather
@@ -154,7 +154,7 @@ like a fitness tracker.
 
 #### 3.6.1 One ambient fact, ranked
 
-**The row shows the time, one ambient fact and the pin.** Weather and motion share a single
+**The row shows the time and one ambient fact.** Weather and motion share a single
 slot and never both appear (ADR-038) — three items at 11.5px is the ceiling the spacing is
 built on.
 
@@ -208,7 +208,7 @@ left open all day, but **no chit is ever recorded with it** — saving re-reads,
 is on the screen, never in the data.
 
 **Permission is asked once, on first run** (ADR-041, §4.4). A refusal simply means quieter
-chits — no pin, no motion, and nothing in the UI mentioning either absence.
+chits — no motion, and nothing in the UI mentioning the absence.
 
 ---
 
@@ -226,7 +226,7 @@ Shows today.
     Fri        Sat          today                   ← the timeline; scrolls, rests at now
 
   ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← perforated tear edge
-  │ 3:42 pm   raining   ⌖                   │        ← time, one ambient fact, the pin
+  │ 3:42 pm   raining                       │        ← time, one ambient fact
   │                                         │        ← the page; prompt after 5s
   │                                         │
   │ ┌────┐                                  │
@@ -237,14 +237,14 @@ Shows today.
   with something written:
 
   │ ┌────┐            ┌──────────────────┐  │
-  │ │ ⏺  │            │    Save chit     │  │
+  │ │ ⏺  │            │       Save       │  │
   │ └────┘            └──────────────────┘  │
 
   with a recording kept — the microphone has retired:
 
   │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]        Remove        │
   │                   ┌──────────────────┐  │
-  │                   │    Save chit     │  │
+  │                   │       Save       │  │
   │                   └──────────────────┘  │
 
   earlier ─────────────────────────── 2 chits
@@ -283,7 +283,9 @@ label, not a masthead (DESIGN-SYSTEM.md §6.2).
 **The timeline.** A horizontal line carrying a mark for every chit, each where its time actually
 falls — four chits in an hour look like a burst, because they are one. It runs **midnight to
 midnight**, covers **today and up to the two days before it**, **scrolls** horizontally, and
-rests at now. Saving puts a mark at the current time and scrolls smoothly to it.
+rests at now. Saving puts a mark at the current time, **moves now to that moment** (ADR-066 —
+the tick is otherwise static, so without this a chit saved twenty minutes after launch landed
+ahead of it), and scrolls smoothly to it.
 
 **One day is one screen** — scrolling back a screen is scrolling back a day, and now rests in
 the middle of the viewport wherever that leaves it (ADR-032).
@@ -441,7 +443,7 @@ edge, the two button weights of §6.1. Nothing on it is a new kind of object.
 | **Not now** | Opens Today. **Raises nothing.** A quiet option that still summoned a system prompt would be a dark pattern wearing a polite label |
 
 **Neither is asked again** — one ask in the life of an install, whichever button ended this
-screen (ADR-016). A refusal runs with no pin and no motion, and says nothing about it.
+screen (ADR-016). A refusal runs with no motion, and says nothing about it.
 
 **Only location is asked for here.** The microphone belongs to §3.4, asked for the first time
 somebody taps it — asking at launch for a control this build does not yet have would undo the
@@ -453,26 +455,31 @@ Reached by tapping any chit in the thread — on Today or in the archive (§4.1)
 tab bar** (ADR-062): one task, one way out.
 
 ```
-  ←   Sunday 13 September                          ← back arrow, and the chit's day
+  ←   Editing                                      ← back arrow on the gutter, and what this is
 
   ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐
   │ 8:05 am   clear                        │       ← the saved stamp, unchanged and unchangeable
   │                                        │
   │ Didn't sleep. Room too cold, again.    │
   │                                        │
+  │                                        │       ← the field takes every line the screen has
   │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]           Remove    │
   │                                        │
-  │           Cancel   ┌───────────────┐   │       ← once something has changed
-  │                    │  Save chit    │   │
+  │   Cancel           ┌───────────────┐   │       ← Cancel always; Save once something changed
+  │                    │     Save      │   │
   │                    └───────────────┘   │
   └────────────────────────────────────────┘
 
-              Delete this chit                     ← quiet, apart, below the slip
+              Delete this chit                     ← pinned below the slip, always on screen
 ```
 
-The header is a back arrow and the day — *Today*, *Yesterday*, or the weekday and date, the
-same phrase the archive's headings use. **Not the wordmark**: this is somewhere you came into,
-not a second home.
+**The slip fills the screen** (ADR-066). The header sits above it, *Delete this chit* is pinned
+below it, and everything between is the chit: the field takes whatever height is left and
+scrolls inside itself, so a long chit is edited in place rather than in a box inside a scroll.
+
+The header is a back arrow, its glyph on the page gutter where the wordmark sits on Today, and
+the word *Editing*. **Not the day** — the slip's own stamp already carries the time — and **not
+the wordmark**: this is somewhere you came into, not a second home.
 
 The chit sits on the same slip Today writes on, under the same `.saved` stamp the thread reads,
 because it is the same chit. **Nothing on this screen can move the stamp** — not the time, not
@@ -490,10 +497,12 @@ is left with Cancel and *Delete this chit* alone. Saving writes the words and wh
 to the recording in one write (ADR-063), moves `updatedAt`, and returns to where the chit was
 opened from.
 
-**Cancel arrives beside Save with the first change, and leaving with a change asks.** Cancel,
-the back arrow and the system back gesture are one exit: with a change, each raises *Keep this
-edit?* — Keep, or Discard — and with nothing changed, each just leaves. Answering *Discard*
-leaves the row exactly as it was, because an edit lives nowhere but this screen until Save.
+**Cancel is always there, and it leaves at once** (ADR-066) — a press on a button that says
+Cancel is the decision, and asking again is asking twice. **The back arrow and the system back
+gesture ask** when something has changed, because a swipe or a glancing tap is not a decision:
+each raises *Keep this edit?* — Keep, or Discard — and with nothing changed, each just leaves.
+Either way the row is exactly as it was, because an edit lives nowhere but this screen until
+Save.
 
 **The prompt is a slip-style sheet** (ADR-064), the app's one confirmation idiom: the recording
 sheet's paper rising from below, a question, and two answers in the two button weights — **the
@@ -510,9 +519,9 @@ that leaves the chit with nothing withholds Save, so a recording-only chit whose
 is left with Cancel and *Delete this chit* — the honest pair, since what remains is no longer a
 chit. A refused microphone says the same line it says on the open chit (§3.2).
 
-**Delete this chit** sits below the slip, quiet and apart from the action row: the one
-destructive act on the screen is a step of the scale away from Save, not an inch from it. It is
-named in full so it cannot be read as Discard. It asks — *Delete this chit?*, with *The
-recording goes with it.* when there is one — and answering Delete removes the row and the
-recording for good, then returns to where the chit was opened from. **There is no undo**
-(ADR-064): there is no trash and no backend, and the prompt is the whole of the protection.
+**Delete this chit** is pinned below the slip, quiet and apart from the action row: the one
+destructive act on the screen is always on screen, and a step of the scale away from Save
+rather than an inch from it. It is named in full so it cannot be read as Discard. It asks —
+*Delete this chit?* — and answering Delete removes the row and the recording for good, then
+returns to where the chit was opened from. **There is no undo** (ADR-064): there is no trash and
+no backend, and the prompt is the whole of the protection.

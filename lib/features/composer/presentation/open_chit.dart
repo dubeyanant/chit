@@ -330,7 +330,7 @@ class _CommitControls extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return PrimaryButton(
-      label: 'Save chit',
+      label: 'Save',
       onPressed: ref.read(composerControllerProvider.notifier).save,
     );
   }

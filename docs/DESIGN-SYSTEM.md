@@ -230,8 +230,9 @@ day-heading place the paragraph above already names.
   **The list of four dimensions did not grow**, and that was the test each of them had to pass.
 
   **The motion marks of ADR-039 did not grow it either.** The walking figure, the car and the
-  plane are drawn at `s3` — the same 12px the pin takes — in the pin's own 14-unit box at its
-  own 1.42 stroke, which renders at about 1.22px and is what every icon in the app measures.
+  plane are drawn at `s3` — the 12px the pin took, in the pin's 14-unit box (the pin itself is
+  gone, ADR-066) — at its 1.42 stroke, which renders at about 1.22px and is what every icon in
+  the app measures.
   One box, one stroke, one size: an icon set that agreed on none of those would be three
   drawings sharing a row, and §6.2's argument about the stamp not speaking a second dialect
   applies to what is drawn on it as much as to what is written.
@@ -239,10 +240,10 @@ day-heading place the paragraph above already names.
   They are **strokes rather than silhouettes**, and that is a legibility floor rather than a
   taste. At 12px an outlined plane's wings and a walking figure's limbs are a unit and a half
   across, which a 1.22px stroke on each side closes into a blob. Three lines that suggest a
-  plane survive the size; a traced one does not. The one departure from the pin is colour: the
-  pin is fixed at `--ink-faint` because it is an adornment beside the words, whereas a motion
-  mark stands in for the word it displaced (ADR-038) and so takes the row's own colour —
-  `--ink-muted` on the open chit, `--ink-faint` in the thread.
+  plane survive the size; a traced one does not. A motion mark stands in for the word it
+  displaced (ADR-038) and so takes the row's own colour — `--ink-muted` on the open chit,
+  `--ink-faint` in the thread. *The pin, while it existed, was fixed at `--ink-faint` as an
+  adornment beside the words; that distinction went with it.*
 
   The thread rail's own position is derived rather than declared: it runs down the centre of
   the 7px mark, so the mark's left edge is flush with the thread's. *The prototype puts the
@@ -386,8 +387,8 @@ Enforced, and verified on every revision:
   fills: in both, the shape carries the meaning and the colour confirms it. A future mark that
   matched its neighbours' shape and differed only in `--seal` would clear every ratio in
   `contrast_test.dart` and still be wrong.
-- **A mark that is the whole of a fact is labelled.** The pin says *Location noted*; ADR-039's
-  three motion marks say *Walking*, *Travelling* and *Flying*. These are not decoration beside
+- **A mark that is the whole of a fact is labelled.** ADR-039's three motion marks say
+  *Walking*, *Travelling* and *Flying*. These are not decoration beside
   a word — since ADR-038 a motion mark **replaces** the weather word, so a reader who cannot
   see it is not missing an adornment, they are missing the fact. The test is whether removing
   the drawing removes information: if it does, it carries a `Semantics` label; if it does not,

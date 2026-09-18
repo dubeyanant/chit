@@ -8,7 +8,12 @@ import '../../domain/models/motion_state.dart';
 import '../../domain/models/weather_condition.dart';
 import 'motion_icon.dart';
 
-/// Time, one ambient fact and the pin, set as a stamp — BEHAVIOUR.md §3.6.
+/// Time and one ambient fact, set as a stamp — BEHAVIOUR.md §3.6.
+///
+/// **No pin** (ADR-066). *It carried one on the open chit until 18 September
+/// 2026*; the owner found a mark on every chit jarring, and a mark that is
+/// never absent says nothing. Location is still captured and stored exactly
+/// as before — README §5 — it is just not drawn.
 ///
 /// One line, lowercase, **spaced apart with no separators**. Three items at
 /// 11.5px strung on middle dots is five things to read where there are three.
@@ -22,8 +27,7 @@ import 'motion_icon.dart';
 ///
 /// The same words, the same case and the same size wherever it appears. The
 /// open chit differs from a saved one only in being *brighter*
-/// (`--ink-muted` against `--ink-faint`) and in carrying the pin — it does not
-/// speak a second dialect. v5 shouted the open chit's stamp in 11.5px
+/// (`--ink-muted` against `--ink-faint`) — it does not speak a second dialect. v5 shouted the open chit's stamp in 11.5px
 /// uppercase at `.1em` and murmured the same three facts under every chit
 /// below it; DESIGN-SYSTEM.md §6.2 has the argument.
 ///
@@ -31,21 +35,18 @@ import 'motion_icon.dart';
 /// and motion are best-effort and never block, so a null is simply absent —
 /// not a dash, not "unknown", and not a gap where a word would have been.
 final class AmbientStampRow extends StatelessWidget {
-  /// The stamp on the chit being written. Brighter, and the one place the pin
-  /// is drawn.
+  /// The stamp on the chit being written. Brighter, and nothing else.
   const AmbientStampRow.open({required this.stamp, super.key})
     : lifted = false,
       _onOpenChit = true;
 
-  /// The stamp under a chit in the thread. Quieter, and never pinned —
-  /// though it does carry motion (ADR-039).
+  /// The stamp under a chit in the thread. Quieter, and it carries motion
+  /// (ADR-039).
   ///
-  /// Every chit carries a location, so a pin on all of them distinguishes
-  /// nothing — it is ten identical marks down a screen, each carrying no
-  /// information because none of them could ever be absent. *v5 drew it under
-  /// every chit.* **Motion is the opposite case and so it is drawn here**:
-  /// almost no chit has one, so the two you wrote on a train stand out from
-  /// the ten you wrote at home. Same argument, opposite outcome.
+  /// **Motion is drawn because it is rare**: almost no chit has one, so the
+  /// two you wrote on a train stand out from the ten you wrote at home. The
+  /// pin failed the same test the other way — every chit has a location, so a
+  /// mark on all of them distinguished nothing — and is gone (ADR-066).
   ///
   /// **[lifted] is the pressed state of the row it sits in** — ADR-061. A
   /// chit row is a button since M6, and its 6% wash drops `--ink-faint` to
@@ -66,8 +67,7 @@ final class AmbientStampRow extends StatelessWidget {
   /// open chit, which is not a button.
   final bool lifted;
 
-  /// Which of the two the row is. Private, and set by the constructors, so
-  /// there is no way to ask for a pinned row in the thread.
+  /// Which of the two the row is. Private, and set by the constructors.
   final bool _onOpenChit;
 
   @override
@@ -114,8 +114,8 @@ final class AmbientStampRow extends StatelessWidget {
           WeatherFact(:final WeatherCondition condition) => Text(
             condition.word,
           ),
-          // The icon takes the row's own colour, not the pin's: it is standing
-          // in for the word it displaced, so it weighs what that weighed.
+          // The icon takes the row's own colour: it is standing in for the
+          // word it displaced, so it weighs what that weighed.
           MotionFact(:final MotionState state) => MotionIcon(
             state: state,
             colour: _onOpenChit || lifted
@@ -124,11 +124,6 @@ final class AmbientStampRow extends StatelessWidget {
             size: context.space.s3,
           ),
         },
-      // §3.6: the pin says a place was recorded and stops there — never a
-      // name, never a coordinate, never a map. And only on the open chit,
-      // where it means something present tense: *this is being noted, now.*
-      if (_onOpenChit && stamp.hasLocation)
-        _Pin(colour: context.colors.inkFaint, size: context.space.s3),
     ];
   }
 
@@ -153,79 +148,4 @@ extension on WeatherCondition {
     WeatherCondition.windy => 'windy',
     WeatherCondition.clearNight => 'clear night',
   };
-}
-
-/// The location marker: a pin, drawn rather than written.
-class _Pin extends StatelessWidget {
-  const _Pin({required this.colour, required this.size});
-
-  /// The path the prototype's SVG draws, in its own 14-unit box.
-  static const double _viewBox = 14;
-
-  /// The stroke the icon set holds, in those same units. At 12px it draws at
-  /// about 1.22px, which is what every other icon in the app measures.
-  static const double _strokeInViewBox = 1.42;
-
-  final Color colour;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Location noted',
-      child: SizedBox.square(
-        dimension: size,
-        child: CustomPaint(
-          painter: _PinPainter(
-            colour: colour,
-            strokeWidth: _strokeInViewBox * size / _viewBox,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Draws the pin of `_Pin`, scaled from the prototype's 14-unit box.
-class _PinPainter extends CustomPainter {
-  const _PinPainter({required this.colour, required this.strokeWidth});
-
-  final Color colour;
-  final double strokeWidth;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final double scale = size.width / _Pin._viewBox;
-    final Paint paint = Paint()
-      ..color = colour
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth / scale
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    canvas
-      ..save()
-      ..scale(scale);
-
-    // M7 12.6 s4.4-4 4.4-7 A4.4 4.4 0 0 0 2.6 5.6 c0 3 4.4 7 4.4 7 Z
-    final Path teardrop = Path()
-      ..moveTo(7, 12.6)
-      ..cubicTo(7, 12.6, 11.4, 8.6, 11.4, 5.6)
-      ..arcToPoint(
-        const Offset(2.6, 5.6),
-        radius: const Radius.circular(4.4),
-        clockwise: false,
-      )
-      ..cubicTo(2.6, 8.6, 7, 12.6, 7, 12.6)
-      ..close();
-
-    canvas
-      ..drawPath(teardrop, paint)
-      ..drawCircle(const Offset(7, 5.5), 1.5, paint)
-      ..restore();
-  }
-
-  @override
-  bool shouldRepaint(_PinPainter oldDelegate) =>
-      oldDelegate.colour != colour || oldDelegate.strokeWidth != strokeWidth;
 }

@@ -116,7 +116,7 @@ final class EditorControllerProvider
   }
 }
 
-String _$editorControllerHash() => r'cffdee3ea677306b957ded69ba9487dedbf2dc25';
+String _$editorControllerHash() => r'a3ebcb2c53b2536878e1535d6e1ed048f86b8c6c';
 
 /// A saved chit being edited — **ADR-017, ADR-062**.
 ///

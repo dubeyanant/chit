@@ -114,7 +114,10 @@ its stated file path was.
 **Widgets watch controllers and derived providers. Never a DAO, never the database.** §1's layer
 rule, as a lint you should notice yourself breaking.
 
-**A screen reads the clock once, through a provider.** `todayProvider` is `clock.now()` and
+**A screen reads the clock once, through a provider** — with one exception, `timelineNowProvider`,
+which re-reads it whenever the rows under the strip change so the tick at now keeps up with a
+save (ADR-066); it cannot disagree with the date line about the day, only the minute.
+`todayProvider` is `clock.now()` and
 nothing else; the date line and the thread both read it rather than the clock directly, so two
 reads a millisecond apart can never disagree at midnight (ADR-006, ADR-033).
 

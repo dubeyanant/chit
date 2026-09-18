@@ -233,4 +233,32 @@ void main() {
       reason: 'and with nothing left in the window, the strip is today alone',
     );
   });
+
+  group('now keeps up with a save — ADR-066', () {
+    test('the tick at now is re-read when a chit is saved', () async {
+      container.listen<DateTime>(
+        timelineNowProvider,
+        (DateTime? _, DateTime _) {},
+        fireImmediately: true,
+      );
+      expect(container.read(timelineNowProvider), afternoon);
+
+      // Twenty minutes pass with nothing saved: the tick stays where it was,
+      // because the strip is static by design (§4.1).
+      final DateTime later = afternoon.add(const Duration(minutes: 20));
+      clock.moveTo(later);
+      expect(container.read(timelineNowProvider), afternoon);
+
+      // A save re-emits the rows, and now is read again at that moment — so
+      // the new mark cannot land ahead of the tick.
+      await repo.save(
+        stamp: AmbientStamp(capturedAt: later),
+        text: 'Now.',
+      );
+      await container.read(timelineChitsProvider.future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(timelineNowProvider), later);
+    });
+  });
 }

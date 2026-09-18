@@ -137,15 +137,15 @@ settings screen (open item 22).
 after. There is no migration now (ADR-059), but M6 changes no schema, so nobody has to
 uninstall.*
 
-- [ ] A chit opened from Today, corrected, saved — and it has not moved in the thread, on the
+- [x] A chit opened from Today, corrected, saved — and it has not moved in the thread, on the
       strip, or on the calendar.
-- [ ] The same from the archive, landing back in the archive with its filter intact.
-- [ ] Leaving with changes: the prompt, both answers, and the back gesture as well as Cancel.
-- [ ] A recording removed on the **open chit** — the microphone comes back, the take is gone.
+- [x] The same from the archive, landing back in the archive with its filter intact.
+- [x] Leaving with changes: the prompt, both answers, and the back gesture. *Cancel no longer asks — ADR-066.*
+- [x] A recording removed on the **open chit** — the microphone comes back, the take is gone.
 - [ ] A recording removed in the **editor** and cancelled: it is still there and still plays.
-- [ ] A recording replaced, saved, and played back.
+- [x] A recording replaced, saved, and played back.
 - [ ] A recording-only chit: remove the take, and Save is not offered.
-- [ ] A chit deleted, recording and all.
+- [x] A chit deleted, recording and all.
 - [ ] Reduced motion on: the prompt sheet arrives without a rise.
 - [ ] Read BUILD-PLAN.md M5's four lessons before writing a fake. Two of M5's four handset bugs
       were a fake or its harness behaving better than the real thing.

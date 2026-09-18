@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Sixty-two records, not sixty-five: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty-three records, not sixty-six: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -83,6 +83,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-063 | An edit is one write, a recording can be removed or replaced, and a chit can be deleted | M6 group C — reverses ADR-014's audio half; the invariant is checked before any file moves |
 | ADR-064 | The prompt is a slip-style sheet; three acts, three words; delete confirms and has no undo | M6 group D — the first confirmation in the app, and the idiom every later one inherits. The quiet weight always lets go |
 | ADR-065 | A take has one owner, chosen at the tap | M6 group E — `RecordingSink`; the composer and the editor both implement it; the microphone moves to `shared/` |
+| ADR-066 | No pin, now keeps up with a save, Cancel leaves at once, the editor fills the screen | the owner's first look at M6 — six calls, one record. Narrows ADR-016; reverses group D's Cancel |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -310,7 +311,7 @@ grants (Android 12+ / iOS 14+); either outcome is a successful capture — over 
 accuracy, which earlier docs specified. OPEN-QUESTIONS.md §9 wants coarse place labels ("home",
 "office") inferred from the fix, and a neighbourhood-level coarse fix cannot separate them —
 asking for precision only later would mean a year of chits that can never carry the label. This
-stores a sharper fact than BEHAVIOUR.md §3.6 displays (a pin, never a name, coordinate or map),
+stores a sharper fact than BEHAVIOUR.md §3.6 displays (nothing at all since ADR-066; a pin, never a name, until then),
 a real tension: the row is precise enough to reconstruct a home address. Accepted because the
 database never leaves the device (ADR-004), capture stays best-effort so a refusal costs nothing
 (ADR-007), and a user who grants only approximate location gets the old behaviour exactly. Cost:
@@ -1052,8 +1053,7 @@ named in full, at the foot of the slip and apart from the action row — destroy
 CLAUDE.md §4.1's vocabulary rule is the reason Cancel is not a second Discard. Cancel, the back
 arrow and the system back gesture (`PopScope`) are one exit and ask one question, and only when
 something has changed. **Deleting confirms and there is no undo**: there is no trash and no
-backend, so an undo would be a whole feature pretending to be a nicety, and the prompt names the
-recording when there is one. Cost: saving a removed recording is destructive behind one tap —
+backend, so an undo would be a whole feature pretending to be a nicety. *The prompt named the recording until ADR-066; it no longer does.* Cost: saving a removed recording is destructive behind one tap —
 reversible until Save, then not — and the prompt budget was spent on Delete instead; if that
 reads wrong on a handset the fix is a second question, not a softer Remove.
 
@@ -1076,3 +1076,29 @@ discards the temp file, and a take recorded and removed again on a text-only chi
 at all. Cost: the sink is held by a keep-alive controller and the editor's is auto-disposed, so
 a take whose owner has gone is dropped on the floor rather than delivered — acceptable because
 the sheet is modal over the editor and the owner cannot go while it is up.
+
+---
+
+## ADR-066 — The owner's first look at M6: no pin, now keeps up with a save, Cancel leaves at once, the editor fills the screen
+
+Six calls from the first handset pass of M6 on 18 September 2026, recorded together because a
+future citation would want them together. **The pin is gone from the open chit** — location is
+captured and stored exactly as before, README §5, but a mark that appears on every chit and can
+never be absent says nothing and read as jarring; this narrows ADR-016's display half to
+*nothing*, and the argument for drawing motion (rare, therefore informative, ADR-039) is the
+argument against drawing the pin. **The tick at now is re-read on every save** through
+`timelineNowProvider`, the one exception to ARCHITECTURE.md §3's one-clock-read rule: the strip
+is static by design and `todayProvider` re-reads only at midnight (ADR-033), so a chit saved
+twenty minutes after launch landed *ahead* of now — a mark in the future. Re-reading when the
+rows change is exactly when §4.1 says the strip may change, and it cannot disagree with the
+date line about the day, only the minute. **Cancel is always shown and leaves at once**,
+reversing group D's *Cancel asks*: a press on a button that says Cancel is the decision, and
+asking twice is what people learn to dismiss; the back arrow and the system gesture still ask
+when something has changed, because a swipe is not a decision. **The editor's slip fills the
+screen**, the field taking every line left, with *Delete this chit* pinned below it and always
+visible — a long chit is edited in place, not in a box inside a scroll. The header says
+*Editing* rather than the day, since the slip's stamp already carries the time; the back arrow's
+glyph sits on the gutter with its target overhanging. And **Save chit is Save**, on Today and in
+the editor, and the delete prompt no longer names the recording. Cost: the prompt-on-Cancel
+that ADR-017 half-assumed is gone, so a stray tap on Cancel loses an edit — the owner accepted
+that in exchange for a way out that is always one tap.

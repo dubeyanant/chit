@@ -118,7 +118,7 @@ A chit is text, audio, or both:
 | `text` | what the chit says, typed. **Null on a chit that is only a recording.** |
 | `audioPath` | present whenever a recording was kept |
 | `weather` | a condition word |
-| `location` | stored; surfaced in the UI only as the pin |
+| `location` | stored; **not surfaced in the UI** (ADR-066) — *it was a pin on the open chit until M6* |
 | `motion` | what the phone was doing — `stationary`, `walking`, `traveling`, `flying`. Read off the same fix as `location` (ADR-037). Drawn as an icon, and `stationary` is not drawn at all |
 
 `text` and `audioPath` are independently nullable and **at least one of them is always
