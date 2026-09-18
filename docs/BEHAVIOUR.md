@@ -12,8 +12,8 @@ saved** (ADR-040), so it is always filed on the day it was written; **the open c
 all** (ADR-080), a clock drawn before the stamp exists being a preview of a number it cannot
 promise. **There is no Discard** (ADR-060) — the words are cleared by
 selecting them, the recording by **Remove** on the pill. **Saving never waits**: the row is written
-at once with what is in hand, and a reading older than **five minutes** is refreshed behind the save
-and the chit corrected a moment later; inside five minutes nothing is asked, a burst of chits in one
+at once with what is in hand, and a reading older than **one minute** is refreshed behind the save
+and the chit corrected a moment later; inside the minute nothing is asked, a burst of chits in one
 sitting being one moment (ADR-042, ADR-045).
 
 **3.2 One surface, two ways in.** The field is live the moment the chit opens, with a **microphone**
@@ -91,11 +91,16 @@ fire, and that is not a bug to fix** — most devices disable GPS in airplane mo
 fix and no speed; a barometer is the honest route if it ever matters.
 
 **3.6.3 When capture happens.** At launch, and at a save holding something stale (ADR-042,
-ADR-045); no polling, no refresh on resume. Five minutes is set by the **place**, not the weather,
+ADR-045); no polling, no refresh on resume. **One minute** is set by the **place**, not the weather,
 so the preview can be hours old on a phone left open all day — but **no chit is ever recorded with
 it**, saving re-reading, so the staleness is on the screen and never in the data. **Permission is
 asked once, on first run** (ADR-041); a refusal means quieter chits, and nothing in the UI mentions
 it.
+
+**A reading landing mid-chit changes the facts and nothing else** (ADR-081). The launch capture
+finishes seconds after the app opens, which is squarely inside the time somebody spends writing
+their first sentence: it moves the word on the stamp, and it leaves the text, the kept take and the
+hour the chit was opened exactly where they were.
 
 ## 4. Screens
 

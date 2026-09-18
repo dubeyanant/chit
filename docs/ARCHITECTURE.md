@@ -99,7 +99,7 @@ arrived is null, and nothing here can block, spin or fail a save. Motion rides o
 which fact is worth a chit is a product decision. **`AmbientCapture` holds no clock** — a time is
 read where it is used. **A throw and a hang both produce `null`**, the one deliberate exception to
 *fail loudly in development*. **`AmbientSignals` owns *when*, `AmbientCapture` owns *what***: a
-reading is good for five minutes, the row is written first and patched only if stale, and
+reading is good for one minute, the row is written first and patched only if stale, and
 `updateAmbient` is a separate method so one rule lives in the type — **the patch moves neither
 `createdAt` nor `updatedAt`**.
 

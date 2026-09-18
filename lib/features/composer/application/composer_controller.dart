@@ -24,7 +24,15 @@ class ComposerController extends _$ComposerController implements RecordingSink {
   ComposerState build() {
     ref.onDispose(_cancelPrompt);
 
-    ref.watch(ambientSignalsProvider);
+    // Listened to, never watched. The reading lands seconds after launch, and
+    // a watch would rebuild the controller into a blank chit — throwing away
+    // whatever was being typed into it, and orphaning a kept take's file.
+    ref.listen(ambientSignalsProvider, (
+      AmbientReading? _,
+      AmbientReading next,
+    ) {
+      state = state.copyWith(stamp: _stampOf(next, opened: state.stamp));
+    });
 
     return _openChit();
   }
@@ -93,17 +101,21 @@ class ComposerController extends _$ComposerController implements RecordingSink {
     state = _openChit();
   }
 
-  AmbientStamp _stampNow() {
-    final AmbientReading held = ref.read(ambientSignalsProvider);
+  AmbientStamp _stampNow() => _stampOf(ref.read(ambientSignalsProvider));
 
-    return AmbientStamp(
-      capturedAt: ref.read(clockProvider).now(),
-      weather: held.weather,
-      lat: held.lat,
-      lon: held.lon,
-      motion: held.motion,
-    );
-  }
+  /// The reading as a stamp, keeping the hour [opened] was taken at.
+  ///
+  /// A signal arriving mid-chit moves the facts and not the moment: the prompt
+  /// is chosen by the hour the chit was *opened* (ADR-029), and the stamp a
+  /// save writes is read fresh in [save] rather than taken from here.
+  AmbientStamp _stampOf(AmbientReading reading, {AmbientStamp? opened}) =>
+      AmbientStamp(
+        capturedAt: opened?.capturedAt ?? ref.read(clockProvider).now(),
+        weather: reading.weather,
+        lat: reading.lat,
+        lon: reading.lon,
+        motion: reading.motion,
+      );
 
   Future<void> _refreshAmbience(String id) async {
     await ref.read(ambientSignalsProvider.notifier).refresh();

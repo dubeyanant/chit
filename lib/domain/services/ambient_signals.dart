@@ -35,7 +35,7 @@ class AmbientSignals extends _$AmbientSignals {
     readAt: null,
   );
 
-  static const Duration freshFor = Duration(minutes: 5);
+  static const Duration freshFor = Duration(minutes: 1);
 
   @override
   AmbientReading build() => nothing;

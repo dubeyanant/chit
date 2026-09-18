@@ -82,16 +82,20 @@ retired: 32, 33, 35, 36.**
 23. **The open chit's preview goes stale without bound, and now it is only the weather**
     (ADR-042). ADR-080 took the clock off that line, which was the half a person could tell was
     wrong by looking at it; what is left is a sky word that can be hours old on a phone left open
-    all day. **No chit is ever saved with it** — the save re-reads past five minutes (ADR-045) — so
+    all day. **No chit is ever saved with it** — the save re-reads past one minute (ADR-045) — so
     this is a wrong word on the screen and never a wrong row. The smallest honest fix is still a
     refresh when the app returns to the foreground after a long absence.
 28. **Answered by measuring instead of classifying** (ADR-078). Partly cloudy is no longer a code
     question: `cloud_cover >= 60%` is overcast and below it is clear, and code 2 only decides when
     the quantity is missing. **60 is a judgement, not a measurement** — the okta scale calls 50–84%
     "mostly cloudy", and this puts the boundary inside that band. Move it if a grey day reads clear.
-29. **A chit can be written from a reading up to five minutes old** (ADR-045), which lands hardest on
-    motion: a chit written on a train five minutes after launch says `stationary`. Untested against a
-    real journey; the honest fix is a shorter window for motion alone.
+29. **A chit can be written from a reading up to one minute old** (ADR-045, five minutes until the
+    owner walked it back), which lands hardest on motion: a chit written on a train a minute after
+    launch still says `stationary`. Untested against a real journey. **What nobody has measured is
+    the other side of the shorter window** — a burst of chits now buys roughly a fix a minute where
+    it used to buy one for the sitting, and a high-accuracy fix is not free. If the battery shows
+    up before the staleness does, a window per signal is the next shape, the place being the only
+    one that needed the minute.
 37. **The seeded recordings are WAVs wearing an `.m4a` extension, and iOS may refuse them** — Android
     sniffs the content and plays it, while AVFoundation may pick its parser from the extension,
     making every seeded pill silent on an iPhone for a reason unrelated to the player.

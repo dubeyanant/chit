@@ -91,6 +91,51 @@ void main() {
     fail('the patch never landed');
   }
 
+  group('a signal arriving mid-chit moves the facts and nothing else', () {
+    test('what was being typed survives the reading landing', () async {
+      final ProviderContainer container = containerOf();
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+
+      composer.edit('Train 20 late.');
+
+      // The launch capture finishing is what used to rebuild the controller
+      // into a blank chit, seconds after somebody had started writing.
+      await container.read(ambientSignalsProvider.notifier).prime();
+
+      final ComposerState state = container.read(composerControllerProvider);
+      expect(state.text, 'Train 20 late.');
+      expect(state.stamp.motion, MotionState.traveling);
+      expect(
+        state.stamp.capturedAt,
+        opened,
+        reason: 'the hour the chit was opened picks the prompt — ADR-029',
+      );
+    });
+
+    test('and so does a kept take', () async {
+      final ProviderContainer container = containerOf();
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+      final File take = File(p.join(root.path, 'mid-chit.m4a'));
+      await take.writeAsString('audio');
+
+      composer.keepRecording(
+        Recording(tempPath: take.path, duration: const Duration(seconds: 9)),
+      );
+
+      await container.read(ambientSignalsProvider.notifier).prime();
+
+      expect(
+        container.read(composerControllerProvider).audioTempPath,
+        take.path,
+        reason: 'a rebuild here orphaned the file it had just been handed',
+      );
+    });
+  });
+
   group('ADR-040: the chit is stamped when it is saved', () {
     test('the row carries the save time, not the open time', () async {
       final ProviderContainer container = containerOf();
@@ -214,9 +259,9 @@ void main() {
         await container.read(ambientSignalsProvider.notifier).prime();
         expect(location.fixes, 1, reason: 'the launch capture');
 
-        clock.moveTo(opened.add(const Duration(minutes: 1)));
+        clock.moveTo(opened.add(const Duration(seconds: 20)));
         await saveAndSettle(container);
-        clock.moveTo(opened.add(const Duration(minutes: 2)));
+        clock.moveTo(opened.add(const Duration(seconds: 40)));
         await saveAndSettle(container);
 
         expect(
@@ -241,7 +286,7 @@ void main() {
       final ProviderContainer container = containerOf(_FastWeather());
 
       await container.read(ambientSignalsProvider.notifier).prime();
-      clock.moveTo(opened.add(const Duration(minutes: 1)));
+      clock.moveTo(opened.add(const Duration(seconds: 30)));
       location.answer = null;
 
       await saveAndSettle(container);
@@ -256,7 +301,7 @@ void main() {
     });
 
     test('the window is measured from the reading, not from the save', () {
-      expect(AmbientSignals.freshFor, const Duration(minutes: 5));
+      expect(AmbientSignals.freshFor, const Duration(minutes: 1));
 
       expect(
         AmbientSignals.nothing.isFreshAt(savedAt),
@@ -275,7 +320,7 @@ void main() {
       expect(
         justNow.isFreshAt(savedAt.add(AmbientSignals.freshFor)),
         isFalse,
-        reason: 'the boundary belongs to stale — five minutes is the ceiling',
+        reason: 'the boundary belongs to stale — one minute is the ceiling',
       );
       expect(
         justNow.isFreshAt(savedAt.subtract(const Duration(minutes: 1))),
