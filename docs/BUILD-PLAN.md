@@ -185,35 +185,55 @@ device list is the only net for this class:
 
 ---
 
-## M5 — Voice
+## M5 — Voice ✅ done, 18 September 2026
 
 The largest milestone. The microphone has been on screen since M2; this is what happens when it
 is pressed.
 
-- `AudioRecorder` over `record`; the microphone permission.
+*It was larger still when it was written. Transcription was half of it, and **ADR-058 removed
+that half** after it recognised nothing on the first handset it ran on — the bullets about a
+recogniser, an appended transcript, `textOrigin` and a failure path are gone with it, along with
+the "no language model installed" device test that used to close this milestone.*
+
+- `AudioRecorder` over `record`; the microphone permission, asked at the first tap.
 - The recording sheet: the perforated top edge, elapsed time in tabular figures, the live
-  waveform, the record dot.
-- `OnDeviceSpeechRecognizer` with `onDevice: true` at a single call site (ADR-005), streaming
-  partials, with the last word held in lighter ink until it commits.
-- **Stop & keep** → the transcript is **appended** to the field and the field stays editable.
-  `textOrigin` becomes `transcript`, or `transcriptEdited` if the field already had text.
-- The one-way slide from `transcript` to `transcriptEdited` on the first keystroke.
-- **The failure path.** No transcript → the audio is kept, the field stays empty *and editable*,
-  the note sits beside it. Build this at the same time as the success path, not after it. All
-  three routes into it — heard nothing, on-device refused, no model — take the same branch.
+  waveform drawn from real levels, the record dot, and Discard beside **Stop & keep**.
+- **Stop & keep** → the recording is attached and **the field is left alone**. A chit holds
+  words, a recording, or both.
 - The audio pill and `just_audio` playback; the pill's duration in `--ink-muted`, because its
   3.5% ink wash drops `--ink-faint` to 4.17:1, below the floor. The pill is ink at rest and
-  takes the seal only while it is playing (ADR-022).
+  takes the seal only while it is playing (ADR-022). One player, so two pills never sound at
+  once.
 - The microphone becomes unavailable once a recording is kept, and reads as settled rather than
   broken. One row, one recording.
+- A refused microphone opens nothing and says so once.
 
-**Done when** a recording saves with its transcript, replays after a restart, and its text can
-be corrected before saving; when a chit that was typed can then be recorded into and keeps both;
-and when recognition forced to fail keeps the audio, writes nothing, and still lets the user
-type and save.
+**Done when** a recording saves, replays after a restart, and a chit that was typed can then be
+recorded into and keeps both; when a recording plays from the thread and the calendar; and when
+a refused microphone leaves the composer usable and explains itself.
 
-Test the failure path on a handset with no language model installed, not only with a fake. It is
-the case most likely to reach a real user in India first.
+**Signed off on a handset on 18 September 2026**, on the third look. What it taught, beside the
+standing lesson that a device is the only net for this class of failure:
+
+- **A feature can be built correctly and still be the wrong feature.** Transcription passed
+  every test it had, on a fake that behaved exactly as specified, and recognised nothing the
+  first time a real microphone was pointed at it. ADR-005 had written that outcome down as a
+  cost two milestones earlier. **A stated cost is a prediction, and it is worth re-reading before
+  the code that pays it is written**, not after.
+- **A fake that behaves better than the real thing turns a test into a claim about nothing.**
+  This cost two handset passes in one day. `FakeSpeechRecognizer` was honest and the tests that
+  used it still proved nothing, because the *harness around it* was not: a listener added to a
+  provider "for symmetry" gave the controller a lifetime the app does not have (ADR-057), and a
+  fake player that carried only changes hid a pill nobody could pause. CLAUDE.md §4.1's Liskov
+  rule now names both, because the rule as written covered the fake and not its scaffolding.
+- **Removing a feature removed four open risks.** Items 32, 33, 35 and 36 were all about a
+  recogniser — two plugins sharing a microphone, a session ending mid-take, a beat spent waiting
+  for a last word, a second permission dialog. None survived ADR-058. *The cheapest way to
+  answer a hard question is sometimes to stop asking it.*
+- **A seeded fixture has to be as real as what it stands in for.** `DebugSeeder` wrote
+  thirty-eight bytes of ASCII where a recording should be, which was fine for four milestones
+  and became a pill that did nothing the moment one existed — indistinguishable, from the
+  outside, from playback being broken.
 
 ---
 
@@ -233,10 +253,8 @@ handle a chit that already carries an audio pill, and after M5 every chit shape 
   discard it.
 - Discard, and a hard quit, both cancel the edit and land on Today. Nothing is written.
 - `ChitRepository.updateText()` is called at last — it has existed since M1 precisely so this
-  milestone does not have to grow one in a hurry. It touches `text`, `textOrigin` and
-  `updatedAt`, and nothing else.
-- `textOrigin` slides `transcript` → `transcriptEdited` on the first keystroke here too, the
-  same one-way move as in the composer.
+  milestone does not have to grow one in a hurry. It touches `text` and `updatedAt`, and nothing
+  else.
 
 **Done when** a saved chit can be opened, corrected and saved; when leaving with changes asks
 and answering *discard* leaves the row exactly as it was; when editing a chit that has audio
@@ -280,9 +298,6 @@ In the order OPEN-QUESTIONS.md's own §8 suggests, not in the order of appetite.
 
 1. ~~**OPEN-QUESTIONS.md §8.1 — where a saved chit is edited.**~~ Settled by ADR-017 and pulled forward
    into v1 as **M6**. It used to head this list because it blocked the most.
-2. **OPEN-QUESTIONS.md §8.2 — re-transcription.** The data model already allows it, and `textOrigin` is
-   what keeps an attempt from overwriting the user's own words. Needs a design, and it gets more
-   useful the moment a language model can be installed after the fact.
 3. **OPEN-QUESTIONS.md §8.3 — whether Today carries enough rhythm.** Worth answering with real usage rather
    than more design.
 4. Backlog items 1 and 3 (richer ambient capture, resurfacing) make the app stickier; 2 and 5
@@ -293,8 +308,10 @@ In the order OPEN-QUESTIONS.md's own §8 suggests, not in the order of appetite.
    decided yet" list, which was removed for duplicating this one.*
 6. Responsive web.
 
-Deliberately not on this list: a cloud speech engine. ADR-005 rules it out until there is an
-answer to what happens to the audio, and that is not a scheduling question.
+Deliberately not on this list: **any speech engine, cloud or on-device.** ADR-058 removed
+transcription after it recognised nothing on a handset, and ADR-005 rules a cloud one out until
+there is an answer to what happens to the audio. Bringing either back is a product decision, not
+a scheduling question.
 
 ---
 

@@ -16,7 +16,6 @@ import 'data/dev/debug_seeder.dart';
 import 'data/location/geolocator_location_service.dart';
 import 'data/preferences/prefs_first_run_store.dart';
 import 'data/repositories/chit_repository_impl.dart';
-import 'data/speech/on_device_speech_recognizer.dart';
 import 'data/weather/open_meteo_service.dart';
 import 'domain/repositories/chit_repository.dart';
 import 'domain/services/ambient_signals.dart';
@@ -24,7 +23,6 @@ import 'domain/services/audio_player.dart';
 import 'domain/services/audio_recorder.dart';
 import 'domain/services/first_run_store.dart';
 import 'domain/services/location_service.dart';
-import 'domain/services/speech_recognizer.dart';
 import 'domain/services/weather_service.dart';
 import 'features/onboarding/application/first_run_controller.dart';
 
@@ -86,13 +84,6 @@ Future<void> main() async {
       audioRecorderProvider.overrideWith(
         (Ref ref) =>
             RecordAudioRecorder.appCache(clock: ref.watch(clockProvider)),
-      ),
-      // **The recogniser** — M5 group B. It sits beside the recorder rather
-      // than over it: `speech_to_text` takes no file and no stream, so the two
-      // listen at once (TASKS.md D1). Nothing it hears leaves the device
-      // (ADR-005), and a device that cannot do that simply hears nothing.
-      speechRecognizerProvider.overrideWith(
-        (Ref ref) => OnDeviceSpeechRecognizer(),
       ),
       // **Playback** — M5 group E. One player for the whole app, so a thread
       // with three pills in it can never sound three recordings at once. It

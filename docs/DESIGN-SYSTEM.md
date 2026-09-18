@@ -446,6 +446,9 @@ Live in it:
 - The field is a real editor from the moment the page loads; the 5-second prompt is genuine.
 - The microphone opens the recording sheet and accrues a transcript. **Stop & keep** appends it
   to whatever is already in the field and leaves it editable, and the microphone retires.
+  **The app no longer does this** — ADR-058 removed transcription, so Stop & keep attaches the
+  recording and leaves the field alone. *The prototype was deliberately left showing the old
+  behaviour*; where it and BEHAVIOUR.md §3.4 disagree about the sheet, §3.4 is right.
 - Recording into a chit that already has typed text works, and shows the append rule.
 - Save adds the chit to today's thread and updates the count, the timeline, the calendar density
   and the month total together, so the two tabs never disagree.
@@ -458,8 +461,6 @@ otherwise hard to get to:
 
 | Switch | What it shows |
 |---|---|
-| **Transcription: Succeeds / Fails** | flip to Fails and record to see §3.5 — the field stays empty and still takes typing |
-| **Text origin** | a readout, not a switch: `typed` / `transcript` / `transcriptEdited`. Provenance is invisible in the app by design, so this is the only way to watch the one-way slide from transcript to edited |
 | **Today: Has chits / Empty** | the empty-day state, which a seeded prototype can't reach |
 | **Weather word**, **चित्त mark**, **Paper grain** | the three judgement calls still worth looking at both ways. Grain now starts **on**, which is the v6 default |
 | **Idle prompt** | suppresses the 5-second prompt of §3.3 |

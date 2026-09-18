@@ -41,8 +41,7 @@ costs nothing, not even a tap — and a **microphone** sits beside it as an equa
 action in a corner.
 
 The two are not alternatives; there is no mode to choose. A chit may end up as typed text, a
-recording with its transcript, a recording whose transcript was corrected by hand, or a
-recording with nothing written — all four ordinary.
+recording, or both — all three ordinary.
 
 **Tapping the page gives the field focus; tapping away takes it back.** The keyboard comes up on
 first touch (ADR-023 — never on launch) and goes down when a tap lands outside it, since a
@@ -80,55 +79,42 @@ arrived (ADR-029). *"Rain. What's it like out?"* at 4pm; *"Still up. What's keep
 **short question**: no exclamation marks, nothing suggesting a subject worth writing about,
 nothing longer than the field's own line.
 
-### 3.4 The recording and its transcript
+### 3.4 The recording
 
-Tapping the **microphone** raises the recording sheet: elapsed time, a live waveform, and the
-transcript accruing word by word, the most recent word in lighter ink until it commits. **Stop &
-keep** attaches the recording to the open chit:
+Tapping the **microphone** raises the recording sheet: elapsed time, a live waveform drawn from
+what the microphone is hearing, and two controls. **Stop & keep** attaches the recording to the
+open chit:
 
 - The audio is attached, stays attached, and plays back from the chit's audio pill.
-- The transcript is written into the field, and **the field remains the user's** — corrected,
-  cut down, or added to. What ends up there is the text of the chit.
-- If the field already held text, the transcript is appended after it, never discarding what was
-  already written.
+- **The field is left exactly as it was.** A recording is not words, and keeping one is not an
+  edit to anything already written.
 - **Save chit** commits it, the same as a typed chit.
 
-The recording and the text are two records of the same moment, not two versions of it — the
-audio is what was said, the text is what the chit says, and the audio survives every edit to the
-words.
+A chit can hold words, a recording, or both, and the order they arrived in is not something it
+records. Somebody can type, then record; record, then type; or do only one.
 
-**Speech-to-text runs on the device** — the same recognition a phone keyboard uses for
-dictation, nothing sent anywhere, no connection required. Where no on-device model exists,
-recognition is simply unavailable — §3.5.
+**A chit holds one recording** (§3.2), so the microphone retires once a take is kept and the
+pill is where the recording now is.
 
-### 3.4.1 Why the transcript is editable
+### 3.4.1 There is no transcription
 
-Speech recognition mishears names and place names, and breaks on the English-Hindi
-code-switching that is ordinary speech here. A transcript that cannot be fixed is a record that
-is quietly wrong. The audio protects the moment regardless — kept whatever happens to the text,
-so correcting a word costs nothing that mattered.
+chit does not turn speech into text. **The recording is the record** — what was said is kept as
+audio, and anything the chit says in words was typed by a person.
 
-### 3.5 When transcription fails, the voice survives alone
+*M5 built on-device recognition and then took it out* (ADR-058). It recognised nothing on the
+first handset it ran on, which is the outcome ADR-005 had already named as likely: on-device
+models vary by handset, may not exist at all for a language, and are worst at exactly the
+English-Hindi code-switching that is ordinary speech here. A transcript that is usually absent
+and occasionally wrong is a worse record than an honest recording, and it cost a plugin, a
+permission, a schema column and a whole failure path to be wrong with.
 
-If speech is not recognised, or no on-device model is available, **the audio is kept and
-nothing is written into the field** — nothing partial, approximate or placeholder is added
-automatically.
+### 3.5 — retired
 
-The field stays empty and the user's: they can type anything, or save with no text at all. The
-open chit carries the line *"Speech wasn't recognised. Your recording is kept."* between the pill
-and the page — beside the body rather than written into it, an explanation of state and never
-saved as content. It stays while they type (ADR-056): the recording is still kept and still
-unrecognised, so the explanation outlives the first keystroke. **Discard clears it**, along with
-the recording it is about.
-
-A garbled transcript is worse than none: unsearchable, a misrepresentation of what was said, and
-indistinguishable in the archive from a real record. In the archive, a chit with audio and no
-text shows its audio pill and nothing else — still a record the user can play back.
-
-**The other half of the same failure keeps the words** (ADR-054): where the recogniser heard
-something but the recording itself did not survive, the transcript goes into the field as it
-normally would and the chit is a text chit. Nothing says so — there is no recording to explain
-the absence of, and the note above is not shown, because it promises a recording was kept.
+*When transcription fails, the voice survives alone.* Gone with transcription itself (ADR-058):
+there is no recogniser, so there is nothing for it to fail at, and a recording with no words is
+now an ordinary chit rather than a failure to explain. **The number is not reused** — §3.5 is
+cited from other documents and from git history, and a reader who follows one of those should
+land on this rather than on something unrelated.
 
 ### 3.6 Ambient capture
 
@@ -361,7 +347,7 @@ records about aggregate queries, not colour, and are left as written.
 
 ### 4.3 Recording sheet
 
-A bottom sheet carrying the same perforated edge as a chit. Covered in §3.4 and §3.5.
+A bottom sheet carrying the same perforated edge as a chit. Covered in §3.4.
 
 ```
   ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← the same tear edge
@@ -369,20 +355,19 @@ A bottom sheet carrying the same perforated edge as a chit. Covered in §3.4 and
   │ 0:07                                    │        ← tabular, off the clock
   │ ▁▃▅▂▇▄▁▆▃▅▂▁▄▇▅▂▃▁▆▄                    │        ← twenty strokes, one per level
   │                                         │
-  │ Missed the last train. Walking home     │        ← the pending word is fainter
-  │ from the station                        │
-  │                                         │
   │ Discard          ┌────────────────────┐ │
   │                  │   Stop & keep      │ │
   │                  └────────────────────┘ │
-  │ Recognised on this device. The          │
-  │ recording is kept either way.           │
   └─────────────────────────────────────────┘
 ```
 
 **Two controls, and every other way out is Discard's** — the drag, the scrim and the back
-gesture all cancel, so nothing is kept and the take is deleted (ADR-055). **Stop & keep** holds
-the sheet for a beat while the recogniser finishes its last word (ADR-053).
+gesture all cancel, so nothing is kept and the take is deleted (ADR-055).
+
+*It carried a transcript between the wave and the controls, and a line under them reading
+"Recognised on this device"*, until ADR-058 took transcription out. **`design/chit-app-v6.html`
+still draws both** — the prototype was deliberately left alone, so where it and this section
+disagree about the sheet, this one is right.
 
 ### 4.4 First run
 

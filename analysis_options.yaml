@@ -24,9 +24,6 @@ analyzer:
     - web/**
     - "**/*.g.dart"
     - "**/*.freezed.dart"
-    # Written by `drift_dev schema generate` from the snapshots in
-    # drift_schemas/. Generated code, held to the same exemption as *.g.dart.
-    - "test/data/db/generated/**"
 
   language:
     strict-casts: true

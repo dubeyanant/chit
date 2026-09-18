@@ -17,20 +17,14 @@ import '../../domain/services/audio_player.dart';
 final class AudioPill extends ConsumerStatefulWidget {
   /// A pill for the recording at [path], [duration] long, known as [id].
   ///
-  /// [id] is a chit's id for a saved chit and [openChit] for the take on the
-  /// open one — it is which pill, not which row.
+  /// [id] is a chit's id for a saved chit and [Playback.openChit] for the one on
+  /// the open chit — it is which pill, not which row.
   const AudioPill({
     required this.id,
     required this.path,
     required this.duration,
     super.key,
   });
-
-  /// The id the open chit's kept take plays under.
-  ///
-  /// It has no row yet and may never get one, but the player still has to be
-  /// able to say *this pill and not that one*.
-  static const String openChit = 'open-chit';
 
   /// Which pill this is.
   final String id;

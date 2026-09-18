@@ -172,8 +172,11 @@ codebase, because a principle nobody can fail is a principle nobody is following
   exists. A new `WeatherCondition` should light up as a missing case at compile time — so
   switches over sealed types and enums are **exhaustive, with no `default:`**. A `default:` is
   how a new variant ships silently wrong.
-- **Liskov.** A fake used in a test must be honest. `FakeSpeechRecognizer` that "fails" must
-  fail the way the real one does — the §3.5 path is only tested if the substitute cannot lie.
+- **Liskov.** A fake used in a test must be honest. `FakeAudioRecorder` that "refuses" must
+  refuse the way the real one does — a `false`, never an exception — and `FakeAudioPlayer` must
+  replay its current state to a new listener because the real one does. A test only means
+  something if the substitute cannot lie, and both times a fake lied here it cost a handset pass
+  (ADR-057, and the pill nobody could pause).
 - **Interface segregation.** `context.colors`, `context.type`, `context.space` and
   `context.motion` are four accessors, not one `context.theme` returning everything. A widget
   that needs a colour should not be able to reach motion.
@@ -296,16 +299,10 @@ flutter run --dart-define=CHIT_SEED=seed
 flutter run --dart-define=CHIT_SEED=clear
 ```
 
-When `AppDatabase.schemaVersion` changes, and only then:
-
-```bash
-dart run drift_dev schema dump lib/data/db/app_database.dart drift_schemas/
-dart run drift_dev schema generate drift_schemas/ test/data/db/generated/
-```
-
-The first commits the shape that shipped, the second writes what
-`test/data/db/migration_test.dart` reads. A version with no snapshot fails that test, because a
-migration with nothing to migrate *from* is not a migration — `docs/DATA-MODEL.md` §6.
+**There are no migrations** (ADR-059). `schemaVersion` stays 1, changing a table changes the
+schema, and an install carrying the old shape is **reinstalled** — the app throws a message
+saying so rather than opening a database it cannot trust. That holds only while chit has no data
+anybody would miss; `docs/DATA-MODEL.md` §6 says what comes back when it does.
 
 Windows note: `flutter pub get` warns unless **Developer Mode** is enabled — plugin builds
 need symlink support. `start ms-settings:developers`.

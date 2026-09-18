@@ -5,18 +5,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/clock.dart';
 import '../../../domain/models/recording_state.dart';
 import '../../../domain/services/audio_recorder.dart';
-import '../../../domain/services/speech_recognizer.dart';
 import 'composer_controller.dart';
 
 part 'recording_controller.g.dart';
 
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
-///
-/// **Two services, one take** (TASKS.md D1). The recogniser takes no file and
-/// no stream, so the only way to keep the audio *and* have words is to run
-/// both at once; this is the thing that runs them, and neither knows the other
-/// exists. Whether a phone will let them share the microphone is open item 32
-/// and nothing here can settle it.
 ///
 /// **It hands the result to `ComposerController` rather than returning it**,
 /// because the sheet is a modal and not a route (ADR-011): there is nothing
@@ -50,7 +43,6 @@ class RecordingController extends _$RecordingController {
 
   Timer? _ticking;
   StreamSubscription<double>? _levels;
-  StreamSubscription<Transcript>? _words;
 
   /// When the take began, or `null` when none is running.
   DateTime? _startedAt;
@@ -63,15 +55,11 @@ class RecordingController extends _$RecordingController {
     // microphone is what it costs either way, and `ref.read` after disposal is
     // not allowed where these are.
     final AudioRecorder recorder = ref.watch(audioRecorderProvider);
-    final SpeechRecognizer recognizer = ref.watch(speechRecognizerProvider);
 
     ref.onDispose(() {
       final bool running = _startedAt != null;
       _release();
-      if (running) {
-        unawaited(recognizer.stop());
-        unawaited(recorder.cancel());
-      }
+      if (running) unawaited(recorder.cancel());
     });
 
     return const RecordingState();
@@ -104,60 +92,36 @@ class RecordingController extends _$RecordingController {
     _ticking = Timer.periodic(tick, (Timer _) => _tick());
     _levels = recorder.levels.listen(_onLevel);
 
-    // Started after the recorder, and deliberately not awaited: the file is
-    // the part that must not be missed, and a recogniser that takes a moment
-    // to wake costs a word rather than the take.
-    _words = ref
-        .read(speechRecognizerProvider)
-        .start()
-        .listen(_onWords, onDone: _onRecognizerDone);
-
     ref.read(composerControllerProvider.notifier).recordingStarted();
     return true;
   }
 
-  /// **Stop & keep** — the take and whatever was heard go to the open chit.
-  ///
-  /// The recogniser is stopped **first**, because its last word lands after
-  /// the microphone closes (ADR-053) and the transcript is read from state
-  /// once that has happened. Skipped when it has already given up, since
-  /// stopping a recogniser that has stopped is a wait for nothing.
+  /// **Stop & keep** — the take goes to the open chit.
   Future<void> stopAndKeep() async {
     if (_startedAt == null) return;
-    // Cleared before the first await, so a second press while this one is
-    // still waiting on the recogniser's last word does nothing — and so the
-    // stream closing under [stop] is not read as the recogniser giving up.
+    // Cleared before the await, so a second press while the platform is still
+    // closing the file does nothing.
     _startedAt = null;
     _ticking?.cancel();
     _ticking = null;
 
-    if (!state.recognitionGaveUp) {
-      await ref.read(speechRecognizerProvider).stop();
-    }
     final Recording? take = await ref.read(audioRecorderProvider).stop();
-    final Transcript heard = state.transcript;
 
     _release();
     if (!ref.mounted) return;
 
-    ref
-        .read(composerControllerProvider.notifier)
-        .keepRecording(recording: take, transcript: heard);
+    ref.read(composerControllerProvider.notifier).keepRecording(take);
     state = const RecordingState();
   }
 
   /// The sheet dismissed — nothing kept, nothing written, the file deleted.
   ///
-  /// Both services are stopped before the subscriptions go, so the recogniser
-  /// has somewhere to close its stream to; releasing first would leave `stop`
-  /// waiting out its own ceiling for a listener that is no longer there.
   Future<void> cancel() async {
     if (_startedAt == null) return;
     _startedAt = null;
     _ticking?.cancel();
     _ticking = null;
 
-    await ref.read(speechRecognizerProvider).stop();
     await ref.read(audioRecorderProvider).cancel();
 
     _release();
@@ -185,24 +149,12 @@ class RecordingController extends _$RecordingController {
     );
   }
 
-  void _onWords(Transcript heard) => state = state.copyWith(transcript: heard);
-
-  /// The recogniser's stream closed while the take is still running — a
-  /// platform that gave up, or one that never started (ADR-053).
-  void _onRecognizerDone() {
-    if (_startedAt == null) return;
-    state = state.copyWith(recognitionGaveUp: true);
-  }
-
-  /// Stops watching. It tells neither service anything — the callers do that,
-  /// in the order each of them needs.
+  /// Stops watching. It tells the recorder nothing — the callers do that.
   void _release() {
     _ticking?.cancel();
     _ticking = null;
     unawaited(_levels?.cancel());
     _levels = null;
-    unawaited(_words?.cancel());
-    _words = null;
     _startedAt = null;
   }
 }

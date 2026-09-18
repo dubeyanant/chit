@@ -16,6 +16,13 @@ final class Playback {
   /// Nothing is playing. Where every take starts and ends.
   static const Playback silent = Playback();
 
+  /// The id the open chit's kept take plays under.
+  ///
+  /// It has no row yet and may never get one, but the player still has to be
+  /// able to say *this pill and not that one* — and the composer has to be
+  /// able to name it when Save or Discard takes the file away.
+  static const String openChit = 'open-chit';
+
   /// Which pill this is about, or `null` when none is loaded.
   ///
   /// A chit's id, and the open chit's take has one of its own — it is an
@@ -57,7 +64,13 @@ final class Playback {
 /// because a recording that has gone is a loss rather than a corruption and
 /// the chit still renders (ARCHITECTURE.md §6).
 abstract interface class AudioPlayer {
-  /// What is playing, as it changes. Starts at [Playback.silent].
+  /// What is playing, as it changes.
+  ///
+  /// **Every listener is given the current state first**, before anything
+  /// changes. A pill is built long after a recording started sounding — the
+  /// archive is rebuilt on every tab change — and a stream that only carried
+  /// *changes* left those pills drawn as though nothing were playing, so the
+  /// one control that could stop the sound was a play button that did nothing.
   Stream<Playback> get playback;
 
   /// Plays the recording at [path], reported under [id].
@@ -73,6 +86,16 @@ abstract interface class AudioPlayer {
 
   /// Stops, keeping the playhead where it is.
   Future<void> pause();
+
+  /// Stops and unloads, but **only if [id] is the pill that is loaded**.
+  ///
+  /// The open chit's take is what this exists for. Save moves that file out of
+  /// the cache and Discard deletes it, and either way the pill playing it
+  /// stops being drawn a frame later — a player left running would go on
+  /// sounding a recording with no control anywhere able to stop it. The
+  /// `if` matters: a chit saved while a *thread* pill is playing must not
+  /// silence it.
+  Future<void> stopIf(String id);
 }
 
 /// The player the app runs on.

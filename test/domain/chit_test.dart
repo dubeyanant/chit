@@ -14,7 +14,6 @@ void main() {
 
   Chit chit({
     String? text = 'Train 20 late.',
-    TextOrigin? textOrigin = TextOrigin.typed,
     String? audioPath,
     Duration? audioDuration,
     double? lat,
@@ -25,23 +24,21 @@ void main() {
     localDay: Chit.localDayOf(when),
     updatedAt: when,
     text: text,
-    textOrigin: textOrigin,
     audioPath: audioPath,
     audioDuration: audioDuration,
     lat: lat,
     lon: lon,
   );
 
-  group('the four legal shapes of DATA-MODEL.md §2', () {
-    test('typed', () {
+  group('the three legal shapes of DATA-MODEL.md §2', () {
+    test('words alone', () {
       final Chit c = chit();
       expect(c.hasText, isTrue);
       expect(c.hasAudio, isFalse);
     });
 
-    test('recorded and transcribed', () {
+    test('words and a recording', () {
       final Chit c = chit(
-        textOrigin: TextOrigin.transcript,
         audioPath: 'audio/a.m4a',
         audioDuration: const Duration(seconds: 9),
       );
@@ -49,20 +46,9 @@ void main() {
       expect(c.hasAudio, isTrue);
     });
 
-    test('recorded, transcript corrected', () {
-      final Chit c = chit(
-        textOrigin: TextOrigin.transcriptEdited,
-        audioPath: 'audio/a.m4a',
-        audioDuration: const Duration(seconds: 9),
-      );
-      expect(c.textOrigin, TextOrigin.transcriptEdited);
-      expect(c.hasAudio, isTrue);
-    });
-
-    test('recorded, nothing recognised — BEHAVIOUR.md §3.5', () {
+    test('a recording alone', () {
       final Chit c = chit(
         text: null,
-        textOrigin: null,
         audioPath: 'audio/a.m4a',
         audioDuration: const Duration(seconds: 9),
       );
@@ -73,25 +59,7 @@ void main() {
 
   group('what cannot be built', () {
     test('neither text nor audio is not a chit', () {
-      expect(
-        () => chit(text: null, textOrigin: null),
-        throwsA(isA<AssertionError>()),
-      );
-    });
-
-    test('text without an origin', () {
-      expect(() => chit(textOrigin: null), throwsA(isA<AssertionError>()));
-    });
-
-    test('an origin without text', () {
-      expect(
-        () => chit(
-          text: null,
-          audioPath: 'audio/a.m4a',
-          audioDuration: Duration.zero,
-        ),
-        throwsA(isA<AssertionError>()),
-      );
+      expect(() => chit(text: null), throwsA(isA<AssertionError>()));
     });
 
     test('empty text is no text — it is the chit §3.1 refuses to save', () {

@@ -5,6 +5,7 @@ import '../../../core/extensions.dart';
 import '../../../core/theme/chit_colors.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/composer_state.dart';
+import '../../../domain/services/audio_player.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
@@ -55,22 +56,12 @@ class OpenChit extends ConsumerWidget {
           if (state.hasAudio) ...<Widget>[
             SizedBox(height: space.s4),
             AudioPill(
-              id: AudioPill.openChit,
+              id: Playback.openChit,
               path: state.audioTempPath!,
               duration: state.audioDuration ?? Duration.zero,
             ),
           ],
-          // **The note sits above the page, never on it** — BEHAVIOUR.md §3.5.
-          // v6 pulls the field back up under it with a negative margin, which
-          // leaves `s1` between the two: an explanation belongs to the thing
-          // it explains, and the page keeps its full height because it is
-          // still the user's to type into.
-          if (state.sttFailed) ...<Widget>[
-            SizedBox(height: space.s4),
-            const _FailNote(),
-            SizedBox(height: space.s1),
-          ] else
-            SizedBox(height: space.s4),
+          SizedBox(height: space.s4),
           const _Field(),
           SizedBox(height: space.s4),
           _ActionRow(canSave: state.canSave, hasAudio: state.hasAudio),
@@ -113,8 +104,8 @@ class _FieldState extends ConsumerState<_Field> {
   @override
   Widget build(BuildContext context) {
     // The controller is the source of truth and this field mirrors it, so that
-    // Discard can empty the page and M5's transcript can land in it. Typing
-    // does not loop back: by the time this fires the two already agree.
+    // Discard can empty the page. Typing does not loop back: by the time this
+    // fires the two already agree.
     ref.listen(composerControllerProvider.select((ComposerState s) => s.text), (
       String? _,
       String next,
@@ -194,10 +185,8 @@ class _FieldState extends ConsumerState<_Field> {
 /// **Not `hintText`.** A hint is a label on the field: it is announced as one,
 /// and it arrives on Material's schedule rather than after five seconds.
 /// ARCHITECTURE.md §4.1 warns that placeholder text is the tempting shortcut
-/// here, and §3.5's failure note obeys the same rule from its own block above
-/// the field — what the machine writes never goes into the field. *This
-/// comment used to say the note would land in this overlay; [_FailNote] says
-/// why it does not.*
+/// here. *Nothing else has ever gone in here, and §3.5's failure note — which
+/// this comment once promised would — no longer exists.*
 ///
 /// **There is no drawn caret** — ADR-028. The field's caret is the platform's
 /// and appears when the user taps, which is the only caret in the app.
@@ -223,33 +212,6 @@ class _Ghost extends ConsumerWidget {
         state.prompt,
         key: OpenChit.prompt,
         style: context.type.composerGhost,
-      ),
-    );
-  }
-}
-
-/// **"Speech wasn't recognised. Your recording is kept."** — BEHAVIOUR.md §3.5.
-///
-/// A property of the state and never a value of `text`: a failure written into
-/// the field is a failure the user has to delete before they can write.
-///
-/// **It is a block above the page, not the prompt's overlay** — v6 draws it
-/// that way and it is the only placement that survives the next keystroke. In
-/// the overlay it would have to hide the moment anything was typed, and the
-/// recording would still be kept and still be unrecognised; the explanation
-/// would have gone while the thing it explains had not. What it does take from
-/// the prompt is its *turn*: `ComposerController` will not raise one while this
-/// is showing, so the two never stack.
-class _FailNote extends StatelessWidget {
-  const _FailNote();
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      liveRegion: true,
-      child: Text(
-        "Speech wasn't recognised. Your recording is kept.",
-        style: context.type.failNote,
       ),
     );
   }

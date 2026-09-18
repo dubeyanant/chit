@@ -144,7 +144,6 @@ final class DebugSeeder {
           // Saved and never edited, so the two are the same moment (ADR-014).
           updatedAt: at.millisecondsSinceEpoch,
           body: Value<String?>(seed.text),
-          textOrigin: Value<TextOrigin?>(seed.origin),
           audioPath: Value<String?>(audioPath),
           audioMs: Value<int?>(
             seed.audioSeconds == null ? null : seed.audioSeconds! * 1000,
@@ -266,8 +265,8 @@ final class DebugSeeder {
   /// particular order — the DAO sorts.
   ///
   /// Density steps: two days at five (step four), one at three, one at two,
-  /// five singles. Shapes: sixteen typed, one transcript, two corrected
-  /// transcripts, one recording with nothing recognised (§3.5). Every weather
+  /// five singles. Shapes: nineteen with words, three with a recording, one
+  /// recording with no words. Every weather
   /// word appears, one row has no fix, one has no weather, and the three
   /// motion marks appear once or twice each.
   static const List<_Seed> _fixture = <_Seed>[
@@ -285,7 +284,6 @@ final class DebugSeeder {
       5,
       'Market. Forgot the dal again.',
       WeatherCondition.windy,
-      origin: TextOrigin.transcript,
       audioSeconds: 14,
       motion: MotionState.walking,
     ),
@@ -314,7 +312,6 @@ final class DebugSeeder {
       30,
       'Tea with S. Good one.',
       WeatherCondition.overcast,
-      origin: TextOrigin.transcriptEdited,
       audioSeconds: 9,
     ),
     _Seed(
@@ -345,7 +342,6 @@ final class DebugSeeder {
       5,
       "Didn't sleep. Room too cold, again.",
       WeatherCondition.clear,
-      origin: TextOrigin.transcriptEdited,
       audioSeconds: 22,
     ),
     _Seed(6, 20, 30, 'Landlord called. Rent up.', null),
@@ -385,12 +381,10 @@ final class _Seed {
     this.minute,
     this.text,
     this.weather, {
-    TextOrigin origin = TextOrigin.typed,
     this.audioSeconds,
     this.motion,
     this.pinned = true,
-  }) : _originGiven = origin,
-       assert(
+  }) : assert(
          text != null || audioSeconds != null,
          'a seeded chit is still a chit — README §5',
        );
@@ -403,10 +397,4 @@ final class _Seed {
   final int? audioSeconds;
   final MotionState? motion;
   final bool pinned;
-
-  /// Ignored when [text] is null, as the invariant requires.
-  final TextOrigin _originGiven;
-
-  /// The origin the row carries: null exactly when the text is.
-  TextOrigin? get origin => text == null ? null : _originGiven;
 }

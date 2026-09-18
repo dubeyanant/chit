@@ -111,7 +111,7 @@ final class ComposerControllerProvider
 }
 
 String _$composerControllerHash() =>
-    r'ab76a8c9a819514bb2fa19cdda4c044d4385dd85';
+    r'a78e2e040ff003fc74f1c7496e398c86fae7804f';
 
 /// The open chit's state.
 ///

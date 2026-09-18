@@ -103,6 +103,33 @@ void main() {
       expect(player.now, Playback.silent);
     });
 
+    test('a pill built mid-playback is told what is already sounding', () async {
+      // **The bug that made a playing pill unstoppable.** The archive is
+      // rebuilt on every tab change, so a pill routinely subscribes long after
+      // a recording started; a stream carrying only *changes* left it drawn as
+      // though nothing were playing, and its one control became a play button
+      // that did nothing.
+      await player.play(id: 'a', path: 'audio/a.m4a');
+
+      final Playback firstSeen = await player.playback.first;
+
+      expect(firstSeen.holds('a'), isTrue);
+      expect(firstSeen.playing, isTrue);
+    });
+
+    test('stopIf silences the pill it names, and only that one', () async {
+      // Save moves the open chit's take out of the cache and Discard deletes
+      // it; either way the pill goes. A player left running would sound a
+      // recording with no control anywhere able to stop it.
+      await player.play(id: Playback.openChit, path: 'take-1.m4a');
+
+      await player.stopIf('some-other-chit');
+      expect(player.now.holds(Playback.openChit), isTrue, reason: 'not it');
+
+      await player.stopIf(Playback.openChit);
+      expect(player.now, Playback.silent);
+    });
+
     test('the end is silence rather than a full playhead', () async {
       await player.play(id: 'a', path: 'audio/a.m4a');
       player.finish();

@@ -8,8 +8,8 @@ import '../../../domain/models/chit.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../domain/repositories/chit_repository.dart';
 import '../../../domain/services/ambient_signals.dart';
+import '../../../domain/services/audio_player.dart';
 import '../../../domain/services/audio_recorder.dart';
-import '../../../domain/services/speech_recognizer.dart';
 
 part 'composer_controller.g.dart';
 
@@ -75,16 +75,10 @@ class ComposerController extends _$ComposerController {
 
   /// Starts the five seconds again — at open, and whenever the field goes back
   /// to empty.
-  ///
-  /// **BEHAVIOUR.md §3.5's note occupies this same space** and says more than
-  /// the prompt would, so a chit whose transcription failed gets the note and
-  /// no prompt. The test is in the callback rather than beside the arming
-  /// because `_openChit` arms before there is a `state` to read, and because a
-  /// take can fail while five seconds are already running.
   void _armPrompt() {
     _idle?.cancel();
     _idle = Timer(idle, () {
-      if (!ref.mounted || state.sttFailed) return;
+      if (!ref.mounted) return;
       state = state.copyWith(showPrompt: true);
     });
   }
@@ -96,10 +90,6 @@ class ComposerController extends _$ComposerController {
 
   /// What the user has typed.
   ///
-  /// The origin follows [_originAfter], and `null` again when the field is
-  /// emptied — a chit with no words has no provenance for them, which is the
-  /// pairing README §5's invariant is about.
-  ///
   /// The prompt goes with the first character and the five seconds start
   /// again the moment the field is empty (BEHAVIOUR.md §3.3) — including when
   /// it is emptied a character at a time, which is a user who has stopped
@@ -107,11 +97,7 @@ class ComposerController extends _$ComposerController {
   void edit(String text) {
     final bool blank = text.trim().isEmpty;
 
-    state = state.copyWith(
-      text: text,
-      textOrigin: blank ? null : _originAfter(state.textOrigin),
-      showPrompt: false,
-    );
+    state = state.copyWith(text: text, showPrompt: false);
 
     if (blank) {
       _armPrompt();
@@ -119,23 +105,6 @@ class ComposerController extends _$ComposerController {
       _cancelPrompt();
     }
   }
-
-  /// Where a keystroke leaves the provenance — the one-way slide of
-  /// BEHAVIOUR.md §3.4.
-  ///
-  /// The recogniser's words become *corrected* words at the first keystroke
-  /// and never go back, because what the row records is whether a person had a
-  /// hand in the text, and one keystroke is a hand. Emptying the field is the
-  /// only way out, and that clears the origin entirely — after which typing is
-  /// [TextOrigin.typed], since there is nothing of the recogniser's left.
-  ///
-  /// Exhaustive on purpose: a fifth origin should not compile until this says
-  /// where it goes (CLAUDE.md §4.1).
-  static TextOrigin _originAfter(TextOrigin? current) => switch (current) {
-    null || TextOrigin.typed => TextOrigin.typed,
-    TextOrigin.transcript ||
-    TextOrigin.transcriptEdited => TextOrigin.transcriptEdited,
-  };
 
   /// **Save chit** — BEHAVIOUR.md §3.1. The only thing that inserts.
   ///
@@ -168,6 +137,15 @@ class ComposerController extends _$ComposerController {
     final ComposerState chit = state;
     if (!chit.canSave) return;
 
+    // **The take stops sounding before it moves.** Save hands the file to
+    // `AudioStore`, which renames it out of the cache, and the pill playing it
+    // is gone from the screen a frame later — a player left running would go
+    // on playing a recording nothing on screen could stop.
+    if (chit.hasAudio) {
+      await ref.read(audioPlayerProvider).stopIf(Playback.openChit);
+      if (!ref.mounted) return;
+    }
+
     final DateTime now = ref.read(clockProvider).now();
     final AmbientReading held = ref.read(ambientSignalsProvider);
     final bool fresh = held.isFreshAt(now);
@@ -183,7 +161,6 @@ class ComposerController extends _$ComposerController {
             motion: held.motion,
           ),
           text: chit.text,
-          textOrigin: chit.textOrigin,
           audioTempPath: chit.audioTempPath,
           audioDuration: chit.audioDuration,
         );
@@ -279,52 +256,29 @@ class ComposerController extends _$ComposerController {
 
   /// **Stop & keep** — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
   ///
-  /// The transcript is **appended**, after a space where the field already has
-  /// words: §3.4 says what was already written is never discarded. An empty
-  /// field takes [TextOrigin.transcript]; a field that held anything takes
-  /// [TextOrigin.transcriptEdited], since a chit whose words are part typed
-  /// and part heard has had a hand in it by definition.
+  /// The recording is attached and **the field is left exactly as it was**: a
+  /// chit can hold words, a recording, or both, and which of the two came
+  /// first is not something the chit records.
   ///
-  /// **No words and a recording is [ComposerState.sttFailed]** — the field is
-  /// left exactly as it was, nothing partial or approximate is written, and
-  /// the audio is attached regardless (§3.5, ADR-013).
-  ///
-  /// **[recording] is nullable, though TASKS.md group C did not ask for it.**
-  /// The recorder and the recogniser are two plugins that fail apart, so a
-  /// take can come back as words with no file. Dropping the words because the
-  /// other plugin failed would be losing the user's content silently, which is
-  /// the one thing ARCHITECTURE.md §6 says never happens; the chit becomes a
-  /// text chit with a transcript origin, which README §5 allows. Nothing at
-  /// all closes the sheet and changes nothing — and in particular does **not**
-  /// raise the note, which promises a recording was kept.
-  void keepRecording({
-    required Recording? recording,
-    required Transcript transcript,
-  }) {
+  /// [recording] is nullable because a take that wrote nothing is nothing —
+  /// the platform refused, or produced no file. That closes the sheet and
+  /// changes nothing else.
+  void keepRecording(Recording? recording) {
     final ComposerState chit = state;
-    final String words = transcript.words;
-
-    if (recording == null && words.isEmpty) {
+    if (recording == null) {
       state = chit.copyWith(isRecording: false);
       return;
     }
 
-    // Either way the prompt is spent: the note takes its place on a failure,
-    // and on a success there are words in the field (BEHAVIOUR.md §3.5).
+    // The prompt is spent: it offers something to write about, and somebody
+    // who has just recorded has found one.
     _cancelPrompt();
 
-    final String had = chit.text.trimRight();
-
     state = chit.copyWith(
-      text: words.isEmpty ? chit.text : (had.isEmpty ? words : '$had $words'),
-      textOrigin: words.isEmpty
-          ? chit.textOrigin
-          : (had.isEmpty ? TextOrigin.transcript : TextOrigin.transcriptEdited),
-      audioTempPath: recording?.tempPath ?? chit.audioTempPath,
-      audioDuration: recording?.duration ?? chit.audioDuration,
+      audioTempPath: recording.tempPath,
+      audioDuration: recording.duration,
       isRecording: false,
       showPrompt: false,
-      sttFailed: recording != null && words.isEmpty,
     );
   }
 
@@ -342,6 +296,9 @@ class ComposerController extends _$ComposerController {
   Future<void> discard() async {
     final String? take = state.audioTempPath;
     state = _openChit();
-    if (take != null) await ref.read(chitRepositoryProvider).discardTemp(take);
+    if (take == null) return;
+
+    await ref.read(audioPlayerProvider).stopIf(Playback.openChit);
+    await ref.read(chitRepositoryProvider).discardTemp(take);
   }
 }

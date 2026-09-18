@@ -15,24 +15,6 @@ import 'weather_condition.dart';
 
 part 'chit.freezed.dart';
 
-/// Where a chit's words came from. Provenance, and nothing else.
-///
-/// Nothing in the UI renders differently because of it (ADR-013). It exists so
-/// a future re-transcription (OPEN-QUESTIONS.md §8.2) can tell whether it
-/// would be overwriting the machine's words or the user's.
-enum TextOrigin {
-  /// Typed by hand, start to finish.
-  typed,
-
-  /// The recogniser's words, untouched.
-  transcript,
-
-  /// The recogniser's words, corrected by the user — or a recording made into
-  /// a chit that already held typed text. A one-way move: [transcript] becomes
-  /// this on the first keystroke and never goes back.
-  transcriptEdited,
-}
-
 /// One entry. Text, a recording, or both — never neither.
 ///
 /// The invariant of README §5 is held in three places, because one is not
@@ -56,10 +38,6 @@ abstract class Chit with _$Chit {
   @Assert(
     'text != null || audioPath != null',
     'a chit with neither text nor audio is not a chit — README §5',
-  )
-  @Assert(
-    '(text == null) == (textOrigin == null)',
-    'textOrigin is null exactly when text is — DATA-MODEL.md §2',
   )
   // Whitespace-only text is the same nothing, and is caught by the check
   // constraint on the table and by the repository, which turns it into null
@@ -96,12 +74,9 @@ abstract class Chit with _$Chit {
     /// moment of every edit after that (ADR-014).
     required DateTime updatedAt,
 
-    /// What the chit says. `null` only when a recording produced nothing and
-    /// the user wrote nothing either — BEHAVIOUR.md §3.5.
+    /// What the chit says. `null` on a chit that is only a recording —
+    /// BEHAVIOUR.md §3.4.
     String? text,
-
-    /// Where [text] came from. `null` exactly when [text] is.
-    TextOrigin? textOrigin,
 
     /// The recording, relative to the app documents directory (ADR-008).
     /// Absolute paths die on the next iOS update.

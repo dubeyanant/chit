@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions.dart';
 import '../../../domain/models/recording_state.dart';
-import '../../../domain/services/speech_recognizer.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
 import '../../../shared/widgets/perforated_edge.dart';
@@ -47,9 +46,6 @@ final class RecordingSheet extends ConsumerWidget {
   /// The sheet, drawn from `recordingControllerProvider`.
   const RecordingSheet({super.key});
 
-  /// The transcript, for a test that needs it without its words.
-  static const Key transcript = Key('recording-sheet-transcript');
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
@@ -82,11 +78,7 @@ final class RecordingSheet extends ConsumerWidget {
                 SizedBox(height: space.s4),
                 const LiveWave(),
                 SizedBox(height: space.s5),
-                const _Transcript(),
-                SizedBox(height: space.s5),
                 const _Actions(),
-                SizedBox(height: space.s4),
-                const _EngineNote(),
               ],
             ),
           ),
@@ -296,63 +288,6 @@ class LiveWave extends ConsumerWidget {
   }
 }
 
-/// The transcript, with the word still being revised in lighter ink — §3.4.
-class _Transcript extends ConsumerWidget {
-  const _Transcript();
-
-  /// What stands there until a word arrives.
-  static const String placeholder = 'Words appear as you speak.';
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final Transcript heard = ref.watch(
-      recordingControllerProvider.select((RecordingState s) => s.transcript),
-    );
-    final type = context.type;
-    final colors = context.colors;
-
-    return ConstrainedBox(
-      // v6's 84px floor and its 34% ceiling. The floor is what stops the sheet
-      // growing under the finger as the first words land.
-      constraints: BoxConstraints(
-        minHeight: context.space.s8 + context.space.s3,
-        maxHeight: MediaQuery.sizeOf(context).height * 0.34,
-      ),
-      child: SingleChildScrollView(
-        child: SizedBox(
-          width: double.infinity,
-          child: heard.isEmpty
-              ? Text(
-                  placeholder,
-                  key: RecordingSheet.transcript,
-                  style: type.transcript.copyWith(
-                    color: colors.inkFaint,
-                    fontStyle: FontStyle.italic,
-                  ),
-                )
-              : Text.rich(
-                  TextSpan(
-                    children: <InlineSpan>[
-                      if (heard.committed.isNotEmpty)
-                        TextSpan(text: heard.committed),
-                      if (heard.pending.isNotEmpty)
-                        TextSpan(
-                          text: heard.committed.isEmpty
-                              ? heard.pending
-                              : ' ${heard.pending}',
-                          style: TextStyle(color: colors.inkFaint),
-                        ),
-                    ],
-                  ),
-                  key: RecordingSheet.transcript,
-                  style: type.transcript,
-                ),
-        ),
-      ),
-    );
-  }
-}
-
 /// **Discard** and **Stop & keep** — the same two weights as the open chit.
 ///
 /// Two controls rather than the one TASKS.md group D listed: v6 draws both,
@@ -383,32 +318,10 @@ class _Actions extends ConsumerWidget {
     );
   }
 
-  /// Stops both services, then closes.
-  ///
-  /// **The sheet stays up while it finishes**, which is up to ADR-053's 900ms
-  /// and usually far less. Closing first and letting it run would drop the
-  /// take: the controller is auto-disposed, and the words land on a `Ref`
-  /// that has gone.
+  /// Stops the recorder, then closes.
   Future<void> _keep(BuildContext context, WidgetRef ref) async {
     final NavigatorState navigator = Navigator.of(context);
     await ref.read(recordingControllerProvider.notifier).stopAndKeep();
     navigator.pop(true);
-  }
-}
-
-/// The line under the actions. It says the two things §3.4 and §3.5 promise.
-class _EngineNote extends StatelessWidget {
-  const _EngineNote();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: Text(
-        'Recognised on this device. The recording is kept either way.',
-        textAlign: TextAlign.center,
-        style: context.type.engineNote,
-      ),
-    );
   }
 }

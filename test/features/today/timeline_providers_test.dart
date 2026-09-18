@@ -87,7 +87,6 @@ void main() {
   Future<Chit> chitAt(DateTime when, String text) => repo.save(
     stamp: AmbientStamp(capturedAt: when),
     text: text,
-    textOrigin: TextOrigin.typed,
   );
 
   List<Chit> settled(Chits value) => switch (value) {

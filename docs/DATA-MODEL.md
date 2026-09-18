@@ -15,7 +15,6 @@ class Chits extends Table {
   IntColumn     get localDay     => integer()();                 // yyyymmdd, device-local
   TextColumn    get body         => text().nullable()();          // README §5 calls it `text`
   TextColumn    get audioPath    => text().nullable()();          // relative to app documents
-  TextColumn    get textOrigin   => textEnum<TextOrigin>().nullable()();  // null iff body is null
   IntColumn     get audioMs      => integer().nullable()();
   TextColumn    get weather      => textEnum<WeatherCondition>().nullable()();
   RealColumn    get lat          => real().nullable()();
@@ -61,23 +60,17 @@ be the moment the chit was **opened** (ADR-021), which meant a chit opened at 23
 00:05 was filed on the previous day; that failure is now unreachable rather than defended
 against.*
 
-**`body`** — what the chit says: typed, transcribed, or transcribed and then corrected. `NULL`
-only when a recording produced nothing and the user wrote nothing either. The failure note the
-user sees is never stored here; it is a property of the UI state, not of the chit (BEHAVIOUR.md §3.5,
-and the design log is explicit about why — and stricter now that the body is an editable field).
+**`body`** — what the chit says, typed. `NULL` on a chit that is only a recording.
 
 **Blank is not a value.** The repository trims what it is given and stores whitespace-only text
-as `NULL`, so a field of spaces beside a recording is the ordinary §3.5 shape rather than an
+as `NULL`, so a field of spaces beside a recording is an ordinary recording-only chit rather than an
 error, and a field of spaces on its own is the chit §3.1 refuses to save. The column enforces
 the same thing — `length(trim(body)) > 0` — so no other caller can disagree. Storing the
 trimmed text is a choice: the edges of a slip are not content, and nothing in the design asks
 for leading whitespace to survive.
 
-**`textOrigin`** — `typed | transcript | transcriptEdited`, and `NULL` exactly when `text` is.
-Provenance only: nothing in the UI renders differently because of it. It exists so a future
-re-transcription (OPEN-QUESTIONS.md §8.2) can tell whether it would be overwriting the machine's words or
-the user's. A transcript that the user then edits becomes `transcriptEdited` and never goes
-back.
+*There was a `textOrigin` column here, saying whether the words were typed, transcribed, or a
+transcript the user had corrected. It went with transcription in **schema v3** — ADR-058.*
 
 **`audioPath`** — relative, always. An absolute iOS container path saved today is dead after
 the next app update.
@@ -119,8 +112,7 @@ never before.
 A save writes the row and then patches the three ambient fields when a fresh reading lands a
 moment later; that patch must not move `createdAt` (it would move the chit in the thread and,
 across a midnight, onto another day) and must not move `updatedAt` (it would claim the user had
-edited something). OPEN-QUESTIONS.md §8.2's re-transcription is the thing that would be misled
-by the second, which is why it is worth stating twice.
+edited something). An edit is the user's act and nothing else may claim to be one.
 
 ---
 
@@ -129,18 +121,17 @@ by the second, which is why it is worth stating twice.
 > **At least one of `text` and `audioPath` is present.** — README §5
 
 A chit with neither is not a chit; it is the untouched composer that §3.1 refuses to save.
-That leaves four legal shapes, all ordinary:
+That leaves three legal shapes, all ordinary:
 
-| | `text` | `audioPath` | `textOrigin` |
-|---|---|---|---|
-| typed | ● | — | `typed` |
-| recorded, transcribed | ● | ● | `transcript` |
-| recorded, transcript corrected | ● | ● | `transcriptEdited` |
-| recorded, nothing recognised (§3.5) | — | ● | — |
+| | `text` | `audioPath` |
+|---|---|---|
+| words alone | ● | — |
+| words and a recording | ● | ● |
+| a recording alone | — | ● |
 
 Nothing in the schema orders these; they are states a row can be in, not a lifecycle it walks.
-Recording into a chit that already had typed text lands in the **third** shape, not the second —
-the words are then partly the user's, and `textOrigin` says so from the start.
+*There were four until ADR-058, because `textOrigin` split the middle one into a transcript and
+a corrected transcript.*
 
 Held in three places, because one is not enough — and each is tested where it lives, because an
 assert is compiled out of a release build, a check constraint says nothing about *why*, and a
@@ -150,7 +141,6 @@ repository is one caller among however many a later milestone adds.
 
    ```sql
    CHECK (body IS NOT NULL OR audio_path IS NOT NULL)
-   CHECK ((body IS NULL) = (text_origin IS NULL))
    CHECK (body IS NULL OR length(trim(body)) > 0)
    CHECK ((audio_path IS NULL) = (audio_ms IS NULL))
    CHECK ((lat IS NULL) = (lon IS NULL))
@@ -165,7 +155,7 @@ repository is one caller among however many a later milestone adds.
    than a bag of public nullables:
 
    ```
-   Chit._({ String? text, String? audioPath, TextOrigin? textOrigin, ... })
+   Chit._({ String? text, String? audioPath, ... })
      : assert(text != null || audioPath != null);
 
    bool get hasAudio => audioPath != null;
@@ -198,7 +188,6 @@ recording is always there when it was made (ADR-013).
 ## 3. Domain types
 
 ```
-enum TextOrigin        { typed, transcript, transcriptEdited }
 enum WeatherCondition  { raining, clear, overcast, windy, clearNight }
 ```
 
@@ -277,53 +266,51 @@ a pill. A missing recording is a loss, not a corruption, and the words — if th
 are still the record.
 
 **Editing never touches this.** ADR-014 gives the repository an update path for `text` and
-`textOrigin` and no path that changes or removes `audioPath` on an existing chit. Deleting the
+and no path that changes or removes `audioPath` on an existing chit. Deleting the
 whole chit is the only thing that deletes a recording.
 
 ---
 
 ## 6. Migrations
 
-Drift's `MigrationStrategy`, one `from → to` step per schema version, each with a test against
-a checked-in schema snapshot. Snapshots are committed.
+**There are none, on purpose** — ADR-059. `schemaVersion` is **1** and stays there; changing a
+table changes the schema, and an install carrying the old shape is reinstalled. `onUpgrade`
+throws a message saying exactly that, because a database the app cannot trust should fail at
+`open` rather than three screens later as a column that is quietly missing.
+
+*There were three versions, with a step each and a committed snapshot each: v1 from M1, v2
+adding `chits.motion` (ADR-037), v3 dropping `chits.text_origin` (ADR-058). They went along with
+`drift_schemas/`, `test/data/db/generated/` and `migration_test.dart` while chit was still only
+ever installed on the owner's own phone.* A migration is a promise made to rows that exist, and
+the app has none it would be sad to lose.
+
+### What comes back, and when
+
+**The trigger is data somebody would miss** — the first install that is not a development one.
+Open item 38 carries it. What returns is all of it, not half:
 
 ```bash
 dart run drift_dev schema dump lib/data/db/app_database.dart drift_schemas/
 dart run drift_dev schema generate drift_schemas/ test/data/db/generated/
 ```
 
-The first writes `drift_schemas/drift_schema_v<n>.json` — the shape as it shipped. The second
-writes the helper `test/data/db/migration_test.dart` reads. **Run both when `schemaVersion`
-changes**; there is a test that fails if a version has no snapshot, because a migration with
-nothing to migrate *from* is not a migration.
+- One `from → to` step per version, and **once a version has shipped, its step and its snapshot
+  are never edited**.
+- **Steps gated on both ends** — `from < n && to >= n`. A step that ignored `to` would rebuild a
+  v2 database into the v3 shape and still call it v2. That bug was real, and the test caught it
+  by asking for an intermediate version on the way past.
+- A test that migrates **and reads rows back**. `migrateAndValidate` inspects the schema, not the
+  contents; a table rebuild is exactly the kind of migration that produces the right shape and
+  loses what was in it.
+- **Nothing is backfilled.** There is no way to know what a phone was doing last Tuesday, and a
+  guess written into a row is indistinguishable from a fact a month later.
 
-**The rule:** once a version has shipped to a real handset, its migration step and its snapshot
-are never edited.
-
-v1 was taken in M1, before there was anything to migrate. That is the point: the first
-migration is not the moment to find out the harness does not work. It earned its keep
-immediately — it is what proved the text column could not be called `text` (§1).
-
-**v2 is the first real one.** It adds `chits.motion` (ADR-037) with `m.addColumn`, and
-**nothing is backfilled**: there is no way to know what a phone was doing last Tuesday, and a
-guess written into a row is indistinguishable from a fact a month later. Every row written
-before M3 answers `NULL`, which is exactly what a chit opened indoors answers today, and is not
-drawn either way.
-
-`migration_test.dart` checks the step twice over, because the two claims are different: that
-the **shape** after migrating is the v2 that was committed, and that a chit **written at v1 is
-still readable** afterwards with a null motion. `migrateAndValidate` makes only the first claim
-— it inspects the schema, not the rows.
-
-The `StateError` the strategy still throws now guards `v2 → v3`. That assertion moves up a
-version every time one ships.
+Those four lines are the whole of what was learned the first time round, which is why they are
+here rather than only in git.
 
 Changes already visible on the horizon, so the shape does not surprise us:
 
 - OPEN-QUESTIONS.md §8.1 (where the editor lives) — no schema change at all; the columns are already here.
-- OPEN-QUESTIONS.md §8.2 (re-transcription) — probably a nullable `transcriptionAttemptedAt`, or nothing
-  at all if a null `text` beside a non-null `audioPath` is treated as the signal. `textOrigin`
-  is what keeps such an attempt from overwriting words the user typed.
 - Backlog 1 (coarse place, what was playing) — new nullable columns.
 - Backlog 7 (chit threading) — a nullable `replyToId` self-reference.
 
@@ -379,9 +366,9 @@ before M5 gives the pill anything to play.
 
 Sample text is four words and mundane — *"Train 20 late."* The design log is right that
 literary placeholder copy makes a screen read as a demonstration, and it will mislead us here
-exactly as it did there. The fixture covers all four shapes of §2 — and especially the
-recording with `NULL` text, because §3.5 is the state most likely to be forgotten until it
-appears in front of a user — plus every weather word, a chit with no fix, a chit with no
+exactly as it did there. The fixture covers all three shapes of §2 — and especially the
+recording with `NULL` text, which is the shape most likely to be forgotten until it appears in
+front of a user — plus every weather word, a chit with no fix, a chit with no
 weather, and each of the three motion marks. `test/data/debug_seeder_test.dart` holds all of
 that, and the two claims that fail quietly on a handset: that seeding twice doubles nothing,
 and that clearing leaves a chit somebody wrote alone.

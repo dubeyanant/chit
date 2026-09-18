@@ -4,7 +4,6 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../domain/models/chit.dart';
 import '../../domain/models/motion_state.dart';
 import '../../domain/models/weather_condition.dart';
 import 'daos/chit_dao.dart';
@@ -28,34 +27,35 @@ class AppDatabase extends _$AppDatabase {
   /// The database as it exists on a handset: a file the platform picks.
   AppDatabase.onDevice() : super(driftDatabase(name: 'chit'));
 
+  /// **One version, and it is whatever the tables above say** — ADR-059.
+  ///
+  /// It stays 1 through every schema change until chit holds data somebody
+  /// would miss. *There were three, with steps and committed snapshots for
+  /// each, and they went when the app was still only ever installed on the
+  /// owner's own phone:* a migration is a promise to rows that exist, and
+  /// keeping one for rows that do not is a cost paid on every schema change
+  /// and by every session that has to read it.
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 1;
 
-  /// One `from → to` step per version, each tested against a checked-in
-  /// schema snapshot in `drift_schemas/`.
+  /// Creates the schema, and **refuses to touch a database it did not create**.
   ///
-  /// **The rule: once a version has shipped to a real handset, its step is
-  /// never edited** (DATA-MODEL.md §6). v1 has shipped to a handset, so its
-  /// shape is settled and v2 adds to it rather than altering it.
+  /// The refusal is the whole of the migration story now. An install carrying
+  /// an older shape has to be reinstalled, and the loud failure is what stops
+  /// that being discovered as a column that is silently missing three screens
+  /// later (CLAUDE.md §4.1 — fail loudly in development).
   ///
-  /// **v1 → v2 adds `chits.motion`** (ADR-037). Nullable and with no default,
-  /// so every row written before M3 answers `NULL` — which is exactly what a
-  /// chit opened indoors says today, and is not drawn either.
-  ///
-  /// **Nothing is backfilled.** There is no way to know what a phone was doing
-  /// last Tuesday, and a guess written into a row is indistinguishable from a
-  /// fact a month later.
+  /// **The day chit holds anything worth keeping, this comes back** — steps,
+  /// snapshots under `drift_schemas/`, and a test that runs them against real
+  /// rows. Open item 38 says so, and it is not a decision to make in a hurry
+  /// when somebody has already lost a chit.
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) => m.createAll(),
-    onUpgrade: (Migrator m, int from, int to) async {
-      if (from == 1 && to == 2) {
-        await m.addColumn(chits, chits.motion);
-        return;
-      }
-
-      throw StateError('no migration from v$from to v$to exists yet');
-    },
+    onUpgrade: (Migrator _, int from, int to) async => throw StateError(
+      'chit has no migrations (ADR-059). This database is v$from and the app '
+      'expects v$to — reinstall the app to start from an empty one.',
+    ),
   );
 }
 

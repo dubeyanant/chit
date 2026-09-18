@@ -28,7 +28,6 @@ void main() {
 
   Future<void> insert({
     Value<String?> body = const Value<String?>.absent(),
-    Value<TextOrigin?> textOrigin = const Value<TextOrigin?>.absent(),
     Value<String?> audioPath = const Value<String?>.absent(),
     Value<int?> audioMs = const Value<int?>.absent(),
     Value<double?> lat = const Value<double?>.absent(),
@@ -42,7 +41,6 @@ void main() {
           localDay: 20260915,
           updatedAt: 0,
           body: body,
-          textOrigin: textOrigin,
           audioPath: audioPath,
           audioMs: audioMs,
           lat: lat,
@@ -55,30 +53,9 @@ void main() {
       expect(insert, refusedByACheck());
     });
 
-    test('text without an origin is refused', () {
-      expect(
-        () => insert(body: const Value<String?>('Train 20 late.')),
-        refusedByACheck(),
-      );
-    });
-
-    test('an origin without text is refused', () {
-      expect(
-        () => insert(
-          audioPath: const Value<String?>('audio/a.m4a'),
-          audioMs: const Value<int?>(9000),
-          textOrigin: const Value<TextOrigin?>(TextOrigin.typed),
-        ),
-        refusedByACheck(),
-      );
-    });
-
     test('text of nothing but spaces is refused', () {
       expect(
-        () => insert(
-          body: const Value<String?>('   '),
-          textOrigin: const Value<TextOrigin?>(TextOrigin.typed),
-        ),
+        () => insert(body: const Value<String?>('   ')),
         refusedByACheck(),
       );
     });
@@ -94,32 +71,22 @@ void main() {
       expect(
         () => insert(
           body: const Value<String?>('Train 20 late.'),
-          textOrigin: const Value<TextOrigin?>(TextOrigin.typed),
           lat: const Value<double?>(19.07),
         ),
         refusedByACheck(),
       );
     });
 
-    test('all four legal shapes are accepted', () async {
-      await insert(
-        body: const Value<String?>('Train 20 late.'),
-        textOrigin: const Value<TextOrigin?>(TextOrigin.typed),
-      );
+    test('all three legal shapes are accepted', () async {
+      await insert(body: const Value<String?>('Train 20 late.'));
       await db.delete(db.chits).go();
 
-      for (final TextOrigin origin in <TextOrigin>[
-        TextOrigin.transcript,
-        TextOrigin.transcriptEdited,
-      ]) {
-        await insert(
-          body: const Value<String?>('Train 20 late.'),
-          textOrigin: Value<TextOrigin?>(origin),
-          audioPath: const Value<String?>('audio/a.m4a'),
-          audioMs: const Value<int?>(9000),
-        );
-        await db.delete(db.chits).go();
-      }
+      await insert(
+        body: const Value<String?>('Train 20 late.'),
+        audioPath: const Value<String?>('audio/a.m4a'),
+        audioMs: const Value<int?>(9000),
+      );
+      await db.delete(db.chits).go();
 
       await insert(
         audioPath: const Value<String?>('audio/a.m4a'),

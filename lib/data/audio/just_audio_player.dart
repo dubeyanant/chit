@@ -31,7 +31,12 @@ final class JustAudioPlayer implements AudioPlayer {
   Playback _now = Playback.silent;
 
   @override
-  Stream<Playback> get playback => _out.stream;
+  Stream<Playback> get playback async* {
+    // The current state first, then the changes — a pill built while something
+    // is already sounding has to know that before it draws itself.
+    yield _now;
+    yield* _out.stream;
+  }
 
   @override
   Future<void> play({required String id, required String path}) async {
@@ -72,6 +77,14 @@ final class JustAudioPlayer implements AudioPlayer {
     } on Object {
       // Nothing to tell. The state stream reports whatever actually happened.
     }
+  }
+
+  @override
+  Future<void> stopIf(String id) async {
+    if (!_now.holds(id)) return;
+    _now = Playback.silent;
+    await _stopQuietly();
+    _report(_now);
   }
 
   /// A stored path is relative and a take is absolute — ADR-008, and the one
