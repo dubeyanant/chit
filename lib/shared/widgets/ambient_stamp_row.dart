@@ -6,7 +6,6 @@ import '../../domain/ambient/ambient_fact.dart';
 import '../../domain/models/ambient_stamp.dart';
 import '../../domain/models/motion_state.dart';
 import '../../domain/models/weather_condition.dart';
-import 'motion_icon.dart';
 
 final class AmbientStampRow extends StatelessWidget {
   const AmbientStampRow.open({required this.stamp, super.key})
@@ -52,19 +51,29 @@ final class AmbientStampRow extends StatelessWidget {
             condition.word,
           ),
 
-          MotionFact(:final MotionState state) => MotionIcon(
-            state: state,
-            colour: _onOpenChit
-                ? context.colors.inkMuted
-                : context.colors.inkFaint,
-            size: context.space.s3,
-          ),
+          MotionFact(:final MotionState state) => Text(state.word),
         },
     ];
   }
 
   static String _timeOf(DateTime at) =>
       DateFormat('h:mm a').format(at).toLowerCase();
+}
+
+extension on MotionState {
+  String get word {
+    assert(
+      this != MotionState.stationary,
+      'stationary is never drawn — ADR-038 filters it before here',
+    );
+
+    return switch (this) {
+      MotionState.stationary => '',
+      MotionState.walking => 'walking',
+      MotionState.traveling => 'travelling',
+      MotionState.flying => 'flying',
+    };
+  }
 }
 
 extension on WeatherCondition {

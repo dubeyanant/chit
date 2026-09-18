@@ -101,7 +101,7 @@ void main() {
     });
   });
 
-  group('an uncertain reading degrades to stationary, never upward', () {
+  group('a reading noisier than the thing it measures is not a claim', () {
     test('an error larger than the speed is not a claim worth making', () {
       expect(gated(1.4, 2), MotionState.stationary, reason: 'walking');
       expect(gated(20, 25), MotionState.stationary, reason: 'travelling');
@@ -116,22 +116,39 @@ void main() {
       expect(gated(1.4, 1.4), MotionState.walking);
     });
 
-    test('zero accuracy is unknown, not perfect', () {
-      expect(gated(30, 0), MotionState.stationary);
+    test('the gate never applies below the walking floor', () {
+      expect(gated(0.2, null), MotionState.stationary);
     });
+  });
 
-    test('a missing or impossible accuracy is the same answer: no', () {
-      for (final double? accuracy in <double?>[null, double.nan, -1, -0.5]) {
+  group('an accuracy nobody reported is not an accuracy of zero — ADR-078', () {
+    test('a speed with no error beside it is still a speed', () {
+      for (final double? unreported in <double?>[null, double.nan, 0, -1]) {
         expect(
-          gated(30, accuracy),
-          MotionState.stationary,
-          reason: 'accuracy $accuracy',
+          gated(22, unreported),
+          MotionState.traveling,
+          reason: 'accuracy $unreported',
+        );
+        expect(
+          gated(1.4, unreported),
+          MotionState.walking,
+          reason: 'accuracy $unreported',
         );
       }
     });
 
-    test('the gate never applies below the walking floor', () {
-      expect(gated(0.2, null), MotionState.stationary);
+    test('which is how a train read as standing still', () {
+      expect(
+        gated(22, 0),
+        MotionState.traveling,
+        reason:
+            'Android reports 0.0 for an accuracy it does not have, and '
+            'the old gate read that as noise — open item 18',
+      );
+    });
+
+    test('a still phone is still still', () {
+      expect(gated(0.1, 0), MotionState.stationary);
     });
   });
 

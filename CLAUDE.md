@@ -173,8 +173,10 @@ dart run build_runner watch      # while working
 flutter analyze
 flutter test
 flutter run                      # Android device or emulator
-flutter run --dart-define=CHIT_SEED=seed    # six weeks of chits — docs/DATA-MODEL.md §6
+flutter run --dart-define=CHIT_SEED=seed    # three months of chits — docs/DATA-MODEL.md §6
+flutter run --dart-define=CHIT_SEED=stress  # 2,000 of them, for measuring
 flutter run --dart-define=CHIT_SEED=clear   # and the same build with them taken off again
+flutter run --profile --dart-define=CHIT_FRAMES=true   # frame times to the log
 ```
 
 Both seed flags work in any build mode, are idempotent, and never touch a chit a person wrote; the

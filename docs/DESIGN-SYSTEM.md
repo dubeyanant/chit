@@ -99,6 +99,12 @@ off the scale still equals it**, which a test asserts. Derived beats placed: the
 centre of its mark, and the node is centred on the stamp line it belongs to, an absolute offset into
 a block of text being a number that is correct exactly once.
 
+**A screen's heading is one row, `minTouchTarget` tall**, with its words centred in it — `HeadingRow`,
+used by Today's date and the calendar's month bar. 44 because a heading row may carry a control and
+the calendar's chevrons do; fixed because a row that grows a chevron would otherwise move the words
+under it, and switching tab would shift the heading. The editor's header is the same height for the
+same reason, off its back arrow.
+
 **Haptics** — one, and it is the whole list: a `selectionClick` when the strip scrolls past a day
 boundary (ADR-034). A haptic is **not motion** and is not removed by reduced motion, which costs a
 user animation and not confirmation that their action landed.

@@ -85,13 +85,23 @@ class _AudioPillState extends ConsumerState<AudioPill> {
     final colors = context.colors;
     final space = context.space;
 
-    final Playback playback =
-        ref.watch(playbackProvider).value ?? Playback.silent;
-    final bool mine = playback.holds(widget.id);
-    final bool sounding = mine && playback.playing;
+    final ({bool mine, bool sounding, Duration position}) heard = ref.watch(
+      playbackProvider.select((AsyncValue<Playback> async) {
+        final Playback playback = async.value ?? Playback.silent;
+        final bool mine = playback.holds(widget.id);
+        return (
+          mine: mine,
+          sounding: mine && playback.playing,
+          position: mine ? playback.position : Duration.zero,
+        );
+      }),
+    );
+
+    final bool mine = heard.mine;
+    final bool sounding = heard.sounding;
 
     final int lit = mine
-        ? AudioPill.barsLitAt(playback.position, of: widget.duration)
+        ? AudioPill.barsLitAt(heard.position, of: widget.duration)
         : 0;
 
     final Widget pill = Semantics(
@@ -145,7 +155,7 @@ class _AudioPillState extends ConsumerState<AudioPill> {
                     SizedBox(width: space.s3),
                     Text(
                       AudioPill.figureFor(
-                        mine ? playback.position : widget.duration,
+                        mine ? heard.position : widget.duration,
                       ),
                       style: context.type.audioDuration.copyWith(
                         color: mine ? colors.sealInk : colors.inkMuted,

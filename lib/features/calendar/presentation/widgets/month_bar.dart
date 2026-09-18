@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/extensions.dart';
 import '../../../../shared/widgets/focus_ring.dart';
+import '../../../../shared/widgets/heading_row.dart';
 import '../../application/month_provider.dart';
 
 final class MonthBar extends StatelessWidget {
@@ -23,31 +24,33 @@ final class MonthBar extends StatelessWidget {
     final type = context.type;
     final colors = context.colors;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Expanded(
-          child: Semantics(
-            header: true,
-            child: Text.rich(
-              TextSpan(
-                children: <InlineSpan>[
-                  TextSpan(text: '${month.name} '),
-                  TextSpan(
-                    text: '${month.year}',
-                    style: type.date.copyWith(color: colors.inkFaint),
-                  ),
-                ],
+    return HeadingRow(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            child: Semantics(
+              header: true,
+              child: Text.rich(
+                TextSpan(
+                  children: <InlineSpan>[
+                    TextSpan(text: '${month.name} '),
+                    TextSpan(
+                      text: '${month.year}',
+                      style: type.date.copyWith(color: colors.inkFaint),
+                    ),
+                  ],
+                ),
+                style: type.date,
               ),
-              style: type.date,
             ),
           ),
-        ),
-        if (onPrevious case final VoidCallback go)
-          _Chevron(pointsLeft: true, label: 'Previous month', onTap: go),
-        if (onNext case final VoidCallback go)
-          _Chevron(pointsLeft: false, label: 'Next month', onTap: go),
-      ],
+          if (onPrevious case final VoidCallback go)
+            _Chevron(pointsLeft: true, label: 'Previous month', onTap: go),
+          if (onNext case final VoidCallback go)
+            _Chevron(pointsLeft: false, label: 'Next month', onTap: go),
+        ],
+      ),
     );
   }
 }

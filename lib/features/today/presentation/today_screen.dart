@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/extensions.dart';
 import '../../../domain/models/chit.dart';
 import '../../../shared/widgets/day_thread.dart';
+import '../../../shared/widgets/heading_row.dart';
 import '../../../shared/widgets/staggered_entrance.dart';
 import '../../composer/presentation/open_chit.dart';
 import '../application/today_controller.dart';
@@ -24,7 +25,7 @@ class TodayScreen extends ConsumerWidget {
         SliverPadding(
           padding: EdgeInsets.fromLTRB(
             space.gutter,
-            space.s4,
+            space.s5,
             space.gutter,
             space.s8,
           ),
@@ -71,19 +72,21 @@ class _DateLine extends ConsumerWidget {
     final DateTime today = ref.watch(todayProvider);
     final type = context.type;
 
-    return Semantics(
-      header: true,
-      child: Text.rich(
-        TextSpan(
-          children: <InlineSpan>[
-            TextSpan(
-              text: '${DateFormat('EEEE').format(today)} ',
-              style: type.weekday,
-            ),
-            TextSpan(text: DateFormat('d MMMM').format(today)),
-          ],
+    return HeadingRow(
+      child: Semantics(
+        header: true,
+        child: Text.rich(
+          TextSpan(
+            children: <InlineSpan>[
+              TextSpan(
+                text: '${DateFormat('EEEE').format(today)} ',
+                style: type.weekday,
+              ),
+              TextSpan(text: DateFormat('d MMMM').format(today)),
+            ],
+          ),
+          style: type.date,
         ),
-        style: type.date,
       ),
     );
   }

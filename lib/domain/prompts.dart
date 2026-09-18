@@ -78,6 +78,20 @@ abstract final class Prompts {
     _Entry('Anything from today worth keeping?', when: _PartOfDay.night),
     _Entry("Still up. What's going on?", when: _PartOfDay.smallHours),
     _Entry("What's keeping you up?", when: _PartOfDay.smallHours),
+    _Entry("Up at this hour. What's it about?", when: _PartOfDay.smallHours),
+    _Entry("What's got you up?", when: _PartOfDay.smallHours),
+
+    _Entry('How did you wake?', when: _PartOfDay.morning),
+    _Entry('What did the morning bring?', when: _PartOfDay.morning),
+    _Entry("What's already on your mind?", when: _PartOfDay.morning),
+    _Entry('What has the day turned into?', when: _PartOfDay.afternoon),
+    _Entry('Where has the day got to?', when: _PartOfDay.afternoon),
+    _Entry('What stayed with you?', when: _PartOfDay.evening),
+    _Entry("What's left of the day?", when: _PartOfDay.evening),
+    _Entry('What did today take?', when: _PartOfDay.evening),
+    _Entry('What are you carrying to bed?', when: _PartOfDay.night),
+    _Entry('What did the day come to?', when: _PartOfDay.night),
+    _Entry('Anything you want to set down?', when: _PartOfDay.night),
 
     _Entry("Rain. What's it like out?", weather: WeatherCondition.raining),
     _Entry('What has the rain changed?', weather: WeatherCondition.raining),
@@ -102,6 +116,28 @@ abstract final class Prompts {
       weather: WeatherCondition.clearNight,
     ),
 
+    _Entry('What does the rain sound like?', weather: WeatherCondition.raining),
+    _Entry('Rain. What has it stopped?', weather: WeatherCondition.raining),
+    _Entry('What does the light look like?', weather: WeatherCondition.clear),
+    _Entry(
+      "Grey day. What's it like in there?",
+      weather: WeatherCondition.overcast,
+    ),
+    _Entry(
+      'What does a closed sky feel like?',
+      weather: WeatherCondition.overcast,
+    ),
+    _Entry("What's the wind carrying?", weather: WeatherCondition.windy),
+    _Entry('Wind. What has it moved?', weather: WeatherCondition.windy),
+    _Entry(
+      "Clear night. What's out there?",
+      weather: WeatherCondition.clearNight,
+    ),
+    _Entry(
+      'What does the night look like?',
+      weather: WeatherCondition.clearNight,
+    ),
+
     _Entry('Where are you headed?', motion: MotionState.traveling),
     _Entry("On the way. What's on your mind?", motion: MotionState.traveling),
     _Entry("Out walking. What's about?", motion: MotionState.walking),
@@ -109,10 +145,34 @@ abstract final class Prompts {
     _Entry("In the air. What's the thought?", motion: MotionState.flying),
     _Entry('Flying. What did you leave behind?', motion: MotionState.flying),
 
+    _Entry('Walking. What have you passed?', motion: MotionState.walking),
+    _Entry("What's going past the window?", motion: MotionState.traveling),
+    _Entry('What does it look like from up there?', motion: MotionState.flying),
+
     _Entry(
       'On the way home. How did the day go?',
       motion: MotionState.traveling,
       when: _PartOfDay.evening,
+    ),
+    _Entry(
+      'On the way in. How has it started?',
+      motion: MotionState.traveling,
+      when: _PartOfDay.morning,
+    ),
+    _Entry(
+      'Walking home. What did the day hold?',
+      motion: MotionState.walking,
+      when: _PartOfDay.evening,
+    ),
+    _Entry(
+      "Walking in the sun. What's about?",
+      motion: MotionState.walking,
+      weather: WeatherCondition.clear,
+    ),
+    _Entry(
+      "Travelling after dark. What's on your mind?",
+      motion: MotionState.traveling,
+      weather: WeatherCondition.clearNight,
     ),
     _Entry(
       "Walking in the rain. What's it like?",
@@ -159,6 +219,36 @@ abstract final class Prompts {
       "Clear night, and still up. What's keeping you?",
       weather: WeatherCondition.clearNight,
       when: _PartOfDay.smallHours,
+    ),
+    _Entry(
+      'Rain all afternoon. What has it changed?',
+      weather: WeatherCondition.raining,
+      when: _PartOfDay.afternoon,
+    ),
+    _Entry(
+      'Clear evening. What did the day hold?',
+      weather: WeatherCondition.clear,
+      when: _PartOfDay.evening,
+    ),
+    _Entry(
+      'Grey afternoon. Where has it got to?',
+      weather: WeatherCondition.overcast,
+      when: _PartOfDay.afternoon,
+    ),
+    _Entry(
+      "Closed sky tonight. What's left?",
+      weather: WeatherCondition.overcast,
+      when: _PartOfDay.night,
+    ),
+    _Entry(
+      'Windy evening. What did today hold?',
+      weather: WeatherCondition.windy,
+      when: _PartOfDay.evening,
+    ),
+    _Entry(
+      'Clear night. What did today come to?',
+      weather: WeatherCondition.clearNight,
+      when: _PartOfDay.night,
     ),
   ];
 

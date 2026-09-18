@@ -14,8 +14,6 @@ import 'widgets/month_grid.dart';
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
 
-  static const double _pageAhead = 600;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final space = context.space;
@@ -26,17 +24,62 @@ class CalendarScreen extends ConsumerWidget {
     final int today = ref.watch(todayLocalDayProvider);
     final MonthNeighbours neighbours = ref.watch(monthNeighboursProvider);
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification notification) {
-        _maybePage(ref, notification);
-        return false;
-      },
-      child: CustomScrollView(
-        slivers: <Widget>[
+    return CustomScrollView(
+      slivers: <Widget>[
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(space.gutter, space.s5, space.gutter, 0),
+          sliver: SliverToBoxAdapter(
+            child: shape == null
+                ? const SizedBox.shrink()
+                : StaggeredEntrance(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      MonthBar(
+                        month: shape.month,
+
+                        onPrevious: neighbours.previous == null
+                            ? null
+                            : ref.read(visibleMonthProvider.notifier).previous,
+                        onNext: neighbours.next == null
+                            ? null
+                            : ref.read(visibleMonthProvider.notifier).next,
+                      ),
+
+                      Padding(
+                        padding: EdgeInsets.only(top: space.s4),
+                        child: MonthGrid(
+                          shape: shape,
+                          selectedDay: selected,
+                          onTapDay: ref
+                              .read(selectedDayProvider.notifier)
+                              .toggle,
+                        ),
+                      ),
+                      _MonthSummary(shape: shape),
+                    ],
+                  ),
+          ),
+        ),
+
+        if (days != null) ...<Widget>[
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: space.gutter),
+            sliver: SliverList.builder(
+              itemCount: days.length,
+              itemBuilder: (BuildContext context, int index) {
+                final ArchiveDay day = days[index];
+                return Padding(
+                  key: ValueKey<int>(day.localDay),
+                  padding: EdgeInsets.only(top: space.s6),
+                  child: ArchiveDayGroup(day: day, today: today),
+                );
+              },
+            ),
+          ),
           SliverPadding(
             padding: EdgeInsets.fromLTRB(
               space.gutter,
-              space.s5,
+              0,
               space.gutter,
               space.s8,
             ),
@@ -44,86 +87,26 @@ class CalendarScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  if (shape != null)
-                    StaggeredEntrance(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        MonthBar(
-                          month: shape.month,
-
-                          onPrevious: neighbours.previous == null
-                              ? null
-                              : ref
-                                    .read(visibleMonthProvider.notifier)
-                                    .previous,
-                          onNext: neighbours.next == null
-                              ? null
-                              : ref.read(visibleMonthProvider.notifier).next,
+                  if (days.isEmpty && selected != null) const _EmptyNote(),
+                  if (selected != null)
+                    Padding(
+                      padding: EdgeInsets.only(top: space.s4),
+                      child: Center(
+                        child: QuietButton(
+                          label: 'Show every day',
+                          onPressed: ref
+                              .read(selectedDayProvider.notifier)
+                              .clear,
                         ),
-
-                        Padding(
-                          padding: EdgeInsets.only(top: space.s4),
-                          child: MonthGrid(
-                            shape: shape,
-                            selectedDay: selected,
-                            onTapDay: ref
-                                .read(selectedDayProvider.notifier)
-                                .toggle,
-                          ),
-                        ),
-                        _MonthSummary(shape: shape),
-                      ],
-                    ),
-                  if (days != null)
-                    StaggeredEntrance(
-                      key: ValueKey<int?>(selected),
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        for (final ArchiveDay day in days)
-                          Padding(
-                            padding: EdgeInsets.only(top: space.s6),
-                            child: ArchiveDayGroup(day: day, today: today),
-                          ),
-
-                        if (days.isEmpty && selected != null)
-                          const _EmptyNote(),
-                        if (selected != null)
-                          Padding(
-                            padding: EdgeInsets.only(top: space.s4),
-                            child: Center(
-                              child: QuietButton(
-                                label: 'Show every day',
-                                onPressed: ref
-                                    .read(selectedDayProvider.notifier)
-                                    .clear,
-                              ),
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
                 ],
               ),
             ),
           ),
         ],
-      ),
+      ],
     );
-  }
-
-  void _maybePage(WidgetRef ref, ScrollNotification notification) {
-    if (notification.metrics.extentAfter > _pageAhead) return;
-    if (ref.read(selectedDayProvider) != null) return;
-
-    final List<ArchiveDay>? days = ref.read(archiveDaysProvider);
-    if (days == null) return;
-
-    final int loaded = days.fold(
-      0,
-      (int n, ArchiveDay day) => n + day.chits.length,
-    );
-    if (loaded < ref.read(archiveLimitProvider)) return;
-
-    ref.read(archivePagesProvider.notifier).more();
   }
 }
 

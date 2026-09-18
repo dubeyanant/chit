@@ -304,25 +304,46 @@ void main() {
 
       expect(container.read(visibleMonthProvider), const YearMonth(2026, 8));
       expect(container.read(selectedDayProvider), isNull);
+      expect(await archive(), hasLength(1));
+    });
+
+    test('is the visible month and nothing either side of it', () async {
+      await chitAt(DateTime(2026, 8, 31, 23), 'The last of August.');
+      await chitAt(DateTime(2026, 9, 1, 0, 5), 'The first of September.');
+      await chitAt(DateTime(2026, 9, 15, 9), 'The middle of it.');
+      await chitAt(DateTime(2026, 10, 1, 9), 'October, somehow.');
+      await pumpEventQueue();
+
+      expect(
+        <int>[for (final ArchiveDay day in await archive()) day.localDay],
+        <int>[20260915, 20260901],
+        reason: 'September only, newest day first',
+      );
+    });
+
+    test('changing the month changes what the archive holds', () async {
+      await chitAt(DateTime(2026, 8, 2, 9), 'August.');
+      await chitAt(DateTime(2026, 8, 20, 9), 'August again.');
+      await chitAt(DateTime(2026, 9, 15, 9), 'September.');
+      await pumpEventQueue();
+
+      expect(await archive(), hasLength(1));
+
+      container.read(visibleMonthProvider.notifier).previous();
+
       expect(await archive(), hasLength(2));
     });
 
-    test('is paged, and a page more widens the query', () async {
-      const int pageSize = ArchivePages.pageSize;
-      for (int i = 0; i < pageSize + 5; i++) {
-        await chitAt(DateTime(2026, 9, 1).add(Duration(hours: i)), 'Chit $i.');
-      }
+    test('a month with nothing in it holds nothing', () async {
+      await chitAt(DateTime(2026, 9, 15, 9), 'September.');
+      await pumpEventQueue();
 
-      int loaded(List<ArchiveDay> days) =>
-          days.fold(0, (int n, ArchiveDay d) => n + d.chits.length);
+      container.read(visibleMonthProvider.notifier).state = const YearMonth(
+        2026,
+        7,
+      );
 
-      expect(container.read(archiveLimitProvider), pageSize);
-      expect(loaded(await archive()), pageSize);
-
-      container.read(archivePagesProvider.notifier).more();
-
-      expect(container.read(archiveLimitProvider), pageSize * 2);
-      expect(loaded(await archive()), pageSize + 5);
+      expect(await archive(), isEmpty);
     });
 
     test('is null until the query has first answered', () {

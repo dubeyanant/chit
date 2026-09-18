@@ -64,16 +64,19 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
 8. **§8.3 is open**, and answerable by living with the app for a week.
 16. **The strip's back-stop is unseen** in the one case that remains: the oldest day has one chit
     and the rest is empty, so the strip is a bare line with one mark. Honest, and never looked at.
-18. **`Position.speedAccuracy` may mean *unknown* when it says `0.0`, and the ladder bets that it
-    does.** The single most likely thing to be wrong about motion, and nothing in the suite can
-    settle it: `MotionLadder` reads zero as absent, so if a platform means `0.0` literally, motion is
-    stuck at `stationary` and looks like a feature that does not work. Check a real `Position` before
-    concluding anything else is broken.
+18. **Answered, and it was the bug it predicted.** `Position.speedAccuracy` *is* `0.0` when the
+    platform has none — geolocator's Android mapper only sends the field when
+    `Location.hasSpeedAccuracy()` — and the old gate read that as noise, which is why a train said
+    nothing. The ladder now believes a speed that arrives without an error beside it (ADR-078). What
+    is still unwatched: whether a bad fix ever reports a *spurious* high speed with no accuracy, the
+    case that trade accepts.
 20. **`flying` will almost never fire, and that is expected** — most devices disable GPS in airplane
     mode, so there is no fix and no speed. A barometer is the honest route if it ever matters.
-21. **Nothing tunes the motion thresholds.** 0.7, 3.0 and 55 m/s and the 2000 m ceiling are
-    arithmetic, not measurements; the boundary most likely to read wrong is `walking` against
-    `traveling` at 3.0 m/s.
+21. **The motion thresholds now have a source, not a measurement.** 0.7, 3.0, 55 m/s and the 2000 m
+    ceiling sit inside what the trajectory-classification literature uses — walking is usually cut at
+    a 95th-percentile 3.0 m/s, and air travel at 40–80 m/s — but nobody has walked, ridden or flown
+    with this app and checked. The boundary most likely to read wrong is still `walking` against
+    `traveling` at 3.0 m/s, where a runner is filed as walking on purpose.
 22. **A refused location permission is a dead end** — the app asks once and never again, and there
     is no settings screen, so a refusal can only be undone through the OS. A refused *microphone*
     names the phone's settings; location says nothing.
@@ -82,9 +85,10 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
 24. **The stamp's time does not tick** — it shows when the chit was opened, while the row carries
     when it was saved (ADR-040). A self-updating clock is an ambient loop and was refused (ADR-027);
     the untried middle option is re-reading the preview on the first keystroke.
-28. **`clear night` is drawn for Open-Meteo's *partly cloudy*** — WMO code 2 sits with 0 and 1 under
-    §3.6's *clear or nearly clear*. The loosest call in `WmoMapping`; moving code 2 to `overcast` is
-    one line.
+28. **Answered by measuring instead of classifying** (ADR-078). Partly cloudy is no longer a code
+    question: `cloud_cover >= 60%` is overcast and below it is clear, and code 2 only decides when
+    the quantity is missing. **60 is a judgement, not a measurement** — the okta scale calls 50–84%
+    "mostly cloudy", and this puts the boundary inside that band. Move it if a grey day reads clear.
 29. **A chit can be written from a reading up to five minutes old** (ADR-045), which lands hardest on
     motion: a chit written on a train five minutes after launch says `stationary`. Untested against a
     real journey; the honest fix is a shorter window for motion alone.
@@ -111,3 +115,35 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     `com.infiniteants.chitta` rather than upgrading to it, so a handset that had the old build keeps
     it, chits and all, and the new one opens empty. There is no export (ADR-004) and no migration
     path between the two — the old app is the only copy.
+44. **The first-run screen has a copy ceiling, because it does not scroll** (ADR-076). On the 800dp
+    handset it was checked on, the two slips and the two answers leave roughly 65dp of slack above
+    the first slip; a phone with much less height, or a sentence added to either slip, clips instead
+    of scrolling. Cut something before adding something.
+45. **Today's thread is still built eagerly**, and deliberately: it holds one day, and a day is
+    bounded by how much a person writes in one. Somebody writing sixty chits in a day would feel it
+    before the archive does. The fix would be the archive's (ADR-077), but the rail is drawn behind
+    the whole column, so a lazy sliver there is a real piece of work rather than a swap.
+46. **The performance numbers are from one handset** (Android 16, 2,000 chits, 40 recordings,
+    profile build), and they are a baseline to beat, not a guarantee. Build times, 16.7ms budget:
+
+    | Doing | build p50 | build p90 | over budget |
+    |---|---|---|---|
+    | Scrolling the archive | 0.5ms | 1.1ms | none, at any depth |
+    | Switching tab | 1.0–1.6ms | 2.4ms | none |
+    | Switching month, as fast as taps land | 2.2–5.0ms | 11.7ms | 2 frames in 241, worst 17.6ms |
+    | Playing and pausing a recording | 1.4ms | 2.6ms | none |
+    | Opening and leaving the editor | 1.4ms | 4.5ms | none |
+
+    **Month switching is the heaviest thing in the app** and still under budget; it rebuilds a grid
+    and a month of rows, which is work that has to happen. **Memory does not leak**: 400 month
+    switches, 24 editor round trips and 15 playbacks each plateau, and `adb shell am send-trim-memory
+    <pkg> RUNNING_CRITICAL` returns the heap to where it started — **that command is how a leak is
+    told from garbage**, and the answer here was garbage every time. A 188ms raster frame seen once
+    was the stress seeder still writing in the background; it does not reproduce cold.
+    `CHIT_SEED=stress` and `CHIT_FRAMES=true` are how all of this is re-checked — before believing a
+    report of jank, ask which build mode it was in.
+47. **There is no way to walk backwards through everything any more** (ADR-079). The archive is one
+    month, and the chevrons skip the months nothing was written in, so every chit is still reachable
+    — but only if you know roughly when it was. **The thing that would answer this is search**, which
+    is backlog items 2 and 8 wearing a different hat; the density grid is the only finding aid until
+    then.

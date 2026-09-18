@@ -4,9 +4,7 @@ import '../../../domain/models/motion_state.dart';
 import '../../../domain/models/weather_condition.dart';
 
 @DataClassName('ChitRow')
-@TableIndex(name: 'chits_local_day', columns: <Symbol>{#localDay})
-@TableIndex(name: 'chits_created_at', columns: <Symbol>{#createdAt})
-@TableIndex(name: 'chits_weather', columns: <Symbol>{#weather})
+@TableIndex(name: 'chits_day_time', columns: <Symbol>{#localDay, #createdAt})
 class Chits extends Table {
   TextColumn get id => text()();
 

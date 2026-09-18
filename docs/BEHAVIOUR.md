@@ -34,7 +34,9 @@ immediately it is an instruction; after a pause it is an offer. **Nothing moves 
 caret is drawn until the user taps, and then it is the platform's own (ADR-028). **Which prompt
 depends on the moment**: the hour the chit was opened, and the weather if it arrived (ADR-029).
 Every prompt is a **short question**, nothing suggesting a subject worth writing about and nothing
-longer than the field's own line.
+longer than the field's own line — **46 characters, and a test counts them**. There are about
+seventy, and the book is meant to grow: what keeps it honest is that the most specific entry that
+fits wins, so a new pair never has to be slotted above an old one by hand.
 
 **3.4 The recording.** Tapping the microphone raises the sheet: elapsed time, a live waveform, two
 controls. **Stop & keep** attaches the recording and **leaves the field exactly as it was** — a
@@ -46,27 +48,31 @@ a chit says in words was typed by a person.
 itself (ADR-058). **The number is not reused** — it is cited from other documents and from git.
 
 **3.6 Ambient capture.** The time shows as `3:42 pm`; weather as one of five words — `raining`,
-`clear`, `overcast`, `windy`, `clear night`; motion as an icon and never a word (ADR-039); and
-**location is not drawn at all** (ADR-066), though it is captured and stored with every chit, never
+`clear`, `overcast`, `windy`, `clear night`; **motion as one of three, in the same voice** —
+`walking`, `travelling`, `flying` (ADR-039, an icon until 078 — the enum stays `traveling`, the
+word is British like the rest of the copy); and **location is not drawn at all** (ADR-066), though
+it is captured and stored with every chit, never
 as a name, a coordinate or a map. The facts sit on one line, lowercase, spaced apart with no
 separators, in the same words and case wherever they appear; the open chit's line is `--ink-muted`
 and a saved chit's is `--ink-faint`, the chit being written being brighter than the ones already
 written and that being the only difference between them. Conditions are words because "raining" is a
 feeling and a temperature is not. Location is not drawn because a mark that can never be absent says
 nothing; **motion is drawn in the thread as well** — the same argument reversed, almost no chit
-having one, so a mark on two out of twelve carries real information.
+having one, so a word on two out of twelve carries real information.
 
 **3.6.1 One ambient fact, ranked.** Weather and motion share a single slot and never both appear
 (ADR-038) — three items at 11.5px is the ceiling the spacing is built on. Highest first: `flying`,
 `traveling`, `raining`, `windy`, `walking`, `overcast`, `clear`/`clearNight`. `stationary` is
 **never drawn** — stored, and that is all. **A chit written at a desk in the rain reads
-`3:42 pm  raining`**: an icon only *displaces* a word, and only when the phone was moving.
+`3:42 pm  raining`**: a motion only *displaces* the weather, and only when the phone was moving.
 
 **3.6.2 What the motion states mean.** Four, and no more (ADR-037), read from the speed on the
 position fix — so motion costs no second permission, and a refused location costs the fix and the
-motion together. `stationary` (still, or too uncertain to claim otherwise) draws nothing; `walking`
-is a figure, `traveling` a car, `flying` a plane. **No `running`, no `cycling`** — speed cannot tell
-a cyclist at 20 km/h from traffic at the same speed. **A motion that did not arrive is not drawn.**
+motion together. `stationary` (still, or a reading noisier than the speed it carries) draws nothing.
+**A speed the platform reported without an error beside it is still a speed** (ADR-078): Android
+sends 0.0 for an accuracy it does not have, and reading that as noise is what kept a train at
+`stationary`. **No `running`, no `cycling`** — speed cannot tell a cyclist at 20 km/h from traffic
+at the same speed. **A motion that did not arrive is not drawn.**
 
 **3.6.3 When capture happens.** At launch, and at a save holding something stale (ADR-042,
 ADR-045); no polling, no refresh on resume. Five minutes is set by the **place**, not the weather,
@@ -78,8 +84,10 @@ it.
 ## 4. Screens
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
-**one line at 26px**, the weekday italic and faint, the date in full ink. Then the timeline, the
-open chit on its visible second slip, the day's thread, and the चित्त mark closing the day.
+**one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the
+calendar's month sit at the same height** (§6.3), so switching tab does not move the heading. Then
+the timeline, the open chit on its visible second slip, the day's thread, and the चित्त mark closing
+the day.
 
 *The action row.* The microphone leads it at the foot of the slip, full 54px; **Save** arrives to
 its right once the chit holds anything, and an untouched chit shows only the microphone. **Remove**
@@ -121,10 +129,13 @@ clears any selected day, and **the month on screen changes once, when the new on
 (ADR-049).
 
 The **month summary** reads *22 chits over eleven days*, the count upright and the rest italic; an
-empty month reads *Nothing written this month*. **The archive** groups every day newest-first using
-the same thread widget as Today, each headed *Today*, *Yesterday*, or its weekday and date — the
-year only when it is not this one — over a hairline with its count at the right, paged as the reader
-nears the end; a chit there opens the editor exactly as on Today. Tapping a date filters the archive
+empty month reads *Nothing written this month*. **The archive under it is that month and nothing
+else** (ADR-079) — change the month and the chits change with it, which is what makes the grid and
+the list one screen rather than two. It groups the month's days newest-first using the same thread
+widget as Today, each headed *Today*, *Yesterday*, or its weekday and date — the year only when it
+is not this one — over a hairline with its count at the right; a chit there opens the editor exactly
+as on Today. **There is no endless scroll and no paging**: a month is the page, and the chevrons are
+how you turn it. Tapping a date filters the archive
 and frames the tile in ink; tapping again, or **Show every day**, clears it, and a filtered day with
 nothing in it reads *"Nothing written that day."* **There is no legend** — the summary already says
 in words what the density says in ink. **The word is _density_, not _warmth_ or _heat_**; ADR-001
@@ -141,10 +152,11 @@ always open and a few words then **Save** make a chit; that the microphone speak
 the take is kept rather than transcribed; and that a chit is opened again by **holding** it, the one
 gesture nothing on a screen can advertise. **The second asks**: a chit is stamped with the time and
 — if you let it — the weather, whether you were moving, and that a place was recorded; it never
-shows where, and none of it leaves the phone. **The screen scrolls** where two slips and two answers
-outgrow a short phone. Then **Allow**, which raises the system dialog and then opens Today, and
-**Not now**, which opens Today and **raises nothing** — a quiet option that still summoned a system prompt
-would be a dark pattern wearing a polite label. Whatever the answer the app opens, a refusal is not
+shows where, and none of it leaves the phone. **The wordmark is centred here and nowhere else**, and
+**the screen does not scroll** — the copy is cut until it fits, a first screen that slides under the
+thumb being a worse welcome than a shorter sentence. Then **Allow**, which raises the system dialog
+and then opens Today, and **Not now**, which opens Today and **raises nothing** — a quiet option
+that still summoned a system prompt would be a dark pattern wearing a polite label. Whatever the answer the app opens, a refusal is not
 an error state, and **neither is asked again** (ADR-016). A bare system prompt cannot say what it
 buys; this screen makes the case — *so a chit can remember what the weather was* — before the
 platform's dialog arrives as a confirmation of something already agreed to, and **nothing on it is a

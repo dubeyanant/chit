@@ -24,9 +24,12 @@ class Chits extends Table {
 }
 ```
 
-Indexes: `localDay` (every calendar and archive query groups on it), `createdAt` (the timeline and
-ordering within a day), `weather` (backlog item 2, and it costs nothing now). **Not `motion`** —
-nothing queries it, and an index on speculation is what YAGNI forbids.
+**One index: `(localDay, createdAt)`** — the order every query here reads in, so the archive's
+`WHERE local_day BETWEEN ? AND ? ORDER BY local_day DESC, created_at DESC` is a walk of one month
+rather than a sort of the whole table,
+and `localDay` alone is still served as the leftmost column (ADR-077). *Three separate indexes until
+then*, of which the one on `weather` served backlog item 2 and nothing that exists — an index on
+speculation is what YAGNI forbids, and the same argument always ruled out `motion`.
 
 **Two names are forced.** `text` is Drift's own column builder, so a getter called `text` is a
 compile error in a `Table`; the column is `body`. Drift's row class would have been `Chit` and
@@ -99,7 +102,7 @@ at one instant and drawn as one row.
 | Today, the thread | `watchDay` — `WHERE localDay = ? ORDER BY createdAt DESC` |
 | Today, the timeline | `watchDayRange` — three days, **oldest first** |
 | Calendar, density **and** summary | `watchDaySummaries` — one query; the total is the rows' sum, the day count their length |
-| Archive | `watchArchive` — `ORDER BY localDay DESC, createdAt DESC`, paged |
+| Archive | `watchArchive` — one month, `ORDER BY localDay DESC, createdAt DESC` (ADR-079) |
 | Archive, filtered | `watchDay` — *one day's chits, newest first* is one question |
 | Calendar, the chevrons | `watchWrittenMonths` — `GROUP BY localDay / 100` (ADR-047) |
 
@@ -157,21 +160,34 @@ nullable `replyToId`. None break §2's invariant, which is the part worth protec
 
 ```bash
 flutter run --dart-define=CHIT_SEED=seed     # writes the fixture; a second run writes nothing
-flutter run --dart-define=CHIT_SEED=clear    # removes exactly what was seeded
+flutter run --dart-define=CHIT_SEED=stress   # 2,000 rows over three years, 40 of them recorded
+flutter run --dart-define=CHIT_SEED=clear    # removes either, and exactly what was seeded
+flutter run --profile --dart-define=CHIT_FRAMES=true   # frame times, every 120 frames, to the log
 ```
 
 **Any build mode, `--release` included** — the define is already the explicit act, and a second gate
 behind `kDebugMode` protected nothing while costing a device pass. It runs off the critical path,
 and **the console is the only place it reports**.
 
-**Twenty chits, dated relative to the day it runs.** Yesterday and the day before hold five each —
-density step four, and ten marks across two days on the strip — then a three, a two, and singles
-back six weeks, three of them in the previous month so the chevrons have somewhere to go. **Today is
-left alone**: it belongs to whoever is holding the phone. **Every seeded id starts with `seed-`**,
+**Sixty chits over three months, dated relative to the day it runs.** Yesterday and the day before
+hold five each — density step four, and ten marks across two days on the strip — then threes, twos
+and singles thinning backwards over eighty-nine days and four calendar months, so the chevrons have
+somewhere to go and one month holds more than a screenful. **Twelve days in the middle hold nothing**,
+which is the only thing that draws the week a past month leaves out (ADR-048). **Today is left
+alone**: it belongs to whoever is holding the phone. **Every seeded id starts with `seed-`**,
 which is the whole of how the rows are told apart from a person's own — no ledger, no preference, no
 column added for a tool. Seeding is idempotent; clearing deletes exactly the seeded rows and their
 recordings. It writes through the DAO rather than the repository, which generates its own ids, but
 `localDay` still comes from `Chit.localDayOf`.
+
+**`stress` is for measuring, not for looking at** (ADR-077): 2,000 rows spread evenly over 1,095
+days, ids `seed-s00000` upward, written in one transaction, with four rotating bodies of different
+lengths so the rows are not all one height. `clear` takes them too — they carry the same `seed-`
+prefix. **Its numbers are how a performance claim gets re-checked**: `CHIT_FRAMES=true` prints build and
+raster times **and the resident set size** every 120 frames, and **profile is the only mode worth
+reading** — a debug build renders through an unoptimised path and is slow whatever the code does. A
+rising RSS is not yet a leak: `adb shell am send-trim-memory <pkg> RUNNING_CRITICAL` collects, and
+what does not come back is the leak (open item 46).
 
 **Its recordings are WAVs wearing an `.m4a` extension** — a quiet 440Hz tone at the length the row
 claims. Encoding AAC in Dart is not on the table and Android's extractor sniffs the content; **iOS

@@ -72,7 +72,7 @@ you get on with your life. Everything follows from that:
 | `audioPath` | present whenever a recording was kept |
 | `weather` | a condition word |
 | `location` | stored; **not surfaced in the UI** (ADR-066) |
-| `motion` | `stationary`, `walking`, `traveling`, `flying`, read off the same fix as `location` (ADR-037). Drawn as an icon, and `stationary` is not drawn at all |
+| `motion` | `stationary`, `walking`, `traveling`, `flying`, read off the same fix as `location` (ADR-037). Drawn as a word beside the time, and `stationary` is not drawn at all (ADR-078) |
 
 `text` and `audioPath` are independently nullable and **at least one is always present** — a chit
 with neither is not a chit, and is what §3.1 refuses to save. That leaves three shapes, all
@@ -110,8 +110,9 @@ lib/
 `lib/core/theme/` is §6 as four `ThemeExtension`s, reached through `context.colors`, `.type`,
 `.space` and `.motion` — four accessors rather than one, so a widget that needs a colour cannot
 reach motion. `lib/shared/widgets/` is the chit vocabulary: the slip and its tear edge, the stamp
-row and its motion marks, the rail and the thread over it, the wordmark, the two button weights, the
-microphone, the pill, the prompt sheet, `Arrival`, `StaggeredEntrance` and `FocusRing`.
+row and its motion marks, the rail and the thread over it, the wordmark, the heading row both tabs
+hang their title in, the two button weights, the microphone, the pill, the prompt sheet, `Arrival`,
+`StaggeredEntrance` and `FocusRing`.
 
 **Tests.** `flutter test`. **There are no widget tests, and there will not be** (ADR-031) — what can
 only be seen on a screen is seen on a handset and written into the commit. Suites sit beside what
@@ -143,8 +144,10 @@ dart run build_runner watch                 # leave running while working
 flutter analyze                             # must be clean before a commit
 flutter test
 flutter run                                 # an Android device or emulator
-flutter run --dart-define=CHIT_SEED=seed    # six weeks of chits — DATA-MODEL.md §6
+flutter run --dart-define=CHIT_SEED=seed    # three months of chits — DATA-MODEL.md §6
+flutter run --dart-define=CHIT_SEED=stress  # 2,000 of them, for measuring
 flutter run --dart-define=CHIT_SEED=clear   # and the same build with them taken off again
+flutter run --profile --dart-define=CHIT_FRAMES=true   # frame times to the log
 ```
 
 The design is mobile at 390×844. On Windows, `flutter pub get` warns unless **Developer Mode** is
