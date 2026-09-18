@@ -14,8 +14,6 @@ void main() {
         ),
       );
 
-  /// ADR-038's ladder, highest first. The test's copy of it: if the rule and
-  /// this list ever disagree, one of them is a bug and the pair below says so.
   const List<AmbientFact> ladder = <AmbientFact>[
     MotionFact(MotionState.flying),
     MotionFact(MotionState.traveling),
@@ -33,9 +31,6 @@ void main() {
     });
 
     test('stationary alone is no fact', () {
-      // It is what most chits are. A mark on all of them distinguishes
-      // nothing, which is §3.6's own argument for keeping the pin off the
-      // thread.
       expect(factOf(motion: MotionState.stationary), isNull);
     });
   });
@@ -63,9 +58,6 @@ void main() {
   });
 
   test('every motion and weather pair resolves to the higher rung', () {
-    // The whole ladder, exhaustively: 4 states × 5 conditions, plus the two
-    // null rows. Written as the cross product rather than as chosen examples,
-    // because a precedence bug is exactly the thing an example misses.
     for (final MotionState? motion in <MotionState?>[
       null,
       ...MotionState.values,
@@ -95,7 +87,6 @@ void main() {
 
   group('the rungs that decide the design', () {
     test('a vehicle displaces the rain', () {
-      // Inside a vehicle the sky outside is no longer what you are in.
       expect(
         factOf(
           motion: MotionState.traveling,
@@ -106,7 +97,6 @@ void main() {
     });
 
     test('the rain displaces a walk', () {
-      // You feel the weather while walking, so the weather is the better fact.
       expect(
         factOf(motion: MotionState.walking, weather: WeatherCondition.raining),
         const WeatherFact(WeatherCondition.raining),
@@ -120,16 +110,17 @@ void main() {
       );
     });
 
-    test('a chit at a desk in the rain reads exactly as it did before motion', () {
-      // The claim that makes ADR-038 safe: the ordinary chit is unchanged, and
-      // an icon only ever appears by displacing a word.
-      expect(
-        factOf(
-          motion: MotionState.stationary,
-          weather: WeatherCondition.raining,
-        ),
-        const WeatherFact(WeatherCondition.raining),
-      );
-    });
+    test(
+      'a chit at a desk in the rain reads exactly as it did before motion',
+      () {
+        expect(
+          factOf(
+            motion: MotionState.stationary,
+            weather: WeatherCondition.raining,
+          ),
+          const WeatherFact(WeatherCondition.raining),
+        );
+      },
+    );
   });
 }

@@ -6,18 +6,7 @@ import 'package:chit/domain/services/location_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
-/// M3 group I — the one call the app makes to the outside world.
-///
-/// **No network in the suite.** Every case runs against a fake `http.Client`,
-/// so the failures that matter can be produced on purpose rather than waited
-/// for: a 500, a timeout, a body that is not JSON, a body that is JSON and not
-/// the right shape.
-///
-/// The claim being defended is ADR-007's: **it never throws.** Whatever the
-/// network does, the answer is a word or a `null`, because a composer that
-/// must not stall cannot do anything with an exception.
 void main() {
-  /// A well-formed response for [code], with the wind in metres per second.
   String body({int? code = 0, int? isDay = 1, double? wind = 0}) =>
       '{"current":{'
       '${code == null ? '' : '"weather_code":$code,'}'
@@ -50,8 +39,6 @@ void main() {
     });
 
     test('the wind is read in metres per second, as asked for', () async {
-      // If the unit ever silently reverts to Open-Meteo's default km/h, this
-      // is what notices: 8 km/h is a still day and 8 m/s is a windy one.
       expect(
         await serviceOf(_Ok(body(wind: 8))).currentCondition(),
         WeatherCondition.windy,
@@ -82,9 +69,6 @@ void main() {
     );
 
     test('it sends the last known fix, not a fresh one', () async {
-      // ADR-025, as a count. A service that reached for `currentFix` would
-      // queue the weather behind the slow precise fix and make ADR-007's two
-      // parallel signals sequential.
       final _Location location = _Location(const GeoFix(lat: 1, lon: 2));
       await OpenMeteoService(
         location: location,
@@ -96,9 +80,6 @@ void main() {
     });
 
     test('no fix means no call at all', () async {
-      // The ordinary answer on an install that has never taken one. It heals
-      // itself: the location leg of the same capture is what fills the
-      // platform's cache (ADR-042).
       final _Recording client = _Recording(body());
 
       final WeatherCondition? word = await serviceOf(
@@ -150,8 +131,6 @@ void main() {
     });
 
     test('a client that never comes back', () async {
-      // The timeout is what has to produce the `null`, so the fake genuinely
-      // hangs rather than returning a fast null pretending to be slow.
       expect(await serviceOf(_Hangs()).currentCondition(), isNull);
     });
 
@@ -168,8 +147,6 @@ void main() {
 
   group('the fields are read independently', () {
     test('a missing is_day still reports rain', () async {
-      // The mapping decides what a missing field costs. This method never
-      // refuses a whole reading because one number was absent.
       expect(
         await serviceOf(_Ok(body(code: 61, isDay: null))).currentCondition(),
         WeatherCondition.raining,
@@ -196,7 +173,6 @@ void main() {
   });
 }
 
-/// Answers [fix] and counts which way it was asked.
 final class _Location implements LocationService {
   _Location(this.fix);
 
@@ -233,7 +209,6 @@ final class _ThrowingLocation implements LocationService {
       LocationPermissionOutcome.granted;
 }
 
-/// 200, with [payload].
 class _Ok extends http.BaseClient {
   _Ok(this.payload);
 
@@ -244,7 +219,6 @@ class _Ok extends http.BaseClient {
       http.StreamedResponse(Stream<List<int>>.value(payload.codeUnits), 200);
 }
 
-/// 200, with [payload], remembering what it was asked for.
 class _Recording extends http.BaseClient {
   _Recording(this.payload);
 
@@ -261,7 +235,6 @@ class _Recording extends http.BaseClient {
   }
 }
 
-/// Answers [status] with an empty body.
 class _Status extends http.BaseClient {
   _Status(this.status);
 
@@ -272,21 +245,18 @@ class _Status extends http.BaseClient {
       http.StreamedResponse(const Stream<List<int>>.empty(), status);
 }
 
-/// Fails the way an offline device fails.
 class _Throws extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async =>
       throw const _Failure();
 }
 
-/// Never comes back. The timeout has to produce the `null`.
 class _Hangs extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) =>
       Completer<http.StreamedResponse>().future;
 }
 
-/// Not an `Error` — a bug in our own code should still crash.
 final class _Failure implements Exception {
   const _Failure();
 }

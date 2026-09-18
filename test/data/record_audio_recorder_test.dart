@@ -5,11 +5,6 @@ import 'package:chit/domain/services/audio_recorder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
-/// The two rules the recorder holds without a microphone — ADR-052.
-///
-/// The plugin cannot run here, so what is tested is the arithmetic the
-/// waveform depends on and the naming the store depends on. The rest is a
-/// handset job, and TASKS.md group G says which.
 void main() {
   group('the level the waveform draws', () {
     test('full scale is one and the silence floor is zero', () {

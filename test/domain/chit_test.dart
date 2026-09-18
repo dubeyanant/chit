@@ -2,13 +2,6 @@ import 'package:chit/domain/models/chit.dart';
 import 'package:chit/domain/models/weather_condition.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// The first of the three places the invariant of README §5 is held
-/// (DATA-MODEL.md §2), and the only one that fails at the moment the wrong
-/// object is built rather than at the moment it is written.
-///
-/// An assert is compiled out of a release build, which is why there are two
-/// other places. It is still the one worth having: a chit that cannot be
-/// constructed wrongly cannot be passed around wrongly either.
 void main() {
   final DateTime when = DateTime(2026, 9, 15, 15, 42);
 

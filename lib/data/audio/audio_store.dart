@@ -6,39 +6,18 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'audio_store.g.dart';
 
-/// Where recordings live, and the only thing that moves them. ADR-008.
-///
-/// A recording is written to a temporary file while the sheet is up, moved
-/// into `<app documents>/audio/<chit-id>.m4a` when the chit is saved, and
-/// deleted when it is discarded. The database stores the **relative** path
-/// only — an absolute iOS container path saved today is dead after the next
-/// app update.
-///
-/// The documents directory arrives as a [Future] rather than a [Directory] so
-/// that constructing this costs nothing and startup stays synchronous
-/// (ARCHITECTURE.md §3). Tests hand it a temporary directory.
 final class AudioStore {
-  /// A store under the documents directory, once that future resolves.
   const AudioStore(this._documents);
 
-  /// The store as it exists on a handset.
   factory AudioStore.appDocuments() =>
       AudioStore(getApplicationDocumentsDirectory());
 
-  /// The one directory recordings are kept in, relative to the documents
-  /// directory.
   static const String folder = 'audio';
 
   static const String _extension = '.m4a';
 
   final Future<Directory> _documents;
 
-  /// Moves the recording at [tempPath] to the chit's permanent path and
-  /// returns that path, relative and with forward slashes.
-  ///
-  /// The move happens before the row is written, so a failed move never leaves
-  /// a row pointing at nothing. The other order of failure — a moved file and
-  /// no row — is an orphan, and [sweep] is what collects it.
   Future<String> keep({
     required String tempPath,
     required String chitId,
@@ -55,8 +34,6 @@ final class AudioStore {
     try {
       await temp.rename(target);
     } on FileSystemException {
-      // A rename cannot cross devices, and the cache and the documents
-      // directory are not promised to be on the same one.
       await temp.copy(target);
       await temp.delete();
     }
@@ -64,11 +41,6 @@ final class AudioStore {
     return relative;
   }
 
-  /// Deletes a recording that was never kept — the recording sheet's
-  /// **Discard**, and **Remove** on the open chit's pill (BEHAVIOUR.md §3.2).
-  ///
-  /// A temp file that has already gone is not an error — discarding twice, or
-  /// discarding after the OS has swept its own cache, is the same outcome.
   Future<void> discardTemp(String tempPath) async {
     final File file = File(tempPath);
     if (file.existsSync()) {
@@ -76,13 +48,6 @@ final class AudioStore {
     }
   }
 
-  /// Deletes a kept recording — **Remove** in the editor, and the whole-chit
-  /// delete (ADR-063).
-  ///
-  /// The row is written first and this runs after: a row pointing at a file
-  /// that is not there is a corruption, and a file no row points at is only
-  /// an orphan, which [sweep] collects if this never runs. A file already gone
-  /// is not an error, for the same reason [discardTemp] says.
   Future<void> delete(String relativePath) async {
     final File file = await resolve(relativePath);
     if (file.existsSync()) {
@@ -90,10 +55,6 @@ final class AudioStore {
     }
   }
 
-  /// The file behind a stored path, for playback.
-  ///
-  /// It may not exist: a recording that has vanished is a loss, not a
-  /// corruption, and the chit still renders without its pill (ADR-008).
   Future<File> resolve(String relativePath) async => File(
     p.joinAll(<String>[
       (await _documents).path,
@@ -101,10 +62,6 @@ final class AudioStore {
     ]),
   );
 
-  /// Deletes every recording that no row claims.
-  ///
-  /// Half of the reconciliation of ADR-008 — the half that needs a filesystem.
-  /// The other half, a row whose file has vanished, needs nothing done to it.
   Future<void> sweep(Iterable<String> claimed) async {
     final Directory dir = await _audioDirectory();
     if (!dir.existsSync()) return;
@@ -122,6 +79,5 @@ final class AudioStore {
       Directory(p.join((await _documents).path, folder));
 }
 
-/// The audio store the app runs on. Overridden in tests.
 @Riverpod(keepAlive: true)
 AudioStore audioStore(Ref ref) => AudioStore.appDocuments();

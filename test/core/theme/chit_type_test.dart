@@ -3,12 +3,6 @@ import 'package:chit/core/theme/chit_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// ADR-015, enforced.
-///
-/// The faces are variable fonts, so a [TextStyle] that sets only `fontWeight`
-/// renders at 400 and nothing says so — not the analyzer, not the app, not a
-/// screenshot anybody glances at. The whole scale lives in one file precisely
-/// so this can be checked in one place.
 void main() {
   const ChitColors colors = ChitColors.tokens();
   final ChitType type = ChitType.tokens(colors);
@@ -89,9 +83,6 @@ void main() {
     });
 
     test('the चित्त mark is the only thing set in Devanagari', () {
-      // Two styles, and they are the same mark in the two places
-      // BEHAVIOUR.md §4.1 allows it: beside the wordmark, and closing the day
-      // at the foot of Today. Nothing else in the app is set in this face.
       final Iterable<TextStyle> deva = type.styles.where(
         (TextStyle s) => s.fontFamily == ChitType.devanagariFamily,
       );
@@ -103,9 +94,6 @@ void main() {
     });
 
     test('the closing mark is the larger and the quieter of the two', () {
-      // It closes the day rather than labelling the app, so it is set at a
-      // size you would notice and a strength you would not read — and the
-      // prototype marks it `aria-hidden` for the same reason.
       expect(
         type.closingMark.fontSize,
         greaterThan(type.devanagariMark.fontSize!),
@@ -132,9 +120,6 @@ void main() {
     });
 
     test('display-to-body is 1.58x', () {
-      // v5 ran 2.30x on a 38px date. §6.2: the date is a label, not a
-      // masthead, and the biggest thing on a screen should be the thing the
-      // screen is for. Measured, not rounded — 26 over 16.5.
       expect(
         type.date.fontSize! / type.chitText.fontSize!,
         closeTo(1.58, 0.01),
@@ -142,8 +127,6 @@ void main() {
     });
 
     test('the weekday sets as one phrase with the date beside it', () {
-      // Not a stacked masthead: same face, same size, same weight. Only the
-      // slant and the colour separate them.
       expect(type.weekday.fontSize, type.date.fontSize);
       expect(type.weekday.fontWeight, type.date.fontWeight);
       expect(type.weekday.fontStyle, FontStyle.italic);
@@ -151,9 +134,6 @@ void main() {
     });
 
     test('the open chit and the thread speak one dialect', () {
-      // The stamp on the open chit was 600-weight uppercase at .1em in v5 and
-      // the identical facts under a saved chit were not. §6.2: the open chit
-      // is distinguished by being brighter, not by being set differently.
       expect(type.ambientStamp.fontSize, type.chitMeta.fontSize);
       expect(type.ambientStamp.fontWeight, type.chitMeta.fontWeight);
       expect(type.ambientStamp.letterSpacing, type.chitMeta.letterSpacing);
@@ -168,8 +148,6 @@ void main() {
     });
 
     test('the accent carries words only at its text weight', () {
-      // DESIGN-SYSTEM.md §6.1: --seal is for marks, --seal-ink for anything read as
-      // text. A style coloured in --seal would be a style below the floor.
       for (final TextStyle style in type.styles) {
         expect(style.color, isNot(colors.seal));
       }

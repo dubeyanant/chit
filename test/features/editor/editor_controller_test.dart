@@ -22,12 +22,6 @@ import '../../support/fake_audio_player.dart';
 import '../../support/fake_audio_recorder.dart';
 import '../../support/fake_clock.dart';
 
-/// The editor through a bare `ProviderContainer` — ADR-031, TASKS.md D11.
-///
-/// Every control on the screen turns on a getter of [EditorState], and this
-/// is where those getters are held to their meaning: dirty is *differs from
-/// what was loaded*, Save needs a change *and* a chit to write, and the prompt
-/// guards a change. What the slip looks like is a device check.
 void main() {
   late Directory root;
   late AppDatabase db;
@@ -37,7 +31,6 @@ void main() {
   late FakeAudioRecorder recorder;
   late ProviderContainer container;
 
-  /// Thursday 17 September 2026, 3pm.
   final DateTime afternoon = DateTime(2026, 9, 17, 15);
 
   setUp(() async {
@@ -82,8 +75,6 @@ void main() {
     );
   }
 
-  /// The editor open on [chit], held so the auto-dispose family survives the
-  /// test the way the screen holds it.
   Future<EditorController> open(Chit chit) async {
     container.listen<AsyncValue<EditorState?>>(
       editorControllerProvider(chit.id),
@@ -110,8 +101,6 @@ void main() {
     test(
       'an id with no row answers null, and the screen leaves on it',
       () async {
-        // An id outlives its row across a delete (group F), which is the case
-        // this exists for. `byId` answers null rather than throwing.
         expect(
           await container.read(editorControllerProvider('gone').future),
           isNull,
@@ -168,7 +157,7 @@ void main() {
     });
   });
 
-  group('Save needs a change and a chit to write — D7', () {
+  group('Save needs a change and a chit to write', () {
     test('emptying a text-only chit withholds Save', () async {
       final Chit chit = await given('Room too cold, again.');
       final EditorController editor = await open(chit);
@@ -214,15 +203,11 @@ void main() {
     });
 
     test('answering *discard* leaves the row exactly as it was', () async {
-      // BUILD-PLAN.md M6's statement of done, as far as a test can hold it:
-      // an edit lives only in the controller until Save, so leaving without
-      // saving is not an undo — there is nothing to undo.
       final Chit chit = await given('Room too cold, again.', recorded: true);
       final EditorController editor = await open(chit);
 
       editor.edit('Something else entirely.');
       expect(stateOf(chit).shouldPromptOnLeave, isTrue);
-      // The screen pops; nothing calls save.
 
       expect(await repo.byId(chit.id), chit);
     });
@@ -238,8 +223,6 @@ void main() {
     });
 
     test('a text-only edit sends AudioEdit.keep', () async {
-      // The default is *leave it alone*. Group E adds the other two; until
-      // then nothing the controller does can reach a recording.
       final Chit both = await given('Words too.', recorded: true);
       final EditorController editor = await open(both);
 
@@ -251,7 +234,7 @@ void main() {
     });
   });
 
-  group('delete — open item 9, D10', () {
+  group('delete — open item 9', () {
     File storedFileOf(Chit chit) =>
         File(p.join(root.path, 'audio', '${chit.id}.m4a'));
 
@@ -293,8 +276,7 @@ void main() {
     });
   });
 
-  group('the voice, staged until Save — D5, D6', () {
-    /// A take on disk, as the recorder would leave it.
+  group('the voice, staged until Save', () {
     Future<Recording> aTake([String name = 'new-take']) async {
       final File file = File(p.join(root.path, '$name.m4a'));
       await file.writeAsString('a different take');
@@ -455,8 +437,6 @@ void main() {
     test(
       'a take started for the editor lands in the editor — ADR-065',
       () async {
-        // The whole point of the sink: the same recording controller, the same
-        // sheet, and Stop & keep arrives here rather than on the open chit.
         final Chit words = await given('Only words.');
         final EditorController editor = await open(words);
         final RecordingController sheet = container.read(

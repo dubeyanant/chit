@@ -25,13 +25,6 @@ import 'package:path/path.dart' as p;
 import '../../support/fake_audio_player.dart';
 import '../../support/fake_clock.dart';
 
-/// **ADR-040 and ADR-042, through the controller that carries them.**
-///
-/// The claim under test is the reversal: *a chit is stamped when it is saved,
-/// not when it was opened.* It is worth a test precisely because it fails
-/// silently — a stamp taken at the wrong moment is still a perfectly plausible
-/// time, and nothing but a clock that moves across the save can see it. That
-/// is the same argument the old ADR-021 test made, pointing the other way.
 void main() {
   late Directory root;
   late AppDatabase db;
@@ -40,10 +33,8 @@ void main() {
   late _Location location;
   late FakeAudioPlayer player;
 
-  /// 9:30am — when the chit is opened.
   final DateTime opened = DateTime(2026, 9, 15, 9, 30);
 
-  /// 9:52am — when the user finally presses Save.
   final DateTime savedAt = DateTime(2026, 9, 15, 9, 52);
 
   setUp(() async {
@@ -79,16 +70,11 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    // Holds the composer open across a save. In the app a widget does this;
-    // without it the provider auto-disposes the moment `save` returns and the
-    // next call reaches for a `Ref` that is gone — which is a fact about the
-    // test harness rather than about the controller.
     container.listen(composerControllerProvider, (ComposerState? _, _) {});
 
     return container;
   }
 
-  /// The one chit in the database, whatever it is.
   Future<Chit> onlyChit() async {
     final List<Chit> chits = await repo
         .watchDay(Chit.localDayOf(savedAt))
@@ -97,11 +83,6 @@ void main() {
     return chits.single;
   }
 
-  /// Waits for [done], a few milliseconds at a time.
-  ///
-  /// The patch of ADR-042 is deliberately not awaited by `save`, so there is
-  /// nothing to hold on to — polling is the honest way to observe something
-  /// the production code goes out of its way not to expose.
   Future<void> pumpUntil(Future<bool> Function() done) async {
     for (int i = 0; i < 100; i++) {
       if (await done()) return;
@@ -133,9 +114,6 @@ void main() {
     test(
       'a chit written across a midnight is filed on the day it was saved',
       () async {
-        // The failure a whole second record used to exist to contain, now
-        // impossible rather than merely handled: under ADR-021 a chit opened at
-        // 23:58 and saved at 00:05 was filed on the previous day.
         final DateTime beforeMidnight = DateTime(2026, 9, 15, 23, 58);
         final DateTime afterMidnight = DateTime(2026, 9, 16, 0, 5);
 
@@ -177,10 +155,6 @@ void main() {
 
   group('ADR-042: the row is written first and corrected after', () {
     test('saving does not wait on the capture', () async {
-      // The whole reason the patch exists. The weather here never comes back,
-      // so a save that awaited it would hang — and under the real 2s timeout
-      // it would merely be slow, which is the version nobody notices until
-      // they are on a train.
       final ProviderContainer container = containerOf(_HangingWeather());
       final ComposerController composer = container.read(
         composerControllerProvider.notifier,
@@ -206,8 +180,6 @@ void main() {
       clock.moveTo(savedAt);
       await composer.save();
 
-      // Nothing was ever primed in this container, so the insert went out with
-      // an empty reading — which is exactly the state a save makes good.
       expect((await onlyChit()).motion, isNull);
 
       await pumpUntil(() async => (await onlyChit()).motion != null);
@@ -225,7 +197,6 @@ void main() {
   });
 
   group('ADR-045: a save inside the window asks for nothing', () {
-    /// Saves a chit and gives whatever the save started time to finish.
     Future<void> saveAndSettle(ProviderContainer container) async {
       final ComposerController composer = container.read(
         composerControllerProvider.notifier,
@@ -238,9 +209,6 @@ void main() {
     test(
       'a second save minutes later does not ask the services again',
       () async {
-        // The whole point, and it is only checkable by counting. A fresh save
-        // looks identical from the outside — same row, same word — and what it
-        // avoids is a GPS fix and a network call per chit in a sitting.
         final ProviderContainer container = containerOf(_FastWeather());
 
         await container.read(ambientSignalsProvider.notifier).prime();
@@ -262,8 +230,6 @@ void main() {
     test('a save outside the window asks, and patches the row', () async {
       final ProviderContainer container = containerOf(_FastWeather());
 
-      // Nothing primed, so the reading is stale by definition — there has
-      // never been one — and the row goes out empty.
       clock.moveTo(savedAt);
       await saveAndSettle(container);
 
@@ -272,8 +238,6 @@ void main() {
     });
 
     test('a fresh save leaves the row exactly as it was written', () async {
-      // The row must not be re-written even though the world changed after it:
-      // inside the window, what was written is what was true.
       final ProviderContainer container = containerOf(_FastWeather());
 
       await container.read(ambientSignalsProvider.notifier).prime();
@@ -322,7 +286,6 @@ void main() {
   });
 
   group('Remove takes the recording with it — ADR-008, ADR-060', () {
-    /// A take on disk, kept on the open chit.
     Future<(ComposerController, File)> keptTake(
       ProviderContainer container,
     ) async {
@@ -351,16 +314,11 @@ void main() {
       expect(after.audioTempPath, isNull);
       expect(after.audioDuration, isNull);
       expect(after.hasAudio, isFalse, reason: 'the microphone comes back');
-      // `canSave` false is also what re-arms the five seconds. The timer
-      // itself has never had a test — it would need `fake_async` as an
-      // explicit dependency for the one claim — so this is the precondition,
-      // and the prompt coming back is on TASKS.md group G's handset pass.
+
       expect(after.canSave, isFalse);
     });
 
     test('the words are left exactly as they were', () async {
-      // A recording is not words, so removing one is not an edit to anything
-      // written — the converse of `keepRecording` leaving the field alone.
       final ProviderContainer container = containerOf();
       final (ComposerController composer, _) = await keptTake(container);
 
@@ -373,8 +331,6 @@ void main() {
     });
 
     test('the stamp does not move, because this is not a new chit', () async {
-      // Discard opened a *fresh* chit and re-took the preview. Remove does
-      // not: the chit is the same chit, one part lighter.
       final ProviderContainer container = containerOf();
       final (ComposerController composer, _) = await keptTake(container);
       final AmbientStamp before = container
@@ -400,7 +356,6 @@ void main() {
     });
 
     test('a refused microphone is forgotten once one is allowed', () {
-      // Discard used to be what cleared it and Discard is gone (ADR-060).
       final ProviderContainer container = containerOf();
       final ComposerController composer = container.read(
         composerControllerProvider.notifier,
@@ -429,7 +384,6 @@ void main() {
   });
 
   group('a take stops sounding when it stops being the open chit\'s', () {
-    /// A take on disk, kept on the open chit and playing.
     Future<ComposerController> playingTake(ProviderContainer container) async {
       final ComposerController composer = container.read(
         composerControllerProvider.notifier,
@@ -446,8 +400,6 @@ void main() {
     }
 
     test('Save stops it, because the file is about to move', () async {
-      // Seen on a handset: the take went on playing after Save, with the pill
-      // that could have stopped it no longer drawn anywhere.
       final ProviderContainer container = containerOf();
       final ComposerController composer = await playingTake(container);
 
@@ -467,8 +419,6 @@ void main() {
     });
 
     test('a save leaves a chit playing in the thread alone', () async {
-      // `stopIf` names the open chit, so somebody listening back to yesterday
-      // while they write today is not interrupted.
       final ProviderContainer container = containerOf();
       final ComposerController composer = container.read(
         composerControllerProvider.notifier,
@@ -510,11 +460,6 @@ void main() {
   });
 }
 
-/// Answers a fix straight away, and counts how often it was asked.
-///
-/// The count is what ADR-045 is checkable by: a save inside the freshness
-/// window looks identical from the outside and differs only in what it did
-/// *not* do.
 final class _Location implements LocationService {
   GeoFix? answer = const GeoFix(lat: 1, lon: 2, speed: 20, speedAccuracy: 1);
   int fixes = 0;
@@ -533,14 +478,12 @@ final class _Location implements LocationService {
       LocationPermissionOutcome.granted;
 }
 
-/// Never comes back, so a save that awaited the capture would hang.
 final class _HangingWeather implements WeatherService {
   @override
   Future<WeatherCondition?> currentCondition() =>
       Completer<WeatherCondition?>().future;
 }
 
-/// Answers at once, so the patch is observable without waiting out a timeout.
 final class _FastWeather implements WeatherService {
   @override
   Future<WeatherCondition?> currentCondition() async =>

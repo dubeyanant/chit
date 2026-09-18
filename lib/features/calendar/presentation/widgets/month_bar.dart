@@ -4,23 +4,7 @@ import '../../../../core/extensions.dart';
 import '../../../../shared/widgets/focus_ring.dart';
 import '../../application/month_provider.dart';
 
-/// *September 2026*, and the chevrons — the head of the calendar.
-///
-/// The name is set at the date line's size and weight, because DESIGN-SYSTEM.md
-/// §6.2 makes the two the same kind of thing: a label for what is below, not a
-/// masthead. The year sits beside it in `--ink-faint`, the way the weekday
-/// sits beside the date.
-///
-/// **A chevron is drawn only when it has somewhere to go** — ADR-047. Each
-/// one lands on the nearest month with something written in it, so a month
-/// nobody can write in is never shown; with nothing earlier, and at the
-/// current month, that side is simply empty. *v6 draws both and disables
-/// one*, and so did this bar for one commit, until the first device pass saw
-/// an empty August with a dead chevron beside it. A control offering nothing
-/// is what §6.4 refuses, and a faint one is that with a claim about
-/// legibility on top.
 final class MonthBar extends StatelessWidget {
-  /// The bar for [month].
   const MonthBar({
     required this.month,
     required this.onPrevious,
@@ -28,14 +12,10 @@ final class MonthBar extends StatelessWidget {
     super.key,
   });
 
-  /// Which month is showing.
   final YearMonth month;
 
-  /// To the nearest earlier written month. Null draws no chevron.
   final VoidCallback? onPrevious;
 
-  /// To the nearest later written month, or the current one. Null draws no
-  /// chevron.
   final VoidCallback? onNext;
 
   @override
@@ -72,8 +52,6 @@ final class MonthBar extends StatelessWidget {
   }
 }
 
-/// One chevron at the 44px floor. v6's is a 36px button; §6.4 makes no
-/// exceptions, and sizing it to the target costs eight pixels of bar.
 class _Chevron extends StatelessWidget {
   const _Chevron({
     required this.pointsLeft,
@@ -85,7 +63,6 @@ class _Chevron extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  /// v6 draws the glyph at 17px inside its 18-unit box.
   static const double _glyphSize = 17;
 
   @override
@@ -118,8 +95,6 @@ class _Chevron extends StatelessWidget {
   }
 }
 
-/// v6's chevron: `M11 4 6 9l5 5` in an 18-unit box at a 1.3 stroke, round
-/// caps and joins.
 class _ChevronPainter extends CustomPainter {
   const _ChevronPainter({required this.color, required this.pointsLeft});
 

@@ -1,23 +1,10 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'clock.dart';
-
-// **************************************************************************
-// RiverpodGenerator
-// **************************************************************************
-
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-/// The clock the app runs on. Overridden in tests.
 
 @ProviderFor(clock)
 final clockProvider = ClockProvider._();
 
-/// The clock the app runs on. Overridden in tests.
-
 final class ClockProvider extends $FunctionalProvider<Clock, Clock, Clock>
     with $Provider<Clock> {
-  /// The clock the app runs on. Overridden in tests.
   ClockProvider._()
     : super(
         from: null,
@@ -42,7 +29,6 @@ final class ClockProvider extends $FunctionalProvider<Clock, Clock, Clock>
     return clock(ref);
   }
 
-  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(Clock value) {
     return $ProviderOverride(
       origin: this,

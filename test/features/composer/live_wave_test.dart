@@ -2,12 +2,6 @@ import 'package:chit/features/composer/application/recording_controller.dart';
 import 'package:chit/features/composer/presentation/recording_sheet.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// **The wave is the microphone, not a loop** — ADR-054 as amended.
-///
-/// The arithmetic is here because it is the one thing about the sheet a test
-/// can hold: a bar that does not answer the level is a wave that says *it is
-/// hearing you* while hearing nothing. What it looks like moving is a handset
-/// job (TASKS.md group G).
 void main() {
   const int window = RecordingController.levelWindow;
 
@@ -47,8 +41,6 @@ void main() {
 
   group('the window', () {
     test('is always full, however few readings have arrived', () {
-      // A sheet that has just opened draws a row of ticks, not three bars
-      // floating where the wave should be.
       expect(
         LiveWave.barsFor(const <double>[], window: window),
         hasLength(window),
@@ -82,8 +74,6 @@ void main() {
     });
 
     test('matches the buffer the controller keeps', () {
-      // Two windows that disagreed would either starve the wave or make it
-      // pad a row it has readings for.
       expect(LiveWave.atRest, hasLength(RecordingController.levelWindow));
     });
   });

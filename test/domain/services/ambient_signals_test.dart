@@ -6,13 +6,6 @@ import 'package:chit/domain/services/weather_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// ADR-042: **captured twice, and never in between.**
-///
-/// The decision this file holds is the one that is invisible when it is wrong.
-/// An implementation that polled, or that refreshed on every read, would pass
-/// every assertion about *values* in this codebase and would only show up as
-/// battery on somebody's phone. So what is counted here is **how many times
-/// the services were asked**, which is the only way that claim is checkable.
 void main() {
   ProviderContainer containerWith(_CountingLocation location) {
     final ProviderContainer container = ProviderContainer(
@@ -39,9 +32,6 @@ void main() {
   });
 
   test('reading the value never asks the services', () async {
-    // The whole point. A provider that captured lazily on first read would
-    // look identical from the outside and would fire on every rebuild of the
-    // open chit — which is the behaviour ADR-042 exists to remove.
     final _CountingLocation location = _CountingLocation();
     final ProviderContainer container = containerWith(location);
 
@@ -69,8 +59,6 @@ void main() {
   });
 
   test('refresh asks again and replaces what is held', () async {
-    // The save path (ADR-040). The second answer wins outright rather than
-    // merging, so a signal that has gone away actually goes away.
     final _CountingLocation location = _CountingLocation();
     final ProviderContainer container = containerWith(location);
 
@@ -91,8 +79,6 @@ void main() {
   test(
     'a service that throws leaves it holding nothing, not an error',
     () async {
-      // ADR-007 all the way up: there is no failure state to hold, because
-      // nothing downstream could do anything with one.
       final ProviderContainer container = ProviderContainer(
         overrides: [
           weatherServiceProvider.overrideWith((Ref ref) => _ThrowingWeather()),
@@ -123,7 +109,6 @@ void main() {
   );
 }
 
-/// A service that always answers [condition].
 final class _Weather implements WeatherService {
   const _Weather(this.condition);
 
@@ -133,11 +118,9 @@ final class _Weather implements WeatherService {
   Future<WeatherCondition?> currentCondition() async => condition;
 }
 
-/// Counts how many times it was asked. The count is the claim.
 final class _CountingLocation implements LocationService {
   int fixes = 0;
 
-  /// Walking pace, so the ladder has something to answer with.
   GeoFix? fix = const GeoFix(lat: 1, lon: 2, speed: 1.4, speedAccuracy: 0.4);
 
   @override
@@ -171,7 +154,6 @@ final class _ThrowingLocation implements LocationService {
       throw const _Failure();
 }
 
-/// Not an `Error` — a bug in our own code should still crash.
 final class _Failure implements Exception {
   const _Failure();
 }

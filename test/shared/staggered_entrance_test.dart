@@ -2,12 +2,6 @@ import 'package:chit/core/theme/chit_motion.dart';
 import 'package:chit/shared/widgets/staggered_entrance.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// **The arithmetic of the entrance, without building one** — ADR-031.
-///
-/// What a stagger *looks* like is a handset's to say (TASKS.md D6). What it
-/// can be held to here is when each block starts, when the whole thing is
-/// over, and that DESIGN-SYSTEM.md §6.4's rule reaches it: under reduced
-/// motion the page arrives at once and goes nowhere.
 void main() {
   const ChitMotion motion = ChitMotion.tokens();
   final ChitMotion reduced = motion.resolve(reduceMotion: true);
@@ -29,9 +23,6 @@ void main() {
     });
 
     test('the wait stops growing at the cap', () {
-      // A day with thirty chits in it is the case this protects: without a
-      // cap the last block would arrive a second and a half after the first,
-      // which is not an entrance, it is a queue.
       final Duration atCap = StaggeredEntrance.delayFor(
         StaggeredEntrance.cap,
         motion: motion,
@@ -58,8 +49,6 @@ void main() {
     });
 
     test('nothing to show takes no time at all', () {
-      // The calendar mounts before its month answers. A run sized off an empty
-      // list would shed itself before the content it was meant to carry.
       expect(StaggeredEntrance.totalFor(0, motion: motion), Duration.zero);
     });
   });
@@ -71,8 +60,6 @@ void main() {
     });
 
     test('and still arrives — a fade, at the reduced arrival', () {
-      // §6.4: movement collapses, feedback does not. A page that skipped its
-      // fade under reduced motion would pop rather than arrive.
       expect(
         StaggeredEntrance.totalFor(6, motion: reduced),
         reduced.fade(ChitPace.arrival),

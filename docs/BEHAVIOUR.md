@@ -1,530 +1,184 @@
 # Behaviour
 
-**What chit does, and what it looks like doing it.** §3 is the behaviour specification and §4
-is the screens it produces.
-
-This document and [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) are the design authority alongside the
-[README](../README.md), which holds the product model (§1–§2) and the data model (§5). Where
-any other document disagrees with these three, the disagreement is a bug in that document,
-fixed in the same change that found it — [CLAUDE.md](../CLAUDE.md) §0.
-
-Section numbers are stable across the split: §3.2 is §3.2 wherever it is cited from, and it
-lives here. [README §10](../README.md#10-the-map) maps every section to its file.
-
----
+**What chit does** (§3) **and what it looks like doing it** (§4). This file and
+[DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) are the design authority alongside the [README](../README.md);
+where another document disagrees, that document is wrong.
 
 ## 3. Behaviour specification
 
-### 3.1 A chit exists once it is saved
+**3.1 A chit exists once it is saved.** Opening the app presents a new chit for today; it becomes a
+record on **Save**, and opening it six times leaves nothing behind. **A chit is stamped when it is
+saved** (ADR-040), so it is always filed on the day it was written; the stamp on the open chit is a
+**preview**, and it does not tick. **There is no Discard** (ADR-060) — the words are cleared by
+selecting them, the recording by **Remove** on the pill. **Saving never waits**: the row is written
+at once with what is in hand, and a reading older than **five minutes** is refreshed behind the save
+and the chit corrected a moment later; inside five minutes nothing is asked, a burst of chits in one
+sitting being one moment (ADR-042, ADR-045).
 
-Opening the app presents a new chit for today; it becomes a record on **Save chit**. Opening the
-app six times leaves nothing behind.
+**3.2 One surface, two ways in.** The field is live the moment the chit opens, with a **microphone**
+beside it as an equal; there is no mode, and a chit may end up typed, recorded, or both. **Tapping
+the page gives the field focus; tapping away takes it back** — the keyboard comes up on first touch,
+never on launch (ADR-023). The microphone stays an equal by being reachable and never a step:
+available on an empty or half-written chit, its target unchanged by text appearing, and using it
+never discards what is in the field. **A chit holds one recording**, so once kept the microphone
+retires and the text stays editable; **a kept take is dropped by Remove**, and the microphone comes
+back when it goes, so recording again is the way to a different take. Remove does not touch the
+words. **A refused microphone raises nothing and explains once**: the sheet does not open, the
+microphone stays tappable, and the line *"The microphone isn't allowed. You can turn it on in your
+phone's settings."* appears under the action row — naming the phone's settings because ADR-041
+spends the app's one permission dialog on location.
 
-**A chit is stamped when it is saved** (ADR-040) — time, weather, motion and the fix are all
-read at the moment Save is pressed, so a chit is always filed on the day it was actually
-written.
+**3.3 The prompt waits five seconds.** If nothing is written after **5 seconds** a prompt fades in
+over ~700ms; typing dismisses it and cancels the timer, and clearing the field restarts it. Shown
+immediately it is an instruction; after a pause it is an offer. **Nothing moves before it** — no
+caret is drawn until the user taps, and then it is the platform's own (ADR-028). **Which prompt
+depends on the moment**: the hour the chit was opened, and the weather if it arrived (ADR-029).
+Every prompt is a **short question**, nothing suggesting a subject worth writing about and nothing
+longer than the field's own line.
 
-**The stamp on the open chit is a preview**, not ticking: a chit sat on for twenty minutes lands
-in the thread carrying a later time than the slip showed. Saving opens a fresh chit, so the
-preview is taken again rather than showing a time that has passed.
+**3.4 The recording.** Tapping the microphone raises the sheet: elapsed time, a live waveform, two
+controls. **Stop & keep** attaches the recording and **leaves the field exactly as it was** — a
+recording is not words. **Save** commits it like any chit, and the order text and audio arrived in
+is not recorded. **There is no transcription** (ADR-058): the recording is the record, and anything
+a chit says in words was typed by a person.
 
-**There is no Discard on the open chit** (ADR-060). Nothing needs to clear the whole page at
-once: the words are cleared by selecting them, and the recording is dropped by **Remove** on the
-pill, which is where the recording is. A control whose only remaining job is one its neighbour
-already does is a control the row is better without.
+**3.5 — retired.** *When transcription fails, the voice survives alone.* Gone with transcription
+itself (ADR-058). **The number is not reused** — it is cited from other documents and from git.
 
-**Saving never waits.** The row is written at once with what is in hand. A reading older than
-**five minutes** is refreshed behind the save and the chit corrected a moment later; inside five
-minutes nothing is asked, since a burst of chits in one sitting is one moment and should cost
-one capture (ADR-042, ADR-045).
+**3.6 Ambient capture.** The time shows as `3:42 pm`; weather as one of five words — `raining`,
+`clear`, `overcast`, `windy`, `clear night`; motion as an icon and never a word (ADR-039); and
+**location is not drawn at all** (ADR-066), though it is captured and stored with every chit, never
+as a name, a coordinate or a map. The facts sit on one line, lowercase, spaced apart with no
+separators, in the same words and case wherever they appear; the open chit's line is `--ink-muted`
+and a saved chit's is `--ink-faint`, the chit being written being brighter than the ones already
+written and that being the only difference between them. Conditions are words because "raining" is a
+feeling and a temperature is not. Location is not drawn because a mark that can never be absent says
+nothing; **motion is drawn in the thread as well** — the same argument reversed, almost no chit
+having one, so a mark on two out of twelve carries real information.
 
-### 3.2 One surface, two ways in
+**3.6.1 One ambient fact, ranked.** Weather and motion share a single slot and never both appear
+(ADR-038) — three items at 11.5px is the ceiling the spacing is built on. Highest first: `flying`,
+`traveling`, `raining`, `windy`, `walking`, `overcast`, `clear`/`clearNight`. `stationary` is
+**never drawn** — stored, and that is all. **A chit written at a desk in the rain reads
+`3:42 pm  raining`**: an icon only *displaces* a word, and only when the phone was moving.
 
-The open chit is a single writing surface. The field is live the moment the chit opens — typing
-costs nothing, not even a tap — and a **microphone** sits beside it as an equal, not a secondary
-action in a corner.
+**3.6.2 What the motion states mean.** Four, and no more (ADR-037), read from the speed on the
+position fix — so motion costs no second permission, and a refused location costs the fix and the
+motion together. `stationary` (still, or too uncertain to claim otherwise) draws nothing; `walking`
+is a figure, `traveling` a car, `flying` a plane. **No `running`, no `cycling`** — speed cannot tell
+a cyclist at 20 km/h from traffic at the same speed. **A motion that did not arrive is not drawn.**
 
-The two are not alternatives; there is no mode to choose. A chit may end up as typed text, a
-recording, or both — all three ordinary.
-
-**Tapping the page gives the field focus; tapping away takes it back.** The keyboard comes up on
-first touch (ADR-023 — never on launch) and goes down when a tap lands outside it, since a
-keyboard that stays up covers the thread (§4.1). Save, Remove and the microphone are not
-*outside* in that sense — they take their tap and the keyboard goes down as they do.
-
-The microphone stays an equal by being reachable and never a step: available on an empty or
-half-written chit, its target unchanged by text appearing, and using it never discards what is
-already in the field.
-
-**A chit holds one recording.** Once kept, the microphone retires — a second take would destroy
-the first. The text stays editable.
-
-**A kept take is dropped by Remove, beside the pill** (ADR-060). The microphone comes back when
-it goes, so recording again is the way to a different take rather than a second control that
-would silently overwrite the first. Remove does not touch the words: a recording is not words,
-and removing one is not an edit to anything written. The same control sits on a saved chit's
-pill in the editor, where it is staged until Save (§4.5).
-
-**A refused microphone raises nothing and explains once.** The sheet does not open, the
-microphone stays where it is and stays tappable, and the line *"The microphone isn't allowed.
-You can turn it on in your phone's settings."* appears under the action row. It names the
-phone's settings because ADR-041 spends the app's one permission dialog on location and never
-asks again, so that is the only way back until there is a settings screen of our own.
-
-### 3.3 The prompt waits five seconds
-
-The writing area opens blank. If nothing is written after **5 seconds**, a prompt fades in over
-~700ms. Typing a character dismisses it and cancels the timer; clearing the field restarts it.
-
-A prompt shown immediately is an instruction; shown after a pause, it is an offer — people who
-know what they want to say never see it.
-
-**Nothing moves before it.** The page opens blank and stays blank; no caret is drawn until the
-user taps, and then it is the platform's own (ADR-028).
-
-**Which prompt depends on the moment** — the hour the chit was opened, and the weather if it
-arrived (ADR-029). *"Rain. What's it like out?"* at 4pm; *"Still up. What's keeping you?"* at
-1am. *"What just happened?"* is the fallback when nothing more specific fits. Every prompt is a
-**short question**: no exclamation marks, nothing suggesting a subject worth writing about,
-nothing longer than the field's own line.
-
-### 3.4 The recording
-
-Tapping the **microphone** raises the recording sheet: elapsed time, a live waveform drawn from
-what the microphone is hearing, and two controls. **Stop & keep** attaches the recording to the
-open chit:
-
-- The audio is attached, stays attached, and plays back from the chit's audio pill.
-- **The field is left exactly as it was.** A recording is not words, and keeping one is not an
-  edit to anything already written.
-- **Save chit** commits it, the same as a typed chit.
-
-A chit can hold words, a recording, or both, and the order they arrived in is not something it
-records. Somebody can type, then record; record, then type; or do only one.
-
-**A chit holds one recording** (§3.2), so the microphone retires once a take is kept and the
-pill is where the recording now is.
-
-### 3.4.1 There is no transcription
-
-chit does not turn speech into text. **The recording is the record** — what was said is kept as
-audio, and anything the chit says in words was typed by a person.
-
-*M5 built on-device recognition and then took it out* (ADR-058). It recognised nothing on the
-first handset it ran on, which is the outcome ADR-005 had already named as likely: on-device
-models vary by handset, may not exist at all for a language, and are worst at exactly the
-English-Hindi code-switching that is ordinary speech here. A transcript that is usually absent
-and occasionally wrong is a worse record than an honest recording, and it cost a plugin, a
-permission, a schema column and a whole failure path to be wrong with.
-
-### 3.5 — retired
-
-*When transcription fails, the voice survives alone.* Gone with transcription itself (ADR-058):
-there is no recogniser, so there is nothing for it to fail at, and a recording with no words is
-now an ordinary chit rather than a failure to explain. **The number is not reused** — §3.5 is
-cited from other documents and from git history, and a reader who follows one of those should
-land on this rather than on something unrelated.
-
-### 3.6 Ambient capture
-
-| Signal | Displayed as |
-|---|---|
-| Time | `3:42 pm` |
-| Weather condition | a word — `raining`, `clear`, `overcast`, `windy`, `clear night` |
-| Motion | an icon — a walking figure, a car, a plane. Never a word (ADR-039) |
-| Location | **not drawn** (ADR-066) — captured and stored with every chit, and never a name, a coordinate or a map |
-
-The facts sit on one line, lowercase, spaced apart with no separators, in the same words and
-case wherever they appear. The open chit's line is `--ink-muted`; a saved chit's is
-`--ink-faint` — the chit being written is brighter than the ones already written, the only
-difference between them.
-
-Conditions are words because "raining" is a feeling and a temperature reading is not.
-
-**Location is not drawn at all** (ADR-066). *A pin sat on the open chit until 18 September
-2026*, on the argument that there it meant something present tense; the owner found a mark on
-every chit jarring, and a mark that can never be absent says nothing. Location is still
-captured and stored for every chit, exactly as before (README §5) — the fix and the motion it
-carries are the same signal — it is simply not shown.
-
-**Motion is drawn in the thread as well** — the same argument, reversed (ADR-039). Almost no
-chit has a motion, so a mark on two out of twelve carries real information. It is an icon rather
-than a word because every English phrase for it — *in transit*, *in vehicle*, *active* — reads
-like a fitness tracker.
-
-#### 3.6.1 One ambient fact, ranked
-
-**The row shows the time and one ambient fact.** Weather and motion share a single
-slot and never both appear (ADR-038) — three items at 11.5px is the ceiling the spacing is
-built on.
-
-Which one wins, highest first:
-
-| | Fact | Why it sits here |
-|---|---|---|
-| 1 | `flying` | being in the air says more about a moment than anything else on this list |
-| 2 | `traveling` | inside a vehicle, the sky outside is no longer what you are in |
-| 3 | `raining` | rain is a feeling, and it outranks a way of moving you are not using |
-| 4 | `windy` | the same, one step quieter |
-| 5 | `walking` | you feel the weather while walking, so anything louder already won above |
-| 6 | `overcast` | the sky is closed, and that is the last thing worth the slot |
-| 7 | `clear` / `clearNight` | the default sky |
-| — | `stationary` | **never drawn.** Stored, and that is all |
-
-**A chit written at a desk in the rain reads exactly as it did before motion existed** —
-`3:42 pm   raining   ⌖`. An icon only *displaces* a word, and only when the phone was actually
-moving; `stationary` is what most chits are, and a mark on all of them would distinguish
-nothing.
-
-#### 3.6.2 What the motion states mean
-
-Four, and no more (ADR-037), read from the speed on the position fix the pin already needs — so
-motion costs no second permission, and a refused location costs the pin and the motion together.
-
-| State | Means | Drawn |
-|---|---|---|
-| `stationary` | still, or moving too uncertainly to claim otherwise | nothing |
-| `walking` | on foot | a walking figure |
-| `traveling` | a ground vehicle — car, bus, train, bicycle | a car |
-| `flying` | airborne | a plane |
-
-**No `running`, no `cycling`** — speed cannot tell a cyclist at 20 km/h from traffic at the same
-speed, and a state the signal cannot defend has no place on a chit.
-
-**A motion that did not arrive is not drawn**, exactly as an absent condition is not drawn
-(ADR-007) — indoors, with location refused, or in the first seconds after a cold start there is
-usually no usable speed at all.
-
-#### 3.6.3 When capture happens
-
-**At launch, and at a save holding something stale** (ADR-042, amended ADR-045). Once after the
-app has drawn, never waited on; again only when a save comes more than five minutes after the
-last reading. No polling, no refresh on resume, no capture on a chit merely opened or saved
-inside the window.
-
-Five minutes is set by the **place**, not the weather — weather would tolerate an hour, but a
-place can move a long way in five minutes. So the open chit's stamp can be hours old on a phone
-left open all day, but **no chit is ever recorded with it** — saving re-reads, so the staleness
-is on the screen, never in the data.
-
-**Permission is asked once, on first run** (ADR-041, §4.4). A refusal simply means quieter
-chits — no motion, and nothing in the UI mentioning the absence.
-
----
+**3.6.3 When capture happens.** At launch, and at a save holding something stale (ADR-042,
+ADR-045); no polling, no refresh on resume. Five minutes is set by the **place**, not the weather,
+so the preview can be hours old on a phone left open all day — but **no chit is ever recorded with
+it**, saving re-reading, so the staleness is on the screen and never in the data. **Permission is
+asked once, on first run** (ADR-041); a refusal means quieter chits, and nothing in the UI mentions
+it.
 
 ## 4. Screens
 
-### 4.1 Today (home)
-
-Shows today.
-
-```
-  chit  चित्त
-  Sunday 13 September                               ← one line, 26px
-
-  ──●──●─────────────●──●●──◎───────────── ▸
-    Fri        Sat          today                   ← the timeline; scrolls, rests at now
-
-  ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← perforated tear edge
-  │ 3:42 pm   raining                       │        ← time, one ambient fact
-  │                                         │        ← the page; prompt after 5s
-  │                                         │
-  │ ┌────┐                                  │
-  │ │ ⏺  │                                  │        ← microphone, 54px, leads the row
-  │ └────┘                                  │
-  └─────────────────────────────────────────┘
-
-  with something written:
-
-  │ ┌────┐            ┌──────────────────┐  │
-  │ │ ⏺  │            │       Save       │  │
-  │ └────┘            └──────────────────┘  │
-
-  with a recording kept — the microphone has retired:
-
-  │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]        Remove        │
-  │                   ┌──────────────────┐  │
-  │                   │       Save       │  │
-  │                   └──────────────────┘  │
-
-  earlier ─────────────────────────── 2 chits
-
-  ▪ 11:20 am   ‹car›                               ← §3.6.1 — the icon displaced the word
-  │ Reorg meeting pushed again. Third time.
-  ▪ 8:05 am   clear
-  │ Didn't sleep. Room too cold, again.
-  │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]
-
-  चित्त                                             ← the closing mark
-```
-
-The microphone leads the action row at the foot of the slip, full 54px; **Save chit** arrives to
-its right once the chit holds anything typed or recorded. An untouched chit shows only the
-microphone. The row reads left to right: the way in, then what to do with it.
-
-**Remove** sits at the end of the pill's own row rather than in the action row, because it acts
-on the recording and not on the chit — so the pill reads play, how long, and then the way out.
-*Discard stood between the microphone and Save until ADR-060 took it off this screen*; the
-recording sheet keeps its own Discard (§4.3), where the word means *throw away the take in
-progress*.
-
-The two are ranked by weight, not colour: the microphone and Save share a border, Save carrying
-the brighter one and a faint ink wash, and Remove has no outline at all (DESIGN-SYSTEM.md §6.1,
-ADR-022).
-
-Once a recording is kept the microphone **leaves the row** rather than greying out (§3.2) — a
-control that retires reads as finished, a disabled one reads as broken, and the audio pill above
-is where the recording now lives.
-
-The date sits directly above the timeline, whose own line divides header from content. Weekday
-and date share **one line** at 26px, the weekday italic and faint, the date in full ink — a
-label, not a masthead (DESIGN-SYSTEM.md §6.2).
-
-**The timeline.** A horizontal line carrying a mark for every chit, each where its time actually
-falls — four chits in an hour look like a burst, because they are one. It runs **midnight to
-midnight**, covers **today and up to the two days before it**, **scrolls** horizontally, and
-rests at now. Saving puts a mark at the current time, **moves now to that moment** (ADR-066 —
-the tick is otherwise static, so without this a chit saved twenty minutes after launch landed
-ahead of it), and scrolls smoothly to it.
-
-**One day is one screen** — scrolling back a screen is scrolling back a day, and now rests in
-the middle of the viewport wherever that leaves it (ADR-032).
-
-**Nothing on the strip moves.** No pulse, no blink, no drift; it changes when a chit is saved
-and when the day turns, and not otherwise.
-
-**Days with nothing written in them are not drawn at the front** (ADR-035). A strip never opens
-on a stretch that was never written in — a first run is today alone, and it grows backwards as
-there is something to grow into. A quiet day *between* two written days is still drawn and still
-reads as quiet.
-
-Three whole days, not a fixed one-day window, so a chit written at 00:20 still belongs to that
-morning and the strip is a rhythm rather than a snapshot (ADR-024).
-
-**A day ends with a tick hanging below the line** — the tick at now's height and weight, in ink
-(ADR-050). No label, no date, no weekday: it is there to be *noticed*, not read. Naming each day
-would turn a rhythm signal into a second calendar, which §4.2 already is.
-
-**And a day passing can be felt.** Scrolling a boundary past the middle of the screen gives one
-small haptic, the way a picker does when a detent goes by (ADR-034) — feedback for a gesture, so
-the strip is silent when it scrolls itself after a save.
-
-The timeline's marks are **ink**, not accent; only the marker at `now` is `--seal` (ADR-022), a
-**short vertical tick through the line** — the same tick as the day boundary, the same height
-and weight, differing only in colour and which side of the line it sits: through it for what is
-happening, under it for where a day ended (ADR-036).
-
-**There is no settings control.** A control that does nothing is not marked up as one
-(DESIGN-SYSTEM.md §6.4); it arrives when there is something behind it.
-
-The open chit rests on a visible second slip, offset behind it: a pad you tear from.
-
-**A chit in the thread is opened by holding it** — the whole row, on Today and in the archive
-alike (ADR-061). The wash arrives with the finger — 6% ink, its stamp lifting from `--ink-faint`
-to `--ink-muted` because faint ink fails the contrast floor on any wash at all (DESIGN-SYSTEM.md
-§6.1) — a scroll takes it away, and the moment the hold is recognised ticks as the strip does.
-No chevron: the row *is* the target. A tap does nothing, since the thread is a reading surface
-and the one tap it answers is the pill's; there is no swipe — deleting a chit lives in the
-editor (§4.5), not a thumb's width from a scroll.
-
-The चित्त mark closes the day at the foot of the thread — it appears there and beside the
-wordmark, nowhere else.
-
-Saving puts the chit's mark on the timeline straight away, so it is a running account of the day
-rather than a snapshot of how it started.
-
-Before anything is written, the thread reads *"Nothing written yet today."* and the count beside
-**earlier** is omitted — no rail, no placeholder row; an empty day looks empty.
-
-### 4.2 Calendar
-
-Reached from the bottom tab bar.
-
-- **Month grid.** A date carries a number when something was written that day, and the tile's
-  density scales with how much — four steps of **ink**, 6% wash at one chit to 30% at four or
-  more (all clear of the contrast floor). Today always keeps its number and is ringed in
-  `--seal`.
-
-  **The current month is drawn up to today and stops.** A past month draws in full — **but only
-  the weeks with something in them** (ADR-048): a week counts when a day of it was written in,
-  or is today, and every other week is skipped wherever it falls. Within a drawn week every day
-  keeps its cell, numbered or bare, so a tile's column still says its weekday.
-
-  **Today's ring sits on paper, not on the wash** (ADR-046) — a 2px strip of paper between the
-  ring and today's density wash, so the ring clears the contrast floor whatever the wash. Today
-  with nothing written keeps its number in `--ink-faint`.
-
-  **The chevrons land only on months with something in them** (ADR-047). Previous goes to the
-  nearest earlier written month; next to the nearest later one, or back to the current month,
-  which counts whatever it holds. **Where there is nowhere to go, no chevron is drawn** — a
-  fresh install has neither. Changing the month clears any selected day. **The month on screen
-  changes once, when the new one has answered** (ADR-049): the bar, the grid and the summary
-  keep drawing the last month until the next is ready, rather than going blank.
-
-- **Month summary** — e.g. *22 chits over eleven days*, the count upright and the rest italic.
-  An empty month reads *Nothing written this month*.
-- **The archive** — every day grouped newest-first, using the same thread treatment as Today (it
-  is the same widget). Each day is headed *Today*, *Yesterday*, or its weekday and date — the
-  year only when it is not this one — over a hairline, with its count at the right. Paged as the
-  reader nears the end. **An archive with nothing in it draws nothing.**
-  **A chit in the archive opens the editor**, exactly as it does on Today (§4.1, ADR-061) —
-  same widget, same press, same destination.
-- Tapping a date filters the archive to that day and frames the tile in ink; tapping again, or
-  **Show every day**, clears it — the quiet button, Discard's weight. A filtered day with
-  nothing in it reads *"Nothing written that day."*
-
-**There is no legend.** The month summary already says in words what the density says in ink.
-
-**The word is _density_, not _warmth_ or _heat_** — nothing about the grid is warm any more
-(CLAUDE.md §4.1's vocabulary rule). ADR-001 and ADR-003 still say "heat"; they are settled
-records about aggregate queries, not colour, and are left as written.
-
-### 4.3 Recording sheet
-
-A bottom sheet carrying the same perforated edge as a chit. Covered in §3.4.
-
-```
-  ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← the same tear edge
-  │ ● LISTENING                             │        ← the one uppercase in the app
-  │ 0:07                                    │        ← tabular, off the clock
-  │ ▁▃▅▂▇▄▁▆▃▅▂▁▄▇▅▂▃▁▆▄                    │        ← twenty strokes, one per level
-  │                                         │
-  │ Discard          ┌────────────────────┐ │
-  │                  │   Stop & keep      │ │
-  │                  └────────────────────┘ │
-  └─────────────────────────────────────────┘
-```
-
-**Two controls, and every other way out is Discard's** — the drag, the scrim and the back
-gesture all cancel, so nothing is kept and the take is deleted (ADR-055).
-
-*It carried a transcript between the wave and the controls, and a line under them reading
-"Recognised on this device"*, until ADR-058 took transcription out. **`design/chit-app-v6.html`
-still draws both** — the prototype was deliberately left alone, so where it and this section
-disagree about the sheet, this one is right.
-
-### 4.4 First run
-
-The screen a fresh install opens on, **once in the life of an install** (ADR-041).
-
-```
-  chit  चित्त
-
-                                                   ← the page rests low; this is
-                                                     a page, not a dialog
-  ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← the same tear edge as a chit
-  │ A chit remembers its moment.            │
-  │                                         │
-  │ Every chit is stamped with the time,    │
-  │ and — if you let it — the weather,      │
-  │ whether you were moving, and that a     │
-  │ place was recorded.                     │
-  │                                         │
-  │ A chit shows that a place was noted.    │
-  │ It never shows where, and none of it    │
-  │ leaves this phone.                      │
-  └─────────────────────────────────────────┘
-
-  ┌─────────────────────────────────────────┐
-  │                 Allow                   │        ← raises the system dialog
-  └─────────────────────────────────────────┘
-                  Not now                            ← raises nothing at all
-```
-
-**Why it exists at all.** A bare system prompt asks for a permission without saying what it
-buys, over a screen the user has not seen yet. This screen makes the case — *so a chit can
-remember what the weather was* — before the platform's dialog arrives as a confirmation of
-something already agreed to.
-
-**It is built from the vocabulary that already exists** — the wordmark, a slip with its tear
-edge, the two button weights of §6.1. Nothing on it is a new kind of object.
-
-| Control | What it does |
-|---|---|
-| **Allow** | Raises the system location dialog, then opens Today. Whatever the user answers, the app opens — a refusal is not an error state |
-| **Not now** | Opens Today. **Raises nothing.** A quiet option that still summoned a system prompt would be a dark pattern wearing a polite label |
-
-**Neither is asked again** — one ask in the life of an install, whichever button ended this
-screen (ADR-016). A refusal runs with no motion, and says nothing about it.
-
-**Only location is asked for here.** The microphone belongs to §3.4, asked for the first time
-somebody taps it — asking at launch for a control this build does not yet have would undo the
-trust this screen exists to build.
-
-### 4.5 The chit editor
-
-Reached by holding any chit in the thread — on Today or in the archive (§4.1). **It covers the
-tab bar** (ADR-062): one task, one way out.
-
-```
-  ←   Editing                                      ← back arrow on the gutter, and what this is
-
-  ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐
-  │ 8:05 am   clear                        │       ← the saved stamp, unchanged and unchangeable
-  │                                        │
-  │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]           Remove    │       ← the recording above the words, as on the open chit
-  │                                        │
-  │ Didn't sleep. Room too cold, again.    │
-  │                                        │
-  │                                        │       ← the field takes every line the screen has
-  │                                        │
-  │   Cancel           ┌───────────────┐   │       ← Cancel always; Save once something changed
-  │                    │     Save      │   │
-  │                    └───────────────┘   │
-  └────────────────────────────────────────┘
-
-              Delete this chit                     ← pinned below the slip, always on screen
-```
-
-**The slip fills the screen** (ADR-066). The header sits above it, *Delete this chit* is pinned
-below it, and everything between is the chit: the field takes whatever height is left and
-scrolls inside itself, so a long chit is edited in place rather than in a box inside a scroll.
-
-The header is a back arrow, its glyph on the page gutter where the wordmark sits on Today, and
-the word *Editing*. **Not the day** — the slip's own stamp already carries the time — and **not
-the wordmark**: this is somewhere you came into, not a second home.
-
-The chit sits on the same slip Today writes on, under the same `.saved` stamp the thread reads,
-because it is the same chit. **Nothing on this screen can move the stamp** — not the time, not
-the day, not the weather, the place or the motion. An edit changes what the chit says, never
-when or where it was written.
-
-**A chit whose row has gone leaves the screen** rather than drawing an empty slip. An id
-outlives its row across a delete, and a blank page with a back arrow explains nothing.
-
-**The words are editable, and Save chit appears once something has changed** — *changed*
-meaning *differs from what was loaded*: typing a character and deleting it again is not a
-change, and neither is a trailing space the save would trim. Save is withheld again if what it
-would write is no longer a chit — a recording removed from a chit with no words — so that state
-is left with Cancel and *Delete this chit* alone. Saving writes the words and whatever was done
-to the recording in one write (ADR-063), moves `updatedAt`, and returns to where the chit was
-opened from.
-
-**Cancel is always there, and it leaves at once** (ADR-066) — a press on a button that says
-Cancel is the decision, and asking again is asking twice. **The back arrow and the system back
-gesture ask** when something has changed, because a swipe or a glancing tap is not a decision:
-each raises *Keep this edit?* — Keep, or Discard — and with nothing changed, each just leaves.
-Either way the row is exactly as it was, because an edit lives nowhere but this screen until
-Save.
-
-**The prompt is a slip-style sheet** (ADR-064), the app's one confirmation idiom: the recording
-sheet's paper rising from below, a question, and two answers in the two button weights — **the
-quiet one always lets go, the bright one always keeps**, and dragging, tapping the scrim or
-pressing back keeps. Three acts, three words: *Discard* throws away something in flight, *Cancel*
-abandons an edit, *Delete this chit* destroys a record.
-
-**The recording is removable and replaceable, and every change to it is staged until Save**
-(ADR-063, ADR-065). **Remove** beside the pill is the same control as the open chit's; here it
-stages a removal, the pill goes, and the microphone comes back — §3.2's rule, on this screen.
-A take kept from the sheet is staged as a replacement and the pill plays it from where it sits
-until Save moves it in. Cancel throws all of it away and the row is exactly as it was. A removal
-that leaves the chit with nothing withholds Save, so a recording-only chit whose take is removed
-is left with Cancel and *Delete this chit* — the honest pair, since what remains is no longer a
-chit. A refused microphone says the same line it says on the open chit (§3.2).
-
-**Delete this chit** is pinned below the slip, quiet and apart from the action row: the one
-destructive act on the screen is always on screen, and a step of the scale away from Save
-rather than an inch from it. It is named in full so it cannot be read as Discard. It asks —
-*Delete this chit?* — and answering Delete removes the row and the recording for good, then
-returns to where the chit was opened from. **There is no undo** (ADR-064): there is no trash and
-no backend, and the prompt is the whole of the protection.
+**4.1 Today (home).** The wordmark and the चित्त mark, then weekday and date on **one line at 26px**
+— the weekday italic and faint, the date in full ink. Then the timeline, the open chit on its
+visible second slip, the day's thread, and the चित्त mark closing the day.
+
+*The action row.* The microphone leads it at the foot of the slip, full 54px; **Save** arrives to
+its right once the chit holds anything, and an untouched chit shows only the microphone. **Remove**
+sits at the end of the pill's own row, acting on the recording and not on the chit. The two are
+ranked by weight, not colour (§6.1). Once a recording is kept the microphone **leaves the row**
+rather than greying out — a control that retires reads as finished, a disabled one reads as broken.
+
+*The timeline.* A horizontal line carrying a mark for every chit, each where its time actually
+falls, so four chits in an hour look like the burst they were. **Midnight to midnight**, covering
+**today and up to the two days before it**, scrolling, resting at now. Saving puts a mark at the
+current time, **moves now to that moment** (ADR-066) and **jumps** to it (ADR-071). **One day is one
+screen**, with now in the middle of the viewport (ADR-032), and **nothing on the strip moves** — it
+changes when a chit is saved and when the day turns. **Days with nothing written in them are not
+drawn at the front** (ADR-035): a first run is today alone, and the strip grows backwards as there
+is something to grow into, though a quiet day *between* two written days still draws. **A day ends
+with a tick hanging below the line** — now's height and weight, in ink (ADR-050), with no label: it
+is there to be *noticed*, not read. **A day passing can be felt** — scrolling a boundary past the
+middle gives one small haptic (ADR-034), so the strip is silent when it moves itself. The marks are
+**ink**; only now is `--seal`, a tick *through* the line where the boundary hangs *under* it.
+
+**There is no settings control** — a control that does nothing is not marked up as one.
+
+*The thread.* **A chit is opened by holding it**, on Today and in the archive alike (ADR-061), and
+**nothing is drawn under the finger** (ADR-071) — what says the hold landed is the phone's own tick.
+No chevron: the row *is* the target. A tap does nothing, the thread being a reading surface whose
+one tap is the pill's; there is no swipe, deleting living in the editor and not a thumb's width from
+a scroll. Before anything is written it reads *"Nothing written yet today."*, with no count, no rail
+and no placeholder row.
+
+**4.2 Calendar.** A date carries a number when something was written that day, and the tile's
+density scales with how much — four steps of **ink**, 6% at one chit to 30% at four or more. Today
+keeps its number and is ringed in `--seal`, with **2px of paper between the ring and the wash** so
+it clears the contrast floor whatever the density (ADR-046). **The current month is drawn up to
+today and stops**; a past month draws in full, **but only the weeks with something in them**
+(ADR-048), wherever a quiet week falls — within a drawn week every day keeps its cell, numbered or
+bare, so a tile's column still says its weekday. **The chevrons land only on months with something
+in them** (ADR-047), and **where there is nowhere to go, no chevron is drawn**. Changing the month
+clears any selected day, and **the month on screen changes once, when the new one has answered**
+(ADR-049).
+
+The **month summary** reads *22 chits over eleven days*, the count upright and the rest italic; an
+empty month reads *Nothing written this month*. **The archive** groups every day newest-first using
+the same thread widget as Today, each headed *Today*, *Yesterday*, or its weekday and date — the
+year only when it is not this one — over a hairline with its count at the right, paged as the reader
+nears the end; a chit there opens the editor exactly as on Today. Tapping a date filters the archive
+and frames the tile in ink; tapping again, or **Show every day**, clears it, and a filtered day with
+nothing in it reads *"Nothing written that day."* **There is no legend** — the summary already says
+in words what the density says in ink. **The word is _density_, not _warmth_ or _heat_**; ADR-001
+and ADR-003 still say "heat" and are settled records about aggregate queries, left as written.
+
+**4.3 Recording sheet.** A bottom sheet with a chit's perforated edge: `● LISTENING` (the one
+uppercase in the app), the elapsed figure in tabular figures, twenty waveform strokes, then
+**Discard** and **Stop & keep**. **Every other way out is Discard's** — the drag, the scrim and the
+back gesture all cancel, so nothing is kept and the take is deleted (ADR-055).
+
+**4.4 First run.** **Once in the life of an install** (ADR-041): the wordmark, then a slip with a
+chit's tear edge saying that a chit is stamped with the time and — if you let it — the weather,
+whether you were moving, and that a place was recorded; that it never shows where, and that none of
+it leaves the phone. Then **Allow**, which raises the system dialog and then opens Today, and **Not
+now**, which opens Today and **raises nothing** — a quiet option that still summoned a system prompt
+would be a dark pattern wearing a polite label. Whatever the answer the app opens, a refusal is not
+an error state, and **neither is asked again** (ADR-016). A bare system prompt cannot say what it
+buys; this screen makes the case — *so a chit can remember what the weather was* — before the
+platform's dialog arrives as a confirmation of something already agreed to, and **nothing on it is a
+new kind of object**. **Only location is asked for here**; the microphone is asked for the first
+time somebody taps it.
+
+**4.5 The chit editor.** Reached by holding any chit in the thread, and **it covers the tab bar**
+(ADR-062): one task, one way out. The header is a back arrow on the page gutter and the word
+*Editing* — not the day, the slip's stamp carrying the time, and not the wordmark, this being
+somewhere you came into. **The slip fills the screen** (ADR-066): the saved stamp, the pill with
+**Remove** beside it, then the field taking every line left and scrolling inside itself, then
+**Cancel** and **Save**, with *Delete this chit* pinned below the slip and always on screen.
+
+**Nothing on this screen can move the stamp** — not the time, the day, the weather, the place or the
+motion. An edit changes what the chit says, never when or where it was written, and **a chit whose
+row has gone leaves the screen** rather than drawing an empty slip.
+
+**Save appears once something has changed** — *changed* meaning *differs from what was loaded*, so a
+character typed and deleted, or a trailing space the save would trim, is not a change; it is
+withheld again if what it would write is no longer a chit. Saving writes the words and whatever was
+done to the recording in one write (ADR-063), moves `updatedAt`, and returns. **Cancel is always
+there, and it leaves at once** (ADR-066) — a press on a button that says Cancel is the decision —
+while **the back arrow and the system back gesture ask** when something has changed, a swipe not
+being a decision. Either way the row is exactly as it was, an edit living nowhere but this screen
+until Save.
+
+**The prompt is a slip-style sheet** (ADR-064), the app's one confirmation idiom: paper rising from
+below, a question, two answers in the two button weights — **the quiet one always lets go, the
+bright one always keeps**, and dragging, tapping the scrim or pressing back keeps. Three acts, three
+words: *Discard* throws away something in flight, *Cancel* abandons an edit, *Delete this chit*
+destroys a record.
+
+**Every change to the recording is staged until Save** (ADR-063, ADR-065): Remove stages a removal,
+the pill goes and the microphone comes back; a take kept from the sheet is staged as a replacement
+and plays from where it sits until Save moves it in. A removal that leaves the chit with nothing
+withholds Save, leaving Cancel and *Delete this chit* — the honest pair.
+
+**Delete this chit** is quiet and apart from the action row: the one destructive act is always on
+screen, and a step of the scale away from Save rather than an inch from it. It is named in full so
+it cannot be read as Discard. It asks, and **there is no undo** (ADR-064) — there is no trash and no
+backend, and the prompt is the whole of the protection.

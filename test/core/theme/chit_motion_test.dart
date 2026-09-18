@@ -1,13 +1,6 @@
 import 'package:chit/core/theme/chit_motion.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// DESIGN-SYSTEM.md §6.4's reduced-motion rule: **movement collapses and feedback does
-/// not.**
-///
-/// The rule is easy to state and easy to half-implement. Collapsing everything
-/// to zero is the tempting shortcut and it is wrong — it deletes the
-/// confirmation a user gets that their action landed, which is the one thing
-/// reducing motion should never cost them.
 void main() {
   const ChitMotion motion = ChitMotion.tokens();
   final ChitMotion reduced = motion.resolve(reduceMotion: true);
@@ -82,15 +75,11 @@ void main() {
         expect(reduced.fade(ChitPace.prompt).inMilliseconds, 140);
         expect(reduced.fade(ChitPace.exit).inMilliseconds, 140);
 
-        // ADR-020. Press feedback is 90ms and stays 90ms: reducing motion must
-        // never make the one acknowledgement a finger gets feel slower.
         expect(reduced.fade(ChitPace.press).inMilliseconds, 90);
       },
     );
 
     test('the five-second prompt still appears, which is the point', () {
-      // ARCHITECTURE §4.3: the 700ms appearance is a fade, so it survives.
-      // Collapsing it would delete the behaviour rather than calm it.
       expect(reduced.fade(ChitPace.prompt), greaterThan(Duration.zero));
     });
 
@@ -102,8 +91,6 @@ void main() {
   });
 
   group('ambient loops', () {
-    /// The prototype's pulse at the ring on the timeline — M2 group H, and the
-    /// first loop chit will draw now that ADR-028 has taken the caret out.
     const Duration pulseAtNow = Duration(milliseconds: 5200);
 
     test('run at their own period, which is the component\'s', () {
@@ -111,17 +98,10 @@ void main() {
     });
 
     test('stop outright under reduced motion, rather than hurrying', () {
-      // §6.4 lists them: the pulse at now, the breathing record dot, the live
-      // waveform. Zero is the signal to start no ticker at all and draw the
-      // thing at rest — *visible*, and still.
       expect(reduced.loop(pulseAtNow), Duration.zero);
     });
 
     test('are not in the pace table, and could not be', () {
-      // A loop has a period; the five paces are how long a transition takes.
-      // A 5.2s pulse is longer than the prompt's 700ms and is not a slower
-      // piece of motion, which is exactly the comparison the table invites —
-      // so it stays out of it. §6.3, ADR-027.
       expect(pulseAtNow, greaterThan(motion.travel(ChitPace.prompt)));
     });
   });

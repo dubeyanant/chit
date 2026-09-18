@@ -17,15 +17,6 @@ import 'package:path/path.dart' as p;
 
 import '../support/fake_clock.dart';
 
-/// The data spine, against a database in memory and a filesystem in a
-/// temporary directory. M1's statement of done is this file, and every query
-/// added since lands here too — `watchDayRange` arrived with M2 group H.
-///
-/// The third of the three places the invariant of README §5 is held
-/// (DATA-MODEL.md §2). The other two — the asserts on [Chit] and the check
-/// constraints on the table — are tested beside the things they belong to.
-/// What is tested here is that the repository refuses an illegal chit before
-/// either of them has to, with an error that says what was wrong.
 void main() {
   late Directory root;
   late Directory documents;
@@ -34,7 +25,6 @@ void main() {
   late FakeClock clock;
   late ChitRepository repo;
 
-  /// 15 September 2026, 9:30am — the stamp on a chit opened then.
   final DateTime morning = DateTime(2026, 9, 15, 9, 30);
 
   setUp(() async {
@@ -139,9 +129,6 @@ void main() {
     });
 
     test('every motion state survives the round trip', () async {
-      // The column is a `textEnum`, so a state renamed in Dart silently stops
-      // matching the rows already written with the old name. This is what
-      // would notice.
       for (final MotionState motion in MotionState.values) {
         final Chit saved = await repo.save(
           stamp: AmbientStamp(capturedAt: morning, motion: motion),
@@ -225,8 +212,6 @@ void main() {
         audioDuration: const Duration(seconds: 9),
       );
 
-      // Nothing partial, approximate or placeholder is written — and a
-      // provenance for words that do not exist is exactly that.
       expect(saved.text, isNull);
       expect(saved.hasAudio, isTrue);
       expect((await repo.byId(saved.id))!.text, isNull);
@@ -274,10 +259,6 @@ void main() {
 
     test('a chit written at 00:20 stays on that day after the device moves '
         'timezone', () async {
-      // The device's wall clock said 00:20 on the 15th. As an instant that is
-      // still the 14th for a device far enough west — so a day derived from
-      // `createdAt` at read time would quietly move this chit to the previous
-      // morning the first time its owner flew anywhere.
       final Chit saved = await repo.save(
         stamp: stampAt(DateTime(2026, 9, 15, 0, 20)),
         text: 'Late one.',
@@ -308,8 +289,6 @@ void main() {
       clock.moveTo(DateTime(2026, 9, 16, 8, 0));
       await repo.update(id: saved.id, text: 'Late one, corrected.');
 
-      // A typo found the next morning is the same typo. Correcting it must not
-      // relight a calendar tile (ADR-014).
       expect((await repo.byId(saved.id))!.localDay, 20260915);
     });
   });
@@ -394,8 +373,6 @@ void main() {
       expect(patched.lon, closeTo(2.5, 1e-9));
       expect(patched.motion, MotionState.walking);
 
-      // Everything else, field by field rather than by comparing a copyWith:
-      // a field dropped from the model would pass that comparison happily.
       expect(patched.id, original.id);
       expect(patched.text, original.text);
       expect(patched.audioPath, original.audioPath);
@@ -403,11 +380,6 @@ void main() {
     });
 
     test('createdAt and localDay never move', () async {
-      // The claim that matters most. `createdAt` decides where the chit sits
-      // in the thread and where its mark falls on the strip, and `localDay`
-      // decides which day it belongs to — a late signal moving either would
-      // move a chit that the user is already looking at, and across a midnight
-      // it would move it to another day (ADR-006).
       await repo.updateAmbient(
         id: original.id,
         weather: null,
@@ -425,9 +397,6 @@ void main() {
     test(
       'updatedAt does not move — ADR-014 reserves it for the text',
       () async {
-        // The clock has moved on by an hour in setUp, so an implementation that
-        // stamped this the way `update` does would be caught here. A signal
-        // arriving late is not an edit anybody made, and an edit is the user's act.
         await repo.updateAmbient(
           id: original.id,
           weather: WeatherCondition.clear,
@@ -443,10 +412,6 @@ void main() {
     test(
       'a null clears what was there — the whole reading replaces it',
       () async {
-        // Not a partial patch. A capture that came back empty legitimately
-        // clears what the launch capture had put there: the user walked indoors
-        // and the pin should go, rather than a stale coordinate persisting
-        // because `null` was read as "no opinion".
         await repo.updateAmbient(
           id: original.id,
           weather: null,
@@ -466,10 +431,6 @@ void main() {
     );
 
     test('an unknown id is silent, where update throws', () async {
-      // Nobody is waiting on this and no screen could report it: a row deleted
-      // between the write and the patch is an ordinary race (ADR-042). The
-      // contrast with `update` is deliberate and is the reason these are
-      // two methods.
       await expectLater(
         repo.updateAmbient(
           id: 'no-such-chit',
@@ -509,8 +470,6 @@ void main() {
       expect(edited.text, 'Train 20 late.');
       expect(edited.updatedAt, DateTime(2026, 9, 16, 8, 0));
 
-      // Everything else, field by field rather than by comparing a copyWith:
-      // a field dropped from the model would pass that comparison happily.
       expect(edited.id, original.id);
       expect(edited.createdAt, original.createdAt);
       expect(edited.localDay, original.localDay);
@@ -524,8 +483,6 @@ void main() {
     test('the recording is still there after a text edit', () async {
       await repo.update(id: original.id, text: 'Train 20 late.');
 
-      // `AudioEdit.keep` is the default, and *keep* means the file is not
-      // so much as looked at.
       expect(audioFileOf(original).existsSync(), isTrue);
     });
 
@@ -720,8 +677,6 @@ void main() {
 
     group('watchDayRange — the timeline, ADR-024', () {
       test('reads the range oldest first, which is left to right', () async {
-        // Where the thread is newest first, because it is read down. The
-        // strip is read along, so the query hands it the order it draws in.
         final Chit first = await chitAt(DateTime(2026, 9, 14, 9), 'First.');
         final Chit second = await chitAt(DateTime(2026, 9, 15, 11), 'Second.');
         final Chit third = await chitAt(
@@ -764,10 +719,6 @@ void main() {
       });
 
       test('a save reaches a window that is already being watched', () async {
-        // The thread and the strip are two queries over one table (a cost
-        // ADR-024 accepts), and this is what stops that being two sources of
-        // truth: the write re-emits on both without anything keeping them in
-        // step.
         final List<int> strip = <int>[];
         final List<int> thread = <int>[];
 
@@ -790,8 +741,6 @@ void main() {
 
       test('a chit in the window that the thread never sees is still on the '
           'strip', () async {
-        // The whole reason the strip needs its own query: two of its three
-        // days are days the thread does not read at all.
         final Chit yesterday = await chitAt(
           DateTime(2026, 9, 15, 11),
           'Yesterday.',
@@ -806,9 +755,6 @@ void main() {
     });
 
     test('a save reaches a day that is already being watched', () async {
-      // The thread, the day arc, the calendar heat and the month total are
-      // four readings of this one stream. They cannot disagree because nothing
-      // keeps them in step — they are the same query (DESIGN-SYSTEM.md §7).
       final List<int> emitted = <int>[];
       final StreamSubscription<List<Chit>> thread = repo
           .watchDay(20260915)
@@ -855,8 +801,6 @@ void main() {
     });
 
     test('written months are every month with a chit, oldest first', () async {
-      // ADR-047: what the chevrons step through. A month with nothing in it
-      // has no row, which is what keeps the calendar off it.
       await chitAt(DateTime(2026, 9, 15, 9, 0), 'September.');
       await chitAt(DateTime(2026, 9, 16, 9, 0), 'September again.');
       await chitAt(DateTime(2026, 4, 20, 9, 0), 'April.');
@@ -896,8 +840,6 @@ void main() {
       clock.moveTo(DateTime(2026, 9, 20, 8, 0));
       await repo.update(id: oldest.id, text: 'One, corrected.');
 
-      // The archive orders on createdAt and never on updatedAt: a chit belongs
-      // to the moment it was written.
       final List<Chit> archive = await repo.watchArchive(limit: 10).first;
       expect(archive.map((Chit c) => c.id), <String>[newest.id, oldest.id]);
     });

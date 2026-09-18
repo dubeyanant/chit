@@ -1,17 +1,7 @@
 import 'package:chit/features/today/application/timeline_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// The arithmetic the timeline rests on — ADR-024.
-///
-/// `TimelineWindow` is a plain value on purpose, and this file is why: under
-/// ADR-031 the strip itself is a device check, so everything that can be
-/// decided by counting has to be reachable without building a widget. What is
-/// tested here is where a mark lands and which three days are on screen; what
-/// it *looks* like when fifteen of them crowd into one strip is a person's job
-/// and `docs/PROGRESS.md` carries it.
 void main() {
-  /// Wednesday 16 September 2026, 3:42pm — the afternoon the docs are written
-  /// around.
   final DateTime afternoon = DateTime(2026, 9, 16, 15, 42);
 
   group(
@@ -33,17 +23,13 @@ void main() {
         final TimelineWindow window = TimelineWindow.around(afternoon);
 
         expect(window.fromDay, 20260914);
-        // Today, and *not* tomorrow: `end` is already the next day, so a naive
-        // `localDayOf(end)` would widen the query by a day and put tomorrow's
-        // chits on a strip with nowhere to draw them.
+
         expect(window.toDay, 20260916);
       });
 
       test(
         'a moment one minute into a day still spans the two days before it',
         () {
-          // The five hours ADR-006 works hardest to protect. Nothing about the
-          // window is special here, which is the point.
           final TimelineWindow window = TimelineWindow.around(
             DateTime(2026, 9, 16, 0, 1),
           );
@@ -83,7 +69,6 @@ void main() {
     });
 
     test('a midpoint is the middle', () {
-      // Noon on the middle day — halfway through 72 hours.
       expect(window.fractionOf(DateTime(2026, 9, 15, 12)), closeTo(0.5, 1e-9));
     });
 
@@ -98,8 +83,6 @@ void main() {
     });
 
     test('four chits in an hour are four positions, not one', () {
-      // §4.1: *four chits in an hour look like a burst, because they are one.*
-      // Evenly spaced dots would be the same picture whatever the times were.
       final List<double> positions = <double>[
         for (final int minute in <int>[0, 15, 30, 45])
           window.fractionOf(DateTime(2026, 9, 16, 11, minute))!,
@@ -118,7 +101,7 @@ void main() {
         hourAt(DateTime(2026, 9, 14, 3)),
         closeTo(hourAt(DateTime(2026, 9, 16, 14)), 1e-9),
       );
-      // One hour in seventy-two.
+
       expect(hourAt(DateTime(2026, 9, 15, 9)), closeTo(1 / 72, 1e-9));
     });
   });
@@ -141,9 +124,6 @@ void main() {
 
     test('the small hours are not the left edge — this is the day arc bug, '
         'and it is what ADR-024 was written about', () {
-      // The arc ran 5am to midnight and clamped, so a chit written at 00:20
-      // and one written at 5:00 landed on the same pixel. Both are honest
-      // positions now, and they are different ones.
       final double? small = window.fractionOf(DateTime(2026, 9, 16, 0, 20));
       final double? five = window.fractionOf(DateTime(2026, 9, 16, 5));
 
@@ -175,8 +155,6 @@ void main() {
     });
 
     test('there is one fewer of them than there are days', () {
-      // Two marks for three days. §4.1: *someone who sees two of them is
-      // looking at three days and will know it without being told.*
       expect(window.dayBoundaries, hasLength(window.dayCount - 1));
     });
   });
@@ -190,8 +168,7 @@ void main() {
       expect(drawn.dayCount, 1);
       expect(drawn.start, DateTime(2026, 9, 16));
       expect(drawn.end, DateTime(2026, 9, 17));
-      // One day is one screen (ADR-032), so one day is a strip with nowhere
-      // to go — which is the whole point: a first run opens on today.
+
       expect(drawn.dayBoundaries, isEmpty);
     });
 
@@ -211,9 +188,6 @@ void main() {
     });
 
     test('it only ever narrows — an older chit cannot widen it', () {
-      // Nothing outside the window is in the query that produced it, but the
-      // window is the thing that decides what *can* be drawn, and it must not
-      // be talked into drawing a fourth day.
       final TimelineWindow drawn = query.trimmedTo(DateTime(2026, 9, 1, 12));
 
       expect(drawn, query);
@@ -221,9 +195,6 @@ void main() {
     });
 
     test('a quiet day between two busy ones is still drawn', () {
-      // The half of ADR-024's argument this keeps: *yesterday was quiet and
-      // today is not* is still visible, as long as there is something older
-      // than yesterday to anchor it.
       final TimelineWindow drawn = query.trimmedTo(DateTime(2026, 9, 14, 9));
 
       expect(drawn.dayCount, 3);
@@ -235,9 +206,6 @@ void main() {
     });
 
     test('a narrower window re-spreads what is on it', () {
-      // Positions are a fraction of the window, so trimming is not a crop —
-      // two days of marks spread across the whole strip rather than bunching
-      // into the right-hand two thirds of it.
       final DateTime noon = DateTime(2026, 9, 16, 12);
 
       expect(query.fractionOf(noon), closeTo(5 / 6, 1e-9));
@@ -260,8 +228,6 @@ void main() {
     });
 
     test('the answer changes exactly at a boundary', () {
-      // The haptic fires on a change here, so a boundary that answered the
-      // same on both sides would be a day that passed in silence.
       final double edge = window.fractionOf(DateTime(2026, 9, 15))!;
 
       expect(window.dayAt(edge - 1e-6), 0);
@@ -299,8 +265,7 @@ void main() {
             .fractionOf(oldChit),
         isNotNull,
       );
-      // Still on screen at 23:59, gone a minute later. A chit does not move
-      // (ADR-006); the window moves under it (ADR-024).
+
       expect(
         TimelineWindow.around(DateTime(2026, 9, 17, 0, 1)).fractionOf(oldChit),
         isNull,

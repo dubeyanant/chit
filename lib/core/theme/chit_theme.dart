@@ -5,14 +5,9 @@ import 'chit_motion.dart';
 import 'chit_space.dart';
 import 'chit_type.dart';
 
-/// Assembles [ThemeData] from the four extensions of DESIGN-SYSTEM.md §6.
-///
-/// The extensions are the design system; what [ThemeData] itself carries is
-/// only what Flutter's own widgets need in order not to contradict them.
 abstract final class ChitTheme {
   const ChitTheme._();
 
-  /// chit has one theme. DESIGN-SYSTEM.md §6: dark, single palette.
   static ThemeData get theme {
     const colors = ChitColors.tokens();
     final type = ChitType.tokens(colors);
@@ -31,9 +26,7 @@ abstract final class ChitTheme {
         onSurface: colors.ink,
         primary: colors.seal,
       ),
-      // Newsreader is the writing voice, so it is what anything unstyled
-      // inherits. A widget should still take its style from ChitType; this is
-      // the floor, not the intent.
+
       fontFamily: ChitType.serifFamily,
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,

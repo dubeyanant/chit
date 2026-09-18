@@ -16,14 +16,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_clock.dart';
 
-/// The calendar's providers on a bare `ProviderContainer` over real Drift in
-/// memory — ADR-031. Every claim here is about wiring: which days the month
-/// asks for, that a selection narrows the archive to one query and clearing
-/// widens it back, that navigating re-queries, and above all **that one save
-/// reaches the grid, the summary and the archive** — which is BUILD-PLAN.md
-/// M4's statement of done, as far as a test can hold it. What a step-four tile
-/// *looks* like beside a step-one is a device check, and PROGRESS.md carries
-/// it.
 void main() {
   late Directory root;
   late AppDatabase db;
@@ -31,7 +23,6 @@ void main() {
   late ChitRepository repo;
   late ProviderContainer container;
 
-  /// Thursday 17 September 2026, 3pm.
   final DateTime afternoon = DateTime(2026, 9, 17, 15);
 
   setUp(() async {
@@ -51,8 +42,6 @@ void main() {
       ],
     );
 
-    // Held open for the life of the container, as the screen holds them. An
-    // auto-dispose stream read once and dropped never gets to answer.
     container.listen<MonthShape?>(
       drawnMonthProvider,
       (MonthShape? _, MonthShape? _) {},
@@ -81,11 +70,6 @@ void main() {
     text: text,
   );
 
-  // Both helpers read into a typed local before the `!`. Written as
-  // `container.read(p)!` the return context makes Dart infer the provider's
-  // state as non-nullable, and Riverpod's subscription then fails a runtime
-  // type check with a NoSuchMethodError on null deep inside `read` — which
-  // is a very long way from the one character that caused it.
   Future<MonthShape> month() async {
     await pumpEventQueue();
     final MonthShape? shape = container.read(drawnMonthProvider);
@@ -123,9 +107,6 @@ void main() {
 
     test('goes back to the nearest written month, skipping empty ones —'
         ' ADR-047', () async {
-      // July and April have chits; August, June and May do not. Stepping
-      // one calendar month at a time would land on an empty August with a
-      // dead chevron beside it, which is what the first device pass saw.
       await chitAt(DateTime(2026, 7, 4, 9), 'July.');
       await chitAt(DateTime(2026, 4, 20, 9), 'April.');
       await pumpEventQueue();
@@ -149,7 +130,6 @@ void main() {
       expect(container.read(visibleMonthProvider), const YearMonth(2026, 4));
       expect(container.read(monthNeighboursProvider).previous, isNull);
 
-      // The floor: nothing earlier, so previous() is a no-op.
       notifier.previous();
       expect(container.read(visibleMonthProvider), const YearMonth(2026, 4));
     });
@@ -169,8 +149,6 @@ void main() {
       notifier.next();
       expect(container.read(visibleMonthProvider), const YearMonth(2026, 7));
 
-      // September has nothing written in it and is still where next() lands:
-      // it is today's month, and the way back to it cannot depend on a chit.
       notifier.next();
       expect(container.read(visibleMonthProvider), const YearMonth(2026, 9));
       expect(container.read(monthNeighboursProvider).next, isNull);
@@ -230,9 +208,6 @@ void main() {
     test(
       'holds the last month while the next is in flight — ADR-049',
       () async {
-        // The handset saw the bar, the grid and the summary vanish for the
-        // frames a change of month took. September under its own name is a
-        // slow answer while August is fetched; a blank is a wrong one.
         await chitAt(DateTime(2026, 8, 3, 9), 'August.');
         await chitAt(DateTime(2026, 9, 5, 9), 'September.');
         final MonthShape september = await month();
@@ -255,9 +230,6 @@ void main() {
   });
 
   test('one save reaches the grid, the summary and the archive', () async {
-    // BUILD-PLAN.md M4: done when saving a chit on Today changes the
-    // calendar density and the month total without a refresh, because both
-    // read the same stream. Nothing here tells the calendar anything.
     expect((await month()).summary, ('Nothing written', ' this month'));
     expect(await archive(), isEmpty);
 
@@ -322,8 +294,6 @@ void main() {
     });
 
     test('changing the month clears the selection', () async {
-      // Somewhere for previous() to go — a chevron only lands on a written
-      // month (ADR-047).
       await chitAt(DateTime(2026, 8, 2, 9), 'August.');
       await chitAt(DateTime(2026, 9, 15, 9), 'Tuesday.');
       await pumpEventQueue();

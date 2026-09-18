@@ -1,18 +1,8 @@
 import 'package:chit/data/db/app_database.dart';
-import 'package:chit/domain/models/chit.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// The second of the three places the invariant of README §5 is held
-/// (DATA-MODEL.md §2), and the only one that is still there in a release
-/// build.
-///
-/// The asserts on [Chit] are compiled out of a release build and the
-/// repository is one caller among however many a later milestone adds. This
-/// one holds for every write the app will ever make, including the ones
-/// written by somebody who did not read DATA-MODEL.md §2 first — so every
-/// test here goes around the repository and writes the row by hand.
 void main() {
   late AppDatabase db;
 
@@ -109,10 +99,6 @@ void main() {
     }
 
     test('the primary key survives the custom constraints beside it', () async {
-      // Overriding `customConstraints` is what puts the CHECKs on the table.
-      // It would be a quiet disaster if it replaced the primary key rather
-      // than adding to it, and nothing else would notice until two chits
-      // shared an id.
       expect(await schemaOf('chits'), contains('PRIMARY KEY'));
     });
 

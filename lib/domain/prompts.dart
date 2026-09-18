@@ -4,30 +4,8 @@ import 'models/ambient_stamp.dart';
 import 'models/motion_state.dart';
 import 'models/weather_condition.dart';
 
-/// Which part of the day a chit was opened in.
-///
-/// The bands are the ones a person would name, not even sixths of a clock.
-/// [smallHours] is deliberately the hours ADR-006 works hardest to protect —
-/// a chit written at 00:20 belongs to the night before, and it should not be
-/// asked how the morning has started.
-enum _PartOfDay {
-  /// 00:00–04:59. Still up.
-  smallHours,
+enum _PartOfDay { smallHours, morning, afternoon, evening, night }
 
-  /// 05:00–11:59.
-  morning,
-
-  /// 12:00–16:59.
-  afternoon,
-
-  /// 17:00–20:59.
-  evening,
-
-  /// 21:00–23:59.
-  night,
-}
-
-/// One prompt, and the moment it is for.
 @immutable
 final class _Entry {
   const _Entry(this.words, {this.weather, this.motion, this.when});
@@ -37,13 +15,6 @@ final class _Entry {
   final MotionState? motion;
   final _PartOfDay? when;
 
-  /// How much this entry claims to know.
-  ///
-  /// **Motion outranks weather, which outranks the hour.** The hour is always
-  /// available; a condition is rarer; motion is rarer still and says more —
-  /// a chit opened on a train is somewhere, and asking it about the evening
-  /// wastes the one thing that was unusual about the moment. The same ordering
-  /// ADR-038 gives the stamp, for the same reason.
   int get specificity =>
       (motion == null ? 0 : 4) +
       (weather == null ? 0 : 2) +
@@ -59,40 +30,9 @@ final class _Entry {
       (when == null || when == part);
 }
 
-/// The words the five-second prompt offers — BEHAVIOUR.md §3.3, **ADR-029**.
-///
-/// *"A prompt shown immediately is an instruction. A prompt shown after a
-/// pause is an offer."* These are the offers, and which one is made is read
-/// off the ambient stamp the chit already holds: the hour it was opened, and
-/// the weather if it arrived.
-///
-/// **They are questions, and they are short.** Nothing here encourages,
-/// congratulates or suggests a subject. A prompt that says *"Let's reflect on
-/// today!"* is an instruction wearing a question mark, and the design log's
-/// objection to it is the same as its objection to a score: chit does not have
-/// opinions about how much you write.
-///
-/// The rule lives in `domain` for the reason `weather/wmo_mapping.dart` does —
-/// it is a product decision rather than a detail of anything. Nothing here
-/// reads a clock; the stamp is the only input, which is what makes it pure.
-/// The stamp it is given is the slip's preview (ADR-040), so the question asked
-/// is about the moment the writer is sitting in rather than the moment the row
-/// will later be stamped with.
 abstract final class Prompts {
-  /// The line BEHAVIOUR.md §3.3 names, and the floor under everything else.
-  ///
-  /// It is what an opened chit gets when the weather did not arrive and the
-  /// hour has nothing to say — which is to say, never in practice, since every
-  /// hour is in some band. It is in the book so the book cannot come up empty.
   static const String neutral = 'What just happened?';
 
-  /// The prompt for [stamp].
-  ///
-  /// The **most specific** entry that fits wins: weather and hour together,
-  /// then weather, then hour, then [neutral]. Where several fit equally, one
-  /// is picked from the stamp's own clock fields — so it is stable for the life
-  /// of a chit and does not flicker on a rebuild, and two chits a few minutes
-  /// apart in the same weather are not asked the same question.
   static String forStamp(AmbientStamp stamp) {
     final _PartOfDay part = _partOf(stamp.capturedAt);
 
@@ -111,15 +51,6 @@ abstract final class Prompts {
         if (entry.specificity == best) entry.words,
     ];
 
-    // Local clock fields rather than an epoch, which would make the choice
-    // depend on the machine's time zone — and a prompt that differs between
-    // two developers' test runs is a test that fails somewhere else.
-    //
-    // Added rather than combined into one number on purpose: `second * 1000`
-    // is always even, so against a two-entry shortlist the seconds would have
-    // counted for nothing and every chit in an hour would have been asked the
-    // same question. A weak mix is fine for choosing between two or three; a
-    // structured one is not.
     final DateTime at = stamp.capturedAt;
     final int seed = at.minute + at.second + at.millisecond;
 
@@ -134,15 +65,9 @@ abstract final class Prompts {
     _ => _PartOfDay.night,
   };
 
-  /// Every prompt in the app.
-  ///
-  /// Kept as one flat list rather than a map of buckets so that adding one is
-  /// adding a line, and so that the specificity rule is the only thing that
-  /// decides — a map would let two buckets quietly own the same moment.
   static const List<_Entry> _book = <_Entry>[
     _Entry(neutral),
 
-    // The hour, when that is all there is.
     _Entry('How has it started?', when: _PartOfDay.morning),
     _Entry("What's the first thing today?", when: _PartOfDay.morning),
     _Entry("How's the day going?", when: _PartOfDay.afternoon),
@@ -154,7 +79,6 @@ abstract final class Prompts {
     _Entry("Still up. What's going on?", when: _PartOfDay.smallHours),
     _Entry("What's keeping you up?", when: _PartOfDay.smallHours),
 
-    // The weather, at any hour.
     _Entry("Rain. What's it like out?", weather: WeatherCondition.raining),
     _Entry('What has the rain changed?', weather: WeatherCondition.raining),
     _Entry("Clear out. What's happening?", weather: WeatherCondition.clear),
@@ -178,9 +102,6 @@ abstract final class Prompts {
       weather: WeatherCondition.clearNight,
     ),
 
-    // Motion, which outranks both. **Nothing here for `stationary`** — it is
-    // what most chits are, and a question about sitting still is a question
-    // about nothing. Those chits get the weather and the hour, as before.
     _Entry('Where are you headed?', motion: MotionState.traveling),
     _Entry("On the way. What's on your mind?", motion: MotionState.traveling),
     _Entry("Out walking. What's about?", motion: MotionState.walking),
@@ -188,7 +109,6 @@ abstract final class Prompts {
     _Entry("In the air. What's the thought?", motion: MotionState.flying),
     _Entry('Flying. What did you leave behind?', motion: MotionState.flying),
 
-    // Motion and one more thing, where the pair says more than either half.
     _Entry(
       'On the way home. How did the day go?',
       motion: MotionState.traveling,
@@ -205,7 +125,6 @@ abstract final class Prompts {
       when: _PartOfDay.smallHours,
     ),
 
-    // Both, where the pair says more than either half.
     _Entry(
       'Raining. How has it started?',
       weather: WeatherCondition.raining,
@@ -243,10 +162,6 @@ abstract final class Prompts {
     ),
   ];
 
-  /// Every prompt the book holds, in the order it holds them.
-  ///
-  /// For the tests that check the copy as a whole — that nothing is said
-  /// twice, and that nothing shouts.
   @visibleForTesting
   static List<String> get all => <String>[
     for (final _Entry entry in _book) entry.words,

@@ -4,8 +4,6 @@ import 'package:chit/data/audio/audio_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
-/// ADR-008: recordings live on the filesystem and the row holds a relative
-/// path. This is the file half of that — the half that can lose a recording.
 void main() {
   late Directory root;
   late Directory documents;
@@ -63,9 +61,6 @@ void main() {
         chitId: 'chit-1',
       );
 
-      // An absolute iOS container path saved today is dead after the next app
-      // update, and a backslash saved on one platform is a broken path on the
-      // other. Neither is visible until it is far too late to fix.
       expect(path, 'audio/chit-1.m4a');
       expect(p.isAbsolute(path), isFalse);
       expect(path, isNot(contains(r'\')));
@@ -114,8 +109,6 @@ void main() {
     });
 
     test('a chit whose file has vanished needs nothing done to it', () async {
-      // The other direction of ADR-008's reconciliation. A missing recording
-      // is a loss, not a corruption: the chit still renders, without its pill.
       final File missing = await store.resolve('audio/gone.m4a');
 
       expect(missing.existsSync(), isFalse);
