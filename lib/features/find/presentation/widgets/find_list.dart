@@ -82,7 +82,7 @@ final class FindList extends StatelessWidget {
 
         final EdgeInsets padding = EdgeInsets.fromLTRB(
           space.gutter,
-          space.s5,
+          space.s3,
           space.gutter,
           space.s6,
         );

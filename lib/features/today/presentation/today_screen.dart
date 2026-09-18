@@ -25,7 +25,7 @@ class TodayScreen extends ConsumerWidget {
         SliverPadding(
           padding: EdgeInsets.fromLTRB(
             space.gutter,
-            space.s5,
+            space.s3,
             space.gutter,
             space.s8,
           ),

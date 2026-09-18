@@ -46,7 +46,7 @@ then responsive web. Deliberately not on the list: **any speech engine, cloud or
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 47, 48;
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 47, 48, 52;
 retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
@@ -161,15 +161,10 @@ retired: 32, 33, 35, 36.**
     Hanken — but §6.2 also gives **tab labels** to Newsreader, and this column is as much
     navigation as it is vocabulary. Nobody has decided it is wrong; **switching `filterWord` to
     `_serif` is one line** if the two ever read as a mismatch.
-52. **A tag's tap and the row's hold share a gesture arena, and nobody has held a tag** (ADR-086).
-    M6's note said a `TapGestureRecognizer` on a `TextSpan` wins against an ancestor's hold; the
-    arena should in fact give a long press to the row, the tap being rejected once 500ms passes
-    without a pointer-up. **That is reasoning, not a handset.** What to try: hold *on* a tag and
-    check the editor opens, hold just beside one and check nothing changed, and tap a tag while
-    the thread is mid-scroll. If the hold is lost, the fix is the row winning the arena rather
-    than the tag losing its tap — a tag that is not tappable is the feature gone.
-53. **First run is at three lines and now one of them does two jobs** (ADR-086, open item 44). The
-    hold line carries the tag syntax as well, which took it from one drawn line to two — roughly
-    25dp of the ~65dp of slack measured on an 800dp handset. **There is now about one line left in
-    the whole screen**, and the next thing added has to replace something rather than join it.
-    Nobody has looked at it on a short phone since the copy grew.
+53. **First run's three lines were rewritten twice and nobody has measured the result** (ADR-087,
+    open item 44). The microphone line went and the tag line arrived, so the *count* is unchanged
+    at three — but what the screen costs is **drawn** lines, not written ones, and at roughly 42
+    characters to a line in that slip all three of the current ones sit near the wrap. Best guess
+    is five drawn lines, the same as before, which would leave item 44's ~65dp of slack intact on
+    an 800dp handset. **That is arithmetic, not a look.** Anything added here still has to replace
+    something, and a short phone clips rather than scrolls (ADR-076).

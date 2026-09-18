@@ -192,11 +192,13 @@ uppercase in the app), the elapsed figure in tabular figures, twenty waveform st
 back gesture all cancel, so nothing is kept and the take is deleted (ADR-055).
 
 **4.4 First run.** **Once in the life of an install** (ADR-041): the wordmark, then two slips on a
-chit's tear edge and two answers. **The first says what to expect** (ADR-074) — that the page is
-always open and a few words then **Save** make a chit; that the microphone speaks one instead and
-the take is kept rather than transcribed; and that a chit is opened again by **holding** it, the one
-gesture nothing on a screen can advertise, **the same line carrying the `@` and `#` syntax**, which
-is the other thing a screen cannot show you (ADR-086). **The second asks**: a chit is stamped with the time and
+chit's tear edge and two answers. **The first says the three things a screen cannot** (ADR-074,
+ADR-087) — that the page is always open and a few words then **Save** make a chit; that a chit is
+opened again by **holding** it; and that **`@names` and `#topics` are how you find one later**.
+**The microphone is deliberately not among them**: its icon is on the slip and says what it is,
+where a hold and a sigil have nothing to look at. *That the take is kept rather than transcribed
+used to be here* — it is a hint in find's line now (§4.6), a fact worth keeping and not worth a
+line of the one screen that cannot scroll. **The second asks**: a chit is stamped with the time and
 — if you let it — the weather, whether you were moving, and that a place was recorded; it never
 shows where, and none of it leaves the phone. **The wordmark is centred here and nowhere else**, and
 **the screen does not scroll** — the copy is cut until it fits, a first screen that slides under the

@@ -28,7 +28,7 @@ class CalendarScreen extends ConsumerWidget {
     return CustomScrollView(
       slivers: <Widget>[
         SliverPadding(
-          padding: EdgeInsets.fromLTRB(space.gutter, space.s5, space.gutter, 0),
+          padding: EdgeInsets.fromLTRB(space.gutter, space.s3, space.gutter, 0),
           sliver: SliverToBoxAdapter(
             child: shape == null
                 ? const SizedBox.shrink()
