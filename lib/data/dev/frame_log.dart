@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/scheduler.dart';
 
 typedef FrameSpan = ({int frames, int janky, int p50, int p90, int worst});
@@ -27,7 +29,7 @@ final class FrameLog {
 
     report(
       'chit frames: build ${line(span(_build))} · '
-      'raster ${line(span(_raster))}',
+      'raster ${line(span(_raster))} · rss ${megabytes(ProcessInfo.currentRss)}',
     );
     _build.clear();
     _raster.clear();
@@ -56,6 +58,9 @@ final class FrameLog {
     final int index = ((at / 100) * (sorted.length - 1)).round();
     return sorted[index.clamp(0, sorted.length - 1)];
   }
+
+  static String megabytes(int bytes) =>
+      '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
 
   static String _ms(int micros) => '${(micros / 1000).toStringAsFixed(1)}ms';
 }

@@ -183,9 +183,11 @@ recordings. It writes through the DAO rather than the repository, which generate
 **`stress` is for measuring, not for looking at** (ADR-077): 2,000 rows spread evenly over 1,095
 days, ids `seed-s00000` upward, written in one transaction, with four rotating bodies of different
 lengths so the rows are not all one height. `clear` takes them too — they carry the same `seed-`
-prefix. **Its numbers are how a performance claim gets re-checked**: `CHIT_FRAMES=true` prints build
-and raster times every 120 frames, and **profile is the only mode worth reading** — a debug build
-renders through an unoptimised path and is slow whatever the code does.
+prefix. **Its numbers are how a performance claim gets re-checked**: `CHIT_FRAMES=true` prints build and
+raster times **and the resident set size** every 120 frames, and **profile is the only mode worth
+reading** — a debug build renders through an unoptimised path and is slow whatever the code does. A
+rising RSS is not yet a leak: `adb shell am send-trim-memory <pkg> RUNNING_CRITICAL` collects, and
+what does not come back is the leak (open item 46).
 
 **Its recordings are WAVs wearing an `.m4a` extension** — a quiet 440Hz tone at the length the row
 claims. Encoding AAC in Dart is not on the table and Android's extractor sniffs the content; **iOS

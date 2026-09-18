@@ -124,9 +124,24 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     before the archive does. The fix would be the archive's (ADR-077), but the rail is drawn behind
     the whole column, so a lazy sliver there is a real piece of work rather than a swap.
 46. **The performance numbers are from one handset** (Android 16, 2,000 chits, 40 recordings,
-    profile build): archive scroll build p50 0.5ms, p90 1.1ms, nothing over the 16.7ms budget, flat
-    at any depth. `CHIT_SEED=stress` and `CHIT_FRAMES=true` are how that is re-checked — before
-    believing a report of jank, ask which build mode it was in.
+    profile build), and they are a baseline to beat, not a guarantee. Build times, 16.7ms budget:
+
+    | Doing | build p50 | build p90 | over budget |
+    |---|---|---|---|
+    | Scrolling the archive | 0.5ms | 1.1ms | none, at any depth |
+    | Switching tab | 1.0–1.6ms | 2.4ms | none |
+    | Switching month, as fast as taps land | 2.2–5.0ms | 11.7ms | 2 frames in 241, worst 17.6ms |
+    | Playing and pausing a recording | 1.4ms | 2.6ms | none |
+    | Opening and leaving the editor | 1.4ms | 4.5ms | none |
+
+    **Month switching is the heaviest thing in the app** and still under budget; it rebuilds a grid
+    and a month of rows, which is work that has to happen. **Memory does not leak**: 400 month
+    switches, 24 editor round trips and 15 playbacks each plateau, and `adb shell am send-trim-memory
+    <pkg> RUNNING_CRITICAL` returns the heap to where it started — **that command is how a leak is
+    told from garbage**, and the answer here was garbage every time. A 188ms raster frame seen once
+    was the stress seeder still writing in the background; it does not reproduce cold.
+    `CHIT_SEED=stress` and `CHIT_FRAMES=true` are how all of this is re-checked — before believing a
+    report of jank, ask which build mode it was in.
 47. **There is no way to walk backwards through everything any more** (ADR-079). The archive is one
     month, and the chevrons skip the months nothing was written in, so every chit is still reachable
     — but only if you know roughly when it was. **The thing that would answer this is search**, which

@@ -42,6 +42,12 @@ void main() {
       expect(<int>[span.p50, span.p90, span.worst], everyElement(4200));
     });
 
+    test('memory is read in megabytes, to one place', () {
+      expect(FrameLog.megabytes(0), '0.0MB');
+      expect(FrameLog.megabytes(1024 * 1024), '1.0MB');
+      expect(FrameLog.megabytes(157 * 1024 * 1024 + 512 * 1024), '157.5MB');
+    });
+
     test('reading a span never sorts the list it was handed', () {
       final List<int> given = <int>[9, 1, 5];
       FrameLog.span(given);
