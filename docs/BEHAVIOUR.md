@@ -354,6 +354,27 @@ records about aggregate queries, not colour, and are left as written.
 
 A bottom sheet carrying the same perforated edge as a chit. Covered in §3.4 and §3.5.
 
+```
+  ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐        ← the same tear edge
+  │ ● LISTENING                             │        ← the one uppercase in the app
+  │ 0:07                                    │        ← tabular, off the clock
+  │ ▁▃▅▂▇▄▁▆▃▅▂▁▄▇▅▂▃▁▆▄                    │        ← twenty strokes, one per level
+  │                                         │
+  │ Missed the last train. Walking home     │        ← the pending word is fainter
+  │ from the station                        │
+  │                                         │
+  │ Discard          ┌────────────────────┐ │
+  │                  │   Stop & keep      │ │
+  │                  └────────────────────┘ │
+  │ Recognised on this device. The          │
+  │ recording is kept either way.           │
+  └─────────────────────────────────────────┘
+```
+
+**Two controls, and every other way out is Discard's** — the drag, the scrim and the back
+gesture all cancel, so nothing is kept and the take is deleted (ADR-055). **Stop & keep** holds
+the sheet for a beat while the recogniser finishes its last word (ADR-053).
+
 ### 4.4 First run
 
 The screen a fresh install opens on, **once in the life of an install** (ADR-041).

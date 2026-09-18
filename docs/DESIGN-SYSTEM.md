@@ -33,6 +33,7 @@ Dark, single palette.
 | `--hair-soft` | `#252220` | inner dividers, **on the ground only** — 1.13:1 there, and 1.01:1 on a chit, where it is not drawn |
 | `--seal` | `#C4664E` | the one accent — the stamp pressed onto a surface |
 | `--seal-ink` | `#D2725A` | the same stamp when it has to be *read* as text |
+| `--scrim` | `#080706` at 72% | what the recording sheet lays over the page — the one translucent token, and the one that is *meant* to fail: ink behind it measures 2.07:1 |
 
 `--ink` is also exposed as its three components (`--ink-rgb`) so that a surface can be tinted
 with it at a stated alpha. That is not an eleventh colour: every tinted surface in the app is
@@ -211,6 +212,12 @@ day-heading place the paragraph above already names.
   stamp line it belongs to, which lands it 3px higher and keeps it right when the stamp's type
   size moves. An absolute offset into a block of text is a number that is correct exactly once.
 
+  **M5's three did not grow the list either**, on the same reading that keeps the perforation's
+  1.55px off it: the record dot's 7px, the live wave's 38px and the pill's 18px are each one
+  widget's geometry, named where they are drawn. Every gap around them is a step — the sheet is
+  `s6` down to its state line and `s5` up from its foot, and the pill is padded `s3` where v6
+  writes 13px by 12px, which lands it at exactly §6.4's 44px.
+
   M2 group C put three more of the prototype's odd numbers back on the scale, on that reading:
   the ambient stamp's 11px gaps are `s3`, the pad behind the open chit is offset by `s1` rather
   than 5px across and 6px down, and the perforation's inset from each end of the slip is `s2`.
@@ -318,8 +325,16 @@ day-heading place the paragraph above already names.
 
   *The caret blink was the example that record was written from, and chit no longer draws a
   caret — **ADR-028**. The pulse at now was to have been the next, and **ADR-036** took the ring
-  it came off the strip entirely, so nothing on Today loops at all. The rule stands and has no
-  caller yet; the loops left to build are M5's record dot and its live waveform.*
+  it came off the strip entirely, so nothing on Today loops at all.* **The record dot is the
+  rule's first and only caller** (M5 group D), at the 1.2s above rather than the prototype's
+  1.6s — where a doc and v6 disagree on a *pace*, this table is the authority.
+
+  **The live waveform is not a loop and never was one.** v6 bobs twenty fixed bars because a
+  browser has no microphone; here each bar is a level the recorder reported, so the wave is
+  data and stops when the voice does (**ADR-054**). Under reduced motion it draws v6's fixed
+  heights at rest — a ragged static row rather than a flat one, since every bar at the same
+  height reads as broken — and does not answer the microphone at all, because a wave that moves
+  with a voice is still a wave that moves.
 
   The staggered arrival (fade plus 6px rise, 55–60ms apart, capped) plays when a screen
   is first built and then sheds itself. Returning to a tab costs a 200ms fade and nothing

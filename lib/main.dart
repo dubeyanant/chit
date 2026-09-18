@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/chit_app.dart';
 import 'core/clock.dart';
 import 'data/audio/audio_store.dart';
+import 'data/audio/just_audio_player.dart';
 import 'data/audio/record_audio_recorder.dart';
 import 'data/db/app_database.dart';
 import 'data/dev/debug_seeder.dart';
@@ -19,6 +20,7 @@ import 'data/speech/on_device_speech_recognizer.dart';
 import 'data/weather/open_meteo_service.dart';
 import 'domain/repositories/chit_repository.dart';
 import 'domain/services/ambient_signals.dart';
+import 'domain/services/audio_player.dart';
 import 'domain/services/audio_recorder.dart';
 import 'domain/services/first_run_store.dart';
 import 'domain/services/location_service.dart';
@@ -91,6 +93,12 @@ Future<void> main() async {
       // (ADR-005), and a device that cannot do that simply hears nothing.
       speechRecognizerProvider.overrideWith(
         (Ref ref) => OnDeviceSpeechRecognizer(),
+      ),
+      // **Playback** — M5 group E. One player for the whole app, so a thread
+      // with three pills in it can never sound three recordings at once. It
+      // resolves a stored path through the same store that wrote it (ADR-008).
+      audioPlayerProvider.overrideWith(
+        (Ref ref) => JustAudioPlayer(ref.watch(audioStoreProvider)),
       ),
     ],
   );

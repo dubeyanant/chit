@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions.dart';
+import '../../../core/theme/chit_colors.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
+import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
 import '../../../shared/widgets/slip.dart';
 import '../application/composer_controller.dart';
+import '../application/recording_controller.dart';
+import 'recording_sheet.dart';
 
 /// The slip at the top of Today: the stamp, the field, and the action row.
 ///
@@ -46,10 +50,20 @@ class OpenChit extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           AmbientStampRow.open(stamp: state.stamp),
+          // The pill sits above the page, as v6 places it: the recording
+          // arrived first and the words are written under it.
+          if (state.hasAudio) ...<Widget>[
+            SizedBox(height: space.s4),
+            AudioPill(
+              id: AudioPill.openChit,
+              path: state.audioTempPath!,
+              duration: state.audioDuration ?? Duration.zero,
+            ),
+          ],
           SizedBox(height: space.s4),
           const _Field(),
           SizedBox(height: space.s4),
-          _ActionRow(canSave: state.canSave),
+          _ActionRow(canSave: state.canSave, hasAudio: state.hasAudio),
         ],
       ),
     );
@@ -204,9 +218,16 @@ class _Ghost extends ConsumerWidget {
 /// do with it.* The microphone leads at the full 54px, and **Discard** and
 /// **Save chit** arrive to its right as soon as the chit holds anything.
 class _ActionRow extends ConsumerWidget {
-  const _ActionRow({required this.canSave});
+  const _ActionRow({required this.canSave, required this.hasAudio});
 
   final bool canSave;
+
+  /// Whether a take has been kept. **The microphone retires when it has**
+  /// (BEHAVIOUR.md §4.1, §3.2): a chit holds one recording, so a microphone
+  /// that stayed would be a control that silently replaced it. A control that
+  /// retires reads as finished where a greyed-out one reads as broken, and the
+  /// pill above is where the recording now is.
+  final bool hasAudio;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -214,8 +235,17 @@ class _ActionRow extends ConsumerWidget {
 
     return Row(
       children: <Widget>[
-        const _Microphone(),
-        SizedBox(width: context.space.s2),
+        // It goes as a fade rather than the width collapse v6 animates: the
+        // row is a `Row`, and a control shrinking to nothing while its
+        // neighbour grows is two authored movements for a routine change
+        // (DESIGN-SYSTEM.md §6.3).
+        AnimatedSwitcher(
+          duration: motion.fade(ChitPace.exit),
+          switchInCurve: motion.curve,
+          switchOutCurve: motion.curve,
+          child: hasAudio ? const SizedBox.shrink() : const _Microphone(),
+        ),
+        if (!hasAudio) SizedBox(width: context.space.s2),
         Expanded(
           // A fade and no rise. DESIGN-SYSTEM.md §6.3's table puts *"Discard
           // and Save arriving once the chit holds something"* under **routine
@@ -235,15 +265,16 @@ class _ActionRow extends ConsumerWidget {
   }
 }
 
-/// Drawn in M2, and it does nothing until M5.
+/// The way in that is not typing — BEHAVIOUR.md §3.2 and §3.4.
 ///
-/// It is here because BEHAVIOUR.md §4.1's layout has to be final — what keeps
-/// the microphone an equal is size and placement, and both are decided by
-/// where it sits next to the two controls. **It is not marked up as a
-/// control**, because it is not one yet: DESIGN-SYSTEM.md §6.4 does not allow
-/// a control that does nothing, and the settings gear was deleted under the
-/// same rule. M5 gives it an action, a label and a pressed wash together.
-class _Microphone extends StatelessWidget {
+/// It leads the action row at the full 54px because §4.1 makes it an equal of
+/// the field rather than a secondary action, and its target does not shrink
+/// when text appears (§6.4).
+///
+/// *It was drawn in M2 and deliberately not marked up as a control, because
+/// §6.4 does not allow one that does nothing.* M5 group D gave it its action,
+/// its label and its pressed wash together.
+class _Microphone extends ConsumerStatefulWidget {
   const _Microphone();
 
   /// 54px — one of the four dimensions DESIGN-SYSTEM.md §6.3 allows off the
@@ -257,32 +288,68 @@ class _Microphone extends StatelessWidget {
   static const double _icon = 20;
 
   @override
+  ConsumerState<_Microphone> createState() => _MicrophoneState();
+}
+
+class _MicrophoneState extends ConsumerState<_Microphone> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    // No `Semantics` and no `ExcludeSemantics`: a box and a painter carry none
-    // of their own, so doing nothing here is what leaves it unmarked. Adding
-    // `ExcludeSemantics` would say the same thing louder and imply there was
-    // something to suppress.
-    return SizedBox.square(
-      key: OpenChit.microphone,
-      dimension: size,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border.all(color: colors.hair),
-          borderRadius: BorderRadius.circular(context.space.radius),
-        ),
-        child: Center(
-          child: CustomPaint(
-            size: const Size.square(_icon),
-            painter: _MicrophonePainter(
-              colour: colors.inkMuted,
-              strokeWidth: _strokeInViewBox,
+    return Semantics(
+      button: true,
+      label: 'Record',
+      child: GestureDetector(
+        onTapDown: (TapDownDetails _) => setState(() => _pressed = true),
+        onTapUp: (TapUpDetails _) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: _record,
+        child: SizedBox.square(
+          key: OpenChit.microphone,
+          dimension: _Microphone.size,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: _pressed
+                  ? colors.inkWash(
+                      colors.slip,
+                      opacity: ChitColors.micPressedWash,
+                    )
+                  : null,
+              border: Border.all(color: colors.hair),
+              borderRadius: BorderRadius.circular(context.space.radius),
+            ),
+            child: Center(
+              child: CustomPaint(
+                size: const Size.square(_Microphone._icon),
+                painter: _MicrophonePainter(
+                  colour: colors.inkMuted,
+                  strokeWidth: _Microphone._strokeInViewBox,
+                ),
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// Ask, start, then raise the sheet — and on a refusal, none of the three.
+  ///
+  /// The refusal is already recorded by the time `start` answers `false`
+  /// (TASKS.md D2), so there is nothing to decide here: the sheet does not
+  /// open and the composer says so on its own.
+  Future<void> _record() async {
+    // The keyboard would otherwise sit under the sheet for the whole take.
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final bool began = await ref
+        .read(recordingControllerProvider.notifier)
+        .start();
+    if (!began || !mounted) return;
+
+    await showRecordingSheet(context, ref);
   }
 }
 

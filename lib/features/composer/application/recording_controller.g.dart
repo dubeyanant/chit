@@ -78,7 +78,7 @@ final class RecordingControllerProvider
 }
 
 String _$recordingControllerHash() =>
-    r'e74c5fd1b4e9181294e5a10bef7d4d3a3262bd31';
+    r'1df5e290f1db2eea59dd7134f5a8faa3d7fa01ae';
 
 /// The recording sheet's state — BEHAVIOUR.md §3.4, ARCHITECTURE.md §4.4.
 ///

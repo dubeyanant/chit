@@ -110,14 +110,38 @@ void main() {
       );
     });
 
-    test('the level reaches the state as the recorder reports it', () async {
+    test('the levels reach the state as the recorder reports them', () async {
       final ProviderContainer container = containerOf();
       await sheetOf(container).start();
 
       recorder.emitLevel(0.62);
+      recorder.emitLevel(0.31);
       await settle();
 
-      expect(container.read(recordingControllerProvider).level, 0.62);
+      expect(container.read(recordingControllerProvider).levels, <double>[
+        0.62,
+        0.31,
+      ]);
+    });
+
+    test('the wave keeps only its window, newest last', () async {
+      // The bar at the right is the sound a moment ago; the one that falls off
+      // the left is 1.6 seconds old and nobody is looking at it.
+      final ProviderContainer container = containerOf();
+      await sheetOf(container).start();
+
+      const int window = RecordingController.levelWindow;
+      for (int i = 0; i <= window; i++) {
+        recorder.emitLevel(i / window);
+      }
+      await settle();
+
+      final List<double> kept = container
+          .read(recordingControllerProvider)
+          .levels;
+      expect(kept, hasLength(window));
+      expect(kept.first, 1 / window, reason: 'the oldest reading dropped off');
+      expect(kept.last, 1);
     });
 
     test('the transcript accrues with its pending word', () async {

@@ -33,6 +33,7 @@ final class ChitColors extends ThemeExtension<ChitColors> {
     required this.hairSoft,
     required this.seal,
     required this.sealInk,
+    required this.scrim,
   });
 
   /// The palette exactly as DESIGN-SYSTEM.md §6.1 sets it.
@@ -46,7 +47,8 @@ final class ChitColors extends ThemeExtension<ChitColors> {
       hair = const Color(0xFF2E2A25),
       hairSoft = const Color(0xFF252220),
       seal = const Color(0xFFC4664E),
-      sealInk = const Color(0xFFD2725A);
+      sealInk = const Color(0xFFD2725A),
+      scrim = const Color(0xB8080706);
 
   /// The ground.
   final Color paper;
@@ -98,6 +100,15 @@ final class ChitColors extends ThemeExtension<ChitColors> {
   /// alike. The `listening` label on the recording sheet and the `now` cap on
   /// the day arc.
   final Color sealInk;
+
+  /// What the recording sheet lays over the app behind it — `#080706` at 72%.
+  ///
+  /// **Darker than [paper] and not a tint of it.** A scrim in the app's own
+  /// ground would read as another surface; this one reads as the page going
+  /// away, which is what a modal is for. The one translucent colour in the
+  /// palette, and the only one that is not measured for contrast — nothing is
+  /// ever read through it.
+  final Color scrim;
 
   /// [ink] laid over [surface] at [opacity], flattened to an opaque colour.
   ///
@@ -172,6 +183,7 @@ final class ChitColors extends ThemeExtension<ChitColors> {
     Color? hairSoft,
     Color? seal,
     Color? sealInk,
+    Color? scrim,
   }) {
     return ChitColors(
       paper: paper ?? this.paper,
@@ -184,6 +196,7 @@ final class ChitColors extends ThemeExtension<ChitColors> {
       hairSoft: hairSoft ?? this.hairSoft,
       seal: seal ?? this.seal,
       sealInk: sealInk ?? this.sealInk,
+      scrim: scrim ?? this.scrim,
     );
   }
 
@@ -201,6 +214,7 @@ final class ChitColors extends ThemeExtension<ChitColors> {
       hairSoft: Color.lerp(hairSoft, other.hairSoft, t)!,
       seal: Color.lerp(seal, other.seal, t)!,
       sealInk: Color.lerp(sealInk, other.sealInk, t)!,
+      scrim: Color.lerp(scrim, other.scrim, t)!,
     );
   }
 }

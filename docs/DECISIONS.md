@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Fifty-one records, not fifty-four: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Fifty-two records, not fifty-five: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -71,7 +71,8 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-051 | New ADRs are short | the template shrinks from here — CLAUDE.md §0.2 |
 | ADR-052 | The recorder times a take on the clock and reports a level, not decibels | M5 group A — the file is not opened until playback; the waveform draws a number |
 | ADR-053 | The recogniser streams a split transcript, has no error table, and waits one beat | M5 group B — §3.4's lighter word is in the data; any error is §3.5; Stop & keep waits 900 ms for the last word |
-| ADR-054 | A kept take can be words with no file, and Discard lets it go through the repository | M5 group C — the two plugins fail apart; one door owns the temp file; the sheet holds a level, not a history |
+| ADR-054 | A kept take can be words with no file, and Discard lets it go through the repository | M5 group C — the two plugins fail apart; one door owns the temp file; the wave is a window of levels, **amended in group D from the single level it first held** |
+| ADR-055 | The sheet keeps both of v6's controls, and every other way out is a cancel | M5 group D — Discard beside Stop & keep; one path ends the take; a scrim token that is meant to fail |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -854,7 +855,32 @@ kept and must not appear when none was. **Discard deletes the temp file through
 `ChitRepository.discardTemp`**, over a method on `AudioRecorder` or a direct call to
 `AudioStore`: `features` cannot reach `data` at all (ARCHITECTURE.md §1), and `save` already
 takes a temp path *in*, so one door owns the file's whole lifetime instead of two. Last,
-`RecordingState` holds **one level, not a history** — v6's waveform is twenty bars at fixed
-heights each bobbing on its own loop, so the current loudness is all it reads and a rolling
-buffer would be state nobody looks at. Cost: if the waveform is ever redrawn as a scrolling
-trace, that buffer has to come back.
+Last, `RecordingState` holds **the last twenty levels, one per bar of the live wave** — *this
+originally said one level and no history, on the reading that v6's wave is twenty fixed bars each
+bobbing on its own loop; group D drew the bars from the microphone instead, so the wave is the
+shape of what was just said rather than one loudness split twenty ways.* At the recorder's 80ms
+sampling that window is the last 1.6 seconds. It is data and not an ambient loop, so nothing
+about it takes a period from `ChitMotion.loop`; under reduced motion it draws v6's fixed heights
+at rest and ignores the microphone, because a wave that moves with a voice is still a wave that
+moves. Cost: the audio pill's wave is **not** this — it is v6's fixed shape on every pill,
+because the envelope of a saved recording would mean decoding the file to draw a control 18px
+tall, and a chit written before anyone stored levels has no envelope at all. What the pill's
+bars carry is the playhead.
+
+---
+
+## ADR-055 — The sheet keeps both of v6's controls, and every other way out is a cancel
+
+The recording sheet carries **Discard and Stop & keep**, over TASKS.md group D's single control:
+v6 draws both, and a sheet whose only button commits leaves the drag gesture carrying a decision
+by itself — a person who opened the microphone by accident should be able to say so rather than
+having to guess that swiping down throws the take away. `showRecordingSheet` is what ends the
+take rather than either button: it awaits the sheet's result and cancels on anything that is not
+an explicit keep, so the drag, the scrim, the back gesture and Discard are one path and a
+dismissal nobody wired up cannot leave a microphone running. **Stop & keep holds the sheet open
+while it finishes** — ADR-053's 900ms ceiling, usually far less — over closing first and letting
+the work run on: `recordingControllerProvider` is auto-disposed, so the words would land on a
+`Ref` that has gone. The scrim is a new token rather than `--paper` at an alpha, because a scrim
+in the app's own ground reads as another surface where this one reads as the page going away; it
+is the one colour in the palette *meant* to fail §6.4, at 2.07:1. Cost: a beat of latency on the
+one control that commits, with nothing on screen saying why.

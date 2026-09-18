@@ -97,39 +97,51 @@ work.*
 - [x] `test/features/composer/recording_controller_test.dart`, and the voice cases added to
       `composer_controller_test.dart`. 26 tests across the two.
 
-## D. The recording sheet
+## D. The recording sheet ✅
 
 *The recording experience, drawn. v6 is the reference.*
 
-- [ ] `features/composer/presentation/recording_sheet.dart` — a modal sheet, not a route
+- [x] `features/composer/presentation/recording_sheet.dart` — a modal sheet, not a route
       (ADR-011), raised by the microphone. The perforated top edge (`PerforatedEdge`), corners
       at `ChitSpace.sheetRadius`, elapsed time in tabular figures, `LISTENING` in the one
       uppercase (DESIGN-SYSTEM.md §6.2), the transcript with the pending word in lighter ink,
-      and one control: **Stop & keep**, at Save's weight.
-- [ ] The record dot in `--seal` (ADR-022), breathing on `ChitMotion.loop` at its own 1.2s (D7).
-- [ ] The live waveform off `levels`, also on `loop`; at rest under reduced motion.
-- [ ] The microphone's tap: `requestPermission` then `start`; a `false` from either leaves the
+      and **two** controls: **Discard** and **Stop & keep**, as v6 draws them. *This list said
+      one; ADR-055 says why it is two.* A new `--scrim` token came with it.
+- [x] The record dot in `--seal` (ADR-022), breathing on `ChitMotion.loop` at its own 1.2s (D7)
+      — the rule's first caller, which closes open item 17.
+- [x] The live waveform off `levels` — **drawn from the microphone rather than looped**, since
+      each bar is a level the recorder reported (ADR-054, amended). At v6's fixed heights and
+      at rest under reduced motion.
+- [x] The microphone's tap: `requestPermission` then `start`; a `false` from either leaves the
       sheet closed and sets `microphoneRefused`.
-- [ ] Dismissing the sheet by drag or back is `cancel` — nothing kept, nothing written.
+- [x] Dismissing the sheet by drag, scrim, back **or Discard** is `cancel` — one path, so a
+      dismissal nobody wired up cannot leave a microphone running (ADR-055).
+- [x] **From group F, because §3.2 needs it here:** the microphone retires once a take is kept.
+      Without it the pill and a live microphone sit side by side and a second take silently
+      replaces the first.
 
-## E. The audio pill and playback
+## E. The audio pill and playback ✅
 
 *Open item 31 closes: a recording with no words reads as a recording.*
 
-- [ ] `shared/widgets/audio_pill.dart` — ink at rest, 3.5% wash, duration in `--ink-muted`
-      (§6.4's floor); the seal only while playing (ADR-022); the 0.99 press depress.
-- [ ] `domain/services/audio_player.dart` and `data/audio/just_audio_player.dart` — one player
+- [x] `shared/widgets/audio_pill.dart` — ink at rest, 3.5% wash, duration in `--ink-muted`
+      (§6.4's floor); the seal only while playing (ADR-022); the pressed wash. *The 0.99 depress
+      is not drawn: the press is the wash, as it is on Discard and the microphone.*
+- [x] `domain/services/audio_player.dart` and `data/audio/just_audio_player.dart` — one player
       provider so two pills never play at once; play, pause, the position for the playhead.
-- [ ] The pill on a chit in the thread and in the archive, and on the open chit once a take is
-      kept. A pill whose file has vanished is absent, not broken (ARCHITECTURE.md §6).
-- [ ] A test for the player's state around play, pause and end, through a fake.
+- [x] The pill on a chit in the thread and in the archive (one `ChitRow`, so both at once), and
+      on the open chit once a take is kept. A pill whose file has vanished is silent, not
+      broken (ARCHITECTURE.md §6).
+- [x] `test/features/composer/audio_pill_test.dart` — the player's state around play, pause and
+      end through a fake, and the playhead arithmetic.
 
 ## F. The settled microphone and the failure note
 
 *Every state of the composer is drawn, and nothing on it is a control that does nothing.*
 
-- [ ] The microphone leaves the action row once a take is kept (BEHAVIOUR.md §4.1) — the pill
-      is where the recording now is.
+- [x] The microphone leaves the action row once a take is kept (BEHAVIOUR.md §4.1) — the pill
+      is where the recording now is. **Done in group D**, because a microphone that stayed
+      beside the pill would silently replace the take.
 - [ ] The note *"Speech wasn't recognised. Your recording is kept."* beside the body when
       `sttFailed`, in the prompt's place and never in the field.
 - [ ] The line beside the microphone when `microphoneRefused`, once (D2).

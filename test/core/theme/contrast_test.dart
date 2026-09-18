@@ -104,6 +104,55 @@ void main() {
     });
   });
 
+  group('the recording sheet', () {
+    /// The app behind the scrim, flattened. Nothing is *read* through it —
+    /// what is checked is that nothing can be.
+    final Color behind = Color.alphaBlend(colors.scrim, colors.paper);
+
+    test('the scrim puts the page beyond reading', () {
+      // **The one colour in the palette that is meant to fail.** The ink goes
+      // under the scrim along with the ground it sits on, which is what
+      // flattens the two together — 2.07:1, under half the floor. A scrim that
+      // left the thread legible would make the sheet an overlay rather than a
+      // modal, and the eye would keep going back to what is under it.
+      final Color inkBehind = Color.alphaBlend(colors.scrim, colors.ink);
+
+      expect(contrastRatio(inkBehind, behind), lessThan(floor));
+      expect(contrastRatio(inkBehind, behind), closeTo(2.07, 0.01));
+    });
+
+    test('and the sheet still reads as a surface in front of it', () {
+      // The sheet is `--slip`, which is *brighter* than the scrimmed page — so
+      // the separation comes from the surfaces rather than from the hairline,
+      // which is what lets the top border stay a hairline.
+      expect(
+        relativeLuminance(colors.slip),
+        greaterThan(relativeLuminance(behind)),
+      );
+    });
+
+    test('LISTENING clears the floor, which is why it is not --seal', () {
+      expect(
+        contrastRatio(colors.sealInk, colors.slip),
+        greaterThanOrEqualTo(floor),
+      );
+      expect(
+        contrastRatio(colors.seal, colors.slip),
+        lessThan(floor),
+        reason: 'ADR-022: the accent carries marks, never words',
+      );
+    });
+
+    test('the pending word and the engine note sit on a bare chit', () {
+      // Both are `--ink-faint`, which clears the floor on `--slip` and on
+      // nothing brighter — the sheet carries no wash for exactly that reason.
+      expect(
+        contrastRatio(colors.inkFaint, colors.slip),
+        greaterThanOrEqualTo(floor),
+      );
+    });
+  });
+
   group('the controls at the foot of the open chit', () {
     test('Save carries its label in ink, and clearly', () {
       // 10.85:1. Save is the brightest of the three and is still a wash and a

@@ -32,6 +32,14 @@ class RecordingController extends _$RecordingController {
   /// second period lands wherever the take started and reads as a stutter.
   static const Duration tick = Duration(milliseconds: 250);
 
+  /// How many level readings the wave keeps — one per bar.
+  ///
+  /// It is the bar count of v6's live wave, and it is named here rather than
+  /// in the widget because this is what trims the buffer. At the recorder's
+  /// 80ms sampling that is the last 1.6 seconds, which is a glance at what was
+  /// just said rather than a record of the take.
+  static const int levelWindow = 20;
+
   Timer? _ticking;
   StreamSubscription<double>? _levels;
   StreamSubscription<Transcript>? _words;
@@ -106,6 +114,10 @@ class RecordingController extends _$RecordingController {
   /// stopping a recogniser that has stopped is a wait for nothing.
   Future<void> stopAndKeep() async {
     if (_startedAt == null) return;
+    // Cleared before the first await, so a second press while this one is
+    // still waiting on the recogniser's last word does nothing — and so the
+    // stream closing under [stop] is not read as the recogniser giving up.
+    _startedAt = null;
     _ticking?.cancel();
     _ticking = null;
 
@@ -131,6 +143,7 @@ class RecordingController extends _$RecordingController {
   /// waiting out its own ceiling for a listener that is no longer there.
   Future<void> cancel() async {
     if (_startedAt == null) return;
+    _startedAt = null;
     _ticking?.cancel();
     _ticking = null;
 
@@ -152,7 +165,15 @@ class RecordingController extends _$RecordingController {
     );
   }
 
-  void _onLevel(double level) => state = state.copyWith(level: level);
+  /// Pushes a reading onto the wave, dropping the oldest once it is full.
+  void _onLevel(double level) {
+    final List<double> kept = <double>[...state.levels, level];
+    state = state.copyWith(
+      levels: kept.length <= levelWindow
+          ? kept
+          : kept.sublist(kept.length - levelWindow),
+    );
+  }
 
   void _onWords(Transcript heard) => state = state.copyWith(transcript: heard);
 

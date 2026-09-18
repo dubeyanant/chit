@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/extensions.dart';
 import '../../domain/models/chit.dart';
 import 'ambient_stamp_row.dart';
+import 'audio_pill.dart';
 import 'thread_rail.dart';
 
 /// A day's chits, hanging off one rail — README §2, BEHAVIOUR.md §4.1.
@@ -107,6 +108,18 @@ class ChitRow extends StatelessWidget {
               // a relationship and §6.3 keeps those on the scale.
               padding: EdgeInsets.only(left: inset, top: space.s1),
               child: Text(chit.text!, style: context.type.chitText),
+            ),
+          // **A chit with audio and no words is a recording, not an empty
+          // chit** — BEHAVIOUR.md §3.5, and what closed open item 31. The pill
+          // is the whole of what such a chit says.
+          if (chit.hasAudio)
+            Padding(
+              padding: EdgeInsets.only(left: inset, top: space.s2),
+              child: AudioPill(
+                id: chit.id,
+                path: chit.audioPath!,
+                duration: chit.audioDuration ?? Duration.zero,
+              ),
             ),
         ],
       ),

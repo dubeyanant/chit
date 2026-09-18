@@ -18,13 +18,18 @@ mixin _$RecordingState {
 /// How long it has run, off the clock (ADR-012, ADR-052). The sheet draws
 /// this in tabular figures; the kept take's length is the recorder's own
 /// measurement, not this.
- Duration get elapsed;/// The input level, 0 to 1 (ADR-052, TASKS.md D4).
+ Duration get elapsed;/// The most recent input levels, 0 to 1, oldest first (ADR-052, D4).
 ///
-/// **One number, not a history.** The prototype's waveform is twenty bars
-/// with fixed heights, each bobbing on its own loop, so what it needs from
-/// here is the current loudness and nothing else — keeping a rolling
-/// buffer would be state nobody reads.
- double get level;/// What has been heard, split where §3.4 draws it.
+/// **A short rolling window, not the whole take** — one bar per reading,
+/// the newest at the right, so the wave draws the shape of what was just
+/// said rather than one loudness split twenty ways. It holds
+/// `RecordingController.levelWindow` readings and is empty until the first
+/// one lands.
+///
+/// *ADR-054 originally kept a single number, on the reading that v6's wave
+/// is twenty bars each bobbing on its own loop. It is a buffer because the
+/// bars are drawn from the microphone instead.*
+ List<double> get levels;/// What has been heard, split where §3.4 draws it.
  Transcript get transcript;/// Whether the recogniser stopped before the take did.
 ///
 /// It has no note and no icon: §3.5 is stated once, at Stop & keep, on the
@@ -42,20 +47,20 @@ $RecordingStateCopyWith<RecordingState> get copyWith => _$RecordingStateCopyWith
 @override
 bool operator ==(Object other) {
   final _this = this as RecordingState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecordingState&&(identical(other.elapsed, _this.elapsed) || other.elapsed == _this.elapsed)&&(identical(other.level, _this.level) || other.level == _this.level)&&(identical(other.transcript, _this.transcript) || other.transcript == _this.transcript)&&(identical(other.recognitionGaveUp, _this.recognitionGaveUp) || other.recognitionGaveUp == _this.recognitionGaveUp));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecordingState&&(identical(other.elapsed, _this.elapsed) || other.elapsed == _this.elapsed)&&const DeepCollectionEquality().equals(other.levels, _this.levels)&&(identical(other.transcript, _this.transcript) || other.transcript == _this.transcript)&&(identical(other.recognitionGaveUp, _this.recognitionGaveUp) || other.recognitionGaveUp == _this.recognitionGaveUp));
 }
 
 
 @override
 int get hashCode {
   final _this = this as RecordingState;
-  return Object.hash(runtimeType,_this.elapsed,_this.level,_this.transcript,_this.recognitionGaveUp);
+  return Object.hash(runtimeType,_this.elapsed,const DeepCollectionEquality().hash(_this.levels),_this.transcript,_this.recognitionGaveUp);
 }
 
 @override
 String toString() {
   final _this = this as RecordingState;
-  return 'RecordingState(elapsed: ${_this.elapsed}, level: ${_this.level}, transcript: ${_this.transcript}, recognitionGaveUp: ${_this.recognitionGaveUp})';
+  return 'RecordingState(elapsed: ${_this.elapsed}, levels: ${_this.levels}, transcript: ${_this.transcript}, recognitionGaveUp: ${_this.recognitionGaveUp})';
 }
 
 
@@ -66,7 +71,7 @@ abstract mixin class $RecordingStateCopyWith<$Res>  {
   factory $RecordingStateCopyWith(RecordingState value, $Res Function(RecordingState) _then) = _$RecordingStateCopyWithImpl;
 @useResult
 $Res call({
- Duration elapsed, double level, Transcript transcript, bool recognitionGaveUp
+ Duration elapsed, List<double> levels, Transcript transcript, bool recognitionGaveUp
 });
 
 
@@ -83,11 +88,11 @@ class _$RecordingStateCopyWithImpl<$Res>
 
 /// Create a copy of RecordingState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? elapsed = null,Object? level = null,Object? transcript = null,Object? recognitionGaveUp = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? elapsed = null,Object? levels = null,Object? transcript = null,Object? recognitionGaveUp = null,}) {
   return _then(RecordingState(
 elapsed: null == elapsed ? _self.elapsed : elapsed // ignore: cast_nullable_to_non_nullable
-as Duration,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
-as double,transcript: null == transcript ? _self.transcript : transcript // ignore: cast_nullable_to_non_nullable
+as Duration,levels: null == levels ? _self.levels : levels // ignore: cast_nullable_to_non_nullable
+as List<double>,transcript: null == transcript ? _self.transcript : transcript // ignore: cast_nullable_to_non_nullable
 as Transcript,recognitionGaveUp: null == recognitionGaveUp ? _self.recognitionGaveUp : recognitionGaveUp // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -174,10 +179,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Duration elapsed,  double level,  Transcript transcript,  bool recognitionGaveUp)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Duration elapsed,  List<double> levels,  Transcript transcript,  bool recognitionGaveUp)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RecordingState() when $default != null:
-return $default(_that.elapsed,_that.level,_that.transcript,_that.recognitionGaveUp);case _:
+return $default(_that.elapsed,_that.levels,_that.transcript,_that.recognitionGaveUp);case _:
   return orElse();
 
 }
@@ -195,10 +200,10 @@ return $default(_that.elapsed,_that.level,_that.transcript,_that.recognitionGave
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Duration elapsed,  double level,  Transcript transcript,  bool recognitionGaveUp)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Duration elapsed,  List<double> levels,  Transcript transcript,  bool recognitionGaveUp)  $default,) {final _that = this;
 switch (_that) {
 case _RecordingState():
-return $default(_that.elapsed,_that.level,_that.transcript,_that.recognitionGaveUp);case _:
+return $default(_that.elapsed,_that.levels,_that.transcript,_that.recognitionGaveUp);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,10 +220,10 @@ return $default(_that.elapsed,_that.level,_that.transcript,_that.recognitionGave
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Duration elapsed,  double level,  Transcript transcript,  bool recognitionGaveUp)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Duration elapsed,  List<double> levels,  Transcript transcript,  bool recognitionGaveUp)?  $default,) {final _that = this;
 switch (_that) {
 case _RecordingState() when $default != null:
-return $default(_that.elapsed,_that.level,_that.transcript,_that.recognitionGaveUp);case _:
+return $default(_that.elapsed,_that.levels,_that.transcript,_that.recognitionGaveUp);case _:
   return null;
 
 }
@@ -230,20 +235,42 @@ return $default(_that.elapsed,_that.level,_that.transcript,_that.recognitionGave
 
 
 class _RecordingState extends RecordingState {
-  const _RecordingState({this.elapsed = Duration.zero, this.level = 0, this.transcript = Transcript.nothing, this.recognitionGaveUp = false}): super._();
+  const _RecordingState({this.elapsed = Duration.zero,  List<double> levels = const <double>[], this.transcript = Transcript.nothing, this.recognitionGaveUp = false}): _levels = levels,super._();
   
 
 /// How long it has run, off the clock (ADR-012, ADR-052). The sheet draws
 /// this in tabular figures; the kept take's length is the recorder's own
 /// measurement, not this.
 @override@JsonKey() final  Duration elapsed;
-/// The input level, 0 to 1 (ADR-052, TASKS.md D4).
+/// The most recent input levels, 0 to 1, oldest first (ADR-052, D4).
 ///
-/// **One number, not a history.** The prototype's waveform is twenty bars
-/// with fixed heights, each bobbing on its own loop, so what it needs from
-/// here is the current loudness and nothing else — keeping a rolling
-/// buffer would be state nobody reads.
-@override@JsonKey() final  double level;
+/// **A short rolling window, not the whole take** — one bar per reading,
+/// the newest at the right, so the wave draws the shape of what was just
+/// said rather than one loudness split twenty ways. It holds
+/// `RecordingController.levelWindow` readings and is empty until the first
+/// one lands.
+///
+/// *ADR-054 originally kept a single number, on the reading that v6's wave
+/// is twenty bars each bobbing on its own loop. It is a buffer because the
+/// bars are drawn from the microphone instead.*
+ final  List<double> _levels;
+/// The most recent input levels, 0 to 1, oldest first (ADR-052, D4).
+///
+/// **A short rolling window, not the whole take** — one bar per reading,
+/// the newest at the right, so the wave draws the shape of what was just
+/// said rather than one loudness split twenty ways. It holds
+/// `RecordingController.levelWindow` readings and is empty until the first
+/// one lands.
+///
+/// *ADR-054 originally kept a single number, on the reading that v6's wave
+/// is twenty bars each bobbing on its own loop. It is a buffer because the
+/// bars are drawn from the microphone instead.*
+@override@JsonKey() List<double> get levels {
+  if (_levels is EqualUnmodifiableListView) return _levels;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_levels);
+}
+
 /// What has been heard, split where §3.4 draws it.
 @override@JsonKey() final  Transcript transcript;
 /// Whether the recogniser stopped before the take did.
@@ -263,18 +290,18 @@ _$RecordingStateCopyWith<_RecordingState> get copyWith => __$RecordingStateCopyW
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecordingState&&(identical(other.elapsed, elapsed) || other.elapsed == elapsed)&&(identical(other.level, level) || other.level == level)&&(identical(other.transcript, transcript) || other.transcript == transcript)&&(identical(other.recognitionGaveUp, recognitionGaveUp) || other.recognitionGaveUp == recognitionGaveUp));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecordingState&&(identical(other.elapsed, elapsed) || other.elapsed == elapsed)&&const DeepCollectionEquality().equals(other.levels, _levels)&&(identical(other.transcript, transcript) || other.transcript == transcript)&&(identical(other.recognitionGaveUp, recognitionGaveUp) || other.recognitionGaveUp == recognitionGaveUp));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,elapsed,level,transcript,recognitionGaveUp);
+    return Object.hash(runtimeType,elapsed,const DeepCollectionEquality().hash(_levels),transcript,recognitionGaveUp);
 }
 
 @override
 String toString() {
-    return 'RecordingState(elapsed: $elapsed, level: $level, transcript: $transcript, recognitionGaveUp: $recognitionGaveUp)';
+    return 'RecordingState(elapsed: $elapsed, levels: $levels, transcript: $transcript, recognitionGaveUp: $recognitionGaveUp)';
 }
 
 
@@ -285,7 +312,7 @@ abstract mixin class _$RecordingStateCopyWith<$Res> implements $RecordingStateCo
   factory _$RecordingStateCopyWith(_RecordingState value, $Res Function(_RecordingState) _then) = __$RecordingStateCopyWithImpl;
 @override @useResult
 $Res call({
- Duration elapsed, double level, Transcript transcript, bool recognitionGaveUp
+ Duration elapsed, List<double> levels, Transcript transcript, bool recognitionGaveUp
 });
 
 
@@ -302,11 +329,11 @@ class __$RecordingStateCopyWithImpl<$Res>
 
 /// Create a copy of RecordingState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? elapsed = null,Object? level = null,Object? transcript = null,Object? recognitionGaveUp = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? elapsed = null,Object? levels = null,Object? transcript = null,Object? recognitionGaveUp = null,}) {
   return _then(_RecordingState(
 elapsed: null == elapsed ? _self.elapsed : elapsed // ignore: cast_nullable_to_non_nullable
-as Duration,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
-as double,transcript: null == transcript ? _self.transcript : transcript // ignore: cast_nullable_to_non_nullable
+as Duration,levels: null == levels ? _self._levels : levels // ignore: cast_nullable_to_non_nullable
+as List<double>,transcript: null == transcript ? _self.transcript : transcript // ignore: cast_nullable_to_non_nullable
 as Transcript,recognitionGaveUp: null == recognitionGaveUp ? _self.recognitionGaveUp : recognitionGaveUp // ignore: cast_nullable_to_non_nullable
 as bool,
   ));

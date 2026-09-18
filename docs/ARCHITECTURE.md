@@ -46,7 +46,8 @@ lib/
 │   └── services/    interfaces only — speech, audio, weather, location, first-run, ambient capture and signals
 ├── data/
 │   ├── db/          the Drift database, table, DAO and migrations
-│   ├── audio/       AudioStore — temp → permanent, delete, orphan sweep; the recorder over `record`
+│   ├── audio/       AudioStore — temp → permanent, delete, orphan sweep; the recorder over `record`,
+│   │                 the player over `just_audio`
 │   ├── dev/         DebugSeeder — DATA-MODEL.md §7
 │   ├── weather/     Open-Meteo, mapped via domain/weather
 │   ├── location/    the fix, and the one ask
@@ -65,6 +66,10 @@ in that screen's `presentation/widgets/` until a second screen wants it.
 `AmbientStampRow` takes an `AmbientStamp`, `Slip` takes a child, which lets a screen compose them
 without either knowing about the other. `DayThread` is why BEHAVIOUR.md §4.2's *same thread
 treatment as Today* is true by construction — one widget, not two that look alike.
+
+**`AudioPill` is the one that watches a provider**, and it is a control rather than a piece of
+vocabulary: which pill is lit is a property of the app's one player, not of the row it sits on,
+so threading it down from three screens would be the same fact copied three times.
 
 `Slip` draws its own `PerforatedEdge`, since a slip and its tear are one object. `ThreadRail`
 draws only the line; each row places its own `ThreadNode` on it, because where a node falls is
@@ -319,6 +324,18 @@ return to. A take that comes back as **words with no file** keeps the words (ADR
 
 **Discard** deletes the temp file through `ChitRepository.discardTemp`, the counterpart of
 `save`'s `audioTempPath`; nothing moves to permanent storage until Save (ADR-008).
+
+The sheet is raised by `showRecordingSheet`, which is also what ends the take: **every way out
+that is not Stop & keep is a cancel** — the drag, the scrim, the back gesture and Discard alike —
+so a dismissal the widget never hears about cannot leave a microphone running.
+
+### 4.4.1 Playback
+
+One `AudioPlayer`, `keepAlive`, so two pills can never sound at once; every pill watches the same
+`playbackProvider` and asks whether the loaded id is its own. A path is **relative for a saved
+chit and absolute for a take not yet kept** (ADR-008), and `JustAudioPlayer` is the one place
+that difference is resolved — `features` has no filesystem. A file that has vanished leaves the
+player silent and the chit still renders (§6).
 
 Recording is available on a chit that already has text (§4.1's append rule), and available
 **once** — a row holds one `audioPath`, so the microphone retires once `audioTempPath` is set
