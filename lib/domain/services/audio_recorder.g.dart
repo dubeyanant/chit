@@ -1,36 +1,11 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'audio_recorder.dart';
-
-// **************************************************************************
-// RiverpodGenerator
-// **************************************************************************
-
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-/// The recorder the app runs on.
-///
-/// Unimplemented on purpose, for the reason `locationServiceProvider` is:
-/// `domain` cannot import `data` (ARCHITECTURE.md §1), so `main.dart`
-/// supplies `RecordAudioRecorder` and tests supply a fake.
 
 @ProviderFor(audioRecorder)
 final audioRecorderProvider = AudioRecorderProvider._();
 
-/// The recorder the app runs on.
-///
-/// Unimplemented on purpose, for the reason `locationServiceProvider` is:
-/// `domain` cannot import `data` (ARCHITECTURE.md §1), so `main.dart`
-/// supplies `RecordAudioRecorder` and tests supply a fake.
-
 final class AudioRecorderProvider
     extends $FunctionalProvider<AudioRecorder, AudioRecorder, AudioRecorder>
     with $Provider<AudioRecorder> {
-  /// The recorder the app runs on.
-  ///
-  /// Unimplemented on purpose, for the reason `locationServiceProvider` is:
-  /// `domain` cannot import `data` (ARCHITECTURE.md §1), so `main.dart`
-  /// supplies `RecordAudioRecorder` and tests supply a fake.
   AudioRecorderProvider._()
     : super(
         from: null,
@@ -55,7 +30,6 @@ final class AudioRecorderProvider
     return audioRecorder(ref);
   }
 
-  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AudioRecorder value) {
     return $ProviderOverride(
       origin: this,

@@ -1,8 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'app_database.dart';
 
-// ignore_for_file: type=lint
 class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -280,47 +277,26 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
 }
 
 class ChitRow extends DataClass implements Insertable<ChitRow> {
-  /// A UUID generated on the device (ADR-004), so a row keeps its identity if
-  /// a sync layer ever arrives.
   final String id;
 
-  /// When the chit was opened, as UTC milliseconds.
   final int createdAt;
 
-  /// `yyyymmdd`, device-local, computed once at write time (ADR-006).
   final int localDay;
 
-  /// What the chit says. `NULL` on a chit that is only a recording.
   final String? body;
 
-  /// The recording, relative to the app documents directory (ADR-008).
   final String? audioPath;
 
-  /// How long the recording runs, in milliseconds.
   final int? audioMs;
 
-  /// One of the five words of BEHAVIOUR.md §3.6, or `NULL` if it never
-  /// arrived (ADR-007).
   final WeatherCondition? weather;
 
-  /// Latitude. Stored, never displayed.
   final double? lat;
 
-  /// Longitude. Stored, never displayed.
   final double? lon;
 
-  /// What the phone was doing when the chit was opened, or `NULL` if no
-  /// usable speed arrived (ADR-037). Added in schema v2.
-  ///
-  /// **No index and no check constraint.** Nothing queries it — [Chits.weather]
-  /// is indexed because a backlog item wants it, and this has no such caller.
-  /// And `CHECK (motion IS NULL OR lat IS NOT NULL)` would be true today only
-  /// because motion happens to be read off the fix; that is a fact about this
-  /// milestone's implementation, not about what a chit is, and the other five
-  /// constraints below are all the second kind.
   final MotionState? motion;
 
-  /// When the text was last changed (ADR-014), as UTC milliseconds.
   final int updatedAt;
   const ChitRow({
     required this.id,
@@ -1052,23 +1028,12 @@ class $AppDatabaseManager {
       $$ChitsTableTableManager(_db, _db.chits);
 }
 
-// **************************************************************************
-// RiverpodGenerator
-// **************************************************************************
-
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-/// The database, opened once and closed with the app.
-
 @ProviderFor(appDatabase)
 final appDatabaseProvider = AppDatabaseProvider._();
-
-/// The database, opened once and closed with the app.
 
 final class AppDatabaseProvider
     extends $FunctionalProvider<AppDatabase, AppDatabase, AppDatabase>
     with $Provider<AppDatabase> {
-  /// The database, opened once and closed with the app.
   AppDatabaseProvider._()
     : super(
         from: null,
@@ -1093,7 +1058,6 @@ final class AppDatabaseProvider
     return appDatabase(ref);
   }
 
-  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AppDatabase value) {
     return $ProviderOverride(
       origin: this,

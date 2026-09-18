@@ -1,58 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// What kind of movement is being asked for, from DESIGN-SYSTEM.md §6.3's pace table.
-///
-/// The caller states intent and [ChitMotion] decides the number. That is what
-/// lets reduced motion be one decision made once rather than a condition
-/// scattered through every widget.
-enum ChitPace {
-  /// 90ms. **Nothing in the app draws press feedback** — the owner took the
-  /// depress off on 18 September 2026 and there is no wash under it either
-  /// (ADR-070), so a control's answer is the thing it does. The pace stays
-  /// because §6.3's table keeps it and because it is what ADR-020's rule is
-  /// argued from: 90ms is already quicker than the reduced target, so it is
-  /// the fade reducing motion must not slow down.
-  press,
+enum ChitPace { press, routine, arrival, prompt, exit }
 
-  /// 220ms, the house pace. Switching tab; Save arriving once the chit holds
-  /// something.
-  routine,
-
-  /// 400ms. The two moments in the app with any authorship: a chit falling
-  /// down into the thread, a recording rising up into the open chit.
-  arrival,
-
-  /// 700ms, deliberately slower than everything else. The five-second prompt
-  /// of BEHAVIOUR.md §3.3 — a prompt that fades in slowly is an offer.
-  prompt,
-
-  /// 140ms. Exits are always quicker than entrances; a slow dismissal reads
-  /// as lag.
-  exit,
-}
-
-/// The motion tokens of DESIGN-SYSTEM.md §6.3, and the reduced-motion rule of §6.4.
-///
-/// **Movement collapses and feedback does not.** [travel] is for anything that
-/// moves or zooms and [loop] for anything that repeats; both collapse to
-/// nothing when the user has asked for reduced motion. [fade] is for opacity
-/// and colour, and it survives —
-/// re-timed, but never removed. Reducing motion should cost a user animation,
-/// not confirmation that their action landed.
-///
-/// Read this through `context.motion`, which resolves the reduced-motion flag
-/// from the current `MediaQuery`. Reading it off `Theme` directly gets the
-/// unresolved instance and silently ignores the user's setting.
 @immutable
 final class ChitMotion extends ThemeExtension<ChitMotion> {
-  /// Every pace, given explicitly. [ChitMotion.tokens] is the pace table.
   const ChitMotion({
     required this.curve,
     required this.reduceMotion,
     required this.durations,
   });
 
-  /// The pace table exactly as DESIGN-SYSTEM.md §6.3 sets it, with movement enabled.
   const ChitMotion.tokens()
     : curve = const Cubic(0.2, 0, 0, 1),
       reduceMotion = false,
@@ -64,81 +21,29 @@ final class ChitMotion extends ThemeExtension<ChitMotion> {
         ChitPace.exit: Duration(milliseconds: 140),
       };
 
-  /// `cubic-bezier(.2,0,0,1)`. Things arrive from where they came from, and
-  /// settle.
   final Curve curve;
 
-  /// Whether the platform has asked for reduced motion.
   final bool reduceMotion;
 
-  /// The pace table: how long each kind of movement takes when motion is not
-  /// reduced. Read it through [travel] or [fade], never directly — those two
-  /// are where DESIGN-SYSTEM.md §6.4's rule lives.
   final Map<ChitPace, Duration> durations;
 
   static const Duration _reducedFade = Duration(milliseconds: 140);
   static const Duration _reducedArrivalFade = Duration(milliseconds: 220);
 
-  /// How far apart a staggered entrance starts its rows — §6.3's 55–60ms.
-  /// Read through [stagger].
-  ///
-  /// A step rather than a duration: it is the gap *between* two children's
-  /// arrivals, and each child's own arrival is [ChitPace.arrival]. How many
-  /// rows it runs for before it caps is `StaggeredEntrance.cap`, which is a
-  /// count of children and belongs to the widget that counts them — §6.3's
-  /// rule about a loop's period, applied to a list's length.
   static const Duration staggerStep = Duration(milliseconds: 55);
 
-  /// The gap between two rows of a staggered entrance — [staggerStep], or
-  /// **nothing under reduced motion**, where a page fades in at once.
-  ///
-  /// A stagger is timing rather than travel, so §6.4 does not strictly reach
-  /// it; it collapses anyway because a stagger with no rise under it is a
-  /// page that arrives late for no reason a reader can see.
   Duration stagger() => reduceMotion ? Duration.zero : staggerStep;
 
-  /// This instance carrying [reduceMotion].
-  ///
-  /// Returns `this` unchanged when the flag already matches, so the common
-  /// case allocates nothing.
   ChitMotion resolve({required bool reduceMotion}) =>
       reduceMotion == this.reduceMotion
       ? this
       : copyWith(reduceMotion: reduceMotion);
 
-  /// How long something that *moves* should take: travel, zoom or scale.
-  ///
-  /// An ambient loop takes its period from [loop] rather than from the pace
-  /// table — ADR-027.
-  ///
-  /// [Duration.zero] under reduced motion, which stops the animation outright
-  /// rather than speeding it up.
   Duration travel(ChitPace pace) =>
       reduceMotion ? Duration.zero : durations[pace]!;
 
-  /// How long one cycle of an **ambient loop** takes — the pulse at now, the
-  /// breathing record dot, the live waveform (§6.4).
-  ///
-  /// [Duration.zero] under reduced motion, exactly as [travel]: a loop stops
-  /// outright rather than slowing down, and a caller that gets zero should
-  /// draw the thing at rest and start no ticker at all.
-  ///
-  /// **[period] is the loop's own and belongs to the component that loops**,
-  /// which is why this takes a duration where [travel] takes a [ChitPace]. A
-  /// loop has a period rather than a duration; periods are not comparable to
-  /// transitions or to each other, and the pulse at now runs at 5.2s — putting
-  /// that in the pace table would make §6.3's *"the prompt is the slowest
-  /// thing in the app"* false for no gain. §6.3 says the same about dimensions
-  /// that belong to one component, for the same reason.
   Duration loop(Duration period) => reduceMotion ? Duration.zero : period;
 
-  /// How long a change in *opacity or colour* should take.
-  ///
-  /// Survives reduced motion. Arrivals become a plain fade going nowhere at
-  /// 220ms and everything else re-times to 140ms — except that a fade already
-  /// quicker than its reduced target keeps its own pace, because reducing
-  /// motion must never make the app feel slower (ADR-020). Press feedback is
-  /// the case that matters: 90ms stays 90ms.
   Duration fade(ChitPace pace) {
     final Duration full = durations[pace]!;
     if (!reduceMotion) return full;

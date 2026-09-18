@@ -1,5 +1,5 @@
 name: chit
-description: "A private journal for things that hit you during the day."
+description: "A private journal for things that hit you throughout the day."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -7,69 +7,38 @@ version: 1.0.0+1
 environment:
   sdk: ^3.13.3
 
-# Every dependency below is justified in docs/PACKAGES.md.
-# Nothing goes in this file without a line there.
 dependencies:
   flutter:
     sdk: flutter
-
-  # State and dependency injection — ADR-001
   flutter_riverpod: ^3.4.3
   riverpod_annotation: ^4.0.0
-
-  # Local database — ADR-003
   drift: ^2.35.0
   drift_flutter: ^0.3.1
-
-  # The tab shell and routing — ADR-011
   go_router: ^18.0.1
-
-  # Immutable models with a private constructor that asserts the one-of invariant
   freezed_annotation: ^3.1.0
-
-  # Voice — ADR-005
   record: ^7.1.1
   just_audio: ^0.10.6
-
-  # Ambient capture
   geolocator: ^14.0.3
   http: ^1.2.2
-
-  # Dates and the tabular-figure formats of DESIGN-SYSTEM.md §6.2
   intl: ^0.20.2
-
-  # The audio store
   path_provider: ^2.1.5
   path: ^1.9.1
-
-  # First run: whether it has happened, and whether permission was refused for good — ADR-041
   shared_preferences: ^2.3.3
-
-  # Client-generated ids — ADR-004
   uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   build_runner: ^2.4.13
   riverpod_generator: ^4.0.9
   riverpod_lint: ^3.0.0
   drift_dev: ^2.35.0
   freezed: ^4.0.1
   flutter_lints: ^6.0.0
-  # Only for test/data/just_audio_player_test.dart, which stands a fake platform under the
-  # real plugin. A transitive dependency already; listed so the test may import it.
   just_audio_platform_interface: ^4.6.0
 
 flutter:
   uses-material-design: true
-
-  # Variable fonts. DESIGN-SYSTEM.md §6.2 sets the three faces; the prototype uses
-  # Newsreader 300-600 with optical sizing and Hanken Grotesk 400/500/600,
-  # so the variable axes are shipped rather than a handful of static cuts.
-  # Weight and optical size are applied through TextStyle.fontVariations in
-  # core/theme/chit_type.dart — see CLAUDE.md.
   fonts:
     - family: Newsreader
       fonts:

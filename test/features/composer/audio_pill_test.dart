@@ -4,11 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_audio_player.dart';
 
-/// **The pill's arithmetic and the one player's state** — ADR-031.
-///
-/// Nothing here builds a widget. What is tested is what the pill *computes* —
-/// the figure, the playhead — and the rule the player exists for: two pills
-/// never sound at once. How it looks is a handset job (the milestone's handset pass).
 void main() {
   group('the figure on a pill', () {
     test('is minutes and padded seconds', () {
@@ -42,8 +37,6 @@ void main() {
     });
 
     test('does not run past the end when the position overshoots', () {
-      // just_audio reports a position a shade past the duration at the end of
-      // some files, and a bar index past the list is a crash.
       expect(
         AudioPill.barsLitAt(const Duration(seconds: 25), of: take),
         AudioPill.wave.length,
@@ -51,8 +44,6 @@ void main() {
     });
 
     test('is nothing at all on a take with no length', () {
-      // A row that lost its duration is a division by zero, which is a crash
-      // in a thread rather than a missing figure.
       expect(
         AudioPill.barsLitAt(const Duration(seconds: 3), of: Duration.zero),
         0,
@@ -94,8 +85,6 @@ void main() {
     });
 
     test('a file that has vanished leaves the player silent', () async {
-      // ARCHITECTURE.md §6: the chit renders, the pill does nothing, and
-      // nothing anywhere throws.
       player.missing.add('audio/gone.m4a');
 
       await player.play(id: 'gone', path: 'audio/gone.m4a');
@@ -103,24 +92,19 @@ void main() {
       expect(player.now, Playback.silent);
     });
 
-    test('a pill built mid-playback is told what is already sounding', () async {
-      // **The bug that made a playing pill unstoppable.** The archive is
-      // rebuilt on every tab change, so a pill routinely subscribes long after
-      // a recording started; a stream carrying only *changes* left it drawn as
-      // though nothing were playing, and its one control became a play button
-      // that did nothing.
-      await player.play(id: 'a', path: 'audio/a.m4a');
+    test(
+      'a pill built mid-playback is told what is already sounding',
+      () async {
+        await player.play(id: 'a', path: 'audio/a.m4a');
 
-      final Playback firstSeen = await player.playback.first;
+        final Playback firstSeen = await player.playback.first;
 
-      expect(firstSeen.holds('a'), isTrue);
-      expect(firstSeen.playing, isTrue);
-    });
+        expect(firstSeen.holds('a'), isTrue);
+        expect(firstSeen.playing, isTrue);
+      },
+    );
 
     test('stopIf silences the pill it names, and only that one', () async {
-      // Save moves the open chit's take out of the cache and Discard deletes
-      // it; either way the pill goes. A player left running would sound a
-      // recording with no control anywhere able to stop it.
       await player.play(id: Playback.openChit, path: 'take-1.m4a');
 
       await player.stopIf('some-other-chit');

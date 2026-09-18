@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// The spacing and shape tokens of DESIGN-SYSTEM.md §6.3.
-///
-/// The step names match the prototype's `--s1` … `--s8` deliberately. Porting a
-/// rule out of `design/chit-app-v6.html` should be a rename and nothing more;
-/// a second vocabulary here would mean translating every measurement twice and
-/// getting one of them wrong.
 @immutable
 final class ChitSpace extends ThemeExtension<ChitSpace> {
-  /// Every step, given explicitly. [ChitSpace.tokens] is the scale.
   const ChitSpace({
     required this.s1,
     required this.s2,
@@ -25,7 +18,6 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
     required this.minTouchTarget,
   });
 
-  /// The scale exactly as DESIGN-SYSTEM.md §6.3 sets it.
   const ChitSpace.tokens()
     : s1 = 4,
       s2 = 8,
@@ -41,54 +33,32 @@ final class ChitSpace extends ThemeExtension<ChitSpace> {
       tileRadius = 4,
       minTouchTarget = 44;
 
-  /// 4px.
   final double s1;
 
-  /// 8px.
   final double s2;
 
-  /// 12px.
   final double s3;
 
-  /// 16px.
   final double s4;
 
-  /// 24px.
   final double s5;
 
-  /// 32px.
   final double s6;
 
-  /// 48px.
   final double s7;
 
-  /// 72px.
   final double s8;
 
-  /// The page gutter, 26px.
   final double gutter;
 
-  /// 2px, almost everywhere. Paper has cut edges.
   final double radius;
 
-  /// 8px — the recording sheet's top corners.
-  ///
-  /// One of two exceptions to [radius], and it was 14px in v5: a phone-OS
-  /// sheet radius on a surface that is meant to be torn paper.
   final double sheetRadius;
 
-  /// 4px — a day tile in the month grid, the other exception to [radius].
-  ///
-  /// With the grid's 5px gap this reads as tiles rather than as a mosaic. A
-  /// tile is a field of ink rather than a cut edge, so it is not [radius].
   final double tileRadius;
 
-  /// 44px. DESIGN-SYSTEM.md §6.4: touch targets clear this with no exceptions, and the
-  /// microphone's does not shrink when the field has text in it.
   final double minTouchTarget;
 
-  /// Horizontal page padding. The gutter is a page-level decision, so it is
-  /// spelled once here rather than at every screen.
   EdgeInsets get pagePadding => EdgeInsets.symmetric(horizontal: gutter);
 
   @override

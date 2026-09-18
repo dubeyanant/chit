@@ -13,73 +13,22 @@ import '../audio/audio_store.dart';
 import '../db/app_database.dart';
 import '../db/daos/chit_dao.dart';
 
-/// How many rows and how many recordings a [DebugSeeder] call touched.
 typedef SeedOutcome = ({int rows, int recordings});
 
-/// Twenty chits over six weeks, for looking at a calendar that would otherwise
-/// be looked at empty — **DATA-MODEL.md §7**.
-///
-/// **Behind a compile-time flag.** `main.dart` constructs this when
-/// `--dart-define=CHIT_SEED=seed` or `=clear` is given, in **any** build mode,
-/// and never otherwise. *It was gated on `kDebugMode` as well for one commit*,
-/// and that gate cost a whole device pass: a handset run in release — which is
-/// how M3 was signed off — ignored the flag without a word. The define is
-/// already an explicit act on the command line; a second gate behind it
-/// protected nothing and hid the first.
-///
-/// **Every seeded id starts with [idPrefix]**, and that is the whole of how the
-/// rows are told apart from a person's own. Seeding is therefore idempotent —
-/// a row whose id already exists is skipped — and [clear] deletes exactly
-/// what was seeded and nothing else, with no ledger to keep and no column
-/// added to the schema for a tool.
-///
-/// **Rows are dated relative to the day it runs**, so the busy days are always
-/// yesterday and the day before, whichever day that is. That is what puts ten
-/// marks on the timeline's strip (open item 15) and two step-four tiles on the
-/// calendar without anyone having to write ten chits by hand.
-///
-/// It writes through the DAO rather than the repository because the repository
-/// generates its ids, and a seeded row has to carry the one thing that makes
-/// it clearable. The pairing ADR-006 protects still holds: `localDay` comes
-/// from [Chit.localDayOf], the same function the repository uses.
-///
-/// The copy is four mundane words apiece, as DESIGN-LOG.md insists. A literary
-/// placeholder makes a screen read as a demonstration, and would mislead here
-/// exactly as it did there.
 final class DebugSeeder {
-  /// A seeder over the DAO, the audio store, the clock, and the directory an
-  /// in-flight recording lives in before it is kept.
-  ///
-  /// [temp] is the app's cache directory on a handset — DATA-MODEL.md §5's
-  /// `<app cache>`, the same place a real recording sits between the sheet
-  /// and Save. *It was `Directory.systemTemp` for one commit*, which on
-  /// Android is a directory an app cannot write to, so the seeder wrote one
-  /// row and then threw on the first recording, off the critical path and
-  /// out of sight.
-  ///
-  // Assigned rather than initialising formals, for the reason
-  // `ChitRepositoryImpl` gives: a named parameter cannot be private.
-  // ignore_for_file: prefer_initializing_formals
   const DebugSeeder({
-    required ChitDao dao,
-    required AudioStore audio,
-    required Clock clock,
-    required Future<Directory> temp,
-  }) : _dao = dao,
-       _audio = audio,
-       _clock = clock,
-       _temp = temp;
+    required this._dao,
+    required this._audio,
+    required this._clock,
+    required this._temp,
+  });
 
-  /// What every seeded id begins with.
   static const String idPrefix = 'seed-';
 
-  /// The value of `CHIT_SEED` that writes the fixture.
   static const String modeSeed = 'seed';
 
-  /// The value of `CHIT_SEED` that removes it.
   static const String modeClear = 'clear';
 
-  /// How many chits the fixture holds.
   static int get count => _fixture.length;
 
   final ChitDao _dao;
@@ -87,11 +36,6 @@ final class DebugSeeder {
   final Clock _clock;
   final Future<Directory> _temp;
 
-  /// Runs [seed] or [clear] for [mode] and says what happened, in one line
-  /// for the console.
-  ///
-  /// Throws [ArgumentError] for any other value, which is a typo on the
-  /// command line and should be loud.
   Future<String> apply(String mode) async {
     switch (mode) {
       case modeSeed:
@@ -111,7 +55,6 @@ final class DebugSeeder {
     }
   }
 
-  /// Writes every fixture row that is not already there.
   Future<SeedOutcome> seed() async {
     final DateTime now = _clock.now();
     int rows = 0;
@@ -141,7 +84,7 @@ final class DebugSeeder {
           id: id,
           createdAt: at.millisecondsSinceEpoch,
           localDay: Chit.localDayOf(at),
-          // Saved and never edited, so the two are the same moment (ADR-014).
+
           updatedAt: at.millisecondsSinceEpoch,
           body: Value<String?>(seed.text),
           audioPath: Value<String?>(audioPath),
@@ -160,12 +103,6 @@ final class DebugSeeder {
     return (rows: rows, recordings: recordings);
   }
 
-  /// Deletes every seeded row, and the recording each one pointed at.
-  ///
-  /// Files first, then rows: a row that outlives its file renders as a chit
-  /// without a pill (DATA-MODEL.md §5), whereas a file that outlives its row
-  /// is an orphan until the next sweep. Neither is harmful, and the order
-  /// only decides which one a crash between the two leaves behind.
   Future<SeedOutcome> clear() async {
     int recordings = 0;
 
@@ -187,23 +124,6 @@ final class DebugSeeder {
   static String _idOf(int index) =>
       '$idPrefix${(index + 1).toString().padLeft(2, '0')}';
 
-  /// A playable tone in the cache directory, for [AudioStore.keep] to move.
-  ///
-  /// **It used to be thirty-eight bytes of ASCII**, on the reading that a
-  /// seeded recording only had to be a file the row could point at. M5's pill
-  /// made that false: a file no decoder can open draws a control that does
-  /// nothing, which is the one thing DESIGN-SYSTEM.md §6.4 forbids, and a
-  /// seeded pill is indistinguishable from broken playback — which is exactly
-  /// how it read on the first handset that tried it.
-  ///
-  /// **A tone rather than silence**, because silence cannot be told apart from
-  /// playback that is not working, and telling those two apart is open item 32.
-  ///
-  /// It is a **WAV wearing an `.m4a` extension**: ADR-008 fixes the stored
-  /// extension and encoding AAC in Dart is not on the table. Android's
-  /// extractor sniffs the content and plays it regardless; iOS may pick its
-  /// parser from the extension and refuse, which is open item 37 and costs
-  /// nothing real, since this is debug data that never ships.
   Future<String> _placeholderRecording(String id, int seconds) async {
     final Directory dir = await _temp;
     if (!dir.existsSync()) await dir.create(recursive: true);
@@ -213,11 +133,6 @@ final class DebugSeeder {
     return file.path;
   }
 
-  /// 8kHz mono 16-bit PCM in a WAV container — a quiet 440Hz tone, as many
-  /// [seconds] of it as the row claims.
-  ///
-  /// 8kHz because this is a voice note's stand-in and 16KB a second is small
-  /// enough that a whole seeded fixture stays inside a couple of megabytes.
   static Uint8List _tone(int seconds) {
     const int rate = 8000;
     const int amplitude = 6000;
@@ -236,13 +151,13 @@ final class DebugSeeder {
     ascii(8, 'WAVE');
     ascii(12, 'fmt ');
     out
-      ..setUint32(16, 16, Endian.little) // PCM header length
-      ..setUint16(20, 1, Endian.little) // uncompressed
-      ..setUint16(22, 1, Endian.little) // mono
+      ..setUint32(16, 16, Endian.little)
+      ..setUint16(20, 1, Endian.little)
+      ..setUint16(22, 1, Endian.little)
       ..setUint32(24, rate, Endian.little)
-      ..setUint32(28, rate * 2, Endian.little) // bytes per second
-      ..setUint16(32, 2, Endian.little) // bytes per frame
-      ..setUint16(34, 16, Endian.little); // bits per sample
+      ..setUint32(28, rate * 2, Endian.little)
+      ..setUint16(32, 2, Endian.little)
+      ..setUint16(34, 16, Endian.little);
     ascii(36, 'data');
     out.setUint32(40, dataBytes, Endian.little);
 
@@ -254,23 +169,12 @@ final class DebugSeeder {
     return out.buffer.asUint8List();
   }
 
-  /// Somewhere in Mumbai. Stored and never displayed, like every fix.
   static const double _lat = 19.076;
   static const double _lon = 72.8777;
 
-  /// A few streets per row, so no two seeded fixes are the same point.
   static const double _jitter = 0.0007;
 
-  /// The twenty. Grouped by day, newest day first, and within a day in no
-  /// particular order — the DAO sorts.
-  ///
-  /// Density steps: two days at five (step four), one at three, one at two,
-  /// five singles. Shapes: nineteen with words, three with a recording, one
-  /// recording with no words. Every weather
-  /// word appears, one row has no fix, one has no weather, and the three
-  /// motion marks appear once or twice each.
   static const List<_Seed> _fixture = <_Seed>[
-    // Yesterday — five, one of them recorded, two of them on the move.
     _Seed(
       1,
       21,
@@ -304,7 +208,6 @@ final class DebugSeeder {
     ),
     _Seed(1, 7, 40, 'Ran 4k. Knee held up.', WeatherCondition.clear),
 
-    // The day before — five, with §3.5's recording and a six-minute burst.
     _Seed(2, 23, 55, null, WeatherCondition.clearNight, audioSeconds: 47),
     _Seed(
       2,
@@ -325,9 +228,6 @@ final class DebugSeeder {
     _Seed(2, 12, 4, 'Left the charger at home.', WeatherCondition.overcast),
     _Seed(2, 9, 10, 'Train 20 late.', WeatherCondition.raining),
 
-    // Singles and pairs back through the month.
-    // Not "Nothing today." — the second seeded pass read that row as the app
-    // putting a placeholder on an empty day, which it never does (§4.1).
     _Seed(
       4,
       22,
@@ -347,7 +247,6 @@ final class DebugSeeder {
     _Seed(6, 20, 30, 'Landlord called. Rent up.', null),
     _Seed(9, 14, 20, 'Dentist. Not as bad.', WeatherCondition.overcast),
 
-    // A three-chit day — density step three, the first one item 12 fails on.
     _Seed(
       12,
       7,
@@ -359,7 +258,6 @@ final class DebugSeeder {
     _Seed(12, 13, 0, 'Fish for lunch. Regret.', WeatherCondition.clear),
     _Seed(12, 21, 15, 'Read forty pages.', WeatherCondition.clearNight),
 
-    // Three in the previous month, so the chevrons have somewhere to go.
     _Seed(20, 10, 30, 'Long call with the bank.', WeatherCondition.raining),
     _Seed(
       35,
@@ -373,7 +271,6 @@ final class DebugSeeder {
   ];
 }
 
-/// One fixture row, relative to the day the seeder runs.
 final class _Seed {
   const _Seed(
     this.daysAgo,

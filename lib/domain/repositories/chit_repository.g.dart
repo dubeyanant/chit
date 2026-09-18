@@ -1,39 +1,11 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'chit_repository.dart';
-
-// **************************************************************************
-// RiverpodGenerator
-// **************************************************************************
-
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-/// The repository the app runs on.
-///
-/// Unimplemented on purpose. `domain` cannot import `data` (ARCHITECTURE.md
-/// §1), so the implementation is supplied where the two layers are allowed to
-/// meet: the `ProviderScope` at the root, in `main.dart`, and a
-/// `ProviderContainer` in a test.
 
 @ProviderFor(chitRepository)
 final chitRepositoryProvider = ChitRepositoryProvider._();
 
-/// The repository the app runs on.
-///
-/// Unimplemented on purpose. `domain` cannot import `data` (ARCHITECTURE.md
-/// §1), so the implementation is supplied where the two layers are allowed to
-/// meet: the `ProviderScope` at the root, in `main.dart`, and a
-/// `ProviderContainer` in a test.
-
 final class ChitRepositoryProvider
     extends $FunctionalProvider<ChitRepository, ChitRepository, ChitRepository>
     with $Provider<ChitRepository> {
-  /// The repository the app runs on.
-  ///
-  /// Unimplemented on purpose. `domain` cannot import `data` (ARCHITECTURE.md
-  /// §1), so the implementation is supplied where the two layers are allowed to
-  /// meet: the `ProviderScope` at the root, in `main.dart`, and a
-  /// `ProviderContainer` in a test.
   ChitRepositoryProvider._()
     : super(
         from: null,
@@ -58,7 +30,6 @@ final class ChitRepositoryProvider
     return chitRepository(ref);
   }
 
-  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(ChitRepository value) {
     return $ProviderOverride(
       origin: this,

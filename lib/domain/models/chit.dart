@@ -1,8 +1,3 @@
-// Whitespace-only text is the same nothing, and is caught by the check
-// constraint on the table and by the repository, which normalises it to
-// null before it ever gets here. A const constructor's assert cannot call
-// trim(), so this one catches the empty string and leaves the rest to the
-// other two places the invariant is held.
 @Assert(
   "text == null || text != ''",
   'empty text is no text: an empty field is the chit §3.1 refuses to save',
@@ -15,35 +10,14 @@ import 'weather_condition.dart';
 
 part 'chit.freezed.dart';
 
-/// One entry. Text, a recording, or both — never neither.
-///
-/// The invariant of README §5 is held in three places, because one is not
-/// enough (DATA-MODEL.md §2): the asserts below, a table check constraint, and
-/// the repository tests. This is the first of the three, and the only one that
-/// fails at the moment the wrong object is built.
-///
-/// There is no `source` field and no union of "typed" against "spoken". A
-/// chit is asked [hasText] and [hasAudio], which is what a screen actually
-/// wants to know; four shapes that differ only by which fields are populated
-/// buy ceremony rather than safety (ADR-013).
 @freezed
 abstract class Chit with _$Chit {
-  /// Lets this class carry getters and statics. Freezed requires it.
   const Chit._();
 
-  /// A saved chit, exactly as its row holds it.
-  ///
-  /// Building an illegal shape throws in development and is refused by the
-  /// database in production.
   @Assert(
     'text != null || audioPath != null',
     'a chit with neither text nor audio is not a chit — README §5',
   )
-  // Whitespace-only text is the same nothing, and is caught by the check
-  // constraint on the table and by the repository, which turns it into null
-  // before it can ever reach here. A const constructor's assert cannot call
-  // `trim()`, so this one catches the empty string and leaves the rest to the
-  // other two places DATA-MODEL.md §2 holds the invariant.
   @Assert(
     "text == null || text != ''",
     'empty text is no text: an empty field is the chit §3.1 refuses to save',
@@ -57,86 +31,38 @@ abstract class Chit with _$Chit {
     'a recording has a length; a length without a recording is nothing',
   )
   const factory Chit({
-    /// A UUID, generated on the device (ADR-004).
     required String id,
 
-    /// When the chit was opened. Drives the day arc and the ambient stamp.
     required DateTime createdAt,
 
-    /// `yyyymmdd` in the device's zone at the moment it was written, read
-    /// straight from its column and **never recomputed** (ADR-006). A chit
-    /// written at 00:20 IST belongs to that morning after the device moves to
-    /// another timezone, which is only true because this is stored rather
-    /// than derived from [createdAt] on read.
     required int localDay,
 
-    /// When the row was last written: the moment it was saved, and then the
-    /// moment of every edit after that (ADR-014).
     required DateTime updatedAt,
 
-    /// What the chit says. `null` on a chit that is only a recording —
-    /// BEHAVIOUR.md §3.4.
     String? text,
 
-    /// The recording, relative to the app documents directory (ADR-008).
-    /// Absolute paths die on the next iOS update.
     String? audioPath,
 
-    /// How long the recording runs. The audio pill's duration.
     Duration? audioDuration,
 
-    /// The condition when the chit was opened, if it arrived (ADR-007).
     WeatherCondition? weather,
 
-    /// Latitude, if a fix arrived. Stored, never displayed.
     double? lat,
 
-    /// Longitude, if a fix arrived. Stored, never displayed.
     double? lon,
 
-    /// What the phone was doing when the chit was opened (ADR-037), read off
-    /// the same fix as [lat] and [lon]. `null` when no usable speed arrived.
     MotionState? motion,
   }) = _Chit;
 
-  /// The local day a moment belongs to, as `yyyymmdd`.
-  ///
-  /// The one place that turns a wall clock into a day (ADR-006). Called by the
-  /// repository at write time and by nothing at read time — the answer is
-  /// stored so that it cannot change when the device does.
   static int localDayOf(DateTime when) =>
       when.year * 10000 + when.month * 100 + when.day;
 
-  /// Midnight at the start of the local day [when] belongs to, or [offsetDays]
-  /// whole local days from it.
-  ///
-  /// The boundary form of [localDayOf], and here for the same reason: the two
-  /// have to agree about where a day starts, and they only do that reliably by
-  /// being one piece of arithmetic. `startOfLocalDay(t)` is the first instant
-  /// `localDayOf` answers with `localDayOf(t)`.
-  ///
-  /// [offsetDays] goes through the constructor rather than a [Duration], so it
-  /// is **whole local days and not multiples of 24 hours**. Across a daylight
-  /// saving change those differ by an hour, and a window built out of
-  /// `subtract(Duration(days: 2))` would start at 23:00 or 01:00 of the right
-  /// day — which is the same class of bug ADR-006 exists to prevent, arriving
-  /// from the other end.
   static DateTime startOfLocalDay(DateTime when, {int offsetDays = 0}) =>
       DateTime(when.year, when.month, when.day + offsetDays);
 
-  /// Midnight at the start of [localDay] — the inverse of [localDayOf].
-  ///
-  /// Here rather than in the calendar because the two have to agree about
-  /// what a `yyyymmdd` means, and they only do that reliably by being one
-  /// piece of arithmetic in one file. The calendar labels a day with it; the
-  /// row it labels was stamped by [localDayOf].
   static DateTime dateOf(int localDay) =>
       DateTime(localDay ~/ 10000, (localDay ~/ 100) % 100, localDay % 100);
 
-  /// The signals of BEHAVIOUR.md §3.6, as the one row they are drawn as.
-  ///
-  /// [weather] and [motion] both travel here; only one of them is drawn, and
-  /// `domain/ambient/ambient_fact.dart` ranks them (ADR-038).
   AmbientStamp get stamp => AmbientStamp(
     capturedAt: createdAt,
     weather: weather,
@@ -145,10 +71,7 @@ abstract class Chit with _$Chit {
     motion: motion,
   );
 
-  /// Whether the chit says anything.
   bool get hasText => text != null;
 
-  /// Whether the chit has a recording. There is no mode to ask instead
-  /// (ADR-013) — this is the question, and the audio pill is the answer.
   bool get hasAudio => audioPath != null;
 }

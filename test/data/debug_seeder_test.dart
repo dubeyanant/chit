@@ -15,15 +15,6 @@ import 'package:path/path.dart' as p;
 
 import '../support/fake_clock.dart';
 
-/// DATA-MODEL.md §7's seeder, against a database in memory and a filesystem in
-/// a temporary directory.
-///
-/// Two claims matter and both fail quietly on a handset. That seeding is
-/// **idempotent** — a second `--dart-define=CHIT_SEED=seed` writes nothing,
-/// rather than doubling every tile on the calendar. And that clearing takes
-/// **exactly the seeded rows** and their recordings, and nothing a person
-/// wrote — which is the one thing a dev tool must never get wrong on the
-/// device it is being used on.
 void main() {
   late Directory root;
   late Directory documents;
@@ -33,7 +24,6 @@ void main() {
   late DebugSeeder seeder;
   late ChitRepository repo;
 
-  /// Thursday 17 September 2026, 3pm.
   final DateTime afternoon = DateTime(2026, 9, 17, 15);
 
   setUp(() async {
@@ -56,8 +46,6 @@ void main() {
     if (root.existsSync()) await root.delete(recursive: true);
   });
 
-  /// Every seeded row, as the chits they are rows of — which runs the
-  /// invariant asserts of README §5 over each one.
   Future<List<Chit>> seeded() async => <Chit>[
     for (final ChitRow row in await db.chitDao.rowsWithIdPrefix(
       DebugSeeder.idPrefix,
@@ -111,14 +99,11 @@ void main() {
 
       Iterable<Chit> on(int day) => chits.where((Chit c) => c.localDay == day);
 
-      // Yesterday and the day before are the busy ones — density step four,
-      // and ten marks on the timeline's strip for open item 15.
       expect(on(20260916), hasLength(5));
       expect(on(20260915), hasLength(5));
-      // Today is left alone: it belongs to whoever is holding the phone.
+
       expect(on(20260917), isEmpty);
-      // A three, a two, and the previous month gets three singles so the
-      // chevrons have somewhere to go.
+
       expect(on(20260905), hasLength(3));
       expect(on(20260911), hasLength(2));
       expect(chits.where((Chit c) => c.localDay < 20260901), hasLength(3));

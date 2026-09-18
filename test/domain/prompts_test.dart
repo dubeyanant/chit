@@ -4,12 +4,6 @@ import 'package:chit/domain/models/weather_condition.dart';
 import 'package:chit/domain/prompts.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// The prompt book — BEHAVIOUR.md §3.3, ADR-029.
-///
-/// Two kinds of claim here and they fail differently. The **choice** fails
-/// loudly if it is wrong, because the wrong words are on the screen. The
-/// **copy** fails quietly: a prompt that instructs rather than offers reads
-/// fine to whoever wrote it, and it is a different app by the tenth one.
 void main() {
   AmbientStamp at(
     int hour, {
@@ -24,8 +18,6 @@ void main() {
 
   group('motion outranks the weather and the hour — ADR-037, ADR-038', () {
     test('a chit opened on the move is asked about the move', () {
-      // The rain entry for an evening is the most specific thing that fits
-      // without motion. With it, the prompt should stop being about the sky.
       final String words = Prompts.forStamp(
         at(
           19,
@@ -53,9 +45,6 @@ void main() {
     });
 
     test('stationary is asked exactly what a chit with no motion is asked', () {
-      // The claim that makes this safe to ship: the ordinary chit is
-      // unchanged. `stationary` is what most of them are, and there is nothing
-      // in the book for it.
       for (final int hour in <int>[2, 8, 14, 19, 22]) {
         expect(
           Prompts.forStamp(
@@ -94,8 +83,6 @@ void main() {
     });
 
     test('weather alone, when the hour has no pair for it', () {
-      // There is no rain entry for the afternoon, so the rain entries win on
-      // their own — the afternoon ones are a step less specific.
       final String words = Prompts.forStamp(
         at(15, weather: WeatherCondition.raining),
       );
@@ -104,16 +91,11 @@ void main() {
     });
 
     test('the hour alone, when no weather arrived', () {
-      // ADR-007's ordinary outcome: the service said nothing, and the prompt
-      // still knows what time it is.
       expect(Prompts.forStamp(at(8)), isNot(Prompts.neutral));
       expect(Prompts.forStamp(at(2)), contains('up'));
     });
 
     test('the small hours are their own part of the day', () {
-      // ADR-006 works hardest to protect 00:00–05:00, and a chit written at
-      // 00:20 belongs to the night before. Asking it how the morning has
-      // started would file the day wrong in the only place the user can see.
       expect(Prompts.forStamp(at(0, minute: 20)), contains('up'));
       expect(Prompts.forStamp(at(4, minute: 59)), contains('up'));
       expect(Prompts.forStamp(at(5)), isNot(contains('up')));
@@ -122,8 +104,6 @@ void main() {
 
   group('it is stable, and it varies', () {
     test('the same stamp always gives the same words', () {
-      // It is read on every rebuild, so anything random here would change the
-      // prompt mid-fade.
       final AmbientStamp stamp = at(15, weather: WeatherCondition.clear);
 
       expect(
@@ -148,9 +128,6 @@ void main() {
     });
 
     test('nothing depends on the machine it runs on', () {
-      // The seed is the stamp's own seconds and not an epoch, because an epoch
-      // is a different number in a different time zone — and a prompt that
-      // differs between two developers is a test that fails somewhere else.
       final AmbientStamp noon = AmbientStamp(
         capturedAt: DateTime(2026, 9, 16, 12, 0, 7),
       );
@@ -183,8 +160,6 @@ void main() {
     });
 
     test('§3.3\'s own line is still in the book', () {
-      // The specification names it, so it stays reachable rather than being
-      // quietly replaced by a set of variations on it.
       expect(Prompts.all, contains(Prompts.neutral));
     });
   });
@@ -199,10 +174,6 @@ void main() {
     });
 
     test('offers rather than instructs', () {
-      // §3.3: *a prompt shown after a pause is an offer.* Every one of them
-      // is a question, and none of them is excited about it. The design log's
-      // objection to a score is the same objection: chit does not have
-      // opinions about how much you write.
       for (final String words in Prompts.all) {
         expect(words, endsWith('?'), reason: '"$words" is not a question');
         expect(words, isNot(contains('!')), reason: '"$words" shouts');
@@ -215,8 +186,6 @@ void main() {
     });
 
     test('is short enough to sit on one line of the field', () {
-      // The field holds about forty characters to the line at 17.5px (§6.2),
-      // and a prompt that wraps is a paragraph where a nudge was meant.
       for (final String words in Prompts.all) {
         expect(
           words.length,

@@ -3,18 +3,12 @@ import 'package:chit/domain/motion/motion_ladder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  /// The ladder with the accuracy gate held open, for the cases about bands.
-  ///
-  /// The accuracy is a tenth of the speed, which is the shape of a good fix.
-  /// It keeps every case that is *about* a threshold from also being about
-  /// ADR-037's gate; the cases about the gate use [gated] and name it.
   MotionState? at(double? speed, {double? altitude}) => MotionLadder.from(
     speed: speed,
     speedAccuracy: speed == null || speed <= 0 ? 0.1 : speed / 10,
     altitude: altitude,
   );
 
-  /// The ladder with the accuracy named, for the cases about the gate.
   MotionState? gated(double speed, double? accuracy, {double? altitude}) =>
       MotionLadder.from(
         speed: speed,
@@ -28,8 +22,6 @@ void main() {
     });
 
     test('a negative speed is a platform saying it has none', () {
-      // iOS `CLLocation.speed` is -1 when the reading is invalid. A phone
-      // cannot travel backwards through a scalar, so this is never slow.
       for (final double invalid in <double>[-1, -0.001, -99]) {
         expect(at(invalid), isNull, reason: '$invalid m/s');
       }
@@ -53,8 +45,6 @@ void main() {
     });
 
     test('the walking floor itself walks', () {
-      // Each floor belongs to the band it opens. A boundary that belonged to
-      // neither would be a state no speed could reach.
       expect(at(MotionLadder.walkingFloor), MotionState.walking);
     });
 
@@ -95,9 +85,6 @@ void main() {
     });
 
     test('fast and low is a high-speed train, and it travels', () {
-      // The Shinkansen runs at 300 km/h — well past `flyingFloor` — and it is
-      // not at two kilometres. Without the altitude this ladder would put
-      // every passenger on it in the air.
       for (final double? altitude in <double?>[
         null,
         0,
@@ -130,9 +117,6 @@ void main() {
     });
 
     test('zero accuracy is unknown, not perfect', () {
-      // Some platforms report 0.0 for an accuracy they do not have. Read the
-      // other way round it is the most confident number there is, which would
-      // invert the gate exactly where it matters.
       expect(gated(30, 0), MotionState.stationary);
     });
 
@@ -147,15 +131,11 @@ void main() {
     });
 
     test('the gate never applies below the walking floor', () {
-      // Stationary is where an unusable reading lands anyway, so a still phone
-      // with no accuracy at all is still honestly still.
       expect(gated(0.2, null), MotionState.stationary);
     });
   });
 
   test('every state is reachable — nothing is in the enum by accident', () {
-    // The WMO mapping's claim, in the other direction: there, no code may fall
-    // through to nothing; here, no state may be one no reading can produce.
     final Set<MotionState?> reached = <MotionState?>{
       at(null),
       at(0),

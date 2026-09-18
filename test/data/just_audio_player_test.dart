@@ -8,20 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio_platform_interface/just_audio_platform_interface.dart';
 
-/// **The adapter over `just_audio`, with a fake platform under the real
-/// plugin** — ADR-008, and the M5 lesson about fakes read the other way.
-///
-/// `FakeAudioPlayer` stands in for this class everywhere else, and it was
-/// honest: a second pill took the first one off. The real one did not — the
-/// plugin carries `playing` across a source change and its `play()` returns
-/// early while it is set, so a pill tapped over one that was sounding was
-/// heard but never lit, and the tap that should have paused it did nothing.
-/// Seen on a handset, 18 September 2026. The plugin's Dart side is where that
-/// happens, so the fake below sits *under* it, where the OS does, and the
-/// plugin runs for real.
-///
-/// The platform fake keeps the one habit that matters: `play` does not return
-/// until the take stops, which is what the adapter's `unawaited` is for.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -32,8 +18,6 @@ void main() {
   late StreamSubscription<Playback> watching;
 
   setUpAll(() {
-    // `audio_session` asks the OS for its configuration over a channel; with
-    // nothing answering it would throw inside the plugin's `play`.
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
           const MethodChannel('com.ryanheise.audio_session'),
@@ -74,7 +58,6 @@ void main() {
     expect(seen.last.playing, isTrue, reason: 'and it is lit, not just heard');
     expect(platform.loaded.last, endsWith('b.m4a'));
 
-    // The tap that used to do nothing.
     await player.pause();
     await pumpEventQueue();
     expect(seen.last.holds('b'), isTrue);
@@ -82,10 +65,6 @@ void main() {
   });
 
   test('the native player is built once and kept across both pills', () async {
-    // The regression this file exists for the second time. Clearing the
-    // plugin's `playing` flag with `stop()` also releases the decoder, and
-    // the pill that follows is silent on a device while every other test
-    // here still passes.
     await player.play(id: 'a', path: path('a.m4a'));
     await pumpEventQueue();
     await player.play(id: 'b', path: path('b.m4a'));
@@ -109,44 +88,38 @@ void main() {
     expect(platform.loaded, hasLength(1), reason: 'resumed, not started over');
   });
 
-  test('a pill coming back does not inherit the last one\'s playhead', () async {
-    // **The wave that would not move.** While the next file loads, the
-    // position stream still answers with the one that is leaving; that figure
-    // landing on the pill arriving is a playhead that starts halfway, and
-    // `_onPosition`'s backwards guard then holds it there until the sound
-    // catches up. Seen on a handset as a frozen wave over a recording that was
-    // audibly running.
-    await player.play(id: 'a', path: path('a.m4a'));
-    await pumpEventQueue();
-    platform.player.emitPositionOf(const Duration(seconds: 2));
-    await pumpEventQueue();
-    // Ranges, not equalities: the plugin interpolates the playhead from the
-    // wall clock between platform events, so an exact figure is a test that
-    // fails on a loaded machine and proves nothing extra on a quiet one.
-    expect(
-      seen.last.position,
-      greaterThanOrEqualTo(const Duration(seconds: 2)),
-      reason: 'a is 2s in',
-    );
+  test(
+    'a pill coming back does not inherit the last one\'s playhead',
+    () async {
+      await player.play(id: 'a', path: path('a.m4a'));
+      await pumpEventQueue();
+      platform.player.emitPositionOf(const Duration(seconds: 2));
+      await pumpEventQueue();
 
-    platform.player.blockLoad();
-    unawaited(player.play(id: 'b', path: path('b.m4a')));
-    await pumpEventQueue();
+      expect(
+        seen.last.position,
+        greaterThanOrEqualTo(const Duration(seconds: 2)),
+        reason: 'a is 2s in',
+      );
 
-    // The old file, still talking, while the new one is on its way in.
-    platform.player.emitPositionOf(const Duration(seconds: 2));
-    await pumpEventQueue();
+      platform.player.blockLoad();
+      unawaited(player.play(id: 'b', path: path('b.m4a')));
+      await pumpEventQueue();
 
-    platform.player.unblockLoad();
-    await pumpEventQueue();
+      platform.player.emitPositionOf(const Duration(seconds: 2));
+      await pumpEventQueue();
 
-    expect(seen.last.holds('b'), isTrue);
-    expect(
-      seen.last.position,
-      lessThan(const Duration(seconds: 1)),
-      reason: 'b starts at its own beginning, not two seconds into a',
-    );
-  });
+      platform.player.unblockLoad();
+      await pumpEventQueue();
+
+      expect(seen.last.holds('b'), isTrue);
+      expect(
+        seen.last.position,
+        lessThan(const Duration(seconds: 1)),
+        reason: 'b starts at its own beginning, not two seconds into a',
+      );
+    },
+  );
 
   test('a file that is not there leaves the player silent', () async {
     await player.play(id: 'gone', path: path('gone.m4a'));
@@ -157,24 +130,14 @@ void main() {
   });
 }
 
-/// The plugin's platform side, faked: one player per `init`, disposed on
-/// request, and every file it was asked to load in order.
 final class _FakeJustAudio extends JustAudioPlatform {
   final Map<String, _FakePlatformPlayer> _players =
       <String, _FakePlatformPlayer>{};
 
-  /// Every uri loaded, across every player, in order.
   final List<String> loaded = <String>[];
 
-  /// How many native players the plugin has asked for.
-  ///
-  /// **One, for the life of the adapter.** `AudioPlayer.stop()` releases the
-  /// native player and the next `setFilePath` builds another; `pause()` keeps
-  /// it. Nothing else in the suite can see that difference, and on a handset
-  /// it was the sound of the first tap after launch.
   int platformInits = 0;
 
-  /// The one native player, for a test that has to talk to it directly.
   late _FakePlatformPlayer player;
 
   @override
@@ -205,8 +168,6 @@ final class _FakeJustAudio extends JustAudioPlatform {
   }
 }
 
-/// One platform player. It loads at once, reports what it is told to, and its
-/// `play` holds until `pause` or `dispose` — as the real one does.
 final class _FakePlatformPlayer extends AudioPlayerPlatform {
   _FakePlatformPlayer(super.id, this._loaded);
 
@@ -221,18 +182,13 @@ final class _FakePlatformPlayer extends AudioPlayerPlatform {
   Completer<void>? _sounding;
   Completer<void>? _loadGate;
 
-  /// Holds the next [load] open, so a test can let the file that is leaving
-  /// say something while the next one is on its way in. The real platform
-  /// takes a handful of frames to open a file and does exactly this.
   void blockLoad() => _loadGate ??= Completer<void>();
 
-  /// Lets it through.
   void unblockLoad() {
     _loadGate?.complete();
     _loadGate = null;
   }
 
-  /// Reports [at] as the playhead, without anything having moved.
   void emitPositionOf(Duration at) {
     _position = at;
     _emit();
@@ -246,9 +202,7 @@ final class _FakePlatformPlayer extends AudioPlayerPlatform {
     _events.add(
       PlaybackEventMessage(
         processingState: _state,
-        // The plugin interpolates a playhead from this; a fixed instant would
-        // read as hours in. It is the platform's own clock, not the app's
-        // (ADR-012 bans `DateTime.now()` in `lib/`, not under the OS).
+
         updateTime: DateTime.now(),
         updatePosition: _position,
         bufferedPosition: _position,
@@ -266,9 +220,7 @@ final class _FakePlatformPlayer extends AudioPlayerPlatform {
         request.audioSourceMessage as ConcatenatingAudioSourceMessage;
     final UriAudioSourceMessage source =
         playlist.children.first as UriAudioSourceMessage;
-    // Held open before anything changes, so that while a test blocks the load
-    // the platform still reports the file that is leaving — which is the race
-    // the real one has.
+
     if (_loadGate case final Completer<void> gate) await gate.future;
 
     _loaded.add(source.uri);
@@ -312,9 +264,6 @@ final class _FakePlatformPlayer extends AudioPlayerPlatform {
     await _events.close();
     return DisposeResponse();
   }
-
-  // The settings the plugin pushes when it activates a player. All accepted,
-  // none remembered: nothing here is about them.
 
   @override
   Future<SetVolumeResponse> setVolume(SetVolumeRequest request) async =>

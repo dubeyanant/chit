@@ -1,36 +1,11 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'audio_player.dart';
-
-// **************************************************************************
-// RiverpodGenerator
-// **************************************************************************
-
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-/// The player the app runs on.
-///
-/// Unimplemented on purpose, for the reason `audioRecorderProvider` is:
-/// `domain` cannot import `data` (ARCHITECTURE.md §1), so `main.dart` supplies
-/// `JustAudioPlayer` and tests supply a fake.
 
 @ProviderFor(audioPlayer)
 final audioPlayerProvider = AudioPlayerProvider._();
 
-/// The player the app runs on.
-///
-/// Unimplemented on purpose, for the reason `audioRecorderProvider` is:
-/// `domain` cannot import `data` (ARCHITECTURE.md §1), so `main.dart` supplies
-/// `JustAudioPlayer` and tests supply a fake.
-
 final class AudioPlayerProvider
     extends $FunctionalProvider<AudioPlayer, AudioPlayer, AudioPlayer>
     with $Provider<AudioPlayer> {
-  /// The player the app runs on.
-  ///
-  /// Unimplemented on purpose, for the reason `audioRecorderProvider` is:
-  /// `domain` cannot import `data` (ARCHITECTURE.md §1), so `main.dart` supplies
-  /// `JustAudioPlayer` and tests supply a fake.
   AudioPlayerProvider._()
     : super(
         from: null,
@@ -55,7 +30,6 @@ final class AudioPlayerProvider
     return audioPlayer(ref);
   }
 
-  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AudioPlayer value) {
     return $ProviderOverride(
       origin: this,
@@ -66,27 +40,13 @@ final class AudioPlayerProvider
 
 String _$audioPlayerHash() => r'bdf41f6f46bbbd6cd7f76d0f6c4a2b93a8b8ca13';
 
-/// What the one player is doing, for whatever pill is asking.
-///
-/// A single stream every pill watches, rather than a player each: which pill
-/// is lit is a property of the app, not of a row.
-
 @ProviderFor(playback)
 final playbackProvider = PlaybackProvider._();
-
-/// What the one player is doing, for whatever pill is asking.
-///
-/// A single stream every pill watches, rather than a player each: which pill
-/// is lit is a property of the app, not of a row.
 
 final class PlaybackProvider
     extends
         $FunctionalProvider<AsyncValue<Playback>, Playback, Stream<Playback>>
     with $FutureModifier<Playback>, $StreamProvider<Playback> {
-  /// What the one player is doing, for whatever pill is asking.
-  ///
-  /// A single stream every pill watches, rather than a player each: which pill
-  /// is lit is a property of the app, not of a row.
   PlaybackProvider._()
     : super(
         from: null,

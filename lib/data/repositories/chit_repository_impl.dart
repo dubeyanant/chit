@@ -13,27 +13,12 @@ import '../audio/audio_store.dart';
 import '../db/app_database.dart';
 import '../db/daos/chit_dao.dart';
 
-/// [ChitRepository] over the Drift database and the audio store.
-///
-/// This is the one place that knows a chit is a row plus a file. It is also
-/// the one place that computes `localDay` (ADR-006) and the one place that
-/// moves a recording (ADR-008) — both of those are pairs that have to be
-/// written together, and a DAO caller that does it itself gets one of them
-/// wrong eventually.
 final class ChitRepositoryImpl implements ChitRepository {
-  /// A repository over a DAO, an audio store and a clock.
-  ///
-  // The fields are assigned rather than declared as initialising formals
-  // because a named parameter cannot be private: `prefer_initializing_formals`
-  // asks for a spelling the language does not allow.
-  // ignore_for_file: prefer_initializing_formals
   const ChitRepositoryImpl({
-    required ChitDao dao,
-    required AudioStore audio,
-    required Clock clock,
-  }) : _dao = dao,
-       _audio = audio,
-       _clock = clock;
+    required this._dao,
+    required this._audio,
+    required this._clock,
+  });
 
   static const Uuid _uuid = Uuid();
 
@@ -48,8 +33,6 @@ final class ChitRepositoryImpl implements ChitRepository {
     String? audioTempPath,
     Duration? audioDuration,
   }) async {
-    // Blank is not a value. An untouched field and a field of spaces are the
-    // same nothing, and §3.1 refuses to save either of them on its own.
     final String? words = switch (text?.trim()) {
       null || '' => null,
       final String trimmed => trimmed,
@@ -68,9 +51,6 @@ final class ChitRepositoryImpl implements ChitRepository {
 
     final String id = _uuid.v4();
 
-    // The file moves first. A row pointing at a file that is not there is a
-    // corruption; a file that no row points at is an orphan, and the sweep
-    // collects those (ADR-008).
     final String? audioPath = audioTempPath == null
         ? null
         : await _audio.keep(tempPath: audioTempPath, chitId: id);
@@ -124,8 +104,6 @@ final class ChitRepositoryImpl implements ChitRepository {
       final String trimmed => trimmed,
     };
 
-    // The invariant is checked on what the row *will* hold, before a single
-    // file moves — so a refused edit leaves the disk exactly as it found it.
     final bool willHaveAudio = switch (audio) {
       KeepAudio() => existing.hasAudio,
       RemoveAudio() => false,
@@ -137,9 +115,6 @@ final class ChitRepositoryImpl implements ChitRepository {
       );
     }
 
-    // A replacement moves in first, over the old file — `keep` names the file
-    // by chit id, so the old recording is simply written over. A removal is
-    // written first and deleted after (DATA-MODEL.md §5).
     final (Value<String?> audioPath, Value<int?> audioMs) = switch (audio) {
       KeepAudio() => (
         const Value<String?>.absent(),
@@ -184,9 +159,6 @@ final class ChitRepositoryImpl implements ChitRepository {
     required double? lon,
     required MotionState? motion,
   }) async {
-    // No `written == 0` check, and no throw. Unlike `update` there is
-    // nobody waiting on this and no screen that could report it — a row gone
-    // between the insert and the patch is an ordinary race (ADR-042).
     await _dao.updateAmbientOf(
       id: id,
       weather: weather,
@@ -235,11 +207,6 @@ final class ChitRepositoryImpl implements ChitRepository {
     for (final ChitRow row in rows) _chitOf(row),
   ];
 
-  /// A row, as the thing it is a row of.
-  ///
-  /// `localDay` is read from its column and never recomputed from `createdAt`
-  /// — that recomputation is exactly what ADR-006 exists to prevent, and it
-  /// would silently move every chit the first time the device changes zone.
   Chit _chitOf(ChitRow row) => Chit(
     id: row.id,
     createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt),

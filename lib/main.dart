@@ -26,26 +26,11 @@ import 'domain/services/location_service.dart';
 import 'domain/services/weather_service.dart';
 import 'features/onboarding/application/first_run_controller.dart';
 
-/// `--dart-define=CHIT_SEED=seed` writes DATA-MODEL.md §7's fixture and
-/// `=clear` removes it. Empty, which is the default, does nothing at all.
-///
-/// Read at compile time, so a build that was not given the flag does not carry
-/// so much as a string comparison for it.
 const String _seedMode = String.fromEnvironment('CHIT_SEED');
 
-/// The root, and the one place `domain` and `data` are allowed to meet.
-///
-/// `chitRepositoryProvider` is declared beside its interface and left
-/// unimplemented, because `domain` cannot import `data` (ARCHITECTURE.md §1).
-/// Here is where the implementation is supplied — and the same seam is what a
-/// test overrides to run against a database in memory.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // **The one thing awaited before the first frame** — ADR-041. Which screen
-  // is correct depends on what is in here, and a router that discovers it a
-  // frame later opens on Today and jumps. It is a local read of two booleans;
-  // the database and both ambient services stay lazy behind it.
   final SharedPreferences prefs = await SharedPreferences.getInstance();
 
   final ProviderContainer container = ProviderContainer(
@@ -60,15 +45,7 @@ Future<void> main() async {
       firstRunStoreProvider.overrideWith(
         (Ref ref) => PrefsFirstRunStore(prefs),
       ),
-      // **Ambient capture, for real** — M3 group J. *These two lines held
-      // `FixedWeatherService` and `FixedLocationService` from M2 until now, and
-      // nothing above this file changed when they came out.* That was the whole
-      // point of putting the interfaces in `domain` and the assembly in
-      // `AmbientCapture`.
-      //
-      // The order matters and is the one seam ADR-025 warned about: weather
-      // reads its position from the location service, so it is constructed
-      // with it rather than beside it.
+
       locationServiceProvider.overrideWith(
         (Ref ref) => const GeolocatorLocationService(),
       ),
@@ -78,34 +55,19 @@ Future<void> main() async {
           client: http.Client(),
         ),
       ),
-      // **The microphone** — M5 group A. Takes are written to the cache and
-      // timed on the app's one clock (ADR-012, ADR-052); `AudioStore` moves a
-      // kept take out of the cache on Save.
       audioRecorderProvider.overrideWith(
         (Ref ref) =>
             RecordAudioRecorder.appCache(clock: ref.watch(clockProvider)),
       ),
-      // **Playback** — M5 group E. One player for the whole app, so a thread
-      // with three pills in it can never sound three recordings at once. It
-      // resolves a stored path through the same store that wrote it (ADR-008).
+
       audioPlayerProvider.overrideWith(
         (Ref ref) => JustAudioPlayer(ref.watch(audioStoreProvider)),
       ),
     ],
   );
 
-  // Recordings that no chit claims, collected once and off the critical path
-  // (ADR-008). Nothing waits for it: an orphan costs disk, and the first paint
-  // costs the user (README §1).
   unawaited(container.read(chitRepositoryProvider).reconcileAudio());
 
-  // **The seeder**, only when asked for on the command line — DATA-MODEL.md
-  // §7. Off the critical path like the sweep above it: every screen is a
-  // stream off the one table, so the rows appear as they land and nothing
-  // waits for them. The define is a compile-time constant, so a build that
-  // was not given it does not carry the branch. *There was a `kDebugMode`
-  // gate here as well for one commit; a release run ignored the flag without
-  // a word, and the define is already the explicit act.*
   if (_seedMode.isNotEmpty) {
     final DebugSeeder seeder = DebugSeeder(
       dao: container.read(appDatabaseProvider).chitDao,
@@ -116,11 +78,6 @@ Future<void> main() async {
     unawaited(seeder.apply(_seedMode).then(debugPrint));
   }
 
-  // **The launch capture** — ADR-042 — fired after the first frame and never
-  // awaited, for the same reason. It is skipped on a fresh install: there is
-  // nothing to ask until somebody has answered the first-run screen, and asking
-  // first is how a system dialog appears before the screen explaining it.
-  // `FirstRunController.allow` primes it instead.
   if (!container.read(firstRunControllerProvider)) {
     WidgetsBinding.instance.addPostFrameCallback((Duration _) {
       unawaited(container.read(ambientSignalsProvider.notifier).prime());

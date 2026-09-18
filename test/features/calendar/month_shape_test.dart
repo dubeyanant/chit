@@ -4,15 +4,7 @@ import 'package:chit/features/calendar/application/archive_provider.dart';
 import 'package:chit/features/calendar/application/month_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// The arithmetic the month grid rests on — BEHAVIOUR.md §4.2, with no widget
-/// anywhere near it (ADR-031).
-///
-/// Where the first tile sits, where the last one is, which one is today, how
-/// dark each is and what the summary says are all answered by [MonthShape]
-/// from a list of counts and one reading of the day. The grid draws the
-/// answer; this is what makes the answer right.
 void main() {
-  /// Thursday 17 September 2026, 3pm.
   final DateTime today = DateTime(2026, 9, 17, 15);
   const YearMonth september = YearMonth(2026, 9);
 
@@ -68,7 +60,6 @@ void main() {
   });
 
   group('the chevrons land only on written months — ADR-047', () {
-    // yyyymm, in no particular order, as the query would answer.
     const List<int> written = <int>[202604, 202607, 202509, 202609];
 
     test('previous is the nearest written month before', () {
@@ -128,7 +119,6 @@ void main() {
     List<int?> rowOf(MonthShape s, int index) => s.rows[index];
 
     test('a fresh install draws only the week today is in', () {
-      // September 2026 starts on a Tuesday; the 17th is in the third week.
       final MonthShape s = shape(september);
       expect(s.rows, hasLength(1));
       expect(rowOf(s, 0), <int?>[13, 14, 15, 16, 17, null, null]);
@@ -142,9 +132,6 @@ void main() {
     });
 
     test('a quiet week between two written ones is not drawn either', () {
-      // ADR-047 kept this row for one commit; the second seeded pass asked
-      // for it to go. The 5th sits above the 13th with the columns still
-      // saying which weekday each is.
       final MonthShape s = shape(september, <DaySummary>[day(20260901, 1)]);
       expect(s.rows, hasLength(2));
       expect(rowOf(s, 0), <int?>[null, null, 1, 2, 3, 4, 5]);
@@ -152,9 +139,6 @@ void main() {
     });
 
     test('the August the pass looked at: three written weeks, no bare row', () {
-      // Writes on the 7th, 13th and 28th of August 2026 — what the seeder
-      // puts there on 17 September. The week of the 16th to the 22nd was the
-      // bare row across the middle.
       final MonthShape s = shape(const YearMonth(2026, 8), <DaySummary>[
         day(20260807, 1),
         day(20260813, 1),
@@ -168,8 +152,6 @@ void main() {
     });
 
     test('a past month trims both ends', () {
-      // August 2026 starts on a Saturday. Writes on the 20th and the 25th
-      // fall in its fourth and fifth weeks; the first three and the last go.
       final MonthShape s = shape(const YearMonth(2026, 8), <DaySummary>[
         day(20260820, 2),
         day(20260825, 1),
@@ -241,7 +223,6 @@ void main() {
 
   group('the grid starts on a Sunday, as v6 draws it', () {
     test('September 2026 begins on a Tuesday — two blanks', () {
-      // v6's FIRST_DOW for the same month.
       expect(shape(september).leadingBlanks, 2);
     });
 
@@ -320,8 +301,6 @@ void main() {
     });
 
     test('the seeded September reads as the handset pass expected', () {
-      // Yesterday and the day before at five, a three, a two, and two
-      // singles — DATA-MODEL.md §7.
       final MonthShape s = shape(september, <DaySummary>[
         day(20260916, 5),
         day(20260915, 5),

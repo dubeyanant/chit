@@ -9,25 +9,7 @@ import '../../../shared/widgets/slip.dart';
 import '../../../shared/widgets/wordmark.dart';
 import '../application/first_run_controller.dart';
 
-/// The screen a fresh install opens on, once — **ADR-041**.
-///
-/// **A screen of ours before a dialog of the platform's.** A bare system
-/// prompt over a blank page asks for a permission without saying what it buys,
-/// and the honest answer — *so a chit can remember what the weather was* — is
-/// not something Android or iOS will say on our behalf. So the explanation is
-/// here, in chit's own voice, and the system dialog is raised only after
-/// somebody has agreed to it.
-///
-/// **A full screen rather than a sheet.** It is shown once in the life of an
-/// install, so it can afford the room; and a scrim over an empty Today is a
-/// busier first impression than a page that was composed.
-///
-/// It is built out of the vocabulary that already exists — the [Wordmark], a
-/// [Slip] with its tear edge, and the two weights of [PrimaryButton] and
-/// [QuietButton]. Nothing here is a new kind of object, which is the point: the
-/// first thing a user sees should be the app, not a preamble to it.
 final class FirstRunScreen extends ConsumerWidget {
-  /// The screen.
   const FirstRunScreen({super.key});
 
   @override
@@ -79,8 +61,7 @@ final class FirstRunScreen extends ConsumerWidget {
               Align(
                 child: QuietButton(
                   label: 'Not now',
-                  // Deliberately fire-and-forget: the screen closes on the
-                  // state change, and nothing here has an error to report.
+
                   onPressed: () => unawaited(controller.notNow()),
                 ),
               ),

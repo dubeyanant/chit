@@ -1,24 +1,11 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'ambient_capture.dart';
-
-// **************************************************************************
-// RiverpodGenerator
-// **************************************************************************
-
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-/// The capture behind `AmbientSignals`.
 
 @ProviderFor(ambientCapture)
 final ambientCaptureProvider = AmbientCaptureProvider._();
 
-/// The capture behind `AmbientSignals`.
-
 final class AmbientCaptureProvider
     extends $FunctionalProvider<AmbientCapture, AmbientCapture, AmbientCapture>
     with $Provider<AmbientCapture> {
-  /// The capture behind `AmbientSignals`.
   AmbientCaptureProvider._()
     : super(
         from: null,
@@ -43,7 +30,6 @@ final class AmbientCaptureProvider
     return ambientCapture(ref);
   }
 
-  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AmbientCapture value) {
     return $ProviderOverride(
       origin: this,
