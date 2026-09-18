@@ -111,3 +111,7 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     `com.infiniteants.chitta` rather than upgrading to it, so a handset that had the old build keeps
     it, chits and all, and the new one opens empty. There is no export (ADR-004) and no migration
     path between the two — the old app is the only copy.
+44. **The first-run screen has a copy ceiling, because it does not scroll** (ADR-076). On the 800dp
+    handset it was checked on, the two slips and the two answers leave roughly 65dp of slack above
+    the first slip; a phone with much less height, or a sentence added to either slip, clips instead
+    of scrolling. Cut something before adding something.

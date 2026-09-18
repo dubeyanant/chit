@@ -164,10 +164,12 @@ flutter run --dart-define=CHIT_SEED=clear    # removes exactly what was seeded
 behind `kDebugMode` protected nothing while costing a device pass. It runs off the critical path,
 and **the console is the only place it reports**.
 
-**Twenty chits, dated relative to the day it runs.** Yesterday and the day before hold five each —
-density step four, and ten marks across two days on the strip — then a three, a two, and singles
-back six weeks, three of them in the previous month so the chevrons have somewhere to go. **Today is
-left alone**: it belongs to whoever is holding the phone. **Every seeded id starts with `seed-`**,
+**Sixty chits over three months, dated relative to the day it runs.** Yesterday and the day before
+hold five each — density step four, and ten marks across two days on the strip — then threes, twos
+and singles thinning backwards over eighty-nine days and four calendar months, so the chevrons have
+somewhere to go and the archive pages more than once. **Twelve days in the middle hold nothing**,
+which is the only thing that draws the week a past month leaves out (ADR-048). **Today is left
+alone**: it belongs to whoever is holding the phone. **Every seeded id starts with `seed-`**,
 which is the whole of how the rows are told apart from a person's own — no ledger, no preference, no
 column added for a tool. Seeding is idempotent; clearing deletes exactly the seeded rows and their
 recordings. It writes through the DAO rather than the repository, which generates its own ids, but

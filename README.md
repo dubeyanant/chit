@@ -110,8 +110,9 @@ lib/
 `lib/core/theme/` is §6 as four `ThemeExtension`s, reached through `context.colors`, `.type`,
 `.space` and `.motion` — four accessors rather than one, so a widget that needs a colour cannot
 reach motion. `lib/shared/widgets/` is the chit vocabulary: the slip and its tear edge, the stamp
-row and its motion marks, the rail and the thread over it, the wordmark, the two button weights, the
-microphone, the pill, the prompt sheet, `Arrival`, `StaggeredEntrance` and `FocusRing`.
+row and its motion marks, the rail and the thread over it, the wordmark, the heading row both tabs
+hang their title in, the two button weights, the microphone, the pill, the prompt sheet, `Arrival`,
+`StaggeredEntrance` and `FocusRing`.
 
 **Tests.** `flutter test`. **There are no widget tests, and there will not be** (ADR-031) — what can
 only be seen on a screen is seen on a handset and written into the commit. Suites sit beside what

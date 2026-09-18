@@ -78,7 +78,8 @@ it.
 ## 4. Screens
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
-**one line at 26px**, the weekday italic and faint, the date in full ink. Then the timeline, the
+**one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the
+calendar's month sit at the same height** (§6.3), so switching tab does not move the heading. Then the timeline, the
 open chit on its visible second slip, the day's thread, and the चित्त mark closing the day.
 
 *The action row.* The microphone leads it at the foot of the slip, full 54px; **Save** arrives to
@@ -141,10 +142,11 @@ always open and a few words then **Save** make a chit; that the microphone speak
 the take is kept rather than transcribed; and that a chit is opened again by **holding** it, the one
 gesture nothing on a screen can advertise. **The second asks**: a chit is stamped with the time and
 — if you let it — the weather, whether you were moving, and that a place was recorded; it never
-shows where, and none of it leaves the phone. **The screen scrolls** where two slips and two answers
-outgrow a short phone. Then **Allow**, which raises the system dialog and then opens Today, and
-**Not now**, which opens Today and **raises nothing** — a quiet option that still summoned a system prompt
-would be a dark pattern wearing a polite label. Whatever the answer the app opens, a refusal is not
+shows where, and none of it leaves the phone. **The wordmark is centred here and nowhere else**, and
+**the screen does not scroll** — the copy is cut until it fits, a first screen that slides under the
+thumb being a worse welcome than a shorter sentence. Then **Allow**, which raises the system dialog
+and then opens Today, and **Not now**, which opens Today and **raises nothing** — a quiet option
+that still summoned a system prompt would be a dark pattern wearing a polite label. Whatever the answer the app opens, a refusal is not
 an error state, and **neither is asked again** (ADR-016). A bare system prompt cannot say what it
 buys; this screen makes the case — *so a chit can remember what the weather was* — before the
 platform's dialog arrives as a confirmation of something already agreed to, and **nothing on it is a

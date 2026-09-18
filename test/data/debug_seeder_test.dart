@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:chitta/data/audio/audio_store.dart';
 import 'package:chitta/data/db/app_database.dart';
@@ -53,6 +54,13 @@ void main() {
       (await repo.byId(row.id))!,
   ];
 
+  Future<Set<int>> daysBack() async => <int>{
+    for (final Chit chit in await seeded())
+      Chit.startOfLocalDay(afternoon)
+          .difference(Chit.startOfLocalDay(chit.createdAt))
+          .inDays,
+  };
+
   Future<List<File>> recordings() async {
     final Directory dir = Directory(p.join(documents.path, AudioStore.folder));
     if (!dir.existsSync()) return <File>[];
@@ -64,12 +72,11 @@ void main() {
       final SeedOutcome done = await seeder.seed();
 
       expect(done.rows, DebugSeeder.count);
-      expect(done.rows, 20);
-      expect(done.recordings, 4);
+      expect(done.recordings, 6);
 
       final List<Chit> chits = await seeded();
-      expect(chits, hasLength(20));
-      expect(await recordings(), hasLength(4));
+      expect(chits, hasLength(DebugSeeder.count));
+      expect(await recordings(), hasLength(6));
     });
 
     test('covers all three shapes of README §5', () async {
@@ -106,7 +113,46 @@ void main() {
 
       expect(on(20260905), hasLength(3));
       expect(on(20260911), hasLength(2));
-      expect(chits.where((Chit c) => c.localDay < 20260901), hasLength(3));
+    });
+
+    test('covers three months, which is what the calendar is for', () async {
+      await seeder.seed();
+      final Set<int> written = await daysBack();
+
+      expect(
+        written.reduce(math.max),
+        greaterThanOrEqualTo(88),
+        reason:
+            'the chevrons and the archive need three months behind them '
+            '— DATA-MODEL.md §6',
+      );
+
+      final List<Chit> chits = await seeded();
+      expect(
+        chits.map((Chit c) => c.localDay ~/ 100).toSet(),
+        hasLength(greaterThanOrEqualTo(4)),
+        reason: 'three months back from any date touches four of them',
+      );
+    });
+
+    test('leaves a week nothing was written in, for ADR-048', () async {
+      await seeder.seed();
+      final Set<int> written = await daysBack();
+
+      int run = 0;
+      int longest = 0;
+      for (int day = 1; day <= written.reduce(math.max); day++) {
+        run = written.contains(day) ? 0 : run + 1;
+        if (run > longest) longest = run;
+      }
+
+      expect(
+        longest,
+        greaterThanOrEqualTo(7),
+        reason:
+            'a past month draws only the weeks with something in them, '
+            'and nothing exercises that without an empty one',
+      );
     });
 
     test('has a six-minute burst, for the strip', () async {
@@ -148,8 +194,8 @@ void main() {
 
       expect(again.rows, 0);
       expect(again.recordings, 0);
-      expect(await seeded(), hasLength(20));
-      expect(await recordings(), hasLength(4));
+      expect(await seeded(), hasLength(DebugSeeder.count));
+      expect(await recordings(), hasLength(6));
     });
 
     test('a seeded row is never edited — updatedAt is createdAt', () async {
@@ -165,8 +211,8 @@ void main() {
       await seeder.seed();
       final SeedOutcome done = await seeder.clear();
 
-      expect(done.rows, 20);
-      expect(done.recordings, 4);
+      expect(done.rows, DebugSeeder.count);
+      expect(done.recordings, 6);
       expect(await seeded(), isEmpty);
       expect(await recordings(), isEmpty);
     });
@@ -195,7 +241,7 @@ void main() {
       await seeder.seed();
       final SeedOutcome done = await seeder.clear();
 
-      expect(done.rows, 20);
+      expect(done.rows, DebugSeeder.count);
       expect(await seeded(), isEmpty);
       expect(await recordings(), isEmpty);
     });
@@ -203,8 +249,14 @@ void main() {
 
   group('apply', () {
     test('seed and clear are the two modes', () async {
-      expect(await seeder.apply(DebugSeeder.modeSeed), contains('seeded 20'));
-      expect(await seeder.apply(DebugSeeder.modeClear), contains('cleared 20'));
+      expect(
+        await seeder.apply(DebugSeeder.modeSeed),
+        contains('seeded ${DebugSeeder.count}'),
+      );
+      expect(
+        await seeder.apply(DebugSeeder.modeClear),
+        contains('cleared ${DebugSeeder.count}'),
+      );
     });
 
     test('anything else is a typo, and loud', () {

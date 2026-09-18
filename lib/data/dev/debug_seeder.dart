@@ -175,12 +175,21 @@ final class DebugSeeder {
   static const double _jitter = 0.0007;
 
   static const List<_Seed> _fixture = <_Seed>[
+    _Seed(1, 7, 40, 'Ran 4k. Knee held up.', WeatherCondition.clear),
     _Seed(
       1,
-      21,
-      48,
-      'Called Ma. Told her about the flat.',
-      WeatherCondition.clearNight,
+      13,
+      15,
+      'Lunch at the desk. Fourth day.',
+      WeatherCondition.overcast,
+    ),
+    _Seed(
+      1,
+      18,
+      52,
+      'Bus stuck at the signal.',
+      WeatherCondition.windy,
+      motion: MotionState.traveling,
     ),
     _Seed(
       1,
@@ -193,22 +202,22 @@ final class DebugSeeder {
     ),
     _Seed(
       1,
-      18,
-      52,
-      'Bus stuck at the signal.',
-      WeatherCondition.windy,
+      21,
+      48,
+      'Called Ma. Told her about the flat.',
+      WeatherCondition.clearNight,
+    ),
+
+    _Seed(2, 9, 10, 'Train 20 late.', WeatherCondition.raining),
+    _Seed(2, 12, 4, 'Left the charger at home.', WeatherCondition.overcast),
+    _Seed(
+      2,
+      12,
+      10,
+      'Reorg meeting pushed again.',
+      WeatherCondition.overcast,
       motion: MotionState.traveling,
     ),
-    _Seed(
-      1,
-      13,
-      15,
-      'Lunch at the desk. Fourth day.',
-      WeatherCondition.overcast,
-    ),
-    _Seed(1, 7, 40, 'Ran 4k. Knee held up.', WeatherCondition.clear),
-
-    _Seed(2, 23, 55, null, WeatherCondition.clearNight, audioSeconds: 47),
     _Seed(
       2,
       18,
@@ -217,16 +226,7 @@ final class DebugSeeder {
       WeatherCondition.overcast,
       audioSeconds: 9,
     ),
-    _Seed(
-      2,
-      12,
-      10,
-      'Reorg meeting pushed again. Third time.',
-      WeatherCondition.overcast,
-      motion: MotionState.traveling,
-    ),
-    _Seed(2, 12, 4, 'Left the charger at home.', WeatherCondition.overcast),
-    _Seed(2, 9, 10, 'Train 20 late.', WeatherCondition.raining),
+    _Seed(2, 23, 55, null, WeatherCondition.clearNight, audioSeconds: 47),
 
     _Seed(
       4,
@@ -236,16 +236,35 @@ final class DebugSeeder {
       WeatherCondition.raining,
       pinned: false,
     ),
+
+    _Seed(5, 8, 20, 'Cold shower. Worth it.', WeatherCondition.clear),
+    _Seed(5, 20, 45, 'Dal finally bought.', WeatherCondition.clearNight),
+
     _Seed(
       6,
       8,
       5,
-      "Didn't sleep. Room too cold, again.",
+      "Didn't sleep. Room too cold.",
       WeatherCondition.clear,
       audioSeconds: 22,
     ),
     _Seed(6, 20, 30, 'Landlord called. Rent up.', null),
+
+    _Seed(
+      7,
+      7,
+      30,
+      'Walked the long way.',
+      WeatherCondition.clear,
+      motion: MotionState.walking,
+    ),
+    _Seed(7, 14, 0, 'Bad coffee, good chapter.', WeatherCondition.overcast),
+    _Seed(7, 22, 10, 'Storm all evening.', WeatherCondition.raining),
+
     _Seed(9, 14, 20, 'Dentist. Not as bad.', WeatherCondition.overcast),
+
+    _Seed(10, 9, 45, 'Inbox at zero. Briefly.', WeatherCondition.clear),
+    _Seed(10, 19, 30, 'Rice and eggs again.', WeatherCondition.clearNight),
 
     _Seed(
       12,
@@ -258,7 +277,51 @@ final class DebugSeeder {
     _Seed(12, 13, 0, 'Fish for lunch. Regret.', WeatherCondition.clear),
     _Seed(12, 21, 15, 'Read forty pages.', WeatherCondition.clearNight),
 
+    _Seed(13, 16, 40, 'Power cut for an hour.', WeatherCondition.windy),
+
+    _Seed(
+      15,
+      8,
+      15,
+      'Auto refused. Walked.',
+      WeatherCondition.overcast,
+      motion: MotionState.walking,
+    ),
+    _Seed(
+      15,
+      21,
+      0,
+      'Called P. Long one.',
+      WeatherCondition.clearNight,
+      audioSeconds: 31,
+    ),
+
+    _Seed(16, 12, 30, 'Samosa. No regrets.', WeatherCondition.clear),
+
+    _Seed(18, 18, 10, 'Rain caught me out.', WeatherCondition.raining),
+
     _Seed(20, 10, 30, 'Long call with the bank.', WeatherCondition.raining),
+
+    _Seed(22, 9, 0, 'First cool morning.', WeatherCondition.clear),
+    _Seed(22, 19, 20, 'Cut my own hair.', WeatherCondition.clearNight),
+
+    _Seed(
+      24,
+      15,
+      5,
+      'Meeting could have been mail.',
+      WeatherCondition.overcast,
+    ),
+
+    _Seed(26, 7, 45, 'Queue at the clinic.', WeatherCondition.overcast),
+
+    _Seed(28, 13, 30, 'Lost the good pen.', WeatherCondition.windy),
+    _Seed(28, 22, 40, 'Old film, still good.', WeatherCondition.clearNight),
+
+    _Seed(30, 11, 0, 'Month end. Sums done.', WeatherCondition.clear),
+
+    _Seed(33, 17, 25, 'Kite stuck in the wires.', WeatherCondition.windy),
+
     _Seed(
       35,
       11,
@@ -267,7 +330,71 @@ final class DebugSeeder {
       null,
       motion: MotionState.flying,
     ),
+
+    _Seed(
+      38,
+      8,
+      50,
+      'Missed the bus by one.',
+      WeatherCondition.overcast,
+      motion: MotionState.walking,
+    ),
+    _Seed(38, 20, 5, 'Neighbours arguing again.', WeatherCondition.clearNight),
+
     _Seed(41, 9, 12, 'New month. Same desk.', WeatherCondition.clear),
+
+    _Seed(43, 14, 15, 'Stray cat on the sill.', WeatherCondition.clear),
+
+    _Seed(
+      56,
+      10,
+      0,
+      'Back from the village.',
+      WeatherCondition.overcast,
+      motion: MotionState.traveling,
+    ),
+
+    _Seed(58, 7, 20, 'Bags packed at dawn.', WeatherCondition.clear),
+    _Seed(58, 21, 50, 'Everyone asleep by nine.', WeatherCondition.clearNight),
+
+    _Seed(60, 13, 45, 'Mangoes, finally cheap.', WeatherCondition.clear),
+
+    _Seed(63, 19, 0, 'Blackout. Candles out.', WeatherCondition.raining),
+
+    _Seed(
+      66,
+      8,
+      30,
+      'Two buses, one seat.',
+      WeatherCondition.raining,
+      motion: MotionState.traveling,
+    ),
+    _Seed(66, 16, 20, 'Wet shoes all day.', WeatherCondition.raining),
+
+    _Seed(69, 12, 0, 'Interview went fine.', WeatherCondition.overcast),
+
+    _Seed(
+      72,
+      18,
+      40,
+      'First rain of the year.',
+      WeatherCondition.raining,
+      audioSeconds: 18,
+    ),
+
+    _Seed(75, 9, 30, 'Sums do not add up.', WeatherCondition.clear),
+    _Seed(75, 21, 10, 'Slept in the afternoon.', WeatherCondition.clearNight),
+
+    _Seed(78, 14, 50, 'Fan broke. Fixed it.', WeatherCondition.windy),
+
+    _Seed(81, 7, 10, 'Up before the alarm.', WeatherCondition.clear),
+
+    _Seed(84, 11, 40, 'Old friend called.', WeatherCondition.windy),
+    _Seed(84, 20, 15, 'Too hot to cook.', WeatherCondition.clearNight),
+
+    _Seed(87, 15, 30, 'Bought a notebook.', WeatherCondition.clear),
+
+    _Seed(89, 8, 0, 'Start of something.', WeatherCondition.clear),
   ];
 }
 
