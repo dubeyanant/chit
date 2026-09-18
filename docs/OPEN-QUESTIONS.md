@@ -64,16 +64,19 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
 8. **§8.3 is open**, and answerable by living with the app for a week.
 16. **The strip's back-stop is unseen** in the one case that remains: the oldest day has one chit
     and the rest is empty, so the strip is a bare line with one mark. Honest, and never looked at.
-18. **`Position.speedAccuracy` may mean *unknown* when it says `0.0`, and the ladder bets that it
-    does.** The single most likely thing to be wrong about motion, and nothing in the suite can
-    settle it: `MotionLadder` reads zero as absent, so if a platform means `0.0` literally, motion is
-    stuck at `stationary` and looks like a feature that does not work. Check a real `Position` before
-    concluding anything else is broken.
+18. **Answered, and it was the bug it predicted.** `Position.speedAccuracy` *is* `0.0` when the
+    platform has none — geolocator's Android mapper only sends the field when
+    `Location.hasSpeedAccuracy()` — and the old gate read that as noise, which is why a train said
+    nothing. The ladder now believes a speed that arrives without an error beside it (ADR-078). What
+    is still unwatched: whether a bad fix ever reports a *spurious* high speed with no accuracy, the
+    case that trade accepts.
 20. **`flying` will almost never fire, and that is expected** — most devices disable GPS in airplane
     mode, so there is no fix and no speed. A barometer is the honest route if it ever matters.
-21. **Nothing tunes the motion thresholds.** 0.7, 3.0 and 55 m/s and the 2000 m ceiling are
-    arithmetic, not measurements; the boundary most likely to read wrong is `walking` against
-    `traveling` at 3.0 m/s.
+21. **The motion thresholds now have a source, not a measurement.** 0.7, 3.0, 55 m/s and the 2000 m
+    ceiling sit inside what the trajectory-classification literature uses — walking is usually cut at
+    a 95th-percentile 3.0 m/s, and air travel at 40–80 m/s — but nobody has walked, ridden or flown
+    with this app and checked. The boundary most likely to read wrong is still `walking` against
+    `traveling` at 3.0 m/s, where a runner is filed as walking on purpose.
 22. **A refused location permission is a dead end** — the app asks once and never again, and there
     is no settings screen, so a refusal can only be undone through the OS. A refused *microphone*
     names the phone's settings; location says nothing.
@@ -82,9 +85,10 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
 24. **The stamp's time does not tick** — it shows when the chit was opened, while the row carries
     when it was saved (ADR-040). A self-updating clock is an ambient loop and was refused (ADR-027);
     the untried middle option is re-reading the preview on the first keystroke.
-28. **`clear night` is drawn for Open-Meteo's *partly cloudy*** — WMO code 2 sits with 0 and 1 under
-    §3.6's *clear or nearly clear*. The loosest call in `WmoMapping`; moving code 2 to `overcast` is
-    one line.
+28. **Answered by measuring instead of classifying** (ADR-078). Partly cloudy is no longer a code
+    question: `cloud_cover >= 60%` is overcast and below it is clear, and code 2 only decides when
+    the quantity is missing. **60 is a judgement, not a measurement** — the okta scale calls 50–84%
+    "mostly cloudy", and this puts the boundary inside that band. Move it if a grey day reads clear.
 29. **A chit can be written from a reading up to five minutes old** (ADR-045), which lands hardest on
     motion: a chit written on a train five minutes after launch says `stationary`. Untested against a
     real journey; the honest fix is a shorter window for motion alone.

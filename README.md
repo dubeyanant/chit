@@ -72,7 +72,7 @@ you get on with your life. Everything follows from that:
 | `audioPath` | present whenever a recording was kept |
 | `weather` | a condition word |
 | `location` | stored; **not surfaced in the UI** (ADR-066) |
-| `motion` | `stationary`, `walking`, `traveling`, `flying`, read off the same fix as `location` (ADR-037). Drawn as an icon, and `stationary` is not drawn at all |
+| `motion` | `stationary`, `walking`, `traveling`, `flying`, read off the same fix as `location` (ADR-037). Drawn as a word beside the time, and `stationary` is not drawn at all (ADR-078) |
 
 `text` and `audioPath` are independently nullable and **at least one is always present** — a chit
 with neither is not a chit, and is what §3.1 refuses to save. That leaves three shapes, all

@@ -70,8 +70,10 @@ final class GeolocatorLocationService implements LocationService {
       GeoFix(
         lat: position.latitude,
         lon: position.longitude,
-        speed: withKinematics ? position.speed : null,
-        speedAccuracy: withKinematics ? position.speedAccuracy : null,
+        speed: withKinematics && position.hasSpeed ? position.speed : null,
+        speedAccuracy: withKinematics && position.hasSpeedAccuracy
+            ? position.speedAccuracy
+            : null,
         altitude: withKinematics ? position.altitude : null,
       );
 

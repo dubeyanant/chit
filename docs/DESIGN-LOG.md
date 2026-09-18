@@ -43,8 +43,9 @@ is not "is this important enough for the accent" — everything is — but "is t
 **Icons are normalised by effective stroke, not by the number in the markup** —
 `stroke-width × (rendered size ÷ viewBox size)`, held at about 1.22px across the set. Two icons in
 different viewBoxes with identical `stroke-width` stop looking equal for reasons nobody can name by
-reading the code. Motion marks are **strokes rather than silhouettes**: at 12px an outlined plane's
-wings close into a blob.
+reading the code. **The set is now the chevron, the play glyph and the microphone** — the motion
+marks were drawn to that rule and then deleted with it (ADR-078), the lesson surviving the drawings:
+at 12px an outlined plane's wings close into a blob, which is why a word won.
 
 **An affordance that does nothing is worse than a missing one.** It costs a tap to discover, teaches
 that taps here are ignored, and on a keyboard or screen reader is a stop that leads nowhere.

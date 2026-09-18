@@ -46,27 +46,31 @@ a chit says in words was typed by a person.
 itself (ADR-058). **The number is not reused** — it is cited from other documents and from git.
 
 **3.6 Ambient capture.** The time shows as `3:42 pm`; weather as one of five words — `raining`,
-`clear`, `overcast`, `windy`, `clear night`; motion as an icon and never a word (ADR-039); and
-**location is not drawn at all** (ADR-066), though it is captured and stored with every chit, never
+`clear`, `overcast`, `windy`, `clear night`; **motion as one of three, in the same voice** —
+`walking`, `travelling`, `flying` (ADR-039, an icon until 078 — the enum stays `traveling`, the
+word is British like the rest of the copy); and **location is not drawn at all** (ADR-066), though
+it is captured and stored with every chit, never
 as a name, a coordinate or a map. The facts sit on one line, lowercase, spaced apart with no
 separators, in the same words and case wherever they appear; the open chit's line is `--ink-muted`
 and a saved chit's is `--ink-faint`, the chit being written being brighter than the ones already
 written and that being the only difference between them. Conditions are words because "raining" is a
 feeling and a temperature is not. Location is not drawn because a mark that can never be absent says
 nothing; **motion is drawn in the thread as well** — the same argument reversed, almost no chit
-having one, so a mark on two out of twelve carries real information.
+having one, so a word on two out of twelve carries real information.
 
 **3.6.1 One ambient fact, ranked.** Weather and motion share a single slot and never both appear
 (ADR-038) — three items at 11.5px is the ceiling the spacing is built on. Highest first: `flying`,
 `traveling`, `raining`, `windy`, `walking`, `overcast`, `clear`/`clearNight`. `stationary` is
 **never drawn** — stored, and that is all. **A chit written at a desk in the rain reads
-`3:42 pm  raining`**: an icon only *displaces* a word, and only when the phone was moving.
+`3:42 pm  raining`**: a motion only *displaces* the weather, and only when the phone was moving.
 
 **3.6.2 What the motion states mean.** Four, and no more (ADR-037), read from the speed on the
 position fix — so motion costs no second permission, and a refused location costs the fix and the
-motion together. `stationary` (still, or too uncertain to claim otherwise) draws nothing; `walking`
-is a figure, `traveling` a car, `flying` a plane. **No `running`, no `cycling`** — speed cannot tell
-a cyclist at 20 km/h from traffic at the same speed. **A motion that did not arrive is not drawn.**
+motion together. `stationary` (still, or a reading noisier than the speed it carries) draws nothing.
+**A speed the platform reported without an error beside it is still a speed** (ADR-078): Android
+sends 0.0 for an accuracy it does not have, and reading that as noise is what kept a train at
+`stationary`. **No `running`, no `cycling`** — speed cannot tell a cyclist at 20 km/h from traffic
+at the same speed. **A motion that did not arrive is not drawn.**
 
 **3.6.3 When capture happens.** At launch, and at a save holding something stale (ADR-042,
 ADR-045); no polling, no refresh on resume. Five minutes is set by the **place**, not the weather,
@@ -79,8 +83,9 @@ it.
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
 **one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the
-calendar's month sit at the same height** (§6.3), so switching tab does not move the heading. Then the timeline, the
-open chit on its visible second slip, the day's thread, and the चित्त mark closing the day.
+calendar's month sit at the same height** (§6.3), so switching tab does not move the heading. Then
+the timeline, the open chit on its visible second slip, the day's thread, and the चित्त mark closing
+the day.
 
 *The action row.* The microphone leads it at the foot of the slip, full 54px; **Save** arrives to
 its right once the chit holds anything, and an untouched chit shows only the microphone. **Remove**

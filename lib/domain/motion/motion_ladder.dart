@@ -18,7 +18,7 @@ abstract final class MotionLadder {
 
     if (speed < walkingFloor) return MotionState.stationary;
 
-    if (!_isUsable(speed: speed, speedAccuracy: speedAccuracy)) {
+    if (_isNoise(speed: speed, speedAccuracy: speedAccuracy)) {
       return MotionState.stationary;
     }
 
@@ -31,13 +31,13 @@ abstract final class MotionLadder {
     return high ? MotionState.flying : MotionState.traveling;
   }
 
-  static bool _isUsable({
+  static bool _isNoise({
     required double speed,
     required double? speedAccuracy,
   }) {
     if (speedAccuracy == null || speedAccuracy.isNaN) return false;
     if (speedAccuracy <= 0) return false;
 
-    return speedAccuracy <= speed;
+    return speedAccuracy > speed;
   }
 }

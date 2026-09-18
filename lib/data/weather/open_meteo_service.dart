@@ -41,7 +41,7 @@ final class OpenMeteoService implements WeatherService {
   static Uri _uriFor(GeoFix fix) => Uri.https(host, path, <String, String>{
     'latitude': fix.lat.toStringAsFixed(4),
     'longitude': fix.lon.toStringAsFixed(4),
-    'current': 'weather_code,wind_speed_10m,is_day',
+    'current': 'weather_code,wind_speed_10m,is_day,precipitation,cloud_cover',
     'wind_speed_unit': 'ms',
   });
 
@@ -61,6 +61,8 @@ final class OpenMeteoService implements WeatherService {
         _ => null,
       },
       windSpeed: _doubleOf(current['wind_speed_10m']),
+      precipitation: _doubleOf(current['precipitation']),
+      cloudCover: _doubleOf(current['cloud_cover']),
     );
   }
 

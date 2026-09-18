@@ -145,4 +145,70 @@ void main() {
       }
     });
   });
+
+  group('what is measured beats what is summarised — ADR-078', () {
+    WeatherCondition? measured(
+      int code, {
+      double? rain,
+      double? cloud,
+      bool? isDay = true,
+    }) => WmoMapping.from(
+      code: code,
+      isDay: isDay,
+      windSpeed: 0,
+      precipitation: rain,
+      cloudCover: cloud,
+    );
+
+    test('a rain code with no rain under it is not raining', () {
+      for (final int code in <int>[...drizzle, ...rain, ...showers]) {
+        expect(
+          measured(code, rain: 0, cloud: 90),
+          WeatherCondition.overcast,
+          reason: 'code $code fired on a forecast, not on a drop',
+        );
+      }
+    });
+
+    test('rain measured under a clear code is still rain', () {
+      expect(measured(0, rain: 0.4, cloud: 10), WeatherCondition.raining);
+    });
+
+    test('the floor is a tenth of a millimetre', () {
+      expect(
+        measured(61, rain: WmoMapping.rainFloor),
+        WeatherCondition.raining,
+      );
+      expect(
+        measured(61, rain: WmoMapping.rainFloor - 0.01, cloud: 10),
+        WeatherCondition.clear,
+      );
+    });
+
+    test('cloud cover decides clear against overcast — open item 28', () {
+      expect(measured(2, rain: 0, cloud: 85), WeatherCondition.overcast);
+      expect(measured(2, rain: 0, cloud: 20), WeatherCondition.clear);
+      expect(
+        measured(2, rain: 0, cloud: 20, isDay: false),
+        WeatherCondition.clearNight,
+      );
+    });
+
+    test('fog and snow close the sky whatever the cloud cover says', () {
+      for (final int code in <int>[...fog, ...snow]) {
+        expect(
+          measured(code, rain: 0, cloud: 0),
+          WeatherCondition.overcast,
+          reason: 'code $code',
+        );
+      }
+    });
+
+    test('with neither quantity it falls back to the code', () {
+      expect(at(3), WeatherCondition.overcast);
+      for (final int code in clearish) {
+        expect(at(code), WeatherCondition.clear, reason: 'code $code');
+      }
+    });
+  });
 }
