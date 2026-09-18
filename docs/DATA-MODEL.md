@@ -25,7 +25,8 @@ class Chits extends Table {
 ```
 
 **One index: `(localDay, createdAt)`** — the order every query here reads in, so the archive's
-`ORDER BY local_day DESC, created_at DESC LIMIT n` is a walk rather than a sort of the whole table,
+`WHERE local_day BETWEEN ? AND ? ORDER BY local_day DESC, created_at DESC` is a walk of one month
+rather than a sort of the whole table,
 and `localDay` alone is still served as the leftmost column (ADR-077). *Three separate indexes until
 then*, of which the one on `weather` served backlog item 2 and nothing that exists — an index on
 speculation is what YAGNI forbids, and the same argument always ruled out `motion`.
@@ -101,7 +102,7 @@ at one instant and drawn as one row.
 | Today, the thread | `watchDay` — `WHERE localDay = ? ORDER BY createdAt DESC` |
 | Today, the timeline | `watchDayRange` — three days, **oldest first** |
 | Calendar, density **and** summary | `watchDaySummaries` — one query; the total is the rows' sum, the day count their length |
-| Archive | `watchArchive` — `ORDER BY localDay DESC, createdAt DESC`, paged |
+| Archive | `watchArchive` — one month, `ORDER BY localDay DESC, createdAt DESC` (ADR-079) |
 | Archive, filtered | `watchDay` — *one day's chits, newest first* is one question |
 | Calendar, the chevrons | `watchWrittenMonths` — `GROUP BY localDay / 100` (ADR-047) |
 
@@ -171,7 +172,7 @@ and **the console is the only place it reports**.
 **Sixty chits over three months, dated relative to the day it runs.** Yesterday and the day before
 hold five each — density step four, and ten marks across two days on the strip — then threes, twos
 and singles thinning backwards over eighty-nine days and four calendar months, so the chevrons have
-somewhere to go and the archive pages more than once. **Twelve days in the middle hold nothing**,
+somewhere to go and one month holds more than a screenful. **Twelve days in the middle hold nothing**,
 which is the only thing that draws the week a past month leaves out (ADR-048). **Today is left
 alone**: it belongs to whoever is holding the phone. **Every seeded id starts with `seed-`**,
 which is the whole of how the rows are told apart from a person's own — no ledger, no preference, no

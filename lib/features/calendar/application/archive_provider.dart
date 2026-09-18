@@ -67,26 +67,14 @@ class SelectedDay extends _$SelectedDay {
 }
 
 @riverpod
-class ArchivePages extends _$ArchivePages {
-  static const int pageSize = 40;
-
-  @override
-  int build() => 1;
-
-  void more() => state = state + 1;
-}
-
-@riverpod
-int archiveLimit(Ref ref) =>
-    ArchivePages.pageSize * ref.watch(archivePagesProvider);
-
-@riverpod
 Stream<List<Chit>> archiveChits(Ref ref) {
   final ChitRepository repo = ref.watch(chitRepositoryProvider);
   final int? selected = ref.watch(selectedDayProvider);
 
   if (selected != null) return repo.watchDay(selected);
-  return repo.watchArchive(limit: ref.watch(archiveLimitProvider));
+
+  final YearMonth month = ref.watch(visibleMonthProvider);
+  return repo.watchArchive(fromDay: month.firstDay, toDay: month.lastDay);
 }
 
 @riverpod

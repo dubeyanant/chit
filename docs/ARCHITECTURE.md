@@ -30,11 +30,11 @@ A widget used by one screen stays in that screen's `presentation/widgets/` until
 wants it. `Clock` lives in `core/`, not `domain` — `core` is imported by every layer and depends on
 none, which is what an injected clock needs.
 
-**The archive is a lazy sliver, and that is load-bearing** (ADR-077). Its day groups are built by
-`SliverList.builder`, so what the reader cannot see is not built; only the first
-`StaggeredEntrance.cap` groups sit in a box adapter, because the entrance needs them all at once and
-that number is bounded. Anything added to that screen must keep the rule: **a list that grows with
-the archive belongs in a sliver that builds on demand.**
+**The archive is a lazy sliver, and that is load-bearing** (ADR-077). Every day group is built by
+`SliverList.builder`, so what the reader cannot see is not built — and since ADR-079 the list holds
+one month, so it is bounded as well as lazy. Anything added to that screen keeps the rule: **a list
+whose length is a function of how much somebody has written belongs in a sliver that builds on
+demand.**
 
 **The shared widgets are the chit vocabulary — no state, no provider, each takes only what it
 draws.** `DayThread` is why the archive's *same treatment as Today* is true by construction: one
@@ -138,7 +138,8 @@ visible month by one answer, on purpose** (ADR-049), the bar taking its name fro
 name and grid change together. **`VisibleMonth` computes its own destinations** rather than reading
 its neighbours provider back, which would be a cycle. **The selection resets by watching the month,
 not by being cleared**, and **a filtered archive is `watchDay`** — the same query Today's thread
-runs.
+runs. **The unfiltered archive is the visible month's range** (ADR-079), so the list under the grid
+reads the month the bar is naming and cannot drift from it.
 
 ## 4. Theme, errors, testing
 

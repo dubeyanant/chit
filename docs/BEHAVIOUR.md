@@ -129,10 +129,13 @@ clears any selected day, and **the month on screen changes once, when the new on
 (ADR-049).
 
 The **month summary** reads *22 chits over eleven days*, the count upright and the rest italic; an
-empty month reads *Nothing written this month*. **The archive** groups every day newest-first using
-the same thread widget as Today, each headed *Today*, *Yesterday*, or its weekday and date — the
-year only when it is not this one — over a hairline with its count at the right, paged as the reader
-nears the end; a chit there opens the editor exactly as on Today. Tapping a date filters the archive
+empty month reads *Nothing written this month*. **The archive under it is that month and nothing
+else** (ADR-079) — change the month and the chits change with it, which is what makes the grid and
+the list one screen rather than two. It groups the month's days newest-first using the same thread
+widget as Today, each headed *Today*, *Yesterday*, or its weekday and date — the year only when it
+is not this one — over a hairline with its count at the right; a chit there opens the editor exactly
+as on Today. **There is no endless scroll and no paging**: a month is the page, and the chevrons are
+how you turn it. Tapping a date filters the archive
 and frames the tile in ink; tapping again, or **Show every day**, clears it, and a filtered day with
 nothing in it reads *"Nothing written that day."* **There is no legend** — the summary already says
 in words what the density says in ink. **The word is _density_, not _warmth_ or _heat_**; ADR-001

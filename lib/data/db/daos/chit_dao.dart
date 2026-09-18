@@ -71,13 +71,18 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
     );
   }
 
-  Stream<List<ChitRow>> watchArchive({required int limit, int offset = 0}) =>
+  Stream<List<ChitRow>> watchArchive({
+    required int fromDay,
+    required int toDay,
+  }) =>
       (select(chits)
+            ..where(
+              ($ChitsTable t) => t.localDay.isBetweenValues(fromDay, toDay),
+            )
             ..orderBy(<OrderClauseGenerator<$ChitsTable>>[
               ($ChitsTable t) => OrderingTerm.desc(t.localDay),
               ($ChitsTable t) => OrderingTerm.desc(t.createdAt),
-            ])
-            ..limit(limit, offset: offset))
+            ]))
           .watch();
 
   Future<ChitRow?> byId(String id) => (select(

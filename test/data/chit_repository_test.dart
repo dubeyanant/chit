@@ -817,20 +817,27 @@ void main() {
       expect(await repo.watchWrittenMonths().first, isEmpty);
     });
 
-    test('the archive reads newest day first, and pages', () async {
+    test('the archive reads newest day first, inside its range', () async {
       final Chit oldest = await chitAt(DateTime(2026, 9, 14, 9, 0), 'One.');
       final Chit middle = await chitAt(DateTime(2026, 9, 15, 9, 0), 'Two.');
       final Chit newest = await chitAt(DateTime(2026, 9, 15, 15, 42), 'Three.');
 
-      expect(await repo.watchArchive(limit: 10).first, <Chit>[
-        newest,
-        middle,
-        oldest,
-      ]);
-      expect(await repo.watchArchive(limit: 2).first, <Chit>[newest, middle]);
-      expect(await repo.watchArchive(limit: 2, offset: 2).first, <Chit>[
-        oldest,
-      ]);
+      expect(
+        await repo.watchArchive(fromDay: 20260901, toDay: 20260930).first,
+        <Chit>[newest, middle, oldest],
+      );
+    });
+
+    test('the range is the whole of it, and nothing outside', () async {
+      await chitAt(DateTime(2026, 8, 31, 23, 59), 'August.');
+      final Chit first = await chitAt(DateTime(2026, 9, 1, 0, 1), 'First.');
+      final Chit last = await chitAt(DateTime(2026, 9, 30, 23, 59), 'Last.');
+      await chitAt(DateTime(2026, 10, 1, 0, 1), 'October.');
+
+      expect(
+        await repo.watchArchive(fromDay: 20260901, toDay: 20260930).first,
+        <Chit>[last, first],
+      );
     });
 
     test('an edit does not move a chit in the archive', () async {
@@ -840,7 +847,9 @@ void main() {
       clock.moveTo(DateTime(2026, 9, 20, 8, 0));
       await repo.update(id: oldest.id, text: 'One, corrected.');
 
-      final List<Chit> archive = await repo.watchArchive(limit: 10).first;
+      final List<Chit> archive = await repo
+          .watchArchive(fromDay: 20260901, toDay: 20260930)
+          .first;
       expect(archive.map((Chit c) => c.id), <String>[newest.id, oldest.id]);
     });
   });

@@ -60,97 +60,6 @@ abstract class _$SelectedDay extends $Notifier<int?> {
   }
 }
 
-@ProviderFor(ArchivePages)
-final archivePagesProvider = ArchivePagesProvider._();
-
-final class ArchivePagesProvider extends $NotifierProvider<ArchivePages, int> {
-  ArchivePagesProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'archivePagesProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$archivePagesHash();
-
-  @$internal
-  @override
-  ArchivePages create() => ArchivePages();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
-  }
-}
-
-String _$archivePagesHash() => r'd50a8e349b3238de55f7cffd4a827122a5216323';
-
-abstract class _$ArchivePages extends $Notifier<int> {
-  int build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<int, int>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<int, int>,
-              int,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(archiveLimit)
-final archiveLimitProvider = ArchiveLimitProvider._();
-
-final class ArchiveLimitProvider extends $FunctionalProvider<int, int, int>
-    with $Provider<int> {
-  ArchiveLimitProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'archiveLimitProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$archiveLimitHash();
-
-  @$internal
-  @override
-  $ProviderElement<int> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  int create(Ref ref) {
-    return archiveLimit(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
-  }
-}
-
-String _$archiveLimitHash() => r'1a0d943d66caf4f29f0bc1ac9331a962d3d561f7';
-
 @ProviderFor(archiveChits)
 final archiveChitsProvider = ArchiveChitsProvider._();
 
@@ -187,7 +96,7 @@ final class ArchiveChitsProvider
   }
 }
 
-String _$archiveChitsHash() => r'd845f20195730b5072c5bd64feeee0a6b51c0372';
+String _$archiveChitsHash() => r'49d2c4107881a5f42754ed3f7bf51e14d344257a';
 
 @ProviderFor(ArchiveDays)
 final archiveDaysProvider = ArchiveDaysProvider._();

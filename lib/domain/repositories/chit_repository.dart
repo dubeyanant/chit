@@ -46,7 +46,7 @@ abstract interface class ChitRepository {
 
   Stream<List<int>> watchWrittenMonths();
 
-  Stream<List<Chit>> watchArchive({required int limit, int offset = 0});
+  Stream<List<Chit>> watchArchive({required int fromDay, required int toDay});
 
   Future<void> discardTemp(String tempPath);
 
