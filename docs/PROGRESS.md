@@ -6,8 +6,9 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M6 — the chit editor — has had two looks on a handset; groups A to F
-are done.**
+**Last updated:** 18 September 2026. **M6 — the chit editor — is signed off**, on the third
+handset look; the three asks it produced are built and are checked on M7's device pass rather
+than a fourth look of their own. **M7 — motion and the floors — is next and not yet cut.**
 [TASKS.md](TASKS.md) is cut for it, in seven groups, and the cut is **wider than
 [BUILD-PLAN.md](BUILD-PLAN.md) M6 as written** — the owner asked for three things the plan did
 not have. A chit's recording becomes removable and replaceable, which **reverses ADR-014's
@@ -77,6 +78,17 @@ reports could not be reproduced from the code**: that Today's Save and the micro
 "are broken". Nothing in the suite or the analyser finds a fault and no device was attached;
 the editor's action row was rebuilt for the other fixes, so the second build is the test.
 
+**The third look passed all eight** — Save and the microphone included, so the two unreproduced
+reports were the layout after all — and closed item 39: the sound did not restart, only the
+bars. Three asks came back, all done (ADR-067): the editor's pill sits above the words; a chit
+is opened by holding it, a tap doing nothing (ADR-061, changed in place); and **a pill tapped
+while another sounded was heard but never lit** — `just_audio` keeps `playing` across a source
+change and its `play()` returns early while it is set, so the second pill was never reported
+playing and the next tap was a no-op. `JustAudioPlayer` stops before it loads now, and
+`test/data/just_audio_player_test.dart` holds it with a fake platform under the real plugin.
+*`FakeAudioPlayer` had this right all along* — a test on it passed while the adapter failed,
+which is M5's lesson about fakes read the other way and belongs in M6's own lessons at sign-off.
+
 *M5 — voice — was signed off on a handset earlier the same day.* A chit can be spoken as well as
 typed: the microphone opens a recording sheet, the take is attached to the open chit, and it
 plays back from a pill on Today, in the calendar's archive and on the open chit itself.
@@ -133,10 +145,10 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
 | **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
-| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A to F done, G half done** — two looks in, the Save layout fixed on the second; open item 39 is the one real unknown. ADR-017, ADR-060 to ADR-066. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
-| M7 — motion and the floors | ⬜ | |
+| **M6** — the chit editor | ✅ done | 18 Sep 2026, signed off on a handset on the third look; the third look's three asks are built (ADR-067) and are checked on M7's device pass. ADR-017, ADR-060 to ADR-067. Wider than BUILD-PLAN.md M6: audio became editable, a chit became deletable |
+| M7 — motion and the floors | ⬜ next | not yet cut. Its handset pass opens with M6's three carried checks |
 
-**492 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
+**495 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
 anything the app still does.* **Schema is v1 again and there are no migrations** — an install
 carrying an older shape is reinstalled.
@@ -150,35 +162,22 @@ bundle of item 6 is the only part chit chose. Nothing about shipping has been de
 
 ---
 
-## Next: M6 group G — the third look
+## Next: cut M7
 
-**Everything M6 builds is built; two looks are in.** The second look settled three things:
-*the Save button was a layout bug, not a dead control* — a bare `PrimaryButton` under an
-`AnimatedSwitcher` is laid out loose and shrinks to its label, a tall sliver beside the
-microphone; wrapped in a `Row` with one `Expanded` child on both screens, which is the shape
-that had been seen working in M5. The caret lands where the thumb presses (first-look item 3,
-closed). And **short recordings appear to restart a second in** — open item 39, with a guard in
-place and the real question still open. What the owner should look at on the third build:
+**M6 is signed off.** The next session replaces TASKS.md with M7 cut into groups, from
+BUILD-PLAN.md M7 and DESIGN-SYSTEM.md §6.3–§6.4. Two things to carry into the cut:
 
-1. **Save, on Today and in the editor** — full width beside the microphone, 49px tall, the
-   height the M5 handset saw.
-2. **A two-second recording, played from the thread**: does the *sound* start over a second
-   in, or only the bars? The guard in `JustAudioPlayer._onPosition` stops the bars going
-   backwards; if the sound still restarts, the cause is in the platform or the file and item
-   39 says where to look next.
-3. **A recording-only chit with its take removed** (first-look item 6, still not answered):
-   Cancel in the row, *Delete this chit* below, and no Save — does that read as intended, or
-   as broken?
-4. **The microphone on Today** — the first look called it broken alongside Save; if Save was
-   the layout, this may have been too. Confirm it opens the sheet.
+1. **The handset pass opens with M6's three unchecked boxes** — the editor's pill above the
+   words, a hold opening a chit, and a second pill lighting while a first one sounds. TASKS.md
+   G holds them; they move into M7's device group verbatim.
+2. **Open item 14 is M7's.** The framework's caret blinks under reduced motion and there is no
+   public way to steady it; M7 either files a framework issue or writes it into §6.4 as a
+   stated limit. Decide which in the cut rather than at the end.
 
-**Passed so far** (18 September 2026): the row without Discard; the chit row as a button; the
-prompt sheet; a replaced take playing from the pill; delete; the stamp never moving; the
-caret. TASKS.md G carries the ticks.
+**Read BUILD-PLAN.md M5's four lessons and M6's before writing a fake or fixing anything a
+device turns up.**
 
-**Read BUILD-PLAN.md M5's four lessons before fixing anything a device turns up.**
-
-The old *Next* is in git under `efb3a85`.
+The old *Next* is in git under `88105c2`.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M6.
@@ -388,13 +387,13 @@ them can happen now.** The numbers are not reused.
     taught, which is the expensive part; the code is a morning's work and is in git at
     `ff78077`. Leaving it until *after* that install is how a milestone ends with somebody's
     chits gone.
-39. **A short recording appears to start over about a second in.** Seen on the second look,
-    18 September 2026, on two-to-three-second takes recorded on the handset and played from the
-    thread: the bars ran for a second, snapped to the start and ran the whole take. Longer takes
-    showed nothing. **Whether the sound restarts or only the playhead is not known** — the
-    owner could not tell. `JustAudioPlayer._onPosition` now ignores a position lower than the
-    last, since nothing in chit seeks mid-play, so the bars can no longer go backwards; if the
-    sound still restarts on the third look, the suspects in order are: `just_audio` reporting
+39. ~~A short recording appears to start over about a second in.~~ **Closed 18 September 2026
+    on the third look**: only the bars restarted, never the sound. Seen on the second look on
+    two-to-three-second takes played from the thread: the bars ran for a second, snapped to the
+    start and ran the whole take. `JustAudioPlayer._onPosition` ignores a position lower than the
+    last, since nothing in chit seeks mid-play, so the bars can no longer go backwards, and the
+    third look confirmed that was the whole of it. The suspects are kept in case the *sound*
+    ever does restart, in order: `just_audio` reporting
     `ready`+`playing` before the audio track has actually started, so the interpolated position
     runs ahead and is then corrected by the platform; and the `record` package's AAC output on
     a very short take — an encoder-priming frame or a `moov` atom written last, either of which

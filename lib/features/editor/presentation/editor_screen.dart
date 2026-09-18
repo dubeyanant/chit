@@ -161,12 +161,12 @@ class _Editor extends ConsumerWidget {
                   // being read, so it is not brighter for being on a screen of
                   // its own (BEHAVIOUR.md §3.6).
                   AmbientStampRow.saved(stamp: chit.stamp),
-                  SizedBox(height: space.s4),
-                  Expanded(child: _Field(id: id)),
-                  // The stored recording, or a staged replacement — the state
-                  // knows which (ADR-008: relative for the first, absolute for
-                  // the second). **Remove** stages; nothing touches the file
-                  // until Save (D6).
+                  // The recording sits above the words, where the open chit
+                  // puts it (ADR-067) — the same slip, so the same order. It
+                  // is the stored recording or a staged replacement, and the
+                  // state knows which (ADR-008: relative for the first,
+                  // absolute for the second). **Remove** stages; nothing
+                  // touches the file until Save (D6).
                   if (state.hasAudio) ...<Widget>[
                     SizedBox(height: space.s4),
                     AudioPill(
@@ -178,6 +178,8 @@ class _Editor extends ConsumerWidget {
                           .removeAudio,
                     ),
                   ],
+                  SizedBox(height: space.s4),
+                  Expanded(child: _Field(id: id)),
                   SizedBox(height: space.s4),
                   _ActionRow(id: id, state: state),
                   if (state.microphoneRefused) ...<Widget>[

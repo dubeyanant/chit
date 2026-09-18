@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
@@ -53,15 +57,16 @@ class DayThread extends StatelessWidget {
 /// identical marks distinguishing nothing; on the open chit it means *this is
 /// being noted, now*.
 ///
-/// **The whole row opens the editor** — ADR-061, and the affordance M2 and M4
-/// held back because until M6 a tap had nowhere to go. It is one widget, so
-/// Today and the archive gain it in the same change and cannot drift apart.
+/// **Holding the row opens the editor** — ADR-061, and the affordance M2 and
+/// M4 held back because until M6 a press had nowhere to go. It is one widget,
+/// so Today and the archive gain it in the same change and cannot drift apart.
 /// No chevron: the row *is* the target, and a marker pointing at a target
-/// that large would be saying what the press already says.
+/// that large would be saying what the wash already says.
 ///
-/// **There is no long-press and no swipe.** Delete lives in the editor
-/// (ADR-062) rather than a thumb's width from a scroll, because the thread is
-/// a reading surface and there is no trash to recover a chit from.
+/// **A tap does nothing, and there is no swipe.** The thread is a reading
+/// surface: a tap that opened the editor was a scroll's glancing touch away
+/// from leaving the page, and the one tap the row does answer is the pill's.
+/// Delete lives in the editor (ADR-062), not a thumb's width from a scroll.
 class ChitRow extends StatefulWidget {
   /// The row for [chit].
   const ChitRow({required this.chit, super.key});
@@ -84,7 +89,12 @@ class ChitRow extends StatefulWidget {
 class _ChitRowState extends State<ChitRow> {
   bool _pressed = false;
 
-  void _press({required bool down}) => setState(() => _pressed = down);
+  void _press({required bool down}) {
+    // The hold pushes the editor while the finger is still down, so the
+    // release can land after the row has gone — a chit deleted from the
+    // screen it opened.
+    if (mounted) setState(() => _pressed = down);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +103,8 @@ class _ChitRowState extends State<ChitRow> {
     return Semantics(
       button: true,
       label: 'Chit, ${chit.hasText ? chit.text! : 'a recording'}',
-      hint: 'Opens the chit',
+      hint: 'Hold to open the chit',
+      onLongPress: () => _open(context),
       // `excludeSemantics` so a screen reader is offered the row and not also
       // the stamp, the words and the pill inside it — one target, one thing
       // to say about it. The pill is the exception it costs: its own control
@@ -113,10 +124,18 @@ class _ChitRowState extends State<ChitRow> {
         },
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTapDown: (TapDownDetails _) => _press(down: true),
-          onTapUp: (TapUpDetails _) => _press(down: false),
-          onTapCancel: () => _press(down: false),
-          onTap: () => _open(context),
+          // The wash arrives with the finger and leaves with a scroll, so the
+          // half-second before the hold is recognised is not a dead row. No
+          // `onTap`: the pill inside keeps its own, and nothing else here
+          // answers one.
+          onLongPressDown: (LongPressDownDetails _) => _press(down: true),
+          onLongPressCancel: () => _press(down: false),
+          // The strip's tick, at the moment the hold is recognised — the only
+          // thing that moves is the screen, and a thumb wants telling first.
+          onLongPressStart: (LongPressStartDetails _) =>
+              unawaited(HapticFeedback.selectionClick()),
+          onLongPress: () => _open(context),
+          onLongPressEnd: (LongPressEndDetails _) => _press(down: false),
           child: _Body(chit: chit, pressed: _pressed),
         ),
       ),
@@ -186,7 +205,7 @@ class _Body extends StatelessWidget {
               // **This becomes a `Text.rich` when `@person` and `#hashtag`
               // arrive** (OPEN-QUESTIONS.md §9 item 8) and nothing here has to
               // move for it: a `TapGestureRecognizer` on a span wins the
-              // gesture arena against the row's own tap, so a name can lead
+              // gesture arena against the row's hold, so a name can lead
               // somewhere else while the rest of the row still opens the chit.
               child: Text(chit.text!, style: context.type.chitText),
             ),

@@ -319,11 +319,13 @@ happening, under it for where a day ended (ADR-036).
 
 The open chit rests on a visible second slip, offset behind it: a pad you tear from.
 
-**A chit in the thread opens** — the whole row, on Today and in the archive alike (ADR-061).
-Under a finger it takes a 6% ink wash and its stamp lifts from `--ink-faint` to `--ink-muted`,
-because faint ink fails the contrast floor on any wash at all (DESIGN-SYSTEM.md §6.1). No
-chevron: the row *is* the target. There is no long-press and no swipe — deleting a chit lives
-in the editor (§4.5), not a thumb's width from a scroll.
+**A chit in the thread is opened by holding it** — the whole row, on Today and in the archive
+alike (ADR-061). The wash arrives with the finger — 6% ink, its stamp lifting from `--ink-faint`
+to `--ink-muted` because faint ink fails the contrast floor on any wash at all (DESIGN-SYSTEM.md
+§6.1) — a scroll takes it away, and the moment the hold is recognised ticks as the strip does.
+No chevron: the row *is* the target. A tap does nothing, since the thread is a reading surface
+and the one tap it answers is the pill's; there is no swipe — deleting a chit lives in the
+editor (§4.5), not a thumb's width from a scroll.
 
 The चित्त mark closes the day at the foot of the thread — it appears there and beside the
 wordmark, nowhere else.
@@ -451,7 +453,7 @@ trust this screen exists to build.
 
 ### 4.5 The chit editor
 
-Reached by tapping any chit in the thread — on Today or in the archive (§4.1). **It covers the
+Reached by holding any chit in the thread — on Today or in the archive (§4.1). **It covers the
 tab bar** (ADR-062): one task, one way out.
 
 ```
@@ -460,10 +462,11 @@ tab bar** (ADR-062): one task, one way out.
   ┌ ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ┐
   │ 8:05 am   clear                        │       ← the saved stamp, unchanged and unchangeable
   │                                        │
+  │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]           Remove    │       ← the recording above the words, as on the open chit
+  │                                        │
   │ Didn't sleep. Room too cold, again.    │
   │                                        │
   │                                        │       ← the field takes every line the screen has
-  │ [ ▶ ▁▃▅▂▆▃▁ 0:22 ]           Remove    │
   │                                        │
   │   Cancel           ┌───────────────┐   │       ← Cancel always; Save once something changed
   │                    │     Save      │   │
