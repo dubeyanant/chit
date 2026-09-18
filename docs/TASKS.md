@@ -131,7 +131,7 @@ settings screen (open item 22).
 - [x] Deleting lands back where the editor was opened from.
 - [x] Tests: the row goes, the file goes, the thread and the calendar re-emit without it.
 
-## G. Handset pass and sign-off
+## G. Handset pass and sign-off ✅
 
 *What no test can settle. Seed first — `flutter run --dart-define=CHIT_SEED=seed`, `=clear`
 after. There is no migration now (ADR-059), but M6 changes no schema, so nobody has to
@@ -151,7 +151,9 @@ uninstall.*
       were a fake or its harness behaving better than the real thing. *And one of M6's was the
       real thing behaving worse than its fake — ADR-067.*
 
-**The fourth look** — the third look's three asks, built and awaiting a handset (ADR-067):
+**Carried into M7's handset pass** — the third look's three asks are built (ADR-067) and the
+owner signed M6 off on 18 September 2026 without a fourth look, choosing to check them on M7's
+device pass instead. They are the first three boxes of that pass, whatever else it holds:
 
 - [ ] The editor's pill sits between the stamp and the words, Remove beside it — on a stored
       recording and on a staged replacement alike.

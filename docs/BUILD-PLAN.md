@@ -237,7 +237,7 @@ standing lesson that a device is the only net for this class of failure:
 
 ---
 
-## M6 — The chit editor
+## M6 — The chit editor ✅ done, 18 September 2026
 
 OPEN-QUESTIONS.md §8.1, settled by ADR-017. It sits here rather than earlier because the editor has to
 handle a chit that already carries an audio pill, and after M5 every chit shape exists.
@@ -270,6 +270,22 @@ timeline and relights no calendar tile.
 The prompt is the point of this milestone as much as the editor is. Abandoning an open chit
 needs no confirmation and gets none (BEHAVIOUR.md §3.1) — discarding an edit to a record does.
 `docs/TASKS.md` carries the cut and the twelve decisions it turns on.
+
+**Signed off on a handset on 18 September 2026**, on the third look, with the three asks that
+look produced (ADR-067) built and carried into M7's device pass rather than given a fourth look
+of their own. What it taught, beside M5's four:
+
+- **A fake can be more honest than the thing it stands in for.** `FakeAudioPlayer` took a second
+  pill over a first one correctly; `JustAudioPlayer` did not, and a test on the fake passed while
+  the device failed. The net was not a better fake above the adapter but a fake *under* the
+  plugin, so the plugin's own logic runs in the suite (`just_audio_player_test.dart`).
+- **"It's broken" on a device is first a layout question.** Save shrank to its label under an
+  `AnimatedSwitcher` and read as dead; nobody could reproduce a dead control from the code
+  because there was none. Look at the widget's constraints before its callback.
+- **An affordance on a scrolling surface is decided by a thumb.** The tap ADR-061 chose at a
+  desk fired on a glancing touch; the owner reversed it to a hold after one day of use.
+- **Sign-off is a decision about what to carry, not an empty checklist.** Three boxes moved into
+  the next milestone's pass with the owner's say-so, and TASKS.md says which and why.
 
 ---
 

@@ -6,8 +6,9 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M6 — the chit editor — has had three looks on a handset;
-groups A to F are done, and the third look's three asks are built and await the fourth.**
+**Last updated:** 18 September 2026. **M6 — the chit editor — is signed off**, on the third
+handset look; the three asks it produced are built and are checked on M7's device pass rather
+than a fourth look of their own. **M7 — motion and the floors — is next and not yet cut.**
 [TASKS.md](TASKS.md) is cut for it, in seven groups, and the cut is **wider than
 [BUILD-PLAN.md](BUILD-PLAN.md) M6 as written** — the owner asked for three things the plan did
 not have. A chit's recording becomes removable and replaceable, which **reverses ADR-014's
@@ -144,8 +145,8 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
 | **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
-| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A to F done, G on its fourth look** — three looks in, every check passed on the third; its three asks are built and await a handset. ADR-017, ADR-060 to ADR-067. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
-| M7 — motion and the floors | ⬜ | |
+| **M6** — the chit editor | ✅ done | 18 Sep 2026, signed off on a handset on the third look; the third look's three asks are built (ADR-067) and are checked on M7's device pass. ADR-017, ADR-060 to ADR-067. Wider than BUILD-PLAN.md M6: audio became editable, a chit became deletable |
+| M7 — motion and the floors | ⬜ next | not yet cut. Its handset pass opens with M6's three carried checks |
 
 **495 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
@@ -161,25 +162,22 @@ bundle of item 6 is the only part chit chose. Nothing about shipping has been de
 
 ---
 
-## Next: M6 group G — the fourth look, then sign-off
+## Next: cut M7
 
-**Every check in group G has passed on a handset; three looks are in.** The third asked for
-three things and all three are built (ADR-067): the editor's pill above the words, a hold to
-open a chit, and the pill that played without lighting. What the owner should look at on the
-fourth build — TASKS.md G's last three boxes:
+**M6 is signed off.** The next session replaces TASKS.md with M7 cut into groups, from
+BUILD-PLAN.md M7 and DESIGN-SYSTEM.md §6.3–§6.4. Two things to carry into the cut:
 
-1. **The editor's pill** between the stamp and the words, Remove beside it.
-2. **A hold opens a chit.** The wash on touch, gone on a scroll, a tick as the editor opens. A
-   tap on the row does nothing; a tap on its pill still plays.
-3. **Two recordings on Today.** Tap one, then the other while the first sounds: the second
-   lights with the pause glyph, and the next tap pauses it.
+1. **The handset pass opens with M6's three unchecked boxes** — the editor's pill above the
+   words, a hold opening a chit, and a second pill lighting while a first one sounds. TASKS.md
+   G holds them; they move into M7's device group verbatim.
+2. **Open item 14 is M7's.** The framework's caret blinks under reduced motion and there is no
+   public way to steady it; M7 either files a framework issue or writes it into §6.4 as a
+   stated limit. Decide which in the cut rather than at the end.
 
-When those pass: tick them in TASKS.md, mark M6 done here and in BUILD-PLAN.md with what it
-taught, and cut TASKS.md for M7.
+**Read BUILD-PLAN.md M5's four lessons and M6's before writing a fake or fixing anything a
+device turns up.**
 
-**Read BUILD-PLAN.md M5's four lessons before fixing anything a device turns up.**
-
-The old *Next* is in git under `7d7656b`.
+The old *Next* is in git under `88105c2`.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M6.
