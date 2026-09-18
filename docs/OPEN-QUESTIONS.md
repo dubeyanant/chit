@@ -19,7 +19,9 @@ screen. Answerable by living with the app for a week rather than by more design.
 
 ## 9. Feature backlog
 
-Ordered by how much each reinforces what chit already is, not by appetite.
+Ordered by how much each reinforces what chit already is, not by appetite. **6 is built** — voice
+chits shipped as §3.4 — and **its number is not reused**, 8 being cited from item 47 and from
+DATA-MODEL.md.
 
 1. **Extend ambient capture** — coarse place ("home", "office"), what was playing.
 2. **Weather as a search axis** — "everything I wrote when it was raining". Possible *because* of
@@ -27,7 +29,6 @@ Ordered by how much each reinforces what chit already is, not by appetite.
 3. **Resurfacing** — a chit from a year ago on the home screen.
 4. **Adapt the prompt to time-to-first-word.**
 5. **The stitch** — one continuous year-long line, one mark per day.
-6. **Voice chits** — in the design already, §3.4.
 7. **Chit threading** — one chit replying to another. Hold until real usage shows people write in
    chains.
 8. **`@person` and `#hashtag`** — tappable in a chit's words, opening every chit carrying it. The
@@ -48,8 +49,8 @@ then responsive web. Deliberately not on the list: **any speech engine, cloud or
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 39; retired: 32, 33, 35,
-36.**
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43;
+retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
    `ChitType._opticalSizeFor` converts logical pixels to points at 0.75, which is what a browser does
@@ -70,8 +71,6 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     nothing. The ladder now believes a speed that arrives without an error beside it (ADR-078). What
     is still unwatched: whether a bad fix ever reports a *spurious* high speed with no accuracy, the
     case that trade accepts.
-20. **`flying` will almost never fire, and that is expected** — most devices disable GPS in airplane
-    mode, so there is no fix and no speed. A barometer is the honest route if it ever matters.
 21. **The motion thresholds now have a source, not a measurement.** 0.7, 3.0, 55 m/s and the 2000 m
     ceiling sit inside what the trajectory-classification literature uses — walking is usually cut at
     a 95th-percentile 3.0 m/s, and air travel at 40–80 m/s — but nobody has walked, ridden or flown
@@ -80,11 +79,12 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
 22. **A refused location permission is a dead end** — the app asks once and never again, and there
     is no settings screen, so a refusal can only be undone through the OS. A refused *microphone*
     names the phone's settings; location says nothing.
-23. **The open chit's preview goes stale without bound** (ADR-042). The smallest honest fix is a
+23. **The open chit's preview goes stale without bound, and now it is only the weather**
+    (ADR-042). ADR-080 took the clock off that line, which was the half a person could tell was
+    wrong by looking at it; what is left is a sky word that can be hours old on a phone left open
+    all day. **No chit is ever saved with it** — the save re-reads past five minutes (ADR-045) — so
+    this is a wrong word on the screen and never a wrong row. The smallest honest fix is still a
     refresh when the app returns to the foreground after a long absence.
-24. **The stamp's time does not tick** — it shows when the chit was opened, while the row carries
-    when it was saved (ADR-040). A self-updating clock is an ambient loop and was refused (ADR-027);
-    the untried middle option is re-reading the preview on the first keystroke.
 28. **Answered by measuring instead of classifying** (ADR-078). Partly cloudy is no longer a code
     question: `cloud_cover >= 60%` is overcast and below it is clear, and code 2 only decides when
     the quantity is missing. **60 is a judgement, not a measurement** — the okta scale calls 50–84%
@@ -99,8 +99,6 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     pinned `schemaVersion` at 1 and deleted the harness. **The trigger is the first install that is
     not a development one.** DATA-MODEL.md §6 has the four rules the harness taught; the code is in
     git at `ff78077`. Leaving it until *after* that install is how somebody's chits go.
-40. **The press pace draws nothing.** `ChitPace.press` is in §6.3's table with no caller since
-    ADR-070, kept because ADR-020's rule is argued from it and because web hover will want it.
 41. **Two stored names still say `chit`, and that is on purpose** (ADR-074). The package is `chitta`
     — `pubspec.yaml`, `applicationId`, the iOS bundle id — but `driftDatabase(name: 'chit')` and the
     two `chit.firstRun.*` preference keys are not, so that an applicationId reversed later still
@@ -111,10 +109,6 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     round mask (ADR-075); the sixteen iOS sizes were generated by the same run and have never been
     drawn. The one to look at is the smallest — the glyph sits above centre, and at 20px a mark that
     high can read as an accident. Re-exporting it centred is a Figma change, not a code one.
-43. **A new `applicationId` is a new app.** `com.infiniteants.chit` installs alongside
-    `com.infiniteants.chitta` rather than upgrading to it, so a handset that had the old build keeps
-    it, chits and all, and the new one opens empty. There is no export (ADR-004) and no migration
-    path between the two — the old app is the only copy.
 44. **The first-run screen has a copy ceiling, because it does not scroll** (ADR-076). On the 800dp
     handset it was checked on, the two slips and the two answers leave roughly 65dp of slack above
     the first slip; a phone with much less height, or a sentence added to either slip, clips instead
@@ -147,3 +141,11 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 25–27, 30, 31, 34, 3
     — but only if you know roughly when it was. **The thing that would answer this is search**, which
     is backlog items 2 and 8 wearing a different hat; the density grid is the only finding aid until
     then.
+48. **The `edited` word has not been seen on a handset** (ADR-080). The open chit's side was
+    checked on a CPH2707 release build — the line reads `raining` alone, no time, and the prompt
+    still fades in at five seconds — but `edited` needs a chit that has been saved and then
+    changed, and the pass was stopped before that: **driving the phone over `adb input` while
+    somebody is holding it types into whatever app is in front**, which is not a way to test. The
+    data side is pinned by tests; what nobody has looked at is the three-item line
+    `3:42 pm  raining  edited` at 11.5px, which is 038's ceiling and the one place the spacing
+    could read as crowded.

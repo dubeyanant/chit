@@ -54,10 +54,16 @@ deliberately **no `CHECK (motion IS NULL OR lat IS NOT NULL)`**: motion comes of
 that is how this milestone reads it, which is a fact about the implementation and not about what a
 chit *is*.
 
-**`updatedAt`** is set at insert to the same instant as `createdAt` and diverges on the first edit.
-Editing never changes `createdAt` or `localDay`, and **`updateAmbient` moves neither** (ADR-042) —
-the patch that follows a save must not move the chit in the thread, nor claim the user had edited
-something. An edit is the user's act and nothing else may claim to be one.
+**`updatedAt`** is set at insert to the same instant as `createdAt` — **`stamp.capturedAt` itself,
+never a second reading of the clock**, which is milliseconds and an audio file-move later and would
+make every chit ever saved look edited — and diverges on the first edit. Editing never changes
+`createdAt` or `localDay`, and **`updateAmbient` moves neither** (ADR-042) — the patch that follows
+a save must not move the chit in the thread, nor claim the user had edited something. An edit is the
+user's act and nothing else may claim to be one. **This equality is now drawn**: `Chit.wasEdited`
+compares the two and a saved chit that has moved says `edited` (ADR-080), so anything that touches
+`updatedAt` without the user asking is visible on the screen. A fake clock returns one instant to
+both reads, so **a test cannot catch a regression here** — the repository suite pins it by moving
+the clock between the stamp and the save.
 
 ## 2. The invariant
 

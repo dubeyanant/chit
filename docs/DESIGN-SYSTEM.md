@@ -71,10 +71,12 @@ anybody needs pronounced at them.
 
 **Uppercase appears in one place: `LISTENING`** on the recording sheet — a state, shown while a
 thing is happening, which should read as a signal rather than as words. The ambient stamp is
-lowercase everywhere, in the same words and case on the open chit and in the thread, the open chit
-being distinguished by being *brighter* rather than by speaking differently; its facts are **spaced
+lowercase everywhere, in the same words and case wherever a word appears twice, the open chit being
+distinguished by being *brighter* rather than by speaking differently; **it is the one place that
+carries no time** (ADR-080), so it is one word where the thread is two. Its facts are **spaced
 apart, not strung on middle dots**, three items at 11px with a separator between each being five
-things to read where there are three. Anything that counts or keeps time is **tabular** — a running
+things to read where there are three — and three is the ceiling, which `edited` reaches and nothing
+may pass. Anything that counts or keeps time is **tabular** — a running
 timer whose digits change width reads as unstable.
 
 **The date is a label, not a masthead**: weekday and date on one 26px line, the weekday italic in

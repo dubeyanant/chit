@@ -128,7 +128,12 @@ class _Body extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(child: AmbientStampRow.saved(stamp: chit.stamp)),
+              Expanded(
+                child: AmbientStampRow.saved(
+                  stamp: chit.stamp,
+                  edited: chit.wasEdited,
+                ),
+              ),
             ],
           ),
           if (chit.hasText)
