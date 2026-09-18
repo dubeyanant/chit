@@ -6,7 +6,7 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026. **M6 — the chit editor — is under way; groups A, B and C
+**Last updated:** 18 September 2026. **M6 — the chit editor — is under way; groups A to D
 are done.**
 [TASKS.md](TASKS.md) is cut for it, in seven groups, and the cut is **wider than
 [BUILD-PLAN.md](BUILD-PLAN.md) M6 as written** — the owner asked for three things the plan did
@@ -46,9 +46,15 @@ in place and ADR-063 says why. *One thing the plan changed on the way*: a remove
 deleted after the row is written rather than left for the startup sweep, so it does not sit on
 disk until the next launch.
 
-**Next is group D** — the prompt sheet, Cancel, and the leave prompt on all three exits. **The
-sheet is the app's first confirmation of any kind**: there is still no `showDialog` and no
-`SnackBar` anywhere, so its shape is the idiom every later prompt inherits (D9).
+**Group D is committed.** `showPromptSheet` is the app's first confirmation of any kind
+(ADR-064) — the recording sheet's paper, a question, two answers in the two button weights, and
+**the quiet weight always lets go**. Cancel arrives beside Save with the first change, and
+Cancel, the back arrow and the system back gesture (`PopScope`) are one exit asking one
+question, only when something has changed. Nothing about the sheet can be tested (ADR-031);
+what can — that leaving without saving leaves the row as it was — is.
+
+**Next is group E** — the voice in the editor: Remove on the pill, staged; the microphone's
+return and a new take, staged the same way; Save withheld when a removal leaves nothing.
 
 *M5 — voice — was signed off on a handset earlier the same day.* A chit can be spoken as well as
 typed: the microphone opens a recording sheet, the take is attached to the open chit, and it
@@ -106,10 +112,10 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
 | **M5** — voice | ✅ done | 18 Sep 2026, signed off on a handset on the third look. **Transcription removed** (ADR-058), **migrations removed** (ADR-059). ADR-052 to ADR-059 |
-| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A, B and C done**. ADR-017, ADR-060 to ADR-063. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
+| **M6** — the chit editor | 🔨 in progress | TASKS.md cut 18 Sep 2026 in seven groups, **A to D done**. ADR-017, ADR-060 to ADR-064. Wider than BUILD-PLAN.md M6: audio becomes editable, a chit becomes deletable |
 | M7 — motion and the floors | ⬜ | |
 
-**473 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
+**474 tests, `flutter analyze` clean, `dart format` clean.** *It was 473 before ADR-058 and 450
 before ADR-059; what went was the recogniser's tests and the migration harness, not coverage of
 anything the app still does.* **Schema is v1 again and there are no migrations** — an install
 carrying an older shape is reinstalled.
@@ -123,34 +129,34 @@ bundle of item 6 is the only part chit chose. Nothing about shipping has been de
 
 ---
 
-## Next: M6 group D — the prompt sheet
+## Next: M6 group E — the voice in the editor
 
-**Groups A to C are done and nothing is half-built.** [TASKS.md](TASKS.md) is the working
+**Groups A to D are done and nothing is half-built.** [TASKS.md](TASKS.md) is the working
 list; its **D1–D12 table is where this milestone's answers live**. The session that picks up
-group D:
+group E:
 
-1. **Builds `shared/widgets/prompt_sheet.dart`** — the app's first confirmation (D9). It rises
-   like the recording sheet: perforated top edge, `ChitSpace.sheetRadius`, the existing
-   `--scrim`, a question and two answers in the two button weights. **It decides nothing**
-   (D11); the controller's `shouldPromptOnLeave` already exists and is tested.
-2. **Raises *Keep this edit?* → Keep · Discard on all three exits** — Cancel, the back arrow
-   and the system back gesture — and only when something has changed. With nothing changed,
-   all three just leave. `PopScope` is the seam for the system gesture.
-3. **Adds Cancel beside Save**, arriving with it (D7, D8). Three acts, three words: *Discard*
-   is the sheet's and the prompt's word for throwing away something in flight, *Cancel*
-   abandons an edit, *Delete this chit* destroys a record.
-4. **Reads BUILD-PLAN.md M5's four lessons before writing a fake.**
+1. **Puts Remove on the editor's pill, staged** (D6). `AudioPill.onRemove` already exists;
+   the controller gains `removeAudio()`, which sets `EditorState.audio` to `AudioEdit.remove()`
+   and touches nothing else. `hasAudio`, `holdsAnything` and `canSave` already answer for it.
+2. **Brings the microphone back whenever the chit holds no recording**, reusing the recording
+   sheet unchanged; a kept take becomes `AudioEdit.replace(tempPath, duration)`, staged. A
+   take staged and then cancelled is a temp file to discard — `discardTemp`, as Today does.
+3. **Stops a playing recording before its file stops being the row's** — `stopIf(chit.id)`
+   before Save, as `ComposerController.save` does for the open chit.
+4. **Withholds Save when a removal leaves nothing** — already `canSave`'s rule; the pill goes
+   and the microphone returns, and the row is Cancel alone.
+5. **Reads BUILD-PLAN.md M5's four lessons before writing a fake.**
 
-**What groups A to C left for a device, not for a test** (ADR-031) — all on group G's list:
+**What groups A to D left for a device, not for a test** (ADR-031) — all on group G's list:
 that a row of microphone and Save reads as complete without Discard; that Remove beside the
 pill is findable; that a chit row reads as tappable at all; that the pressed wash is visible
-without being loud; and that the editor's field, seeded from a chit, keeps its caret where a
-thumb expects it.
+without being loud; that the editor's field keeps its caret where a thumb expects it; and
+**that the prompt sheet reads as a question rather than an error**.
 
 **M6 changes no schema**, so nobody has to uninstall. Seed before looking at anything —
 `flutter run --dart-define=CHIT_SEED=seed`, `=clear` after.
 
-The old *Next* is in git under `533392a`; it said to build group C, and group C is built.
+The old *Next* is in git under `a1e6ac3`; it said to build group D, and group D is built.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M6.

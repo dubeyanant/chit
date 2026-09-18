@@ -92,15 +92,15 @@ settings screen (open item 22).
       `NativeDatabase.memory()` — the text changes, `updatedAt` moves, `createdAt`, `localDay`
       and the three ambient fields do not, and a blank text is refused.
 
-## D. The prompt sheet
+## D. The prompt sheet ✅
 
-- [ ] `shared/widgets/prompt_sheet.dart` — the app's first confirmation (D9). Rises like the
+- [x] `shared/widgets/prompt_sheet.dart` — the app's first confirmation (D9). Rises like the
       recording sheet: perforated top edge, `ChitSpace.sheetRadius`, the existing `--scrim`. A
       question, and two answers in the two button weights. **It decides nothing** (D11).
-- [ ] *Keep this edit?* → Keep · Discard, raised by Cancel, the back arrow and the system back
+- [x] *Keep this edit?* → Keep · Discard, raised by Cancel, the back arrow and the system back
       gesture alike. With nothing changed, all three just leave.
-- [ ] `Cancel` beside Save, arriving with it (D7, D8).
-- [ ] Tests: the controller's `shouldPromptOnLeave`, and that answering *discard* leaves the row
+- [x] `Cancel` beside Save, arriving with it (D7, D8).
+- [x] Tests: the controller's `shouldPromptOnLeave`, and that answering *discard* leaves the row
       exactly as it was.
 
 ## E. The voice in the editor

@@ -10,6 +10,7 @@ import '../../../shared/day_label.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/prompt_sheet.dart';
 import '../../../shared/widgets/slip.dart';
 import '../../today/application/today_controller.dart';
 import '../application/editor_controller.dart';
@@ -55,21 +56,60 @@ class EditorScreen extends ConsumerWidget {
       }
     });
 
-    return Scaffold(
-      body: SafeArea(
-        child: switch (editor) {
-          // Nothing is drawn while the row is in flight. A slip with no stamp
-          // and no words on it is a wrong answer rather than a slow one —
-          // ADR-007's rule about undrawn signals, applied to a query.
-          AsyncData<EditorState?>(value: final EditorState state) => _Editor(
-            id: id,
-            state: state,
-          ),
-          _ => const SizedBox.shrink(),
-        },
+    final bool dirty = editor.value?.shouldPromptOnLeave ?? false;
+
+    // **The system back gesture is the third exit**, and it goes through the
+    // same question as Cancel and the back arrow (ADR-017, ADR-064). With
+    // nothing changed the pop is allowed straight through; with a change it
+    // is intercepted and asked. A programmatic pop — after Save, or when the
+    // row has gone — is not a system pop and is never intercepted.
+    return PopScope<Object?>(
+      canPop: !dirty,
+      onPopInvokedWithResult: (bool didPop, Object? _) {
+        if (!didPop) leaveEditor(context, ref, id);
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: switch (editor) {
+            // Nothing is drawn while the row is in flight. A slip with no stamp
+            // and no words on it is a wrong answer rather than a slow one —
+            // ADR-007's rule about undrawn signals, applied to a query.
+            AsyncData<EditorState?>(value: final EditorState state) => _Editor(
+              id: id,
+              state: state,
+            ),
+            _ => const SizedBox.shrink(),
+          },
+        ),
       ),
     );
   }
+}
+
+/// Leaves the editor — Cancel, the back arrow and the system back gesture
+/// all come here, so there is one question and one place it is asked.
+///
+/// **Asks only when something has changed.** Discarding an edit throws away a
+/// change to something real, which is what ADR-017's prompt exists for; with
+/// nothing changed there is nothing to ask about and all three exits just
+/// leave. Whether to ask is `EditorState.shouldPromptOnLeave`'s call, not
+/// this function's (TASKS.md D11).
+Future<void> leaveEditor(BuildContext context, WidgetRef ref, String id) async {
+  final bool dirty =
+      ref.read(editorControllerProvider(id)).value?.shouldPromptOnLeave ??
+      false;
+
+  if (dirty) {
+    final bool discard = await showPromptSheet(
+      context,
+      question: 'Keep this edit?',
+      keep: 'Keep',
+      letGo: 'Discard',
+    );
+    if (!discard) return;
+  }
+
+  if (context.mounted) context.pop();
 }
 
 /// The header, and the chit on its slip.
@@ -94,7 +134,7 @@ class _Editor extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          _Header(localDay: chit.localDay),
+          _Header(id: id, localDay: chit.localDay),
           SizedBox(height: space.s5),
           Slip(
             child: Column(
@@ -115,7 +155,7 @@ class _Editor extends ConsumerWidget {
                   ),
                 ],
                 SizedBox(height: space.s4),
-                _ActionRow(id: id, canSave: state.canSave),
+                _ActionRow(id: id, state: state),
               ],
             ),
           ),
@@ -175,41 +215,54 @@ class _FieldState extends ConsumerState<_Field> {
   }
 }
 
-/// **Save chit**, once something has changed — TASKS.md D7.
+/// **Cancel** and **Save chit**, once something has changed — TASKS.md D7, D8.
 ///
 /// The same rule as Today's row, on Today's terms: a control arrives when
 /// there is something for it to do, and a retired one leaves rather than
-/// greys out. It is also withheld when a removal has left the chit holding
-/// nothing, which is `canSave`'s other half.
+/// greys out. Both arrive with the first change. Save is withheld again when
+/// a removal has left the chit holding nothing, which is `canSave`'s other
+/// half — Cancel stays, because there is still a change to abandon.
+///
+/// *Cancel*, not *Discard*: Discard is the word for throwing away something
+/// in flight — the sheet's take, the prompt's edit — and a chit being edited
+/// is a record. Three acts, three words (ADR-064).
 class _ActionRow extends ConsumerWidget {
-  const _ActionRow({required this.id, required this.canSave});
+  const _ActionRow({required this.id, required this.state});
 
   final String id;
-  final bool canSave;
+  final EditorState state;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final motion = context.motion;
+    final space = context.space;
 
     return AnimatedSwitcher(
       duration: motion.fade(ChitPace.routine),
       reverseDuration: motion.fade(ChitPace.exit),
       switchInCurve: motion.curve,
       switchOutCurve: motion.curve,
-      child: canSave
+      child: state.isDirty
           ? Row(
               children: <Widget>[
-                Expanded(
-                  child: PrimaryButton(
-                    label: 'Save chit',
-                    onPressed: () async {
-                      await ref
-                          .read(editorControllerProvider(id).notifier)
-                          .save();
-                      if (context.mounted) context.pop();
-                    },
-                  ),
+                QuietButton(
+                  label: 'Cancel',
+                  onPressed: () => leaveEditor(context, ref, id),
                 ),
+                if (state.canSave) ...<Widget>[
+                  SizedBox(width: space.s2),
+                  Expanded(
+                    child: PrimaryButton(
+                      label: 'Save chit',
+                      onPressed: () async {
+                        await ref
+                            .read(editorControllerProvider(id).notifier)
+                            .save();
+                        if (context.mounted) context.pop();
+                      },
+                    ),
+                  ),
+                ],
               ],
             )
           : const SizedBox.shrink(),
@@ -223,8 +276,9 @@ class _ActionRow extends ConsumerWidget {
 /// Today's own date uses (DESIGN-SYSTEM.md §6.2 — a label, not a masthead).
 /// **Not the wordmark**: this is a place you came into, not a second home.
 class _Header extends ConsumerWidget {
-  const _Header({required this.localDay});
+  const _Header({required this.id, required this.localDay});
 
+  final String id;
   final int localDay;
 
   @override
@@ -239,7 +293,8 @@ class _Header extends ConsumerWidget {
           label: 'Back',
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: context.pop,
+            // The same exit as Cancel and the system gesture — one question.
+            onTap: () => leaveEditor(context, ref, id),
             child: Padding(
               // The 20px glyph alone is under §6.4's 44px floor; `s3` on every
               // side and the row's own 26px line bring the target up to it.

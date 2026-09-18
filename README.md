@@ -212,7 +212,9 @@ one table, the DAO, and `ChitRepository` — the interface in `domain`, the impl
 row and the three motion marks it can draw, the rail a day hangs off and the day's thread over
 it, the wordmark, and the two button weights of §6.1. They hold no state and read no provider — each takes what it
 draws and nothing else, which is what lets a screen compose them freely. Two earn exceptions:
-`AudioPill` watches the one player, and `ChitRow` pushes the editor (ADR-061). Beside them,
+`AudioPill` watches the one player, and `ChitRow` pushes the editor (ADR-061). `PromptSheet`
+is the app's one confirmation (ADR-064) — a question and two answers, asked by `showPromptSheet`
+and deciding nothing itself. Beside them,
 `lib/shared/day_label.dart` is the one function that names a day — *Today*, *Yesterday*,
 *Friday 11 September* — so the archive's headings and the editor's cannot disagree.
 

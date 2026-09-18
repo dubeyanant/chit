@@ -201,6 +201,20 @@ void main() {
       expect(edited.stamp, chit.stamp);
     });
 
+    test('answering *discard* leaves the row exactly as it was', () async {
+      // BUILD-PLAN.md M6's statement of done, as far as a test can hold it:
+      // an edit lives only in the controller until Save, so leaving without
+      // saving is not an undo — there is nothing to undo.
+      final Chit chit = await given('Room too cold, again.', recorded: true);
+      final EditorController editor = await open(chit);
+
+      editor.edit('Something else entirely.');
+      expect(stateOf(chit).shouldPromptOnLeave, isTrue);
+      // The screen pops; nothing calls save.
+
+      expect(await repo.byId(chit.id), chit);
+    });
+
     test('does nothing when there is nothing to save', () async {
       final Chit chit = await given('Room too cold, again.');
       final EditorController editor = await open(chit);

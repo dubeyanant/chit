@@ -137,8 +137,9 @@ around it.
 **Riverpod owns everything that outlives a build, the router included** — ADR-001 makes it the
 only state mechanism, and a `GoRouter` in a `StatefulWidget` would put the one thing that must
 survive a rebuild in the one place that does not. `ChitApp` is a `ConsumerWidget` watching
-`routerProvider` and nothing else. The one exception is ADR-011's recording sheet: a modal
-sheet, not a route, because dismissing it is not a back navigation.
+`routerProvider` and nothing else. The two exceptions are ADR-011's recording sheet and
+ADR-064's prompt sheet: modal sheets, not routes, because dismissing either is not a back
+navigation — and the prompt is what a back navigation from the editor has to pass through.
 
 **Startup is synchronous.** `drift_flutter`'s `driftDatabase(name: 'chit')` resolves its path
 lazily, so there is no async bootstrap and no loading state before the home screen — README §1's

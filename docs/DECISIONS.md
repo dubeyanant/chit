@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Sixty records, not sixty-three: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty-one records, not sixty-four: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -81,6 +81,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-061 | A chit in the thread is a button, and its stamp lifts under a finger | M6 group B — one widget, so Today and the archive gain the tap together. No long-press, no swipe |
 | ADR-062 | The editor is a route above the tab shell | M6 group B — one task, one way out; a one-shot read, not a stream; a missing row pops the screen |
 | ADR-063 | An edit is one write, a recording can be removed or replaced, and a chit can be deleted | M6 group C — reverses ADR-014's audio half; the invariant is checked before any file moves |
+| ADR-064 | The prompt is a slip-style sheet; three acts, three words; delete confirms and has no undo | M6 group D — the first confirmation in the app, and the idiom every later one inherits. The quiet weight always lets go |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -1031,3 +1032,26 @@ file nobody points at is only an orphan the sweep collects. `updatedAt` moves on
 or audio; the stamp and the day are not parameters and cannot. Cost: the guarantee `updateText`
 carried — *an edit provably cannot lose a recording* — is gone, and what replaces it is the
 weaker, still exhaustive one that an edit cannot move a chit in time or place.
+
+---
+
+## ADR-064 — The prompt is a slip-style sheet; three acts, three words; delete confirms and has no undo
+
+chit's first confirmation of any kind is **`showPromptSheet`** — the recording sheet's paper
+rising from below, perforated edge, `sheetRadius`, the scrim, a question in the chit's face and
+two answers in §6.1's two button weights — over Material's `AlertDialog`, which is free and
+familiar and a centred card with another framework's shape and motion in an app that has spent
+five milestones not looking like one. **The quiet weight is always the answer that lets go**
+(Discard the edit, Delete the chit) and the bright one always keeps, the ranking the recording
+sheet and the pill already use; every other way out — drag, scrim, back — keeps, for the reason
+the recording sheet treats them as a cancel. It is a modal sheet and not a route, the second
+such alongside ADR-011's. **Three acts get three words**: *Discard* throws away something in
+flight (the sheet's take, the prompt's edit), *Cancel* abandons an edit, *Delete this chit* —
+named in full, at the foot of the slip and apart from the action row — destroys a record;
+CLAUDE.md §4.1's vocabulary rule is the reason Cancel is not a second Discard. Cancel, the back
+arrow and the system back gesture (`PopScope`) are one exit and ask one question, and only when
+something has changed. **Deleting confirms and there is no undo**: there is no trash and no
+backend, so an undo would be a whole feature pretending to be a nicety, and the prompt names the
+recording when there is one. Cost: saving a removed recording is destructive behind one tap —
+reversible until Save, then not — and the prompt budget was spent on Delete instead; if that
+reads wrong on a handset the fix is a second question, not a softer Remove.

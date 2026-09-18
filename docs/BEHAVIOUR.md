@@ -483,6 +483,16 @@ is left with Cancel and *Delete this chit* alone. Saving writes the words and wh
 to the recording in one write (ADR-063), moves `updatedAt`, and returns to where the chit was
 opened from.
 
-*As of M6 group C*, Cancel and the prompt it raises, **Remove** on the pill, the microphone's
-return, and *Delete this chit* below the slip are still to come — groups D to F in
-`docs/TASKS.md`, with the decisions they turn on.
+**Cancel arrives beside Save with the first change, and leaving with a change asks.** Cancel,
+the back arrow and the system back gesture are one exit: with a change, each raises *Keep this
+edit?* — Keep, or Discard — and with nothing changed, each just leaves. Answering *Discard*
+leaves the row exactly as it was, because an edit lives nowhere but this screen until Save.
+
+**The prompt is a slip-style sheet** (ADR-064), the app's one confirmation idiom: the recording
+sheet's paper rising from below, a question, and two answers in the two button weights — **the
+quiet one always lets go, the bright one always keeps**, and dragging, tapping the scrim or
+pressing back keeps. Three acts, three words: *Discard* throws away something in flight, *Cancel*
+abandons an edit, *Delete this chit* destroys a record.
+
+*As of M6 group D*, **Remove** on the pill, the microphone's return, and *Delete this chit*
+below the slip are still to come — groups E and F in `docs/TASKS.md`.
