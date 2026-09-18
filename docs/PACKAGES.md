@@ -39,6 +39,7 @@ resolution, so the two can be compared.
 | `drift_dev` | `^2.35.0` | generates the DAOs and the schema |
 | `freezed` | ✓ `^4.0.1` | generates the models |
 | `flutter_lints` | already present `^6.0.0` | base lint set |
+| `just_audio_platform_interface` | `^4.6.0` | **only for `test/data/just_audio_player_test.dart`**, which stands a fake platform under the real plugin (ADR-067). Already a transitive dependency of `just_audio`; listed so the test may import it |
 
 `json_serializable` is not listed. The only JSON in the app is one Open-Meteo response, decoded
 by hand in one file; a codegen dependency for that is not worth the build time. Add it if a

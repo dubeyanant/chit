@@ -51,8 +51,18 @@ final class JustAudioPlayer implements AudioPlayer {
           return _report(_now);
         }
 
-        await _player.setFilePath(file.path);
+        // **Whatever was sounding stops before the next file loads.** The
+        // plugin carries `playing` across a source change and its `play()`
+        // returns early while it is set, so a pill tapped while another one
+        // sounded was loaded and heard but never reported *playing* under
+        // its own id: the border lit, the glyph stayed a triangle, and the
+        // next tap did nothing. `_now` moves first so the stop is reported
+        // under the new pill rather than as the old one pausing. *Seen on a
+        // handset on 18 September 2026; FakeAudioPlayer had it right all
+        // along, which is the M5 lesson about fakes read the other way.*
         _now = Playback(id: id);
+        await _stopQuietly();
+        await _player.setFilePath(file.path);
       }
 
       // A pill pressed again at the end starts over rather than sitting on a

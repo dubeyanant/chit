@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Sixty-three records, not sixty-six: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Sixty-four records, not sixty-seven: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -78,12 +78,13 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-058 | Transcription is removed, and a chit's words are always typed | the whole feature, not a flag; `textOrigin` goes with it |
 | ADR-059 | There are no migrations while there is nothing to migrate | `schemaVersion` pinned at 1; an old install is reinstalled. **Reverses the moment chit holds data somebody would miss** |
 | ADR-060 | The open chit's Discard goes; a recording is dropped from its pill | M6 group A — Discard's last unique job was the take, and the take is on the pill. The sheet's Discard stays |
-| ADR-061 | A chit in the thread is a button, and its stamp lifts under a finger | M6 group B — one widget, so Today and the archive gain the tap together. No long-press, no swipe |
+| ADR-061 | A chit in the thread is opened by holding it, and its stamp lifts under a finger | M6 group B — one widget, so Today and the archive gain it together. A tap until the third look, a hold since (ADR-067). No swipe |
 | ADR-062 | The editor is a route above the tab shell | M6 group B — one task, one way out; a one-shot read, not a stream; a missing row pops the screen |
 | ADR-063 | An edit is one write, a recording can be removed or replaced, and a chit can be deleted | M6 group C — reverses ADR-014's audio half; the invariant is checked before any file moves |
 | ADR-064 | The prompt is a slip-style sheet; three acts, three words; delete confirms and has no undo | M6 group D — the first confirmation in the app, and the idiom every later one inherits. The quiet weight always lets go |
 | ADR-065 | A take has one owner, chosen at the tap | M6 group E — `RecordingSink`; the composer and the editor both implement it; the microphone moves to `shared/` |
 | ADR-066 | No pin, now keeps up with a save, Cancel leaves at once, the editor fills the screen | the owner's first look at M6 — six calls, one record. Narrows ADR-016; reverses group D's Cancel |
+| ADR-067 | The recording sits above the words in the editor, a chit is held to open, and a pill that played without lighting | the owner's third look at M6 — two calls and one finding. Changes ADR-061 in place |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -979,22 +980,24 @@ back in the row.
 
 ---
 
-## ADR-061 — A chit in the thread is a button, and its stamp lifts under a finger
+## ADR-061 — A chit in the thread is opened by holding it, and its stamp lifts under a finger
 
-**The whole chit row opens the editor**, on Today and in the archive both — over a chevron, an
-edit affordance beside the row, or a long-press. `ChitRow` is one widget, so the two screens
-gain the tap in the same change and cannot drift; the row *is* the target, so a marker pointing
-at something that large would only repeat what the press says. There is **no long-press and no
-swipe-to-delete**: the thread is a reading surface, delete lives in the editor (ADR-062), and a
-flick that destroys a memory has nothing to recover it from. The press is a **6% ink wash**
-(`rowPressedWash`), and it forced a second call — at 6% `--ink-faint` measures **4.42:1** and
-fails §6.4's floor, so **the row's stamp lifts to `--ink-muted` (5.65:1) while it is held**,
-exactly the rule §6.1 already states for the quiet button's label. `contrast_test.dart` holds
-both figures and is where the design was decided rather than merely checked. The wash gets its
-own token despite equalling `discardPressedWash`, because a button's press and the largest
-target in the app are free to want different weights. Cost: `AmbientStampRow.saved` now takes a
-`lifted` flag, which is presentation state reaching a piece of vocabulary — accepted because
-the alternative is a stamp that fails a contrast floor in the one state nobody screenshots.
+**Holding the whole chit row opens the editor**, on Today and in the archive both — over a
+chevron or an edit affordance beside the row. `ChitRow` is one widget, so the two screens gain
+it in the same change and cannot drift; the row *is* the target, so a marker pointing at
+something that large would only repeat what the wash says. *It was a tap from group B until the
+owner's third look (ADR-067)*: the thread is a reading surface, and a tap that left the page was
+a glancing touch away from firing on every scroll — so a tap now does nothing, the pill inside
+keeps its own, and the hold is the framework's half second with the strip's tick (ADR-034) at
+the moment it is recognised. There is still **no swipe-to-delete**: delete lives in the editor
+(ADR-062), and a flick that destroys a memory has nothing to recover it from. The wash arrives
+with the finger and leaves with a scroll — **6% ink** (`rowPressedWash`), which forced a second
+call: at 6% `--ink-faint` measures **4.42:1** and fails §6.4's floor, so **the row's stamp lifts
+to `--ink-muted` (5.65:1) while it is held**, the rule §6.1 already states for the quiet
+button's label; `contrast_test.dart` holds both figures. Cost: `AmbientStampRow.saved` takes a
+`lifted` flag, presentation state reaching a piece of vocabulary, and a hold is less
+discoverable than a tap — the semantics hint says *Hold to open the chit* and nothing tells a
+sighted first-timer.
 
 ---
 
@@ -1102,3 +1105,19 @@ glyph sits on the gutter with its target overhanging. And **Save chit is Save**,
 the editor, and the delete prompt no longer names the recording. Cost: the prompt-on-Cancel
 that ADR-017 half-assumed is gone, so a stray tap on Cancel loses an edit — the owner accepted
 that in exchange for a way out that is always one tap.
+
+---
+
+## ADR-067 — The owner's third look at M6: the recording sits above the words, a chit is held to open, and a pill that played without lighting
+
+Two calls and one finding from the third handset pass, 18 September 2026. **In the editor the
+pill sits between the stamp and the words**, where the open chit already puts it — it is the
+same slip drawn twice, so the same order, and a recording is the part of a chit that cannot be
+read, so it is met before the field rather than found under it; BEHAVIOUR.md §4.5's sketch
+moved. **A chit is opened by holding it, not tapping it** — ADR-061, changed in place. And **a
+pill tapped while another sounded was heard but never lit**: `just_audio` carries `playing`
+across a source change and its `play()` returns early while it is set, so the second pill was
+never reported playing and the tap that should have paused it did nothing. `JustAudioPlayer`
+now stops before it loads, and `just_audio_player_test.dart` stands a fake platform under the
+real plugin to hold it — M5's lesson about fakes read the other way, since `FakeAudioPlayer`
+had been honest and the adapter it stood in for was the one that lied.

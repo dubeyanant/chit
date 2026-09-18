@@ -80,8 +80,8 @@ Hold **7** until real usage shows people write in chains.
 **8 is wanted and unscheduled.** Nothing is decided — not whether mentions are derived from the
 text on read or indexed in a table, not what a name means when two people share one, not how
 one is typed. What M6 owes it is only that it is not boxed in, and the one place it could have
-been is the chit row becoming a tap target: a `TapGestureRecognizer` on a `TextSpan` wins the
-gesture arena against an ancestor, so the row stays a button and its `Text` becomes a
+been is the chit row becoming a button: a `TapGestureRecognizer` on a `TextSpan` wins the
+gesture arena against an ancestor's hold, so the row stays a button and its `Text` becomes a
 `Text.rich` later without restructuring. Nothing goes in the schema on speculation (CLAUDE.md
 §4.1, YAGNI).
 

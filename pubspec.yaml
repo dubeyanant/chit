@@ -58,6 +58,9 @@ dev_dependencies:
   drift_dev: ^2.35.0
   freezed: ^4.0.1
   flutter_lints: ^6.0.0
+  # Only for test/data/just_audio_player_test.dart, which stands a fake platform under the
+  # real plugin. A transitive dependency already; listed so the test may import it.
+  just_audio_platform_interface: ^4.6.0
 
 flutter:
   uses-material-design: true

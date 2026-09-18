@@ -24,7 +24,7 @@ settings screen (open item 22).
 | | Decision | Where |
 |---|---|---|
 | **D1** | **Today's Discard goes entirely, and the audio pill gains `Remove`.** Text is cleared by select-all-delete; a kept take is dropped from the pill. Discard's one remaining job was the take, and the pill is where the take is | ADR-060, group A |
-| **D2** | **Tapping a chit row opens the editor**, and the thread offers nothing else — no long-press, no swipe. The whole row is the target, on Today and in the archive, in one change | ADR-017, ADR-062 |
+| **D2** | **Holding a chit row opens the editor**, and the thread offers nothing else — a tap does nothing, and there is no swipe. The whole row is the target, on Today and in the archive, in one change. *A tap until the third look — ADR-067* | ADR-061, ADR-062 |
 | **D3** | **The editor covers the tab shell.** A route above it, not inside a branch: one task with one way out, so a tab change cannot strand a half-typed edit | ADR-011, ADR-062 |
 | **D4** | **The stamp cannot move.** `createdAt`, `localDay`, `weather`, `lat`, `lon` and `motion` are not parameters of anything the editor can call. `updatedAt` moves on any edit, text or audio | ADR-014 |
 | **D5** | **A chit's recording can be removed and replaced** — reverses ADR-014's second half, which said audio was neither editable nor removable anywhere. The pill's `Remove` is one control on both screens | ADR-063 |
@@ -142,12 +142,22 @@ uninstall.*
 - [x] The same from the archive, landing back in the archive with its filter intact.
 - [x] Leaving with changes: the prompt, both answers, and the back gesture. *Cancel no longer asks — ADR-066.*
 - [x] A recording removed on the **open chit** — the microphone comes back, the take is gone.
-- [ ] A recording removed in the **editor** and cancelled: it is still there and still plays.
+- [x] A recording removed in the **editor** and cancelled: it is still there and still plays.
 - [x] A recording replaced, saved, and played back.
-- [ ] A recording-only chit: remove the take, and Save is not offered.
+- [x] A recording-only chit: remove the take, and Save is not offered.
 - [x] A chit deleted, recording and all.
-- [ ] Reduced motion on: the prompt sheet arrives without a rise.
-- [ ] Read BUILD-PLAN.md M5's four lessons before writing a fake. Two of M5's four handset bugs
-      were a fake or its harness behaving better than the real thing.
+- [x] Reduced motion on: the prompt sheet arrives without a rise.
+- [x] Read BUILD-PLAN.md M5's four lessons before writing a fake. Two of M5's four handset bugs
+      were a fake or its harness behaving better than the real thing. *And one of M6's was the
+      real thing behaving worse than its fake — ADR-067.*
+
+**The fourth look** — the third look's three asks, built and awaiting a handset (ADR-067):
+
+- [ ] The editor's pill sits between the stamp and the words, Remove beside it — on a stored
+      recording and on a staged replacement alike.
+- [ ] A chit opens on a hold, not a tap: the wash on touch, gone on a scroll, a tick as it opens.
+      A tap on the row does nothing; a tap on its pill still plays.
+- [ ] Two recordings on Today: tap one, then the other while the first sounds. The second lights
+      with the pause glyph, and the next tap pauses it.
 
 **This file is replaced when M7 starts** (CLAUDE.md §2).
