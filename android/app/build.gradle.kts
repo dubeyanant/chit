@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.infiniteants.chit"
+    namespace = "com.infiniteants.chitta"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.infiniteants.chit"
+        applicationId = "com.infiniteants.chitta"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // record_android requires 24; it is the highest floor of any plugin in

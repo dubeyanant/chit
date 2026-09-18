@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'router.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(router)
 final routerProvider = RouterProvider._();
@@ -30,6 +39,7 @@ final class RouterProvider
     return router(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(GoRouter value) {
     return $ProviderOverride(
       origin: this,

@@ -77,7 +77,7 @@ it.
 
 ## 4. Screens
 
-**4.1 Today (home).** The wordmark — *Chitta*, and nothing beside it — then weekday and date on
+**4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
 **one line at 26px**, the weekday italic and faint, the date in full ink. Then the timeline, the
 open chit on its visible second slip, the day's thread, and the चित्त mark closing the day.
 

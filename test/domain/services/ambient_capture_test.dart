@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:chit/domain/models/motion_state.dart';
-import 'package:chit/domain/models/weather_condition.dart';
-import 'package:chit/domain/services/ambient_capture.dart';
-import 'package:chit/domain/services/ambient_signals.dart';
-import 'package:chit/domain/services/location_service.dart';
-import 'package:chit/domain/services/weather_service.dart';
+import 'package:chitta/domain/models/motion_state.dart';
+import 'package:chitta/domain/models/weather_condition.dart';
+import 'package:chitta/domain/services/ambient_capture.dart';
+import 'package:chitta/domain/services/ambient_signals.dart';
+import 'package:chitta/domain/services/location_service.dart';
+import 'package:chitta/domain/services/weather_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

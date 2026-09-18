@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:chit/data/audio/audio_store.dart';
-import 'package:chit/data/db/app_database.dart';
-import 'package:chit/data/dev/debug_seeder.dart';
-import 'package:chit/data/repositories/chit_repository_impl.dart';
-import 'package:chit/domain/models/ambient_stamp.dart';
-import 'package:chit/domain/models/chit.dart';
-import 'package:chit/domain/models/motion_state.dart';
-import 'package:chit/domain/models/weather_condition.dart';
-import 'package:chit/domain/repositories/chit_repository.dart';
+import 'package:chitta/data/audio/audio_store.dart';
+import 'package:chitta/data/db/app_database.dart';
+import 'package:chitta/data/dev/debug_seeder.dart';
+import 'package:chitta/data/repositories/chit_repository_impl.dart';
+import 'package:chitta/domain/models/ambient_stamp.dart';
+import 'package:chitta/domain/models/chit.dart';
+import 'package:chitta/domain/models/motion_state.dart';
+import 'package:chitta/domain/models/weather_condition.dart';
+import 'package:chitta/domain/repositories/chit_repository.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;

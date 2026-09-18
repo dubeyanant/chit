@@ -1,9 +1,9 @@
-import 'package:chit/domain/models/weather_condition.dart';
-import 'package:chit/domain/services/ambient_signals.dart';
-import 'package:chit/domain/services/first_run_store.dart';
-import 'package:chit/domain/services/location_service.dart';
-import 'package:chit/domain/services/weather_service.dart';
-import 'package:chit/features/onboarding/application/first_run_controller.dart';
+import 'package:chitta/domain/models/weather_condition.dart';
+import 'package:chitta/domain/services/ambient_signals.dart';
+import 'package:chitta/domain/services/first_run_store.dart';
+import 'package:chitta/domain/services/location_service.dart';
+import 'package:chitta/domain/services/weather_service.dart';
+import 'package:chitta/features/onboarding/application/first_run_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

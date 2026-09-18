@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'recording_controller.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(RecordingController)
 final recordingControllerProvider = RecordingControllerProvider._();
@@ -23,6 +32,7 @@ final class RecordingControllerProvider
   @override
   RecordingController create() => RecordingController();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(RecordingState value) {
     return $ProviderOverride(
       origin: this,

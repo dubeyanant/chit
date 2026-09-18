@@ -9,7 +9,9 @@ final class Wordmark extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       header: true,
-      child: Text('Chitta', style: context.type.wordmark),
+      label: 'Chitta',
+      excludeSemantics: true,
+      child: Text('चित्त', style: context.type.wordmark),
     );
   }
 }

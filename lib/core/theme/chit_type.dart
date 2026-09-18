@@ -34,8 +34,8 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   factory ChitType.tokens(ChitColors colors) {
     return ChitType(
-      wordmark: _serif(
-        size: 16.5,
+      wordmark: _deva(
+        size: wordmarkSize,
         weight: 400,
         color: colors.inkMuted,
         height: 1,
@@ -189,6 +189,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       dayHeading: _serif(size: 16.5, weight: 400, color: colors.ink, height: 1),
     );
   }
+
+  static const double wordmarkSize = 19;
 
   static const double closingMarkStrength = 0.5;
 

@@ -3,8 +3,10 @@
 A private journal for things that hit you during the day.
 
 **चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field where impressions land; a
-**chit** is a small slip of paper you scribble on and keep. **The app is Chitta and one entry is a
-chit** — the repository, the Dart package and these documents keep the short name.
+**chit** is a small slip of paper you scribble on and keep. **The app signs itself चित्त on screen
+and Chitta wherever the phone says it** — the drawer, the switcher, the stores — and **one entry is
+a chit**. The Dart package and both bundle ids are `chitta` (ADR-074); the repository directory,
+these documents and the `Chit` classes keep the short name.
 
 ## 0. Start here
 

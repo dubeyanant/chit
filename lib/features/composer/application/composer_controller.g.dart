@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'composer_controller.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(ComposerController)
 final composerControllerProvider = ComposerControllerProvider._();
@@ -23,6 +32,7 @@ final class ComposerControllerProvider
   @override
   ComposerController create() => ComposerController();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(ComposerState value) {
     return $ProviderOverride(
       origin: this,

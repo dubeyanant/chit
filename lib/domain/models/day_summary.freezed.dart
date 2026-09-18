@@ -1,212 +1,282 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
 part of 'day_summary.dart';
 
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format off
 T _$identity<T>(T value) => value;
-
+/// @nodoc
 mixin _$DaySummary {
-  int get localDay;
 
-  int get count;
+ int get localDay; int get count;
+/// Create a copy of DaySummary
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DaySummaryCopyWith<DaySummary> get copyWith => _$DaySummaryCopyWithImpl<DaySummary>(this as DaySummary, _$identity);
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $DaySummaryCopyWith<DaySummary> get copyWith =>
-      _$DaySummaryCopyWithImpl<DaySummary>(this as DaySummary, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    final _this = this as DaySummary;
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is DaySummary &&
-            (identical(other.localDay, _this.localDay) ||
-                other.localDay == _this.localDay) &&
-            (identical(other.count, _this.count) ||
-                other.count == _this.count));
-  }
 
-  @override
-  int get hashCode {
-    final _this = this as DaySummary;
-    return Object.hash(runtimeType, _this.localDay, _this.count);
-  }
-
-  @override
-  String toString() {
-    final _this = this as DaySummary;
-    return 'DaySummary(localDay: ${_this.localDay}, count: ${_this.count})';
-  }
+@override
+bool operator ==(Object other) {
+  final _this = this as DaySummary;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DaySummary&&(identical(other.localDay, _this.localDay) || other.localDay == _this.localDay)&&(identical(other.count, _this.count) || other.count == _this.count));
 }
 
-abstract mixin class $DaySummaryCopyWith<$Res> {
-  factory $DaySummaryCopyWith(
-    DaySummary value,
-    $Res Function(DaySummary) _then,
-  ) = _$DaySummaryCopyWithImpl;
-  @useResult
-  $Res call({int localDay, int count});
+
+@override
+int get hashCode {
+  final _this = this as DaySummary;
+  return Object.hash(runtimeType,_this.localDay,_this.count);
 }
 
-class _$DaySummaryCopyWithImpl<$Res> implements $DaySummaryCopyWith<$Res> {
+@override
+String toString() {
+  final _this = this as DaySummary;
+  return 'DaySummary(localDay: ${_this.localDay}, count: ${_this.count})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $DaySummaryCopyWith<$Res>  {
+  factory $DaySummaryCopyWith(DaySummary value, $Res Function(DaySummary) _then) = _$DaySummaryCopyWithImpl;
+@useResult
+$Res call({
+ int localDay, int count
+});
+
+
+
+
+}
+/// @nodoc
+class _$DaySummaryCopyWithImpl<$Res>
+    implements $DaySummaryCopyWith<$Res> {
   _$DaySummaryCopyWithImpl(this._self, this._then);
 
   final DaySummary _self;
   final $Res Function(DaySummary) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? localDay = null, Object? count = null}) {
-    return _then(
-      DaySummary(
-        localDay: null == localDay ? _self.localDay : localDay as int,
-        count: null == count ? _self.count : count as int,
-      ),
-    );
-  }
+/// Create a copy of DaySummary
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? localDay = null,Object? count = null,}) {
+  return _then(DaySummary(
+localDay: null == localDay ? _self.localDay : localDay // ignore: cast_nullable_to_non_nullable
+as int,count: null == count ? _self.count : count // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
 }
 
+}
+
+
+/// Adds pattern-matching-related methods to [DaySummary].
 extension DaySummaryPatterns on DaySummary {
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_DaySummary value)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _DaySummary() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_DaySummary value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _DaySummary():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _DaySummary value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _DaySummary() when $default != null:
+return $default(_that);case _:
+  return orElse();
 
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_DaySummary value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _DaySummary() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
-
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(int localDay, int count)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _DaySummary() when $default != null:
-        return $default(_that.localDay, _that.count);
-      case _:
-        return orElse();
-    }
-  }
-
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(int localDay, int count) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _DaySummary():
-        return $default(_that.localDay, _that.count);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
-
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(int localDay, int count)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _DaySummary() when $default != null:
-        return $default(_that.localDay, _that.count);
-      case _:
-        return null;
-    }
-  }
 }
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _DaySummary value)  $default,){
+final _that = this;
+switch (_that) {
+case _DaySummary():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _DaySummary value)?  $default,){
+final _that = this;
+switch (_that) {
+case _DaySummary() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int localDay,  int count)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _DaySummary() when $default != null:
+return $default(_that.localDay,_that.count);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int localDay,  int count)  $default,) {final _that = this;
+switch (_that) {
+case _DaySummary():
+return $default(_that.localDay,_that.count);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int localDay,  int count)?  $default,) {final _that = this;
+switch (_that) {
+case _DaySummary() when $default != null:
+return $default(_that.localDay,_that.count);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
 
 class _DaySummary implements DaySummary {
   const _DaySummary({required this.localDay, required this.count});
+  
 
-  @override
-  final int localDay;
+@override final  int localDay;
+@override final  int count;
 
-  @override
-  final int count;
+/// Create a copy of DaySummary
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$DaySummaryCopyWith<_DaySummary> get copyWith => __$DaySummaryCopyWithImpl<_DaySummary>(this, _$identity);
 
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$DaySummaryCopyWith<_DaySummary> get copyWith =>
-      __$DaySummaryCopyWithImpl<_DaySummary>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _DaySummary &&
-            (identical(other.localDay, localDay) ||
-                other.localDay == localDay) &&
-            (identical(other.count, count) || other.count == count));
-  }
 
-  @override
-  int get hashCode {
-    return Object.hash(runtimeType, localDay, count);
-  }
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DaySummary&&(identical(other.localDay, localDay) || other.localDay == localDay)&&(identical(other.count, count) || other.count == count));
+}
 
-  @override
-  String toString() {
+
+@override
+int get hashCode {
+    return Object.hash(runtimeType,localDay,count);
+}
+
+@override
+String toString() {
     return 'DaySummary(localDay: $localDay, count: $count)';
-  }
 }
 
-abstract mixin class _$DaySummaryCopyWith<$Res>
-    implements $DaySummaryCopyWith<$Res> {
-  factory _$DaySummaryCopyWith(
-    _DaySummary value,
-    $Res Function(_DaySummary) _then,
-  ) = __$DaySummaryCopyWithImpl;
-  @override
-  @useResult
-  $Res call({int localDay, int count});
+
 }
 
-class __$DaySummaryCopyWithImpl<$Res> implements _$DaySummaryCopyWith<$Res> {
+/// @nodoc
+abstract mixin class _$DaySummaryCopyWith<$Res> implements $DaySummaryCopyWith<$Res> {
+  factory _$DaySummaryCopyWith(_DaySummary value, $Res Function(_DaySummary) _then) = __$DaySummaryCopyWithImpl;
+@override @useResult
+$Res call({
+ int localDay, int count
+});
+
+
+
+
+}
+/// @nodoc
+class __$DaySummaryCopyWithImpl<$Res>
+    implements _$DaySummaryCopyWith<$Res> {
   __$DaySummaryCopyWithImpl(this._self, this._then);
 
   final _DaySummary _self;
   final $Res Function(_DaySummary) _then;
 
-  @override
-  @pragma('vm:prefer-inline')
-  $Res call({Object? localDay = null, Object? count = null}) {
-    return _then(
-      _DaySummary(
-        localDay: null == localDay ? _self.localDay : localDay as int,
-        count: null == count ? _self.count : count as int,
-      ),
-    );
-  }
+/// Create a copy of DaySummary
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? localDay = null,Object? count = null,}) {
+  return _then(_DaySummary(
+localDay: null == localDay ? _self.localDay : localDay // ignore: cast_nullable_to_non_nullable
+as int,count: null == count ? _self.count : count // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
 }
+
+
+}
+
+// dart format on

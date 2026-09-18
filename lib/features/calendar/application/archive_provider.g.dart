@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'archive_provider.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(SelectedDay)
 final selectedDayProvider = SelectedDayProvider._();
@@ -22,6 +31,7 @@ final class SelectedDayProvider extends $NotifierProvider<SelectedDay, int?> {
   @override
   SelectedDay create() => SelectedDay();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(int? value) {
     return $ProviderOverride(
       origin: this,
@@ -72,6 +82,7 @@ final class ArchivePagesProvider extends $NotifierProvider<ArchivePages, int> {
   @override
   ArchivePages create() => ArchivePages();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(int value) {
     return $ProviderOverride(
       origin: this,
@@ -129,6 +140,7 @@ final class ArchiveLimitProvider extends $FunctionalProvider<int, int, int>
     return archiveLimit(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(int value) {
     return $ProviderOverride(
       origin: this,
@@ -200,6 +212,7 @@ final class ArchiveDaysProvider
   @override
   ArchiveDays create() => ArchiveDays();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(List<ArchiveDay>? value) {
     return $ProviderOverride(
       origin: this,

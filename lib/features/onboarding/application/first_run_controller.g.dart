@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'first_run_controller.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(FirstRunController)
 final firstRunControllerProvider = FirstRunControllerProvider._();
@@ -23,6 +32,7 @@ final class FirstRunControllerProvider
   @override
   FirstRunController create() => FirstRunController();
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(bool value) {
     return $ProviderOverride(
       origin: this,

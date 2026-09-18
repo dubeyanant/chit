@@ -1,5 +1,8 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'app_database.dart';
 
+// ignore_for_file: type=lint
 class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -278,25 +281,15 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
 
 class ChitRow extends DataClass implements Insertable<ChitRow> {
   final String id;
-
   final int createdAt;
-
   final int localDay;
-
   final String? body;
-
   final String? audioPath;
-
   final int? audioMs;
-
   final WeatherCondition? weather;
-
   final double? lat;
-
   final double? lon;
-
   final MotionState? motion;
-
   final int updatedAt;
   const ChitRow({
     required this.id,
@@ -1028,6 +1021,13 @@ class $AppDatabaseManager {
       $$ChitsTableTableManager(_db, _db.chits);
 }
 
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(appDatabase)
 final appDatabaseProvider = AppDatabaseProvider._();
 
@@ -1058,6 +1058,7 @@ final class AppDatabaseProvider
     return appDatabase(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AppDatabase value) {
     return $ProviderOverride(
       origin: this,

@@ -1,4 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'today_controller.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
 @ProviderFor(today)
 final todayProvider = TodayProvider._();
@@ -30,6 +39,7 @@ final class TodayProvider
     return today(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(DateTime value) {
     return $ProviderOverride(
       origin: this,
@@ -69,6 +79,7 @@ final class TodayLocalDayProvider extends $FunctionalProvider<int, int, int>
     return todayLocalDay(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
   Override overrideWithValue(int value) {
     return $ProviderOverride(
       origin: this,
