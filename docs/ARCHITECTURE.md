@@ -38,7 +38,7 @@ lib/
 ├── core/            the four ThemeExtensions of DESIGN-SYSTEM.md §6, the injected clock (ADR-012),
 │                     and the BuildContext sugar that reaches them
 ├── domain/
-│   ├── models/      Chit and its invariant, the stamp, the enums, composer state
+│   ├── models/      Chit and its invariant, the stamp, the enums, composer and recording state
 │   ├── ambient/     which one fact the stamp draws — the ladder (ADR-038)
 │   ├── motion/      speed + accuracy + altitude → one of the four states
 │   ├── weather/     WMO code + is_day + wind → one of the five words
@@ -312,7 +312,13 @@ user's side they are the same event. **The recogniser has no error branch at all
 anything the platform calls an error closes the stream, keeping the words already heard, so an
 empty transcript is the only thing §3.5 ever tests.
 
-**Discard** deletes the temp file; nothing moves to permanent storage until Save (ADR-008).
+`RecordingController` runs both services and owns the sheet's state — the elapsed figure off the
+clock, the level, the pending transcript, and whether the recogniser gave up. It hands the result
+to `ComposerController` rather than returning it, since a modal sheet has nothing downstream to
+return to. A take that comes back as **words with no file** keeps the words (ADR-054).
+
+**Discard** deletes the temp file through `ChitRepository.discardTemp`, the counterpart of
+`save`'s `audioTempPath`; nothing moves to permanent storage until Save (ADR-008).
 
 Recording is available on a chit that already has text (§4.1's append rule), and available
 **once** — a row holds one `audioPath`, so the microphone retires once `audioTempPath` is set

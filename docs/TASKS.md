@@ -67,34 +67,35 @@ settings screen from which a refused microphone could be reconsidered.
 - [x] `test/data/on_device_speech_recognizer_test.dart` — the partial split, and nothing that
       needs the plugin. There is no error table left to walk.
 
-## C. The composer's voice flow — the logic, bare
+## C. The composer's voice flow — the logic, bare ✅
 
 *Every rule in §3.4 and §3.5 has a passing test before a widget exists — ADR-031 doing its
 work.*
 
-- [ ] `features/composer/application/recording_controller.dart` — the sheet's state: elapsed
-      time off the clock, the levels, the pending transcript (D6), and whether recognition has
-      given up. `start()` asks permission then starts both services; `stopAndKeep()` stops both
-      and hands `ComposerController` a `Recording` and a transcript or nothing; `cancel()`.
-- [ ] `ComposerController.keepRecording(Recording, String? transcript)` — appends the transcript
-      to the field with a space where the field already has words, sets `textOrigin` to
-      `transcript` on an empty field and `transcriptEdited` on one that had text; an empty or
-      absent transcript sets `sttFailed` and leaves the field alone; `audioTempPath` and
-      `audioDuration` are set together. The prompt is cancelled either way — the note occupies
-      its space (BEHAVIOUR.md §3.5).
-- [ ] The one-way slide: `edit` on `transcript` moves it to `transcriptEdited`; emptying the
+- [x] `features/composer/application/recording_controller.dart` — the sheet's state: elapsed
+      time off the clock, **the level** (one number, not a history — ADR-054), the pending
+      transcript (D6), and whether recognition has given up. `start()` asks permission then
+      starts both services; `stopAndKeep()` stops the recogniser *first* (ADR-053) and hands
+      `ComposerController` what came back; `cancel()`. A disposal without either still closes
+      the microphone.
+- [x] `ComposerController.keepRecording({Recording?, required Transcript})` — appends the
+      transcript to the field with a space where the field already has words, sets `textOrigin`
+      to `transcript` on an empty field and `transcriptEdited` on one that had text; an empty
+      transcript **with a recording** sets `sttFailed` and leaves the field alone;
+      `audioTempPath` and `audioDuration` are set together. The prompt is cancelled either way.
+      *The `Recording` is nullable, unlike this list's original: the two plugins fail apart, and
+      words with no file keep the words — ADR-054.*
+- [x] The one-way slide: `edit` on `transcript` moves it to `transcriptEdited`; emptying the
       field clears the origin as it does now; typing again after that is `typed`.
-- [ ] `discard` deletes the temp file through the recorder's store. `sttFailed` clears with it.
-- [ ] `microphoneRefused` — set once when permission is refused, so the composer can say so
+- [x] `discard` deletes the temp file through `ChitRepository.discardTemp` — `features` cannot
+      reach `AudioStore` (ADR-054). `sttFailed` clears with it.
+- [x] `microphoneRefused` — set once when permission is refused, so the composer can say so
       beside the microphone (D2); cleared by Discard.
-- [ ] `test/support/fake_audio_recorder.dart` and `fake_speech_recognizer.dart` — hand-written,
+- [x] `test/support/fake_audio_recorder.dart` and `fake_speech_recognizer.dart` — hand-written,
       and each refuses what the real one refuses: no permission, a take that wrote nothing, a
-      recogniser with no model. Their honesty is what makes the §3.5 tests mean anything.
-- [ ] `test/features/composer/recording_controller_test.dart`, and the voice cases added to
-      `composer_controller_test.dart`: transcript into an empty field, transcript after typed
-      text, the slide on the first keystroke, all three failures landing on `sttFailed` with the
-      audio kept, a chit saved with audio and no text reloading with its pill, Discard removing
-      the temp file.
+      recogniser with no model. Neither can throw, because neither real one can.
+- [x] `test/features/composer/recording_controller_test.dart`, and the voice cases added to
+      `composer_controller_test.dart`. 26 tests across the two.
 
 ## D. The recording sheet
 

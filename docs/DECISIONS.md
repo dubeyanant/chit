@@ -6,7 +6,7 @@ change or a supersession edits the record it affects in place, with a clause say
 to say; a wholly new decision gets a new record.
 
 Status of every record below: **accepted**, except ADR-021 which is **superseded** and says so
-at its head. Forty-nine records, not fifty-two: **ADR-018, ADR-026 and ADR-030 have been merged
+at its head. Fifty-one records, not fifty-four: **ADR-018, ADR-026 and ADR-030 have been merged
 away**, their numbers retired rather than reused, and the note below says where each one went.
 
 ADR-001 through ADR-050 were rewritten to this paragraph form on 17 September 2026, in the same
@@ -71,6 +71,7 @@ revise ADR-005 and sit beside it. The index is numerical.
 | ADR-051 | New ADRs are short | the template shrinks from here — CLAUDE.md §0.2 |
 | ADR-052 | The recorder times a take on the clock and reports a level, not decibels | M5 group A — the file is not opened until playback; the waveform draws a number |
 | ADR-053 | The recogniser streams a split transcript, has no error table, and waits one beat | M5 group B — §3.4's lighter word is in the data; any error is §3.5; Stop & keep waits 900 ms for the last word |
+| ADR-054 | A kept take can be words with no file, and Discard lets it go through the repository | M5 group C — the two plugins fail apart; one door owns the temp file; the sheet holds a level, not a history |
 
 Kept in step by hand, not by a test — CLAUDE.md §4.2: every record above has a row here, and
 every row above a record.
@@ -837,3 +838,23 @@ exception is ARCHITECTURE.md §6's — ambient signals fail silently, the user's
 and the final word is the one most likely wrong. Cost: Stop & keep can hold the sheet for a
 beat on a platform that has stopped answering, and a shortened final timeout promotes a partial
 the platform might still have improved.
+
+---
+
+## ADR-054 — A kept take can be words with no file, and Discard lets it go through the repository
+
+Three calls from M5 group C, all about what the composer does with a finished take.
+`ComposerController.keepRecording` takes a **nullable** `Recording`, over TASKS.md's required
+one: the recorder and the recogniser are two plugins that fail apart, so a take can come back as
+words with no file, and dropping heard words because the *other* plugin failed is the silent
+content loss ARCHITECTURE.md §6 says never happens — the chit becomes a text chit with a
+transcript origin, which README §5 already allows. `sttFailed` is therefore `recording != null &&
+words.isEmpty` rather than just the empty half, because §3.5's note promises a recording was
+kept and must not appear when none was. **Discard deletes the temp file through
+`ChitRepository.discardTemp`**, over a method on `AudioRecorder` or a direct call to
+`AudioStore`: `features` cannot reach `data` at all (ARCHITECTURE.md §1), and `save` already
+takes a temp path *in*, so one door owns the file's whole lifetime instead of two. Last,
+`RecordingState` holds **one level, not a history** — v6's waveform is twenty bars at fixed
+heights each bobbing on its own loop, so the current loudness is all it reads and a rolling
+buffer would be state nobody looks at. Cost: if the waveform is ever redrawn as a scrolling
+trace, that buffer has to come back.

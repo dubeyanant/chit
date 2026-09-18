@@ -6,27 +6,30 @@ this file and [CLAUDE.md](../CLAUDE.md) should be able to pick up the work.
 Updated at the end of every working session, per the standing rules in CLAUDE.md §0 and §0.1 —
 including sessions that ended mid-milestone.
 
-**Last updated:** 18 September 2026, **with M5 under way — groups A and B done**. M5's
-[TASKS.md](TASKS.md) was cut, in seven groups; group A landed the `AudioRecorder` interface, a
-`RecordAudioRecorder` over `record` and the root wiring, and **group B landed the recogniser**:
-`SpeechRecognizer` and its `Transcript` in `domain`, `OnDeviceSpeechRecognizer` over
-`speech_to_text` in `data`, and the root wiring. Both platform seams are now in place and
-nothing is drawn.
+**Last updated:** 18 September 2026, **with M5 under way — groups A, B and C done**. Both
+platform seams are in place and **every rule in §3.4 and §3.5 now has a passing test, before
+anything is drawn** — which is ADR-031 doing the work it exists for. Group A landed the
+`AudioRecorder` interface and `RecordAudioRecorder` over `record`; group B the
+`SpeechRecognizer`, its `Transcript` and `OnDeviceSpeechRecognizer` over `speech_to_text`
+(**ADR-053**); group C the logic between them — `RecordingController`, the append and the origin
+slide in `ComposerController`, `microphoneRefused`, Discard deleting the take, and the two
+fakes (**ADR-054**).
 
-Group B decided three things, all in **ADR-053**. The transcript is a stream of
-committed-plus-pending values, so §3.4's lighter-ink word is a property of the data rather than
-a guess in the widget. **The error-code table TASKS.md asked for does not exist** — Android
-marks every error permanent and stops listening as it reports one, so any error closes the
-stream and keeps the words already heard, which is D5 as written. And `stop()` waits up to
-900 ms for the recogniser's last word: the one place this app waits on a signal, because the
-final word is the one most likely wrong and it is the user's content rather than an ambient
-one.
+Three calls worth carrying forward. **The error-code table TASKS.md asked for does not exist**:
+Android marks every error permanent and stops listening as it reports one, so any error closes
+the recogniser's stream and keeps the words already heard, which is D5 as written. **Stop & keep
+waits up to 900 ms** for the recogniser's last word — the one place this app waits on a signal,
+because the final word is the one most likely wrong and it is the user's content rather than an
+ambient one. And **a take can come back as words with no file**: the recorder and the recogniser
+are two plugins that fail apart, so `keepRecording` takes a nullable `Recording` and the words
+are kept rather than dropped; `sttFailed` needs *both* a recording and no words, since the note
+promises a recording was kept.
 
-Two risks no test can settle came out of it. Item 32 is unchanged and still first in group G —
-whether Android lets `record` capture beside the recognition service. **Item 33 is new**: the
-platform ends a recognition session on its own after a short pause, so a long take's transcript
-can stop accruing while the recording keeps running. Nothing has been run on a device this
-milestone yet.
+Two risks no test can settle. Item 32 is unchanged and still first in group G — whether Android
+lets `record` capture beside the recognition service. **Item 33 is new**: the platform ends a
+recognition session on its own after a short pause, so a long take's transcript can stop
+accruing while the recording keeps running. Nothing has been run on a device this milestone yet,
+and nothing about voice is on screen.
 
 Earlier the same day, **M4 was signed off on a handset**. The fourth seeded look checked the
 third look's six fixes and everything else in M4's groups F and G, and the owner's verdict was
@@ -66,31 +69,32 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | **M2** — Today, text only | ✅ done | 16 Sep 2026. ADR-023 onward |
 | **M3** — ambient capture | ✅ done | 17 Sep 2026, signed off on a handset. ADR-037 onward |
 | **M4** — calendar | ✅ done | 17 Sep 2026, signed off on a handset on the fourth look. ADR-046 to ADR-050 |
-| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A and B of seven done — both platform seams. ADR-052, ADR-053 |
+| **M5** — voice | 🔨 in progress | 18 Sep 2026: groups A, B and C of seven done — the seams and the logic. ADR-052 to ADR-054 |
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**419 tests, `flutter analyze` clean, `dart format` clean.** The debug APK was last built at
+**445 tests, `flutter analyze` clean, `dart format` clean.** The debug APK was last built at
 M4's sign-off, before group A; the release APK has not been rebuilt since M3's sign-off.
 
 ---
 
-## Next: M5 — voice, group C
+## Next: M5 — voice, group D
 
-[TASKS.md](TASKS.md) is M5's and groups A and B are ticked. The next session:
+[TASKS.md](TASKS.md) is M5's and groups A, B and C are ticked. Everything voice does is
+decided and tested; what is left is drawing it. The next session:
 
-1. **Builds group C**, the logic bare, before any widget: `RecordingController` holding the
-   elapsed time, the levels and the pending transcript (D6), `ComposerController.keepRecording`
-   with the append rule and the one-way origin slide, `microphoneRefused`, Discard deleting the
-   temp file, and the two fakes in `test/support/`. **The fakes are the load-bearing part** —
-   each must refuse what the real one refuses, or the §3.5 tests prove nothing. The recogniser
-   they stand in for never throws and never reports an error: it closes its stream, and a
-   stream that closed with nothing on it is §3.5.
-2. **Reads ADR-053 before writing `stopAndKeep`.** `SpeechRecognizer.stop()` returns nothing
-   and completes once the stream has closed; the transcript to keep is the last value the
-   controller saw. A fake that closes before its last value lands will pass a test the real one
-   fails.
-3. **Then group D**, the sheet, once every rule in §3.4 and §3.5 has a passing test.
+1. **Builds group D**, the recording sheet — a modal, not a route (ADR-011). `v6` is the
+   reference and it is worth opening: the sheet is the perforated edge, `Listening` beside the
+   record dot, the elapsed figure, the live wave, the transcript, and **two** controls rather
+   than the one TASKS.md group D names — Discard *and* Stop & keep. Decide which is right before
+   building it; the controller already has `cancel()` either way.
+2. **Wires the sheet to what is already there.** `RecordingController.start()` returns `false`
+   on a refusal and has already set `microphoneRefused`, so the microphone's tap is
+   `if (await start()) showSheet()` and nothing more. Dismissal by drag or back is `cancel()`.
+   The waveform reads `RecordingState.level` — one number, per ADR-054 — and the dot and the
+   wave are `ChitMotion.loop`'s first callers, which closes item 17.
+3. **Then E and F**, the pill with playback (which closes item 31) and the settled microphone
+   with its two notes.
 4. **Takes the first build to a handset with items 32 and 33 in hand** — whether two plugins
    can share the microphone decides the shape of everything after it, and whether a long take
    keeps transcribing decides whether the sheet needs to re-listen at all. Both are facts only a
@@ -98,7 +102,7 @@ M4's sign-off, before group A; the release APK has not been rebuilt since M3's s
 5. **Seeds when it needs to look at anything** — `flutter run --dart-define=CHIT_SEED=seed`
    is idempotent and `=clear` takes it off; both were exercised at the end of M4.
 
-The old *Next* is in git under `3c74900`; it said to build group B, and group B is built.
+The old *Next* is in git under `0142e8d`; it said to build group C, and group C is built.
 
 Everything else that is known and unscheduled is in the open items below. Nothing there blocks
 M5.

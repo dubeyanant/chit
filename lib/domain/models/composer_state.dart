@@ -63,6 +63,15 @@ abstract class ComposerState with _$ComposerState {
     /// failure written into the field is a failure the user has to delete
     /// before they can write.
     @Default(false) bool sttFailed,
+
+    /// Whether the microphone has been refused — TASKS.md D2. **M5.**
+    ///
+    /// Set the first time permission is withheld and cleared only by Discard.
+    /// The microphone stays where it is and stays tappable: ADR-041 spends the
+    /// app's one dialog on location, so the only way back is the OS, and a
+    /// control that greys out reads as broken where one that explains reads as
+    /// refused.
+    @Default(false) bool microphoneRefused,
   }) = _ComposerState;
 
   /// Whether there is anything to save, and therefore anything to discard.

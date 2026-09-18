@@ -116,6 +116,11 @@ A garbled transcript is worse than none: unsearchable, a misrepresentation of wh
 indistinguishable in the archive from a real record. In the archive, a chit with audio and no
 text shows its audio pill and nothing else — still a record the user can play back.
 
+**The other half of the same failure keeps the words** (ADR-054): where the recogniser heard
+something but the recording itself did not survive, the transcript goes into the field as it
+normally would and the chit is a text chit. Nothing says so — there is no recording to explain
+the absence of, and the note above is not shown, because it promises a recording was kept.
+
 ### 3.6 Ambient capture
 
 | Signal | Displayed as |

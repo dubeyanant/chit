@@ -122,6 +122,17 @@ abstract interface class ChitRepository {
   /// Everything, newest day first. The archive.
   Stream<List<Chit>> watchArchive({required int limit, int offset = 0});
 
+  /// Deletes a take that was never saved. **Discard** — BEHAVIOUR.md §3.1.
+  ///
+  /// The counterpart of [save]'s `audioTempPath`: one door takes a temp file
+  /// in, this one lets it go, and both go through the single thing ADR-008
+  /// says may move a recording. A composer that deleted the file itself would
+  /// be a second owner of its lifetime — and `features` cannot reach the
+  /// store anyway (ARCHITECTURE.md §1).
+  ///
+  /// A file that has already gone is not a failure.
+  Future<void> discardTemp(String tempPath);
+
   /// Deletes recordings that no chit claims. ADR-008.
   ///
   /// Runs once at startup and off the critical path. Nothing waits for it and

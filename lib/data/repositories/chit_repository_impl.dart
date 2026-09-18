@@ -190,6 +190,9 @@ final class ChitRepositoryImpl implements ChitRepository {
       _dao.watchArchive(limit: limit, offset: offset).map(_chitsOf);
 
   @override
+  Future<void> discardTemp(String tempPath) => _audio.discardTemp(tempPath);
+
+  @override
   Future<void> reconcileAudio() async => _audio.sweep(await _dao.audioPaths());
 
   List<Chit> _chitsOf(List<ChitRow> rows) => <Chit>[
