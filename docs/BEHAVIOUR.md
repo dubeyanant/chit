@@ -250,6 +250,12 @@ tomorrow** — and then, at the **bottom right**, four words: `weather`, `motion
 `topics`. The words are one touch target apart, with the same space under the last as between any
 two, so the column reads as a rhythm rather than a list.
 
+**Only an axis that goes somewhere is drawn** (ADR-085) — a word nobody has written anything under
+is not offered, the same argument §4.1 makes against a control that does nothing. A new install
+shows one or two words and earns the rest. An app with nothing in it at all says *Nothing to look
+through yet.* **While the chits are still arriving, nothing is drawn but the line**: an empty
+column is a different answer, and showing it first is a frame of the wrong one.
+
 **This is the one surface in the app that is not left-aligned** (ADR-084). Everything else hangs off
 the left gutter; find's column is flush *right*, because it is a set of targets rather than a
 reading surface, and the right edge is where a right thumb already is. **The lines are house lines,
@@ -263,8 +269,9 @@ growing without limit, so the useful ones rise; **a tie breaks alphabetically**,
 once each would swap places on every save. A topic keeps its `#`, as it does on a chit (§3.7).
 
 **A value is drawn only if something carries it** — a sky nobody wrote under is not offered, and
-`stationary` is never offered because it is never drawn (§3.6.1). An axis with nothing on it says so
-in one line rather than showing an empty column.
+`stationary` is never offered because it is never drawn (§3.6.1). **An axis with nothing on it is
+not reachable from the screen above** (ADR-085), so its one-line note is a backstop for a chit
+deleted while the screen is open, not something a reader is meant to arrive at.
 
 *Where the column sits.* **At the bottom while it fits, and from the top once it does not**
 (ADR-084) — measured against the handset, not guessed at a count, because five weathers fit anywhere

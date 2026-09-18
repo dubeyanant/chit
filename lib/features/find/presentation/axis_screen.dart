@@ -16,8 +16,14 @@ class AxisScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<FindValue> values =
-        ref.watch(axisValuesProvider)[axis] ?? const <FindValue>[];
+    final Map<FindAxis, List<FindValue>>? loaded = ref.watch(axisValuesProvider);
+
+    // Nothing at all while the chits are still arriving — an empty column is
+    // an answer, and drawing one before there is an answer is the flash
+    // ADR-085 removed.
+    if (loaded == null) return const SizedBox.shrink();
+
+    final List<FindValue> values = loaded[axis] ?? const <FindValue>[];
 
     if (values.isEmpty) return _Nothing(axis: axis);
 

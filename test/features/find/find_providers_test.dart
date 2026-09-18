@@ -48,10 +48,10 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.listen(axisValuesProvider, (
-      Map<FindAxis, List<FindValue>>? _,
-      Map<FindAxis, List<FindValue>> _,
-    ) {});
+    container.listen<Map<FindAxis, List<FindValue>>?>(
+      axisValuesProvider,
+      (Map<FindAxis, List<FindValue>>? _, Map<FindAxis, List<FindValue>>? _) {},
+    );
   });
 
   tearDown(() async {
@@ -77,18 +77,63 @@ void main() {
   Future<void> settle() async {
     for (int i = 0; i < 100; i++) {
       await Future<void>.delayed(const Duration(milliseconds: 5));
-      if (container.read(axisValuesProvider).isNotEmpty) return;
+      if (container.read(axisValuesProvider)?.isNotEmpty ?? false) return;
     }
   }
 
   List<FindValue> valuesOf(FindAxis axis) =>
-      container.read(axisValuesProvider)[axis] ?? const <FindValue>[];
+      container.read(axisValuesProvider)?[axis] ?? const <FindValue>[];
 
   List<String> labelsOf(FindAxis axis) => <String>[
     for (final FindValue it in valuesOf(axis)) it.label,
   ];
 
   setUp(() => hour = 0);
+
+  group('still loading is not the same as nothing there — ADR-085', () {
+    test('the values are null until the chits have arrived', () {
+      expect(
+        container.read(axisValuesProvider),
+        isNull,
+        reason: 'an empty map here is what made the axis screen draw its '
+            'empty state for a frame and then throw it away',
+      );
+    });
+
+    test('and a value screen is null too, not an empty day list', () {
+      expect(
+        container.read(chitsOfValueProvider(FindAxis.people, 'anant')),
+        isNull,
+      );
+    });
+
+    test('an app with nothing in it loads to empty, which is an answer', () async {
+      await write('no tags, no sky');
+      await settle();
+
+      final Map<FindAxis, List<FindValue>>? values = container.read(
+        axisValuesProvider,
+      );
+
+      expect(values, isNotNull);
+      for (final FindAxis axis in FindAxis.values) {
+        expect(values![axis], isEmpty, reason: '${axis.slug} has nothing');
+      }
+    });
+
+    test('an axis with nothing on it stays empty while others fill', () async {
+      await write('wet', weather: WeatherCondition.raining);
+      await settle();
+
+      final Map<FindAxis, List<FindValue>> values =
+          container.read(axisValuesProvider)!;
+
+      expect(values[FindAxis.weather], hasLength(1));
+      expect(values[FindAxis.motion], isEmpty);
+      expect(values[FindAxis.people], isEmpty);
+      expect(values[FindAxis.topics], isEmpty);
+    });
+  });
 
   group('the two ambient axes read alphabetically — §4.6', () {
     test('weather, whatever order it was written in', () async {
@@ -197,9 +242,9 @@ void main() {
 
   group('a value opens the chits carrying it', () {
     List<String> chitsOf(FindAxis axis, String slug) => <String>[
-      for (final DayGroup day in container.read(
-        chitsOfValueProvider(axis, slug),
-      ))
+      for (final DayGroup day
+          in container.read(chitsOfValueProvider(axis, slug)) ??
+              const <DayGroup>[])
         for (final Chit chit in day.chits) chit.text!,
     ];
 

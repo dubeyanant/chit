@@ -51,11 +51,15 @@ Stream<List<Chit>> everyChit(Ref ref) =>
 /// What each axis can offer, read once per change to the chits.
 @riverpod
 class AxisValues extends _$AxisValues {
+  /// **Null until the chits have arrived**, never an empty map standing in for
+  /// them (ADR-085). An empty map is a real answer — *nothing has been written
+  /// with any of this on it* — and a screen that cannot tell the two apart
+  /// draws its empty state for a frame and then throws it away.
   @override
-  Map<FindAxis, List<FindValue>> build() =>
+  Map<FindAxis, List<FindValue>>? build() =>
       switch (ref.watch(everyChitProvider)) {
         AsyncData<List<Chit>>(:final List<Chit> value) => _read(value),
-        _ => stateOrNull ?? const <FindAxis, List<FindValue>>{},
+        _ => stateOrNull,
       };
 
   static Map<FindAxis, List<FindValue>> _read(List<Chit> chits) {
@@ -151,11 +155,13 @@ final class _Counted {
 
 /// The chits carrying one value of one axis, grouped by day.
 @riverpod
-List<DayGroup> chitsOfValue(Ref ref, FindAxis axis, String slug) {
-  final List<Chit> chits = switch (ref.watch(everyChitProvider)) {
+List<DayGroup>? chitsOfValue(Ref ref, FindAxis axis, String slug) {
+  final List<Chit>? chits = switch (ref.watch(everyChitProvider)) {
     AsyncData<List<Chit>>(:final List<Chit> value) => value,
-    _ => const <Chit>[],
+    _ => null,
   };
+
+  if (chits == null) return null;
 
   return groupByDay(<Chit>[
     for (final Chit chit in chits)

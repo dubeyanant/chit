@@ -20,7 +20,9 @@ class ValueScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final space = context.space;
     final int today = ref.watch(todayLocalDayProvider);
-    final List<DayGroup> days = ref.watch(chitsOfValueProvider(axis, slug));
+    final List<DayGroup>? days = ref.watch(chitsOfValueProvider(axis, slug));
+
+    if (days == null) return const SizedBox.shrink();
 
     final String word = axis == FindAxis.topics ? '#$slug' : slug;
 

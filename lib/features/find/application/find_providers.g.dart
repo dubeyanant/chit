@@ -58,7 +58,7 @@ final axisValuesProvider = AxisValuesProvider._();
 
 /// What each axis can offer, read once per change to the chits.
 final class AxisValuesProvider
-    extends $NotifierProvider<AxisValues, Map<FindAxis, List<FindValue>>> {
+    extends $NotifierProvider<AxisValues, Map<FindAxis, List<FindValue>>?> {
   /// What each axis can offer, read once per change to the chits.
   AxisValuesProvider._()
     : super(
@@ -79,39 +79,39 @@ final class AxisValuesProvider
   AxisValues create() => AxisValues();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(Map<FindAxis, List<FindValue>> value) {
+  Override overrideWithValue(Map<FindAxis, List<FindValue>>? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<Map<FindAxis, List<FindValue>>>(
+      providerOverride: $SyncValueProvider<Map<FindAxis, List<FindValue>>?>(
         value,
       ),
     );
   }
 }
 
-String _$axisValuesHash() => r'51dd1fe84cf9230cd0cdf791ae748cc8de5d8d6f';
+String _$axisValuesHash() => r'6d4c1ffa43f47bc8197a0fe9eea85a8c06d79093';
 
 /// What each axis can offer, read once per change to the chits.
 
-abstract class _$AxisValues extends $Notifier<Map<FindAxis, List<FindValue>>> {
-  Map<FindAxis, List<FindValue>> build();
+abstract class _$AxisValues extends $Notifier<Map<FindAxis, List<FindValue>>?> {
+  Map<FindAxis, List<FindValue>>? build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
         this.ref
             as $Ref<
-              Map<FindAxis, List<FindValue>>,
-              Map<FindAxis, List<FindValue>>
+              Map<FindAxis, List<FindValue>>?,
+              Map<FindAxis, List<FindValue>>?
             >;
     final element =
         ref.element
             as $ClassProviderElement<
               AnyNotifier<
-                Map<FindAxis, List<FindValue>>,
-                Map<FindAxis, List<FindValue>>
+                Map<FindAxis, List<FindValue>>?,
+                Map<FindAxis, List<FindValue>>?
               >,
-              Map<FindAxis, List<FindValue>>,
+              Map<FindAxis, List<FindValue>>?,
               Object?,
               Object?
             >;
@@ -127,8 +127,9 @@ final chitsOfValueProvider = ChitsOfValueFamily._();
 /// The chits carrying one value of one axis, grouped by day.
 
 final class ChitsOfValueProvider
-    extends $FunctionalProvider<List<DayGroup>, List<DayGroup>, List<DayGroup>>
-    with $Provider<List<DayGroup>> {
+    extends
+        $FunctionalProvider<List<DayGroup>?, List<DayGroup>?, List<DayGroup>?>
+    with $Provider<List<DayGroup>?> {
   /// The chits carrying one value of one axis, grouped by day.
   ChitsOfValueProvider._({
     required ChitsOfValueFamily super.from,
@@ -153,20 +154,20 @@ final class ChitsOfValueProvider
 
   @$internal
   @override
-  $ProviderElement<List<DayGroup>> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<List<DayGroup>?> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  List<DayGroup> create(Ref ref) {
+  List<DayGroup>? create(Ref ref) {
     final argument = this.argument as (FindAxis, String);
     return chitsOfValue(ref, argument.$1, argument.$2);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<DayGroup> value) {
+  Override overrideWithValue(List<DayGroup>? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<List<DayGroup>>(value),
+      providerOverride: $SyncValueProvider<List<DayGroup>?>(value),
     );
   }
 
@@ -181,12 +182,12 @@ final class ChitsOfValueProvider
   }
 }
 
-String _$chitsOfValueHash() => r'ce78937840128be3ec7eaf3d507730be6bd604bc';
+String _$chitsOfValueHash() => r'd83bbed4398b7263d716a2e778c4437a8a26f78e';
 
 /// The chits carrying one value of one axis, grouped by day.
 
 final class ChitsOfValueFamily extends $Family
-    with $FunctionalFamilyOverride<List<DayGroup>, (FindAxis, String)> {
+    with $FunctionalFamilyOverride<List<DayGroup>?, (FindAxis, String)> {
   ChitsOfValueFamily._()
     : super(
         retry: null,

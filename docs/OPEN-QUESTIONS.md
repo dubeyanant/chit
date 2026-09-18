@@ -152,11 +152,17 @@ retired: 32, 33, 35, 36.**
     pushed into SQL and deliberately were not; and only then the `weather` index ADR-077 deleted,
     which is a schema change and ADR-059's reinstall. A tags table is the end of that road and is
     what would also make backlog 8's tap cheap.
-50. **Nobody has seen the find tab on a handset** (ADR-084). Three things nothing can check from
-    here. **The right-flush column against a left-aligned app** — it is the one surface that breaks
-    the axis, and whether that reads as deliberate or as a mistake is a looking question. **The
-    bottom-to-top switch**, which happens at a different list length on every handset: the frame
-    where a list has eleven rows on one phone and ten on another is the one to watch, and a list
-    that lands one row over the line jumps from the bottom of the screen to the top. **And the
-    quote's two-line ceiling** — `Quotes.longest` is 92 characters, set by arithmetic and not by
-    looking, so a long line on a narrow phone may take three.
+50. **The find tab has been seen, and most of it is answered** (ADR-084). The owner read it on a
+    CPH2707 and called the layout right — **the right-flush column does not read as a mistake** —
+    and the glitch they found there was real and is fixed (ADR-085). Two things are still
+    unlooked-at. **The bottom-to-top switch at the frame where it flips**, which lands at a
+    different list length on every handset: a list one row over the line jumps the whole column
+    from the bottom of the screen to the top, and nobody has written enough tags to cross it. And
+    **the quote's two-line ceiling** — `Quotes.longest` is 92 characters, set by arithmetic rather
+    than by looking, so a long line on a narrow phone may take three.
+51. **find's column is Hanken at 16.5px, sitting directly above a tab bar of Newsreader at
+    16.5px.** Two faces at one size a few pixels apart, which §6.2 does not do anywhere else. It
+    was chosen because find's words *are* the ambient vocabulary and a chit says `raining` in
+    Hanken — but §6.2 also gives **tab labels** to Newsreader, and this column is as much
+    navigation as it is vocabulary. Nobody has decided it is wrong; **switching `filterWord` to
+    `_serif` is one line** if the two ever read as a mismatch.
