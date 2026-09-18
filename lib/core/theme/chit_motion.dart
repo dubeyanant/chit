@@ -6,8 +6,12 @@ import 'package:flutter/material.dart';
 /// lets reduced motion be one decision made once rather than a condition
 /// scattered through every widget.
 enum ChitPace {
-  /// 90ms. A finger's only acknowledgement on a phone — a 0.985 depress,
-  /// 0.99 on the audio pill.
+  /// 90ms. **Nothing in the app draws press feedback** — the owner took the
+  /// depress off on 18 September 2026 and there is no wash under it either
+  /// (ADR-070), so a control's answer is the thing it does. The pace stays
+  /// because §6.3's table keeps it and because it is what ADR-020's rule is
+  /// argued from: 90ms is already quicker than the reduced target, so it is
+  /// the fade reducing motion must not slow down.
   press,
 
   /// 220ms, the house pace. Switching tab; Save arriving once the chit holds
@@ -74,6 +78,24 @@ final class ChitMotion extends ThemeExtension<ChitMotion> {
 
   static const Duration _reducedFade = Duration(milliseconds: 140);
   static const Duration _reducedArrivalFade = Duration(milliseconds: 220);
+
+  /// How far apart a staggered entrance starts its rows — §6.3's 55–60ms.
+  /// Read through [stagger].
+  ///
+  /// A step rather than a duration: it is the gap *between* two children's
+  /// arrivals, and each child's own arrival is [ChitPace.arrival]. How many
+  /// rows it runs for before it caps is `StaggeredEntrance.cap`, which is a
+  /// count of children and belongs to the widget that counts them — §6.3's
+  /// rule about a loop's period, applied to a list's length.
+  static const Duration staggerStep = Duration(milliseconds: 55);
+
+  /// The gap between two rows of a staggered entrance — [staggerStep], or
+  /// **nothing under reduced motion**, where a page fades in at once.
+  ///
+  /// A stagger is timing rather than travel, so §6.4 does not strictly reach
+  /// it; it collapses anyway because a stagger with no rise under it is a
+  /// page that arrives late for no reason a reader can see.
+  Duration stagger() => reduceMotion ? Duration.zero : staggerStep;
 
   /// This instance carrying [reduceMotion].
   ///

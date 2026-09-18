@@ -6,6 +6,7 @@ import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../domain/services/audio_player.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
+import '../../../shared/widgets/arrival.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
 import '../../../shared/widgets/microphone.dart';
@@ -55,14 +56,20 @@ class OpenChit extends ConsumerWidget {
           // arrived first and the words are written under it.
           if (state.hasAudio) ...<Widget>[
             SizedBox(height: space.s4),
-            AudioPill(
-              id: Playback.openChit,
-              path: state.audioTempPath!,
-              duration: state.audioDuration ?? Duration.zero,
-              // ADR-060: the only way a kept take goes, now that Discard has.
-              onRemove: ref
-                  .read(composerControllerProvider.notifier)
-                  .removeTake,
+            // **It rises, because the recording sheet is below** (§6.3). The
+            // pill is built the moment Stop & keep lands a take, so mounting
+            // is the event and nothing has to be told about it.
+            Arrival(
+              from: Offset(0, space.s4),
+              child: AudioPill(
+                id: Playback.openChit,
+                path: state.audioTempPath!,
+                duration: state.audioDuration ?? Duration.zero,
+                // ADR-060: the only way a kept take goes, now that Discard has.
+                onRemove: ref
+                    .read(composerControllerProvider.notifier)
+                    .removeTake,
+              ),
             ),
           ],
           SizedBox(height: space.s4),

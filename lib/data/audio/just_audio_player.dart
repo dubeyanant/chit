@@ -51,17 +51,22 @@ final class JustAudioPlayer implements AudioPlayer {
           return _report(_now);
         }
 
-        // **Whatever was sounding stops before the next file loads.** The
+        // **Whatever was sounding is paused before the next file loads.** The
         // plugin carries `playing` across a source change and its `play()`
         // returns early while it is set, so a pill tapped while another one
-        // sounded was loaded and heard but never reported *playing* under
-        // its own id: the border lit, the glyph stayed a triangle, and the
-        // next tap did nothing. `_now` moves first so the stop is reported
-        // under the new pill rather than as the old one pausing. *Seen on a
-        // handset on 18 September 2026; FakeAudioPlayer had it right all
-        // along, which is the M5 lesson about fakes read the other way.*
+        // sounded was loaded and heard but never reported *playing* under its
+        // own id: the border lit, the glyph stayed a triangle, and the next
+        // tap did nothing. `_now` moves first, so the pause is reported under
+        // the new pill rather than as the old one stopping.
+        //
+        // **`pause` and not `stop`.** Both clear the flag; `stop` also tears
+        // the native player down and the next `setFilePath` builds a new one,
+        // which cost the first tap after launch its sound on a handset and
+        // no test could see — the plugin re-inits so quietly that a fake
+        // platform answers either way. `_platformInits` in the test is what
+        // holds the difference now.
         _now = Playback(id: id);
-        await _stopQuietly();
+        await _pauseQuietly();
         await _player.setFilePath(file.path);
       }
 
@@ -143,6 +148,18 @@ final class JustAudioPlayer implements AudioPlayer {
       await _player.stop();
     } on Object {
       // The player is being put down; there is nothing to recover.
+    }
+  }
+
+  /// Clears the plugin's `playing` flag without releasing the native player.
+  ///
+  /// The difference from [_stopQuietly] is the whole of the fix above: a stop
+  /// releases the decoder, a pause does not.
+  Future<void> _pauseQuietly() async {
+    try {
+      await _player.pause();
+    } on Object {
+      // Nothing to tell. The state stream reports whatever happened.
     }
   }
 

@@ -81,6 +81,20 @@ void main() {
     expect(seen.last.playing, isFalse);
   });
 
+  test('the native player is built once and kept across both pills', () async {
+    // The regression this file exists for the second time. Clearing the
+    // plugin's `playing` flag with `stop()` also releases the decoder, and
+    // the pill that follows is silent on a device while every other test
+    // here still passes.
+    await player.play(id: 'a', path: path('a.m4a'));
+    await pumpEventQueue();
+    await player.play(id: 'b', path: path('b.m4a'));
+    await pumpEventQueue();
+
+    expect(platform.platformInits, 1);
+    expect(platform.loaded, hasLength(2), reason: 'two files, one player');
+  });
+
   test('a paused pill resumes without being reloaded', () async {
     await player.play(id: 'a', path: path('a.m4a'));
     await pumpEventQueue();
@@ -113,8 +127,17 @@ final class _FakeJustAudio extends JustAudioPlatform {
   /// Every uri loaded, across every player, in order.
   final List<String> loaded = <String>[];
 
+  /// How many native players the plugin has asked for.
+  ///
+  /// **One, for the life of the adapter.** `AudioPlayer.stop()` releases the
+  /// native player and the next `setFilePath` builds another; `pause()` keeps
+  /// it. Nothing else in the suite can see that difference, and on a handset
+  /// it was the sound of the first tap after launch.
+  int platformInits = 0;
+
   @override
   Future<AudioPlayerPlatform> init(InitRequest request) async {
+    platformInits++;
     final _FakePlatformPlayer player = _FakePlatformPlayer(request.id, loaded);
     _players[request.id] = player;
     return player;

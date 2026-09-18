@@ -110,8 +110,6 @@ const double _restingBars = 0.45;
 const double _unplayedBars = 0.22;
 
 class _AudioPillState extends ConsumerState<AudioPill> {
-  bool _pressed = false;
-
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -132,18 +130,10 @@ class _AudioPillState extends ConsumerState<AudioPill> {
           ? 'Pause recording, ${AudioPill.figureFor(widget.duration)}'
           : 'Play recording, ${AudioPill.figureFor(widget.duration)}',
       child: GestureDetector(
-        onTapDown: (TapDownDetails _) => setState(() => _pressed = true),
-        onTapUp: (TapUpDetails _) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
         onTap: () => _toggle(sounding: sounding),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: colors.inkWash(
-              colors.slip,
-              opacity: _pressed
-                  ? ChitColors.pillPressedWash
-                  : ChitColors.pillWash,
-            ),
+            color: colors.inkWash(colors.slip, opacity: ChitColors.pillWash),
             // The border is the only thing that changes colour, and only while
             // it sounds. Everything else on a thread stays ink.
             border: Border.all(color: mine ? colors.seal : colors.hair),

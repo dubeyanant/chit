@@ -10,6 +10,7 @@ import '../../core/extensions.dart';
 import '../../core/theme/chit_colors.dart';
 import '../../domain/models/chit.dart';
 import 'ambient_stamp_row.dart';
+import 'arrival.dart';
 import 'audio_pill.dart';
 import 'thread_rail.dart';
 
@@ -30,7 +31,7 @@ import 'thread_rail.dart';
 /// here. BEHAVIOUR.md §4.2 asks for *the same thread treatment as Today* in
 /// as many words, and the way to make that true is one widget, not two that
 /// look alike.
-class DayThread extends StatelessWidget {
+class DayThread extends StatefulWidget {
   /// The thread for [chits], newest first.
   const DayThread({required this.chits, super.key});
 
@@ -38,13 +39,56 @@ class DayThread extends StatelessWidget {
   final List<Chit> chits;
 
   @override
+  State<DayThread> createState() => _DayThreadState();
+}
+
+class _DayThreadState extends State<DayThread> {
+  /// Every chit this thread has already drawn.
+  ///
+  /// **A row arrives only if it was not here a moment ago** — the one that was
+  /// just saved. The rows a screen opened with are carried in by the page's
+  /// own entrance, so animating them again would be two entrances over one
+  /// widget.
+  late Set<String> _seen = <String>{
+    for (final Chit chit in widget.chits) chit.id,
+  };
+
+  Set<String> _arriving = const <String>{};
+
+  @override
+  void didUpdateWidget(DayThread oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final Set<String> now = <String>{
+      for (final Chit chit in widget.chits) chit.id,
+    };
+    _arriving = now.difference(_seen);
+    _seen = now;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (chits.isEmpty) return const SizedBox.shrink();
+    if (widget.chits.isEmpty) return const SizedBox.shrink();
+
+    // **It falls from above, because the composer is above it** (§6.3). A step
+    // of the scale rather than a distance of its own, and the mark on the
+    // strip is brought to now in the same moment (ADR-024).
+    final Offset from = Offset(0, -context.space.s4);
 
     return ThreadRail(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[for (final Chit chit in chits) ChitRow(chit: chit)],
+        children: <Widget>[
+          for (final Chit chit in widget.chits)
+            // Keyed, and **wrapped whether or not it plays**: a wrapper that
+            // came and went would change the shape of the tree under it, which
+            // is what cost the audio pill its tap once already (ADR-070).
+            Arrival(
+              key: ValueKey<String>(chit.id),
+              from: from,
+              play: _arriving.contains(chit.id),
+              child: ChitRow(chit: chit),
+            ),
+        ],
       ),
     );
   }
@@ -225,16 +269,24 @@ class _Body extends StatelessWidget {
       ),
     );
 
-    if (!pressed) return row;
-
     // **6% ink, the quietest wash there is** (DESIGN-SYSTEM.md §6.1) — and it
     // is why the stamp above lifts: at 6% `--ink-faint` measures 4.42:1 and
     // fails §6.4's floor, where `--ink-muted` measures 5.65:1 and clears it.
     // The wash is drawn under the row's own padding rather than inside it, so
     // what lights up is the target the finger actually hit.
+    //
+    // **The box is always here and only its colour changes** (ADR-070). Adding
+    // it on press and taking it away again changes the shape of the tree, so
+    // Flutter rebuilds everything under it — which disposed the audio pill's
+    // recogniser on the frame the finger landed, and a recording in the thread
+    // could not be played at all. The hold made it certain: `onLongPressDown`
+    // fires on the first pointer event, where a tap's own `onTapDown` waits to
+    // see whether it has won.
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.inkWash(colors.paper, opacity: ChitColors.rowPressedWash),
+        color: pressed
+            ? colors.inkWash(colors.paper, opacity: ChitColors.rowPressedWash)
+            : null,
         borderRadius: BorderRadius.circular(space.radius),
       ),
       child: row,

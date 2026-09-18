@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
 import '../../today/application/today_controller.dart';
 import '../application/archive_provider.dart';
 import '../application/month_provider.dart';
@@ -62,50 +63,74 @@ class CalendarScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  if (shape != null) ...<Widget>[
-                    MonthBar(
-                      month: shape.month,
-                      // A chevron exists only where there is a month to go
-                      // to — ADR-047.
-                      onPrevious: neighbours.previous == null
-                          ? null
-                          : ref.read(visibleMonthProvider.notifier).previous,
-                      onNext: neighbours.next == null
-                          ? null
-                          : ref.read(visibleMonthProvider.notifier).next,
-                    ),
-                    // v6: the bar's padding is s5 above and s4 below.
-                    SizedBox(height: space.s4),
-                    MonthGrid(
-                      shape: shape,
-                      selectedDay: selected,
-                      onTapDay: ref.read(selectedDayProvider.notifier).toggle,
-                    ),
-                    _MonthSummary(shape: shape),
-                  ],
-                  if (days != null) ...<Widget>[
-                    for (final ArchiveDay day in days)
-                      Padding(
-                        padding: EdgeInsets.only(top: space.s6),
-                        child: ArchiveDayGroup(day: day, today: today),
-                      ),
-                    // Only a filtered day can be empty — a tile with nothing
-                    // in it takes no tap — but a chit can go between the tap
-                    // and the query one day, and the line is v6's.
-                    if (days.isEmpty && selected != null) const _EmptyNote(),
-                    if (selected != null)
-                      Padding(
-                        padding: EdgeInsets.only(top: space.s4),
-                        child: Center(
-                          child: QuietButton(
-                            label: 'Show every day',
-                            onPressed: ref
+                  // **Two entrances, not one** (§6.3). The month arrives once
+                  // and stays; the archive below it arrives again whenever a
+                  // tapped date rebuilds it, which is what explains why the
+                  // list changed. One entrance over both would re-run the
+                  // grid under the finger that just tapped it.
+                  if (shape != null)
+                    StaggeredEntrance(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        MonthBar(
+                          month: shape.month,
+                          // A chevron exists only where there is a month to go
+                          // to — ADR-047.
+                          onPrevious: neighbours.previous == null
+                              ? null
+                              : ref
+                                    .read(visibleMonthProvider.notifier)
+                                    .previous,
+                          onNext: neighbours.next == null
+                              ? null
+                              : ref.read(visibleMonthProvider.notifier).next,
+                        ),
+                        // v6: the bar's padding is s5 above and s4 below.
+                        Padding(
+                          padding: EdgeInsets.only(top: space.s4),
+                          child: MonthGrid(
+                            shape: shape,
+                            selectedDay: selected,
+                            onTapDay: ref
                                 .read(selectedDayProvider.notifier)
-                                .clear,
+                                .toggle,
                           ),
                         ),
-                      ),
-                  ],
+                        _MonthSummary(shape: shape),
+                      ],
+                    ),
+                  if (days != null)
+                    StaggeredEntrance(
+                      // The filter is the key, so selecting a day and clearing
+                      // it both replay; paging in more days does not.
+                      key: ValueKey<int?>(selected),
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        for (final ArchiveDay day in days)
+                          Padding(
+                            padding: EdgeInsets.only(top: space.s6),
+                            child: ArchiveDayGroup(day: day, today: today),
+                          ),
+                        // Only a filtered day can be empty — a tile with
+                        // nothing in it takes no tap — but a chit can go
+                        // between the tap and the query one day, and the line
+                        // is v6's.
+                        if (days.isEmpty && selected != null)
+                          const _EmptyNote(),
+                        if (selected != null)
+                          Padding(
+                            padding: EdgeInsets.only(top: space.s4),
+                            child: Center(
+                              child: QuietButton(
+                                label: 'Show every day',
+                                onPressed: ref
+                                    .read(selectedDayProvider.notifier)
+                                    .clear,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                 ],
               ),
             ),

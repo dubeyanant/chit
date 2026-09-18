@@ -10,8 +10,8 @@ and from TASKS.md, on the owner's instruction: what each milestone built is in g
 settled is in DECISIONS.md, and what it taught is in BUILD-PLAN.md's one list of lessons.
 
 **Last updated:** 18 September 2026. **M0 to M6 are done and signed off on a handset. M7 —
-motion and the floors — is cut into five groups in [TASKS.md](TASKS.md) and nothing of it is
-built yet.** M7 is the last milestone of v1.
+motion and the floors — is cut into five groups in [TASKS.md](TASKS.md); A, B and C are built
+and committed. D and E are open.** M7 is the last milestone of v1.
 
 ---
 
@@ -25,9 +25,9 @@ built yet.** M7 is the last milestone of v1.
 | M4 — calendar | ✅ done | 17 Sep 2026 |
 | M5 — voice | ✅ done | 18 Sep 2026. No transcription (ADR-058), no migrations (ADR-059) |
 | M6 — the chit editor | ✅ done | 18 Sep 2026. Its last three handset checks are carried into M7's device pass (ADR-067) |
-| **M7 — motion and the floors** | 🔨 next | cut 18 Sep 2026 in five groups, A to E; none started |
+| **M7 — motion and the floors** | 🔨 in progress | five groups, **A to C done**, D and E open. ADR-068 to ADR-070 |
 
-**495 tests, `flutter analyze` clean, `dart format` clean.** Schema is v1 and there are no
+**506 tests, `flutter analyze` clean, `dart format` clean.** Schema is v1 and there are no
 migrations — an install carrying an older shape is reinstalled (ADR-059, open item 38).
 
 **Both APKs build**, release included. The release APK is a 59 MB fat APK across three ABIs, of
@@ -36,21 +36,44 @@ which one device's share is about 22 MB; nothing about shipping is decided, so n
 
 ---
 
-## Next: M7 group A
+## Next: M7 group D, the floors
 
-Start at TASKS.md group A, press feedback. Read the decision table D1–D7 there first; it is
-where this session's answers live. M7 is mostly a device pass (BUILD-PLAN.md M7), so **write
-what the handset showed into this file as each group lands**, not at the end.
+Targets at 44px, focus rings, and the semantics audit. TASKS.md D carries it and D5 and D6 are
+the decisions it turns on. **Then group E is the device pass that signs v1 off**, and it has
+grown: everything A to C built has been seen only once, half-working, and its checklist says
+what to look at.
 
-Two things carried into M7 from before it:
+M7 is mostly a device pass (BUILD-PLAN.md M7), so **write what the handset showed into this
+file as each group lands**, not at the end. **Read BUILD-PLAN.md's lessons first** — two of them
+were paid for again this session.
 
-1. **The device pass opens with M6's three unchecked boxes** — the editor's pill above the
-   words, a hold opening a chit, and a second pill lighting while a first one sounds. They are
-   the first three boxes of TASKS.md group E.
-2. **Open item 14 is M7's** — the framework's caret blinks under reduced motion. TASKS.md D6
-   settles how it is closed.
+### What the last two handset looks cost, and what they taught
 
-**Read BUILD-PLAN.md's lessons before writing a fake or fixing anything a device turns up.**
+**Group A was built and then removed on the owner's call.** The press feedback — a depress on
+every control, a wash under it — went out in two steps: the colour first, called artificial,
+then the whole effect. There is now no press feedback anywhere (ADR-070). What survives is the
+tab bar off Material's `InkWell`, and the two bugs the work flushed out.
+
+**A recording in the thread could not be played at all, and the cause was not the player.** The
+chit row's pressed wash was a `DecoratedBox` added on press and taken away again, so the shape
+of the tree changed under the finger, Flutter rebuilt the subtree, and the audio pill's gesture
+recogniser was disposed on the frame the pointer landed. The hold (ADR-061) made it certain,
+because `onLongPressDown` fires on the first pointer event where a tap's own `onTapDown` waits
+to see whether it has won. The box is always in the tree now and only its colour changes.
+
+*Two earlier player fixes are in the same area and both are real, so do not undo them:* the
+adapter pauses rather than stops before loading the next file (a stop releases the native
+player, which cost the first tap after launch its sound), and `just_audio_player_test.dart`
+counts platform inits so that difference cannot regress unseen.
+
+**The timeline glitched inside the page's entrance**, and it is the one block the entrance now
+draws straight through (`Unstaggered`). It already arrives by scrolling to now (ADR-024), so
+inside the stagger it was fading, rising and scrolling at once; it also spared a moving viewport
+an `Opacity` layer every frame.
+
+**The lesson, and it is the third time this milestone:** *a wrapper that comes and goes is a
+rebuild.* Both `Arrival` and the row's wash are written to it now — the wrapper stays and is
+told whether to play. It belongs in BUILD-PLAN.md's list when M7 is signed off.
 
 ---
 
@@ -58,8 +81,9 @@ Two things carried into M7 from before it:
 
 Things a future session needs to know but that are not scheduled work. **Numbers are stable** —
 they are cited from other documents — so a closed item keeps its number. **Closed: 2, 3, 4, 9,
-10, 11, 12, 13, 15, 17, 19, 25, 26, 27, 30, 31, 34, 39; retired: 32, 33, 35, 36.** What each
-was and how it closed is in git, at the commit before this file was cut.
+10, 11, 12, 13, 14, 15, 17, 19, 25, 26, 27, 30, 31, 34, 39; retired: 32, 33, 35, 36.** What
+each was and how it closed is in git, at the commit before this file was cut; 14, the caret,
+closed as a stated limit (ADR-068).
 
 1. **Nobody has looked at the type on a handset beside the prototype.** `ChitType._opticalSizeFor`
    converts logical pixels to points at 0.75, which is what a browser does with
@@ -74,12 +98,6 @@ was and how it closed is in git, at the commit before this file was cut.
    under `lib/features/`, not turning it off everywhere.
 8. **OPEN-QUESTIONS.md §8.3 — does Today carry enough rhythm — is open**, and answerable by
    living with the app for a week rather than by more design.
-14. **The framework's caret blinks under reduced motion.** §6.4 lists the caret blink among the
-    loops that stop, and since ADR-028 the only caret in the app is Flutter's. There is no public
-    way to steady it: `TickerMode(enabled: false)` sets the cursor's opacity to zero, so it
-    vanishes rather than resting, and `EditableText.debugDeterministicCursor` is a test-only
-    global. A stock Android keyboard blinks whatever the animation setting says. **M7 closes it**
-    — TASKS.md D6.
 16. **The strip's back-stop has not been looked at** in the one case that remains: the oldest
     day has one chit and the rest is empty, so the strip is a bare line with one mark. Honest,
     and unseen.
@@ -121,3 +139,7 @@ was and how it closed is in git, at the commit before this file was cut.
     development one** — somebody else's phone, or the owner's once they keep chits they would
     miss. DATA-MODEL.md §6 has the four rules the deleted harness taught; the code is in git at
     `ff78077`. Leaving it until *after* that install is how somebody's chits go.
+40. **The press pace draws nothing.** `ChitPace.press` is in §6.3's table with no caller in
+    `lib/` since ADR-070. It is kept because ADR-020's rule — no fade is slower than it was — is
+    argued from it, and because web hover (ADR-019) will want it. If press feedback never comes
+    back, it goes when web is decided.

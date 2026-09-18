@@ -125,8 +125,12 @@ class _Tab extends StatelessWidget {
     return Semantics(
       selected: selected,
       button: true,
-      child: InkWell(
+      // A plain tap, where an `InkWell` used to ripple — a ripple is
+      // Material's acknowledgement, not this design's (ADR-069). The pip and
+      // the label moving to `--ink` are what answers the press.
+      child: GestureDetector(
         onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         // The prototype's tab measures 43.5px, half a pixel under the floor
         // §6.4 sets with no exceptions. Sizing it to the target rather than to
         // its contents is the whole fix, and it costs half a pixel of bar.

@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/extensions.dart';
 import '../../../core/theme/chit_motion.dart';
+import '../../../domain/models/audio_edit.dart';
 import '../../../domain/models/chit.dart';
 import '../../../domain/models/editor_state.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
+import '../../../shared/widgets/arrival.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
 import '../../../shared/widgets/microphone.dart';
@@ -169,13 +171,22 @@ class _Editor extends ConsumerWidget {
                   // touches the file until Save (D6).
                   if (state.hasAudio) ...<Widget>[
                     SizedBox(height: space.s4),
-                    AudioPill(
-                      id: chit.id,
-                      path: state.audioPath!,
-                      duration: state.audioDuration ?? Duration.zero,
-                      onRemove: ref
-                          .read(editorControllerProvider(id).notifier)
-                          .removeAudio,
+                    // **A staged replacement rises, the stored one does not**
+                    // (§6.3). Opening a chit that already had a recording is
+                    // not an arrival; recording a new one over it is, and the
+                    // pill remounts at that moment because a removal took the
+                    // old one out of the tree first.
+                    Arrival(
+                      from: Offset(0, space.s4),
+                      play: state.audio is ReplaceAudio,
+                      child: AudioPill(
+                        id: chit.id,
+                        path: state.audioPath!,
+                        duration: state.audioDuration ?? Duration.zero,
+                        onRemove: ref
+                            .read(editorControllerProvider(id).notifier)
+                            .removeAudio,
+                      ),
                     ),
                   ],
                   SizedBox(height: space.s4),

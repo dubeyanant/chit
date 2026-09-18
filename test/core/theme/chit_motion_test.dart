@@ -42,6 +42,11 @@ void main() {
         );
       }
     });
+
+    test('a staggered entrance steps 55ms, inside §6.3\'s 55–60', () {
+      expect(motion.stagger().inMilliseconds, inInclusiveRange(55, 60));
+      expect(motion.stagger(), ChitMotion.staggerStep);
+    });
   });
 
   group('under reduced motion', () {
