@@ -8,6 +8,7 @@ import '../../../domain/models/chit.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../domain/repositories/chit_repository.dart';
 import '../../../domain/services/ambient_signals.dart';
+import '../../../domain/services/audio_player.dart';
 import '../../../domain/services/audio_recorder.dart';
 import '../../../domain/services/speech_recognizer.dart';
 
@@ -167,6 +168,15 @@ class ComposerController extends _$ComposerController {
   Future<void> save() async {
     final ComposerState chit = state;
     if (!chit.canSave) return;
+
+    // **The take stops sounding before it moves.** Save hands the file to
+    // `AudioStore`, which renames it out of the cache, and the pill playing it
+    // is gone from the screen a frame later — a player left running would go
+    // on playing a recording nothing on screen could stop.
+    if (chit.hasAudio) {
+      await ref.read(audioPlayerProvider).stopIf(Playback.openChit);
+      if (!ref.mounted) return;
+    }
 
     final DateTime now = ref.read(clockProvider).now();
     final AmbientReading held = ref.read(ambientSignalsProvider);
@@ -342,6 +352,9 @@ class ComposerController extends _$ComposerController {
   Future<void> discard() async {
     final String? take = state.audioTempPath;
     state = _openChit();
-    if (take != null) await ref.read(chitRepositoryProvider).discardTemp(take);
+    if (take == null) return;
+
+    await ref.read(audioPlayerProvider).stopIf(Playback.openChit);
+    await ref.read(chitRepositoryProvider).discardTemp(take);
   }
 }

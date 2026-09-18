@@ -9,8 +9,9 @@ including sessions that ended mid-milestone.
 **Last updated:** 18 September 2026, **with M5 under way — groups A to F done. Everything voice
 does is built; only the handset pass is left.** The two platform seams (A, B), the logic bare and
 tested before a widget existed (C), the recording sheet (D), the pill with playback (E) and the
-two notes (F). **The first handset run happened and found two bugs, both now fixed** — see below.
-Group G is the whole of what M5 has left, and nothing in it has been answered yet.
+two notes (F). **Two handset runs have happened and found four bugs, all now fixed** — see below.
+**Recording and playback are both confirmed working on a phone.** Transcription is not: nothing
+was recognised on the device, which is what item 32 was about.
 
 **Group D — the sheet.** A modal, not a route (ADR-011): the tear edge, `LISTENING` beside the
 record dot, the elapsed figure, the live wave, the transcript with its pending word in
@@ -48,7 +49,7 @@ microphone isn't allowed. You can turn it on in your phone's settings."* under t
 **naming the OS on purpose**, because ADR-041 spends the app's one dialog on location and open
 item 22 says there is nowhere else to send anybody. **ADR-056.**
 
-**The first handset pass found two things, and both are fixed.** *The microphone opened and no
+**The first handset pass found two things and the second found two more; all four are fixed.** *The microphone opened and no
 sheet ever appeared* — `recordingControllerProvider` was auto-disposed and **nothing in the app
 watches it between the tap and the sheet being built**, so Riverpod collected it during the
 permission round-trip, `Ref.mounted` went false, and `start` cancelled the take it had just
@@ -57,11 +58,23 @@ for symmetry with the composer*, which is exactly the lifetime the app does not 
 listener is gone and ten tests fail without the fix. **The lesson generalises: a test helper that
 holds a provider open is a claim about the app, and it has to be true.**
 
+**The second run confirmed recording and playback both work** — a chit recorded on the phone
+played back, and the seeded tone played from the calendar. It found two more, both in the
+player. *A take went on sounding after Save*, with the pill that could have stopped it no longer
+drawn anywhere: Save hands the file to `AudioStore`, which renames it out of the cache, so
+`ComposerController` now stops the player first — `stopIf(Playback.openChit)`, named so that a
+chit playing in the thread is not silenced by a save. *And after that, no pill could be paused
+at all*: `playback` was a broadcast stream carrying only changes, so any pill built after a
+recording started — the archive is rebuilt on every tab change — drew itself as though nothing
+were playing, and its one control became a play button that did nothing. **The stream gives
+every listener the current state first now**, and the fake replays the same way, because a fake
+that only carried changes is what let this pass a test and fail on a phone.
+
 *None of the seeded recordings played*, because `DebugSeeder` wrote thirty-eight bytes of ASCII —
 a file no decoder can open, which is a pill that does nothing (§6.4) and is indistinguishable
-from broken playback. It writes a real tone now, at the length each row claims. **Playback on a
-handset is still unverified**: nothing has been recorded on a device yet, and the seeded files
-are WAVs wearing an `.m4a` extension (item 37).
+from broken playback. It writes a real tone now, at the length each row claims, and the
+second run played one back from the calendar — so **item 37 is answered on Android** and open
+only for iOS.
 
 Three risks no test can settle, all for group G. Item 32 — whether Android lets `record` capture
 beside the recognition service. **Item 33** — the platform ends a recognition session on its own
@@ -110,7 +123,7 @@ that is §0.1 applied to prose, and it is the reason this file is not 930 lines.
 | M6 — the chit editor | ⬜ | OPEN-QUESTIONS.md §8.1 settled 14 Sep 2026 (ADR-017) |
 | M7 — motion and the floors | ⬜ | |
 
-**468 tests, `flutter analyze` clean, `dart format` clean.** A debug APK was built at the end of
+**473 tests, `flutter analyze` clean, `dart format` clean.** A debug APK was built at the end of
 groups D to F; the first handset run found the two bugs above. The release APK has not been
 rebuilt since M3's sign-off.
 

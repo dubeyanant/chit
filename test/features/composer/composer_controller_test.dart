@@ -11,6 +11,7 @@ import 'package:chit/domain/models/motion_state.dart';
 import 'package:chit/domain/models/weather_condition.dart';
 import 'package:chit/domain/repositories/chit_repository.dart';
 import 'package:chit/domain/services/ambient_signals.dart';
+import 'package:chit/domain/services/audio_player.dart';
 import 'package:chit/domain/services/audio_recorder.dart';
 import 'package:chit/domain/services/location_service.dart';
 import 'package:chit/domain/services/speech_recognizer.dart';
@@ -21,6 +22,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
+import '../../support/fake_audio_player.dart';
 import '../../support/fake_clock.dart';
 
 /// **ADR-040 and ADR-042, through the controller that carries them.**
@@ -36,6 +38,7 @@ void main() {
   late FakeClock clock;
   late ChitRepository repo;
   late _Location location;
+  late FakeAudioPlayer player;
 
   /// 9:30am — when the chit is opened.
   final DateTime opened = DateTime(2026, 9, 15, 9, 30);
@@ -55,9 +58,11 @@ void main() {
       clock: clock,
     );
     location = _Location();
+    player = FakeAudioPlayer();
   });
 
   tearDown(() async {
+    await player.dispose();
     await db.close();
     if (root.existsSync()) await root.delete(recursive: true);
   });
@@ -69,6 +74,7 @@ void main() {
         chitRepositoryProvider.overrideWithValue(repo),
         locationServiceProvider.overrideWithValue(location),
         weatherServiceProvider.overrideWithValue(weather ?? _FastWeather()),
+        audioPlayerProvider.overrideWithValue(player),
       ],
     );
     addTearDown(container.dispose);
@@ -586,6 +592,66 @@ void main() {
         container.read(composerControllerProvider).microphoneRefused,
         isFalse,
       );
+    });
+  });
+
+  group('a take stops sounding when it stops being the open chit\'s', () {
+    /// A take on disk, kept on the open chit and playing.
+    Future<ComposerController> playingTake(ProviderContainer container) async {
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+      final File take = File(p.join(root.path, 'take-1.m4a'));
+      await take.writeAsString('audio');
+
+      composer.keepRecording(
+        recording: Recording(
+          tempPath: take.path,
+          duration: const Duration(seconds: 9),
+        ),
+        transcript: const Transcript(committed: 'nearly home'),
+      );
+      await player.play(id: Playback.openChit, path: take.path);
+      expect(player.now.playing, isTrue);
+      return composer;
+    }
+
+    test('Save stops it, because the file is about to move', () async {
+      // Seen on a handset: the take went on playing after Save, with the pill
+      // that could have stopped it no longer drawn anywhere.
+      final ProviderContainer container = containerOf();
+      final ComposerController composer = await playingTake(container);
+
+      clock.moveTo(savedAt);
+      await composer.save();
+
+      expect(player.now, Playback.silent);
+    });
+
+    test('Discard stops it, because the file is about to go', () async {
+      final ProviderContainer container = containerOf();
+      final ComposerController composer = await playingTake(container);
+
+      await composer.discard();
+
+      expect(player.now, Playback.silent);
+    });
+
+    test('a save leaves a chit playing in the thread alone', () async {
+      // `stopIf` names the open chit, so somebody listening back to yesterday
+      // while they write today is not interrupted.
+      final ProviderContainer container = containerOf();
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+      await player.play(id: 'seed-04', path: 'audio/seed-04.m4a');
+
+      composer.edit('Train 20 late.');
+      clock.moveTo(savedAt);
+      await composer.save();
+
+      expect(player.now.holds('seed-04'), isTrue);
+      expect(player.now.playing, isTrue);
     });
   });
 

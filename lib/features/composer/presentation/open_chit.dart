@@ -5,6 +5,7 @@ import '../../../core/extensions.dart';
 import '../../../core/theme/chit_colors.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/composer_state.dart';
+import '../../../domain/services/audio_player.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
@@ -55,7 +56,7 @@ class OpenChit extends ConsumerWidget {
           if (state.hasAudio) ...<Widget>[
             SizedBox(height: space.s4),
             AudioPill(
-              id: AudioPill.openChit,
+              id: Playback.openChit,
               path: state.audioTempPath!,
               duration: state.audioDuration ?? Duration.zero,
             ),

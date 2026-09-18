@@ -340,6 +340,15 @@ chit and absolute for a take not yet kept** (ADR-008), and `JustAudioPlayer` is 
 that difference is resolved — `features` has no filesystem. A file that has vanished leaves the
 player silent and the chit still renders (§6).
 
+**The stream gives every listener the current state before it gives them a change.** A pill is
+routinely built long after a recording started sounding — the archive is rebuilt on every tab
+change — and a stream carrying only changes left those pills drawn as though nothing were
+playing, so the one control that could have stopped the sound was a play button that did
+nothing. **`stopIf(id)`** is the other half: Save moves the open chit's take out of the cache and
+Discard deletes it, and `ComposerController` stops the player first, because a pill that is about
+to stop being drawn cannot stop what it started. The `if` is what keeps a chit playing in the
+thread from being silenced by a save.
+
 Recording is available on a chit that already has text (§4.1's append rule), and available
 **once** — a row holds one `audioPath`, so the microphone retires once `audioTempPath` is set
 rather than silently overwriting it (§3.2).

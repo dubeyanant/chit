@@ -26,7 +26,13 @@ final class FakeAudioPlayer implements AudioPlayer {
   Playback get now => _now;
 
   @override
-  Stream<Playback> get playback => _out.stream;
+  Stream<Playback> get playback async* {
+    // The current state first, exactly as the real one does. A fake that only
+    // carried changes would let a pill pass a test it fails on a handset —
+    // which is how the un-stoppable pill reached one.
+    yield _now;
+    yield* _out.stream;
+  }
 
   @override
   Future<void> play({required String id, required String path}) async {
@@ -48,6 +54,12 @@ final class FakeAudioPlayer implements AudioPlayer {
   Future<void> pause() async {
     if (_now.id == null) return;
     _emit(Playback(id: _now.id, position: _now.position, playing: false));
+  }
+
+  @override
+  Future<void> stopIf(String id) async {
+    if (!_now.holds(id)) return;
+    _emit(Playback.silent);
   }
 
   /// The playhead has reached [at].
