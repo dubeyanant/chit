@@ -7,9 +7,11 @@ import 'package:go_router/go_router.dart';
 import '../../app/router.dart';
 import '../../core/extensions.dart';
 import '../../domain/models/chit.dart';
+import '../../domain/tags/chit_tags.dart';
 import 'ambient_stamp_row.dart';
 import 'arrival.dart';
 import 'audio_pill.dart';
+import 'chit_body.dart';
 import 'focus_ring.dart';
 import 'thread_rail.dart';
 
@@ -73,7 +75,11 @@ class ChitRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Chit, ${chit.hasText ? chit.text! : 'a recording'}',
+      // The spoken form, not the raw row: a reader hearing "anant underscore
+      // dubey" is being read the writing and not the chit.
+      label:
+          'Chit, '
+          '${chit.hasText ? ChitTags.spoken(chit.text!) : 'a recording'}',
       hint: 'Hold to open the chit',
       onLongPress: () => _open(context),
 
@@ -128,14 +134,19 @@ class _Body extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(child: AmbientStampRow.saved(stamp: chit.stamp)),
+              Expanded(
+                child: AmbientStampRow.saved(
+                  stamp: chit.stamp,
+                  edited: chit.wasEdited,
+                ),
+              ),
             ],
           ),
           if (chit.hasText)
             Padding(
               padding: EdgeInsets.only(left: inset, top: space.s1),
 
-              child: Text(chit.text!, style: context.type.chitText),
+              child: ChitBody(chit.text!),
             ),
 
           if (chit.hasAudio)

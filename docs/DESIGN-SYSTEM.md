@@ -20,6 +20,7 @@ Dark, single palette.
 | `--ink` | `#EDE7DC` | primary text — 14.54:1 on the ground, 13.03:1 on a chit |
 | `--ink-muted` | `#A39B8B` | secondary text — 6.49:1 / 5.82:1 |
 | `--ink-faint` | `#8F8879` | metadata — 5.08:1 / 4.56:1 |
+| `--ink-disabled` | `#5A554C` | a control drawn and not usable — 2.4:1, **under the 3:1 floor on purpose** (ADR-088) |
 | `--hair` | `#2E2A25` | borders, rules |
 | `--hair-soft` | `#252220` | inner dividers, **on the ground only** — 1.01:1 on a chit, where it is not drawn |
 | `--seal` | `#C4664E` | the one accent — the stamp pressed onto a surface |
@@ -46,6 +47,10 @@ the sheet's Discard, *Show every day*, Remove, and the editor's Cancel.
 
 **Nothing answers a press** (ADR-069 to ADR-071): no press feedback, no hover states, no token for
 either. A control's answer is the thing it does, and a held row is answered by the phone's tick.
+**There is one disabled state, and it is the calendar's chevrons** (ADR-088): `--ink-disabled`, no
+focus ring, no tap, `enabled: false` to a screen reader. It sits **under** §6.4's 3:1 component
+floor on purpose — a disabled control that met the floor set for a live one would be claiming it
+works. Anything else that cannot act still follows §4.1 and is simply not drawn.
 **The rule those washes taught is still live** — `--ink-faint` fails the floor on *any* wash, 4.12:1
 at even 4% — so wherever a tinted surface appears, the text on it goes up with it. Any new tinted
 surface inherits that, and §6.4 makes no exception for a surface that is brief.
@@ -53,6 +58,16 @@ surface inherits that, and §6.4 makes no exception for a surface that is brief.
 **The launcher icon shares the ground and nothing else** — an opening quote on `--paper`, drawn as
 artwork rather than assembled from tokens (ADR-075), so that the icon and the first screen it opens
 are one colour.
+
+**The map behind find is four washes of `--ink` on `--paper`** (ADR-089): `map-line` 7% for the
+towns and rivers, `map-water` 10% for the coast and the lakes, `map-fill` 10% for the city being
+stood in, and `map-host` 13% for its edge. **Each is composited, not drawn translucent**, so two
+shapes crossing never stack into a fifth surface nobody measured. **`map-host` is the ceiling, and
+the text above it set the number** — it is the lightest thing a word comes to rest on, so §6.4 holds
+both the column and the quote to 4.5:1 against it, and `contrast_test.dart` asserts that and that
+nothing on the map is brighter. **The fix is `map-pin` at 42% on its own disc of `--paper`**, which
+is what makes it the same mark whether it lands on the city or off it — and the only number on this
+surface measured against paper rather than against the map.
 
 ### 6.2 Typography
 
@@ -71,10 +86,12 @@ anybody needs pronounced at them.
 
 **Uppercase appears in one place: `LISTENING`** on the recording sheet — a state, shown while a
 thing is happening, which should read as a signal rather than as words. The ambient stamp is
-lowercase everywhere, in the same words and case on the open chit and in the thread, the open chit
-being distinguished by being *brighter* rather than by speaking differently; its facts are **spaced
+lowercase everywhere, in the same words and case wherever a word appears twice, the open chit being
+distinguished by being *brighter* rather than by speaking differently; **it is the one place that
+carries no time** (ADR-080), so it is one word where the thread is two. Its facts are **spaced
 apart, not strung on middle dots**, three items at 11px with a separator between each being five
-things to read where there are three. Anything that counts or keeps time is **tabular** — a running
+things to read where there are three — and three is the ceiling, which `edited` reaches and nothing
+may pass. Anything that counts or keeps time is **tabular** — a running
 timer whose digits change width reads as unstable.
 
 **The date is a label, not a masthead**: weekday and date on one 26px line, the weekday italic in
@@ -84,6 +101,21 @@ starts reading as a page rather than a column; everything that is not the date, 
 wordmark is 16.5px. **15px is the exception, and it is one voice rather than a size** — the month
 summary and the empty notes are the app speaking *about* a day rather than reporting one, set a step
 below chit text in serif italic so they read as an aside.
+
+**A tag is chit text differing in exactly one way** (ADR-082, BEHAVIOUR §3.7). `chitPerson` is
+`chitText` in the real italic face — same size, weight, colour and line — and `chitTopic` is
+`chitText` in `--ink-faint`, same everything else. **That is why a person drops its `@` and a topic
+keeps its `#`**: the slope is a difference §6.4 accepts on its own, and colour is not, so the topic
+needs the glyph beside it. Newsreader ships a true italic (`Newsreader-Italic-VF`), so the slope is
+drawn rather than sheared.
+
+**`filterWord` is find's column** (ADR-084) — 16.5px Hanken in `--ink`, each word its own
+`minTouchTarget` row. **It is the one thing in the app set flush right**: everything else hangs off
+the left gutter, and this column is a set of targets rather than prose, sitting where a right thumb
+already is. **`quote` is the line above it** — 15px serif italic, §6.2's voice for an aside, which is
+what a line nobody signed is. **`--ink-muted`, not `--ink-faint`**: it sits over the map (§6.1,
+ADR-089), where `--ink-faint` falls under the floor, and the pill's duration made the same move for
+the same reason. The aside survives it — size, face and slope were never resting on colour.
 
 ### 6.3 Spacing, shape, motion
 
@@ -103,7 +135,9 @@ a block of text being a number that is correct exactly once.
 used by Today's date and the calendar's month bar. 44 because a heading row may carry a control and
 the calendar's chevrons do; fixed because a row that grows a chevron would otherwise move the words
 under it, and switching tab would shift the heading. The editor's header is the same height for the
-same reason, off its back arrow.
+same reason, off its back arrow. **Every tab opens `s3` under the masthead** (ADR-087) — one value,
+in all three, because the rule that a tab switch does not move the heading only holds while they
+agree; the masthead's own `s3` sits above it, so the wordmark and the heading are 24px apart.
 
 **Haptics** — one, and it is the whole list: a `selectionClick` when the strip scrolls past a day
 boundary (ADR-034). A haptic is **not motion** and is not removed by reduced motion, which costs a
@@ -181,6 +215,6 @@ there it explains why the list changed.
 
 `design/chit-app-v6.html` was the visual target through v1 and was deleted once the app was the
 better reference. **The number is not reused**, being cited elsewhere. One requirement outlived it
-and is still binding: **the two tabs never disagree** — the thread, the timeline, the calendar
-density and the month total are four readings of one table, kept in step by being the same data
-rather than by being synchronised (ARCHITECTURE.md §3).
+and is still binding: **the tabs never disagree** — the thread, the timeline, the calendar
+density, the month total and find's rows are readings of one table, kept in step by being the same
+data rather than by being synchronised (ARCHITECTURE.md §3).

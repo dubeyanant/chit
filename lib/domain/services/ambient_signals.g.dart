@@ -41,7 +41,7 @@ final class AmbientSignalsProvider
   }
 }
 
-String _$ambientSignalsHash() => r'9032b35e07861f42fd33958fed2e6e01a727da70';
+String _$ambientSignalsHash() => r'a7b9f9dcecbec1203cfbd51462a52103958a2f1e';
 
 abstract class _$AmbientSignals extends $Notifier<AmbientReading> {
   AmbientReading build();

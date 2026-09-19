@@ -182,6 +182,16 @@ flutter run --profile --dart-define=CHIT_FRAMES=true   # frame times to the log
 Both seed flags work in any build mode, are idempotent, and never touch a chit a person wrote; the
 console is the only place they report.
 
+**`flutter install` does not build** — it pushes whatever APK is already under
+`build/app/outputs/flutter-apk/`, which may be hours old and from a different `--dart-define`. It
+reports success either way, so a verification pass run on it can be a pass on code that was never
+compiled. **To look at a change on a handset, `flutter build apk --release` first**, then
+`adb install -r`, and check the APK's timestamp if there is any doubt.
+
+**Do not drive the phone with `adb input`.** The handset is somebody's, the taps land in whatever
+app is in front, and a screenshot pass can end up typing into it. Capture with
+`adb exec-out screencap -p` and ask for the gestures.
+
 **There are no migrations** (ADR-059). `schemaVersion` stays 1, changing a table changes the schema,
 and an install carrying the old shape is **reinstalled**. That holds only while Chitta has no data
 anybody would miss; `docs/DATA-MODEL.md` §5 says what comes back when it does.

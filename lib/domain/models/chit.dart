@@ -71,6 +71,12 @@ abstract class Chit with _$Chit {
     motion: motion,
   );
 
+  /// Whether an edit has moved [updatedAt] since the chit was written.
+  ///
+  /// A chit nobody has edited carries the two instants equal, the insert
+  /// writing [createdAt] into both — DATA-MODEL.md §2.
+  bool get wasEdited => updatedAt.isAfter(createdAt);
+
   bool get hasText => text != null;
 
   bool get hasAudio => audioPath != null;

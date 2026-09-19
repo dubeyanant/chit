@@ -16,14 +16,18 @@ split `application/` and `presentation/`.
 
 ```
 lib/
-├── app/       the root and the router — go_router: shell + two tabs
+├── app/       the root and the router — go_router: shell + three tabs
 ├── core/      the four ThemeExtensions of §6, the injected clock, the BuildContext sugar
 ├── domain/    models/ (Chit and its invariant, the stamp, the enums, the screen states, the
-│              sealed AudioEdit) · ambient/ · motion/ · weather/ · repositories/ · services/
+│              sealed AudioEdit) · ambient/ · motion/ · weather/ · tags/ (the sealed ChitSpan
+│              and its grammar) · find/ (the four axes, and where a column sits) ·
+│              geo/ (the projection, and how the map frames itself) ·
+│              repositories/ · services/
 ├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
-│              weather/ · location/ · preferences/ · repositories/
-├── features/  shell, today, composer, calendar, editor, onboarding
-└── shared/    widgets/ (the chit vocabulary) · day_label.dart
+│              weather/ · location/ · geo/ (the bundled atlas and its codec) ·
+│              preferences/ · repositories/
+├── features/  shell, today, composer, calendar, find, editor, onboarding
+└── shared/    widgets/ (the chit vocabulary) · day_label.dart · day_group.dart
 ```
 
 A widget used by one screen stays in that screen's `presentation/widgets/` until a second screen
@@ -38,13 +42,15 @@ demand.**
 
 **The shared widgets are the chit vocabulary — no state, no provider, each takes only what it
 draws.** `DayThread` is why the archive's *same treatment as Today* is true by construction: one
-widget, not two that look alike. Three earn exceptions — **`AudioPill` watches a provider**, since
+widget, not two that look alike. Four earn exceptions — **`AudioPill` watches a provider**, since
 which pill is lit is a property of the app's one player rather than of the row — **through a
 `select` that answers with its own row's playback**, so one pill's playhead does not rebuild the
 forty pills around it (ADR-077); **`ChitRow`
 navigates**, pushing the editor itself rather than taking a callback both callers would pass
-identically (ADR-061); and **`Microphone` takes a callback**, since the two screens that draw it
-send the same take to different owners (ADR-065).
+identically (ADR-061); **`ChitBody` navigates too, and is stateful for it** (ADR-086) — a tag goes
+to find on the same argument, and its `TapGestureRecognizer`s have to be owned and disposed, one
+built inside `build` leaking one a frame; and **`Microphone` takes a callback**, since the two
+screens that draw it send the same take to different owners (ADR-065).
 
 ## 2. Riverpod conventions
 
@@ -69,6 +75,9 @@ overridden in `main.dart` — the one place the two layers meet, and the seam te
 
 **go_router owns navigation entirely**; `ChitRoute` is the one destination list the tab bar is built
 from, and `BranchFade` is written *into* `navigatorContainerBuilder` rather than around it.
+**find's two deeper screens are nested routes inside its branch** (ADR-084), so the tab bar stays
+and the system back walks up a level — a drill-down held as state, with a `PopScope` to catch back,
+is hand-rolling beside the package that already has the seam.
 **Riverpod owns everything that outlives a build, the router included** — a `GoRouter` in a
 `StatefulWidget` puts the one thing that must survive a rebuild in the one place that does not. The
 two exceptions are the recording sheet (ADR-011) and the prompt sheet (ADR-064): modal sheets, not
@@ -99,7 +108,7 @@ arrived is null, and nothing here can block, spin or fail a save. Motion rides o
 which fact is worth a chit is a product decision. **`AmbientCapture` holds no clock** — a time is
 read where it is used. **A throw and a hang both produce `null`**, the one deliberate exception to
 *fail loudly in development*. **`AmbientSignals` owns *when*, `AmbientCapture` owns *what***: a
-reading is good for five minutes, the row is written first and patched only if stale, and
+reading is good for one minute, the row is written first and patched only if stale, and
 `updateAmbient` is a separate method so one rule lives in the type — **the patch moves neither
 `createdAt` nor `updatedAt`**.
 

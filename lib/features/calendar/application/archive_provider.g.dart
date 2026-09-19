@@ -102,7 +102,7 @@ String _$archiveChitsHash() => r'49d2c4107881a5f42754ed3f7bf51e14d344257a';
 final archiveDaysProvider = ArchiveDaysProvider._();
 
 final class ArchiveDaysProvider
-    extends $NotifierProvider<ArchiveDays, List<ArchiveDay>?> {
+    extends $NotifierProvider<ArchiveDays, List<DayGroup>?> {
   ArchiveDaysProvider._()
     : super(
         from: null,
@@ -122,27 +122,27 @@ final class ArchiveDaysProvider
   ArchiveDays create() => ArchiveDays();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<ArchiveDay>? value) {
+  Override overrideWithValue(List<DayGroup>? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<List<ArchiveDay>?>(value),
+      providerOverride: $SyncValueProvider<List<DayGroup>?>(value),
     );
   }
 }
 
-String _$archiveDaysHash() => r'a547e67c2330a9c39d6884d987d01ccc6a294871';
+String _$archiveDaysHash() => r'97bf1df8d0008f5a47cf11f027f65fa437178e41';
 
-abstract class _$ArchiveDays extends $Notifier<List<ArchiveDay>?> {
-  List<ArchiveDay>? build();
+abstract class _$ArchiveDays extends $Notifier<List<DayGroup>?> {
+  List<DayGroup>? build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<List<ArchiveDay>?, List<ArchiveDay>?>;
+    final ref = this.ref as $Ref<List<DayGroup>?, List<DayGroup>?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<List<ArchiveDay>?, List<ArchiveDay>?>,
-              List<ArchiveDay>?,
+              AnyNotifier<List<DayGroup>?, List<DayGroup>?>,
+              List<DayGroup>?,
               Object?,
               Object?
             >;

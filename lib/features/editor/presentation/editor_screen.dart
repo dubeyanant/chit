@@ -117,7 +117,10 @@ class _Editor extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  AmbientStampRow.saved(stamp: chit.stamp),
+                  AmbientStampRow.saved(
+                    stamp: chit.stamp,
+                    edited: chit.wasEdited,
+                  ),
 
                   if (state.hasAudio) ...<Widget>[
                     SizedBox(height: space.s4),

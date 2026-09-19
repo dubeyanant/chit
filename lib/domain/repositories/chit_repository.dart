@@ -48,6 +48,9 @@ abstract interface class ChitRepository {
 
   Stream<List<Chit>> watchArchive({required int fromDay, required int toDay});
 
+  /// Every chit there is, newest day first — the pool find narrows.
+  Stream<List<Chit>> watchEvery();
+
   Future<void> discardTemp(String tempPath);
 
   Future<void> reconcileAudio();

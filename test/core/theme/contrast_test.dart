@@ -289,4 +289,103 @@ void main() {
       expect(contrastRatio(colors.hair, colors.paper), greaterThan(1.03));
     });
   });
+
+  group('a disabled control is drawn, and is not available — ADR-088', () {
+    test('it is plainly visible, not a ghost', () {
+      expect(
+        contrastRatio(colors.inkDisabled, colors.paper),
+        greaterThan(2),
+        reason: 'a chevron nobody can see is the hiding ADR-047 used to do',
+      );
+    });
+
+    test('and deliberately under the 3:1 floor a live control clears', () {
+      expect(
+        contrastRatio(colors.inkDisabled, colors.paper),
+        lessThan(3),
+        reason: 'meeting the floor set for a live control would say it works',
+      );
+    });
+
+    test('it is quieter than the chevron that does something', () {
+      expect(
+        contrastRatio(colors.inkDisabled, colors.paper),
+        lessThan(contrastRatio(colors.inkFaint, colors.paper)),
+      );
+    });
+
+    test('and louder than the hairline, which is not a control at all', () {
+      expect(
+        contrastRatio(colors.inkDisabled, colors.paper),
+        greaterThan(contrastRatio(colors.hair, colors.paper)),
+      );
+    });
+  });
+
+  group('the map is a surface, and it is measured like one', () {
+    // Every wash the backdrop draws with, composited the way it is drawn —
+    // on paper, so that two shapes overlapping never make a third surface.
+    final Map<String, double> washes = <String, double>{
+      'map-line': ChitColors.mapLine,
+      'map-water': ChitColors.mapWater,
+      'map-fill': ChitColors.mapFill,
+      'map-host': ChitColors.mapHost,
+    };
+
+    for (final MapEntry<String, double> wash in washes.entries) {
+      final Color surface = colors.inkWash(colors.paper, opacity: wash.value);
+
+      test('the column clears the floor on ${wash.key}', () {
+        final double ratio = contrastRatio(colors.ink, surface);
+        expect(
+          ratio,
+          greaterThanOrEqualTo(floor),
+          reason: 'filterWord on ${wash.key} is ${ratio.toStringAsFixed(2)}:1',
+        );
+      });
+
+      test('the quote clears the floor on ${wash.key}', () {
+        final double ratio = contrastRatio(colors.inkMuted, surface);
+        expect(
+          ratio,
+          greaterThanOrEqualTo(floor),
+          reason: 'the quote on ${wash.key} is ${ratio.toStringAsFixed(2)}:1',
+        );
+      });
+    }
+
+    test('map-host is the ceiling, and nothing on the map is brighter', () {
+      // The floors above are only worth anything while this holds: a wash
+      // added above map-host would sit under the same words untested.
+      expect(
+        washes.values.reduce((double a, double b) => a > b ? a : b),
+        ChitColors.mapHost,
+      );
+    });
+
+    test('the quote could not have stayed --ink-faint', () {
+      // Why chit_type.dart raised it. Not a preference: the line the app used
+      // to draw would be under the floor the moment the map arrived behind it.
+      expect(
+        contrastRatio(
+          colors.inkFaint,
+          colors.inkWash(colors.paper, opacity: ChitColors.mapHost),
+        ),
+        lessThan(floor),
+      );
+    });
+
+    test('the pin clears the 3:1 a non-text mark is held to', () {
+      // Measured on paper and not on the map, because the pin is drawn on its
+      // own disc of paper — which is what makes this number the whole story
+      // wherever the fix happens to fall.
+      expect(
+        contrastRatio(
+          colors.inkWash(colors.paper, opacity: ChitColors.mapPin),
+          colors.paper,
+        ),
+        greaterThanOrEqualTo(3),
+      );
+    });
+  });
 }

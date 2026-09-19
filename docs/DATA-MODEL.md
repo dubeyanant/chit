@@ -28,8 +28,11 @@ class Chits extends Table {
 `WHERE local_day BETWEEN ? AND ? ORDER BY local_day DESC, created_at DESC` is a walk of one month
 rather than a sort of the whole table,
 and `localDay` alone is still served as the leftmost column (ADR-077). *Three separate indexes until
-then*, of which the one on `weather` served backlog item 2 and nothing that exists — an index on
-speculation is what YAGNI forbids, and the same argument always ruled out `motion`.
+then*, of which the one on `weather` served a backlog item and nothing that existed — an index on
+speculation is what YAGNI forbids, and the same argument always ruled out `motion`. **That backlog
+item is now find** (ADR-083) and **the index is still not back**: find reads every row and narrows
+in Dart, because its tags are in the body text and no index reaches them. Open item 49 says what to
+try, and in what order, if that ever measures slow.
 
 **Two names are forced.** `text` is Drift's own column builder, so a getter called `text` is a
 compile error in a `Table`; the column is `body`. Drift's row class would have been `Chit` and
@@ -54,10 +57,16 @@ deliberately **no `CHECK (motion IS NULL OR lat IS NOT NULL)`**: motion comes of
 that is how this milestone reads it, which is a fact about the implementation and not about what a
 chit *is*.
 
-**`updatedAt`** is set at insert to the same instant as `createdAt` and diverges on the first edit.
-Editing never changes `createdAt` or `localDay`, and **`updateAmbient` moves neither** (ADR-042) —
-the patch that follows a save must not move the chit in the thread, nor claim the user had edited
-something. An edit is the user's act and nothing else may claim to be one.
+**`updatedAt`** is set at insert to the same instant as `createdAt` — **`stamp.capturedAt` itself,
+never a second reading of the clock**, which is milliseconds and an audio file-move later and would
+make every chit ever saved look edited — and diverges on the first edit. Editing never changes
+`createdAt` or `localDay`, and **`updateAmbient` moves neither** (ADR-042) — the patch that follows
+a save must not move the chit in the thread, nor claim the user had edited something. An edit is the
+user's act and nothing else may claim to be one. **This equality is now drawn**: `Chit.wasEdited`
+compares the two and a saved chit that has moved says `edited` (ADR-080), so anything that touches
+`updatedAt` without the user asking is visible on the screen. A fake clock returns one instant to
+both reads, so **a test cannot catch a regression here** — the repository suite pins it by moving
+the clock between the stamp and the save.
 
 ## 2. The invariant
 
@@ -105,8 +114,17 @@ at one instant and drawn as one row.
 | Archive | `watchArchive` — one month, `ORDER BY localDay DESC, createdAt DESC` (ADR-079) |
 | Archive, filtered | `watchDay` — *one day's chits, newest first* is one question |
 | Calendar, the chevrons | `watchWrittenMonths` — `GROUP BY localDay / 100` (ADR-047) |
+| Find | `watchEvery` — every row, same order, **and no `WHERE` at all** (ADR-083) |
 
-**Five queries behind six readings**, which is the mechanism behind *the two tabs never disagree*:
+**`watchEvery` is the one unbounded query, and it is deliberate.** Find narrows on four axes, two of
+which — people and topics — live inside the body text and have **no index to ask**, so the rows come
+to Dart and are filtered there; weather and motion could be pushed into SQL and are not, a half-
+pushed filter being two places to be wrong. ADR-077 deleted the `weather` index *because it served
+this and nothing else*, and it has not come back: bringing it back is a schema change and ADR-059's
+reinstall, and nothing has measured slow yet. **This is the first thing to suspect if find stutters**
+— open item 49.
+
+**Six queries behind seven readings**, which is the mechanism behind *the tabs never disagree*:
 they are not kept in step, they are the same data. A thread is read down and a strip is read along,
 which is why `watchDayRange` reads oldest first where `watchDay` reads newest first — each query
 hands its screen the order it draws in. Count-to-density is **not** in the query: it is a design
@@ -179,6 +197,17 @@ which is the whole of how the rows are told apart from a person's own — no led
 column added for a tool. Seeding is idempotent; clearing deletes exactly the seeded rows and their
 recordings. It writes through the DAO rather than the repository, which generates its own ids, but
 `localDay` still comes from `Chit.localDayOf`.
+
+**The pinned chits walk the world, newest first** (ADR-089) — Tokyo, New York, London, Cape Town,
+Sydney, Rio, Paris, Istanbul, Bangalore, Cairo, San Francisco, Mumbai, and round again. **Mumbai is
+last and not first**, because this gets looked at from a handset that is usually in it: a newest
+seeded chit there would draw the map the real one already drew, and the first delete would read as
+nothing having happened. **That order is the feature**: the map behind find draws the newest chit that carries a fix, so deleting the
+newest chit and opening find again lands it on the next city, which is the only way to see the map
+anywhere but where the handset is. **Each of the twelve was checked against `outline.bin` for a
+built-up area to fill** rather than assumed — a place Natural Earth holds no city for draws a map
+with nothing filled, which reads as a broken map rather than as a small town, and that is why
+Reykjavík and Singapore are not on the list. The console names them on every seed.
 
 **`stress` is for measuring, not for looking at** (ADR-077): 2,000 rows spread evenly over 1,095
 days, ids `seed-s00000` upward, written in one transaction, with four rotating bodies of different

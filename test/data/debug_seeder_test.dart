@@ -204,6 +204,46 @@ void main() {
         expect(chit.updatedAt, chit.createdAt, reason: chit.id);
       }
     });
+
+    test('the pinned chits walk the world, newest first — ADR-089', () async {
+      await seeder.seed();
+
+      final List<Chit> pinned =
+          (await seeded()).where((Chit c) => c.lat != null).toList()
+            ..sort((Chit a, Chit b) => b.createdAt.compareTo(a.createdAt));
+
+      expect(pinned.length, greaterThan(12));
+
+      // **The twelve newest are twelve different places.** This is the whole
+      // point of the fixture: deleting the newest chit and opening find again
+      // has to land the map somewhere else, or there is no way to look at it
+      // anywhere but where the handset is.
+      final Set<String> places = <String>{
+        for (final Chit chit in pinned.take(12))
+          '${chit.lat!.round()},${chit.lon!.round()}',
+      };
+
+      expect(places, hasLength(12));
+    });
+
+    test('every seeded fix is far from the others — no two share a city',
+        () async {
+      await seeder.seed();
+
+      final List<Chit> pinned =
+          (await seeded()).where((Chit c) => c.lat != null).toList()
+            ..sort((Chit a, Chit b) => b.createdAt.compareTo(a.createdAt));
+
+      // Consecutive by recency means consecutive in the list of places, so any
+      // two neighbours are continents apart rather than streets apart.
+      for (int i = 1; i < 12; i++) {
+        final double apart =
+            (pinned[i].lat! - pinned[i - 1].lat!).abs() +
+            (pinned[i].lon! - pinned[i - 1].lon!).abs();
+
+        expect(apart, greaterThan(1), reason: 'rows $i and ${i - 1}');
+      }
+    });
   });
 
   group('clear', () {

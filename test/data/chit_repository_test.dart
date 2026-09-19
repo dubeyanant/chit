@@ -56,6 +56,35 @@ void main() {
   File audioFileOf(Chit chit) =>
       File(p.join(documents.path, 'audio', '${chit.id}.m4a'));
 
+  group('a saved chit has never been edited — §3.6.1', () {
+    test('updatedAt is the stamp, not a second reading of the clock', () async {
+      // The clock has moved on since the composer took its instant; reading it
+      // again here would make every chit ever saved draw the word `edited`.
+      clock.moveTo(morning.add(const Duration(milliseconds: 40)));
+
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Train 20 late.',
+      );
+
+      expect(saved.updatedAt, morning);
+      expect(saved.updatedAt, saved.createdAt);
+      expect(saved.wasEdited, isFalse);
+    });
+
+    test('and an edit is what moves it', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Train 20 late.',
+      );
+
+      clock.moveTo(DateTime(2026, 9, 16, 8, 0));
+      await repo.update(id: saved.id, text: 'Train 20 very late.');
+
+      expect((await repo.byId(saved.id))!.wasEdited, isTrue);
+    });
+  });
+
   group('the four legal shapes round-trip', () {
     test('typed', () async {
       final Chit saved = await repo.save(

@@ -14,6 +14,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.ambientStamp,
     required this.chitMeta,
     required this.chitText,
+    required this.chitPerson,
+    required this.chitTopic,
     required this.composerBody,
     required this.composerGhost,
     required this.failNote,
@@ -23,6 +25,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.button,
     required this.audioDuration,
     required this.tabLabel,
+    required this.filterWord,
+    required this.quote,
     required this.sheetState,
     required this.sheetTime,
     required this.calendarDay,
@@ -92,6 +96,21 @@ final class ChitType extends ThemeExtension<ChitType> {
       ),
       chitText: _serif(size: 16.5, weight: 400, color: colors.ink, height: 1.5),
 
+      chitPerson: _serif(
+        size: 16.5,
+        weight: 400,
+        color: colors.ink,
+        height: 1.5,
+        italic: true,
+      ),
+
+      chitTopic: _serif(
+        size: 16.5,
+        weight: 400,
+        color: colors.inkFaint,
+        height: 1.5,
+      ),
+
       composerBody: _serif(
         size: 17.5,
         weight: 400,
@@ -145,6 +164,27 @@ final class ChitType extends ThemeExtension<ChitType> {
       ),
 
       tabLabel: _serif(size: 16.5, weight: 400, color: colors.inkFaint),
+
+      filterWord: _sans(
+        size: 16.5,
+        weight: 500,
+        color: colors.ink,
+        letterSpacingEm: 0.01,
+      ),
+
+      // **`--ink-muted`, not `--ink-faint`** — the line sits over the map
+      // (ADR-089), and a tinted surface is measured rather than inherited
+      // (§6.4). `--ink-faint` is 5.08:1 on bare paper and drops under the floor
+      // over the city fill; this is the same move the audio pill's duration
+      // made for the same reason. The aside is still an aside: 15px, serif and
+      // italic are three differences colour was never carrying alone.
+      quote: _serif(
+        size: 15,
+        weight: 400,
+        color: colors.inkMuted,
+        italic: true,
+        height: 1.5,
+      ),
 
       sheetState: _sans(
         size: 11.5,
@@ -305,6 +345,13 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   final TextStyle chitText;
 
+  /// A @person in a saved chit — chitText, in the real italic face.
+  final TextStyle chitPerson;
+
+  /// A #topic in a saved chit — chitText, quieter. Its sigil is the second
+  /// difference §6.4 asks for, colour never being allowed to be the only one.
+  final TextStyle chitTopic;
+
   final TextStyle composerBody;
 
   final TextStyle composerGhost;
@@ -322,6 +369,12 @@ final class ChitType extends ThemeExtension<ChitType> {
   final TextStyle audioDuration;
 
   final TextStyle tabLabel;
+
+  /// One word in find's right-hand column — an axis, or a value on one.
+  final TextStyle filterWord;
+
+  /// The line find opens with: an aside, in the voice §6.2 keeps for asides.
+  final TextStyle quote;
 
   final TextStyle sheetState;
 
@@ -347,6 +400,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     ambientStamp,
     chitMeta,
     chitText,
+    chitPerson,
+    chitTopic,
     composerBody,
     composerGhost,
     failNote,
@@ -356,6 +411,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     button,
     audioDuration,
     tabLabel,
+    filterWord,
+    quote,
     sheetState,
     sheetTime,
     calendarDay,
@@ -376,6 +433,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? ambientStamp,
     TextStyle? chitMeta,
     TextStyle? chitText,
+    TextStyle? chitPerson,
+    TextStyle? chitTopic,
     TextStyle? composerBody,
     TextStyle? composerGhost,
     TextStyle? failNote,
@@ -385,6 +444,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? button,
     TextStyle? audioDuration,
     TextStyle? tabLabel,
+    TextStyle? filterWord,
+    TextStyle? quote,
     TextStyle? sheetState,
     TextStyle? sheetTime,
     TextStyle? calendarDay,
@@ -403,6 +464,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       ambientStamp: ambientStamp ?? this.ambientStamp,
       chitMeta: chitMeta ?? this.chitMeta,
       chitText: chitText ?? this.chitText,
+      chitPerson: chitPerson ?? this.chitPerson,
+      chitTopic: chitTopic ?? this.chitTopic,
       composerBody: composerBody ?? this.composerBody,
       composerGhost: composerGhost ?? this.composerGhost,
       failNote: failNote ?? this.failNote,
@@ -412,6 +475,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       button: button ?? this.button,
       audioDuration: audioDuration ?? this.audioDuration,
       tabLabel: tabLabel ?? this.tabLabel,
+      filterWord: filterWord ?? this.filterWord,
+      quote: quote ?? this.quote,
       sheetState: sheetState ?? this.sheetState,
       sheetTime: sheetTime ?? this.sheetTime,
       calendarDay: calendarDay ?? this.calendarDay,
@@ -435,6 +500,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       ambientStamp: TextStyle.lerp(ambientStamp, other.ambientStamp, t)!,
       chitMeta: TextStyle.lerp(chitMeta, other.chitMeta, t)!,
       chitText: TextStyle.lerp(chitText, other.chitText, t)!,
+      chitPerson: TextStyle.lerp(chitPerson, other.chitPerson, t)!,
+      chitTopic: TextStyle.lerp(chitTopic, other.chitTopic, t)!,
       composerBody: TextStyle.lerp(composerBody, other.composerBody, t)!,
       composerGhost: TextStyle.lerp(composerGhost, other.composerGhost, t)!,
       failNote: TextStyle.lerp(failNote, other.failNote, t)!,
@@ -444,6 +511,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       button: TextStyle.lerp(button, other.button, t)!,
       audioDuration: TextStyle.lerp(audioDuration, other.audioDuration, t)!,
       tabLabel: TextStyle.lerp(tabLabel, other.tabLabel, t)!,
+      filterWord: TextStyle.lerp(filterWord, other.filterWord, t)!,
+      quote: TextStyle.lerp(quote, other.quote, t)!,
       sheetState: TextStyle.lerp(sheetState, other.sheetState, t)!,
       sheetTime: TextStyle.lerp(sheetTime, other.sheetTime, t)!,
       calendarDay: TextStyle.lerp(calendarDay, other.calendarDay, t)!,

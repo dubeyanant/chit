@@ -14,10 +14,12 @@ import 'data/audio/record_audio_recorder.dart';
 import 'data/db/app_database.dart';
 import 'data/dev/debug_seeder.dart';
 import 'data/dev/frame_log.dart';
+import 'data/geo/asset_outline_atlas.dart';
 import 'data/location/geolocator_location_service.dart';
 import 'data/preferences/prefs_first_run_store.dart';
 import 'data/repositories/chit_repository_impl.dart';
 import 'data/weather/open_meteo_service.dart';
+import 'domain/geo/outline_source.dart';
 import 'domain/repositories/chit_repository.dart';
 import 'domain/services/ambient_signals.dart';
 import 'domain/services/audio_player.dart';
@@ -48,6 +50,8 @@ Future<void> main() async {
       firstRunStoreProvider.overrideWith(
         (Ref ref) => PrefsFirstRunStore(prefs),
       ),
+
+      outlineSourceProvider.overrideWith((Ref ref) => loadOutlineAtlas()),
 
       locationServiceProvider.overrideWith(
         (Ref ref) => const GeolocatorLocationService(),

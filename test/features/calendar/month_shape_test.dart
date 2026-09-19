@@ -1,7 +1,7 @@
 import 'package:chitta/domain/models/chit.dart';
 import 'package:chitta/domain/models/day_summary.dart';
-import 'package:chitta/features/calendar/application/archive_provider.dart';
 import 'package:chitta/features/calendar/application/month_provider.dart';
+import 'package:chitta/shared/day_group.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -323,8 +323,8 @@ void main() {
   group('the archive labels a day', () {
     const int todayDay = 20260917;
 
-    ArchiveDay on(int localDay) =>
-        ArchiveDay(localDay: localDay, chits: const []);
+    DayGroup on(int localDay) =>
+        DayGroup(localDay: localDay, chits: const []);
 
     test('Today and Yesterday by name', () {
       expect(on(20260917).label(today: todayDay), 'Today');
@@ -360,10 +360,10 @@ void main() {
       final Chit c = chit('c', DateTime(2026, 9, 15, 23));
       final Chit d = chit('d', DateTime(2026, 9, 11, 8));
 
-      expect(groupByDay(<Chit>[a, b, c, d]), <ArchiveDay>[
-        ArchiveDay(localDay: 20260916, chits: <Chit>[a, b]),
-        ArchiveDay(localDay: 20260915, chits: <Chit>[c]),
-        ArchiveDay(localDay: 20260911, chits: <Chit>[d]),
+      expect(groupByDay(<Chit>[a, b, c, d]), <DayGroup>[
+        DayGroup(localDay: 20260916, chits: <Chit>[a, b]),
+        DayGroup(localDay: 20260915, chits: <Chit>[c]),
+        DayGroup(localDay: 20260911, chits: <Chit>[d]),
       ]);
     });
 

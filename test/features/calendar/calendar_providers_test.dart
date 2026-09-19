@@ -10,6 +10,7 @@ import 'package:chitta/domain/models/day_summary.dart';
 import 'package:chitta/domain/repositories/chit_repository.dart';
 import 'package:chitta/features/calendar/application/archive_provider.dart';
 import 'package:chitta/features/calendar/application/month_provider.dart';
+import 'package:chitta/shared/day_group.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,9 +48,9 @@ void main() {
       (MonthShape? _, MonthShape? _) {},
       fireImmediately: true,
     );
-    container.listen<List<ArchiveDay>?>(
+    container.listen<List<DayGroup>?>(
       archiveDaysProvider,
-      (List<ArchiveDay>? _, List<ArchiveDay>? _) {},
+      (List<DayGroup>? _, List<DayGroup>? _) {},
       fireImmediately: true,
     );
     container.listen<MonthNeighbours>(
@@ -76,9 +77,9 @@ void main() {
     return shape!;
   }
 
-  Future<List<ArchiveDay>> archive() async {
+  Future<List<DayGroup>> archive() async {
     await pumpEventQueue();
-    final List<ArchiveDay>? days = container.read(archiveDaysProvider);
+    final List<DayGroup>? days = container.read(archiveDaysProvider);
     return days!;
   }
 
@@ -239,8 +240,8 @@ void main() {
     expect(after.countOf(17), 1);
     expect(MonthShape.densityStep(after.countOf(17)), 1);
     expect(after.summary, ('1 chit', ' over one day'));
-    expect(await archive(), <ArchiveDay>[
-      ArchiveDay(localDay: 20260917, chits: <Chit>[saved]),
+    expect(await archive(), <DayGroup>[
+      DayGroup(localDay: 20260917, chits: <Chit>[saved]),
     ]);
 
     await chitAt(afternoon.add(const Duration(minutes: 5)), 'And another.');
@@ -256,9 +257,9 @@ void main() {
         final Chit morning = await chitAt(DateTime(2026, 9, 16, 9), 'Morning.');
         final Chit night = await chitAt(DateTime(2026, 9, 16, 21), 'Night.');
 
-        expect(await archive(), <ArchiveDay>[
-          ArchiveDay(localDay: 20260916, chits: <Chit>[night, morning]),
-          ArchiveDay(localDay: 20260911, chits: <Chit>[older]),
+        expect(await archive(), <DayGroup>[
+          DayGroup(localDay: 20260916, chits: <Chit>[night, morning]),
+          DayGroup(localDay: 20260911, chits: <Chit>[older]),
         ]);
       },
     );
@@ -269,8 +270,8 @@ void main() {
 
       container.read(selectedDayProvider.notifier).toggle(20260915);
 
-      expect(await archive(), <ArchiveDay>[
-        ArchiveDay(localDay: 20260915, chits: <Chit>[tuesday]),
+      expect(await archive(), <DayGroup>[
+        DayGroup(localDay: 20260915, chits: <Chit>[tuesday]),
       ]);
     });
 
@@ -315,7 +316,7 @@ void main() {
       await pumpEventQueue();
 
       expect(
-        <int>[for (final ArchiveDay day in await archive()) day.localDay],
+        <int>[for (final DayGroup day in await archive()) day.localDay],
         <int>[20260915, 20260901],
         reason: 'September only, newest day first',
       );
@@ -355,7 +356,7 @@ void main() {
       () async {
         await chitAt(DateTime(2026, 9, 11, 8), 'Friday.');
         await chitAt(DateTime(2026, 9, 15, 9), 'Tuesday.');
-        final List<ArchiveDay> every = await archive();
+        final List<DayGroup> every = await archive();
         expect(every, hasLength(2));
 
         container.read(selectedDayProvider.notifier).toggle(20260915);

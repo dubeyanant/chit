@@ -15,14 +15,23 @@ final class MonthBar extends StatelessWidget {
 
   final YearMonth month;
 
+  /// Null where there is no earlier month with anything written in it.
   final VoidCallback? onPrevious;
 
+  /// Null where there is no later one.
   final VoidCallback? onNext;
 
   @override
   Widget build(BuildContext context) {
     final type = context.type;
     final colors = context.colors;
+
+    // Half the slack a 44px target leaves around a 17px glyph. Pulling the
+    // pair out by it puts the *glyph* on the gutter, which is what the eye
+    // lines up on — §6.3's *derived beats placed*, the same trick that sits
+    // `ChitRow`'s node on the rail.
+    final double overhang =
+        (context.space.minTouchTarget - Chevron.glyphSize) / 2;
 
     return HeadingRow(
       child: Row(
@@ -45,53 +54,86 @@ final class MonthBar extends StatelessWidget {
               ),
             ),
           ),
-          if (onPrevious case final VoidCallback go)
-            _Chevron(pointsLeft: true, label: 'Previous month', onTap: go),
-          if (onNext case final VoidCallback go)
-            _Chevron(pointsLeft: false, label: 'Next month', onTap: go),
+
+          // Both are always drawn; one with nowhere to go is dimmed rather
+          // than taken away (ADR-047, as ADR-088 rewrote it).
+          Transform.translate(
+            offset: Offset(overhang, 0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Chevron(
+                  pointsLeft: true,
+                  label: 'Previous month',
+                  onTap: onPrevious,
+                ),
+                Chevron(
+                  pointsLeft: false,
+                  label: 'Next month',
+                  onTap: onNext,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _Chevron extends StatelessWidget {
-  const _Chevron({
+/// A month chevron, live or dimmed.
+final class Chevron extends StatelessWidget {
+  const Chevron({
     required this.pointsLeft,
     required this.label,
     required this.onTap,
+    super.key,
   });
 
   final bool pointsLeft;
-  final String label;
-  final VoidCallback onTap;
 
-  static const double _glyphSize = 17;
+  final String label;
+
+  /// Null where the month it points at does not exist.
+  final VoidCallback? onTap;
+
+  static const double glyphSize = 17;
 
   @override
   Widget build(BuildContext context) {
     final space = context.space;
+    final colors = context.colors;
+    final VoidCallback? go = onTap;
+
+    final Widget glyph = SizedBox.square(
+      dimension: space.minTouchTarget,
+      child: Center(
+        child: CustomPaint(
+          size: const Size.square(glyphSize),
+          painter: _ChevronPainter(
+            color: go == null ? colors.inkDisabled : colors.inkFaint,
+            pointsLeft: pointsLeft,
+          ),
+        ),
+      ),
+    );
+
+    // A chevron with nowhere to go is drawn and is not a button: no focus
+    // ring, no tap, and `enabled: false` so a reader is told rather than
+    // left to press something that answers nothing.
+    if (go == null) {
+      return Semantics(button: true, enabled: false, label: label, child: glyph);
+    }
 
     return Semantics(
       button: true,
       label: label,
       child: FocusRing(
-        onActivate: onTap,
+        onActivate: go,
         child: GestureDetector(
-          onTap: onTap,
+          onTap: go,
           behavior: HitTestBehavior.opaque,
-          child: SizedBox.square(
-            dimension: space.minTouchTarget,
-            child: Center(
-              child: CustomPaint(
-                size: const Size.square(_glyphSize),
-                painter: _ChevronPainter(
-                  color: context.colors.inkFaint,
-                  pointsLeft: pointsLeft,
-                ),
-              ),
-            ),
-          ),
+          child: glyph,
         ),
       ),
     );
