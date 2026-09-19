@@ -92,6 +92,12 @@ screen; *opening the app costs nothing* is a startup requirement, not just a vis
 router has no redirect and `main()` awaits nothing** (ADR-094): there is no screen owed before
 Today, and nothing on disk to read to find that out.
 
+**The shell watches two booleans and its own branch index.** Whether anything has been written draws
+the bar (ADR-097); whether anything carries a tag draws *find* within it (ADR-109), through a query
+of its own rather than find's `watchEvery`, so the shell never holds every chit to answer a
+boolean. `ChitRoute.drawnWhen` is the rule and is pure, so which tabs exist is tested without a
+widget. **A reader standing in find when its last tag goes is returned to Today** after the frame.
+
 **The shell watches its own branch index for one thing.** Arriving at find moves its line (ADR-093),
 and the branch index is where every way of arriving meets — the tab bar, and a tag tap that switches
 tab. `ShellScreen` reads it in `didUpdateWidget` and writes **after the frame**, a provider being

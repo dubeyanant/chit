@@ -124,7 +124,8 @@ the phone's location switch both (ADR-102): it is called by the save and by noth
 nothing (ADR-094).
 `lib/core/haptics.dart` is the three steps of §6's haptic vocabulary and the only place
 `HapticFeedback` is called (ADR-096). `lib/features/shell/` owns the masthead, the tabs, and
-**whether the tabs are drawn at all** — they are not, until something has been written (ADR-097). `lib/shared/widgets/` is the chit vocabulary:
+**whether the tabs are drawn at all** — they are not, until something has been written (ADR-097),
+and *find* is not until a chit carries a tag (ADR-109). `lib/shared/widgets/` is the chit vocabulary:
 the slip and its tear edge, the chit's own body text, the stamp
 row and its motion marks, the rail and the thread over it, a day's heading and its group, the
 wordmark, the heading row the tabs hang their title in, the two button weights, the microphone and

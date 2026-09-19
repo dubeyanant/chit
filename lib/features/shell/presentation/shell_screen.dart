@@ -36,6 +36,15 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   @override
   Widget build(BuildContext context) {
     final bool written = ref.watch(anyChitWrittenProvider).value ?? false;
+    final bool tagged = ref.watch(anyChitTaggedProvider).value ?? false;
+    final List<ChitRoute> drawn = ChitRoute.drawnWhen(tagged: tagged);
+
+    if (!drawn.contains(ChitRoute.find) &&
+        widget.navigationShell.currentIndex == ChitRoute.find.index) {
+      WidgetsBinding.instance.addPostFrameCallback((Duration _) {
+        if (mounted) widget.navigationShell.goBranch(ChitRoute.today.index);
+      });
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -43,7 +52,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
           children: <Widget>[
             const _Masthead(),
             Expanded(child: widget.navigationShell),
-            if (written) _TabBar(navigationShell: widget.navigationShell),
+            if (written)
+              _TabBar(navigationShell: widget.navigationShell, drawn: drawn),
           ],
         ),
       ),
@@ -68,9 +78,11 @@ class _Masthead extends StatelessWidget {
 }
 
 class _TabBar extends StatelessWidget {
-  const _TabBar({required this.navigationShell});
+  const _TabBar({required this.navigationShell, required this.drawn});
 
   final StatefulNavigationShell navigationShell;
+
+  final List<ChitRoute> drawn;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +98,7 @@ class _TabBar extends StatelessWidget {
         padding: EdgeInsets.only(top: space.s3, bottom: space.s2),
         child: Row(
           children: <Widget>[
-            for (final ChitRoute route in ChitRoute.values)
+            for (final ChitRoute route in drawn)
               Expanded(
                 child: _Tab(
                   label: route.label,

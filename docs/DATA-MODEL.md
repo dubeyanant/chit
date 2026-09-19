@@ -118,6 +118,7 @@ at one instant and drawn as one row.
 | past, the chevrons | `watchWrittenMonths` — `GROUP BY localDay / 100` (ADR-047) |
 | Find | `watchEvery` — every row, same order, **and no `WHERE` at all** (ADR-083) |
 | The shell, whether the tabs are drawn | `watchAnyWritten` — `SELECT id FROM chits LIMIT 1`, read as a bool (ADR-097). **The cheapest question the schema answers**: no count, no ordering, one row or none |
+| The shell, whether *find* is drawn | `watchTagCandidates` — `SELECT body WHERE body LIKE '%@%' OR body LIKE '%#%'`, confirmed in Dart by `ChitTags` (ADR-109). **SQL narrows, the grammar decides**: `LIKE` cannot tell `@anant` from `@ 5`, and the parse runs over the few rows carrying a sigil rather than over all of them |
 
 **`watchEvery` is the one unbounded query, and it is deliberate.** Find narrows on four axes, two of
 which — people and topics — live inside the body text and have **no index to ask**, so the rows come

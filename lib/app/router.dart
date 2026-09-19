@@ -25,6 +25,11 @@ enum ChitRoute {
   final String path;
 
   final String label;
+
+  static List<ChitRoute> drawnWhen({required bool tagged}) => <ChitRoute>[
+    for (final ChitRoute route in ChitRoute.values)
+      if (route != ChitRoute.find || tagged) route,
+  ];
 }
 
 const String editorRouteName = 'editor';

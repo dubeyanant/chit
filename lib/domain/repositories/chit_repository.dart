@@ -53,6 +53,8 @@ abstract interface class ChitRepository {
 
   Stream<bool> watchAnyWritten();
 
+  Stream<bool> watchAnyTagged();
+
   Stream<List<Chit>> watchEvery();
 
   Future<void> discardTemp(String tempPath);

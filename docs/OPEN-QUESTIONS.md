@@ -258,3 +258,14 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     not. **The composer was not touched** — its open chit already sits in Today's `CustomScrollView`,
     so the keyboard case was never broken there, and the two screens now reach the same behaviour by
     different routes. If the editor's scroll ever reads differently from Today's, that is why.
+76. **Tags are now unteachable, and this is the item that has to be fixed before v1.1 ships**
+    (ADR-109). Item 44 recorded that the tag syntax lost its only home when ADR-094 deleted the
+    first-run screen, and is taught now by **find's hints** and by find's own empty lines — *"No
+    chit names anybody yet. Write @ and a name."* **Both of those live inside find, and find is now
+    behind a tag.** Nobody who does not already know the syntax can reach the place that teaches
+    it, so on a fresh install the third tab may never appear at all. The fix is the one item 44
+    already named — **teach it where it is used**, in the composer, not in the room it unlocks —
+    and it is no longer optional polish: without it ADR-109 quietly removes a feature rather than
+    deferring it. **The cheap reversal, if it has to ship before the teaching does, is to draw find
+    when any axis has a value** rather than only a tag, which is one condition in
+    `ChitRoute.drawnWhen`.

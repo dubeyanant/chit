@@ -1084,4 +1084,75 @@ void main() {
       expect(photoFileOf(saved).existsSync(), isTrue);
     });
   });
+
+  group('whether anything carries a tag — ADR-109', () {
+    Future<bool> tagged() => repo.watchAnyTagged().first;
+
+    test('an empty journal carries none', () async {
+      expect(await tagged(), isFalse);
+    });
+
+    test('a chit with plain words carries none', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Train 20 late.');
+      expect(await tagged(), isFalse);
+    });
+
+    test('a person makes one', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Coffee with @anant.');
+      expect(await tagged(), isTrue);
+    });
+
+    test('a topic makes one', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Slept badly #sleep');
+      expect(await tagged(), isTrue);
+    });
+
+    test('a sigil that is not a tag does not', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Call me @ 5, # 3 down.');
+      expect(
+        await tagged(),
+        isFalse,
+        reason: 'the SQL only narrows; the grammar decides',
+      );
+    });
+
+    test('a recording-only chit cannot carry one', () async {
+      await repo.save(
+        stamp: stampAt(morning),
+        audioTempPath: await aRecording(),
+        audioDuration: const Duration(seconds: 3),
+      );
+      expect(await tagged(), isFalse);
+    });
+
+    test('deleting the last tagged chit takes it back to none', () async {
+      final Chit tagged1 = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Coffee with @anant.',
+      );
+      await repo.save(stamp: stampAt(morning), text: 'Train 20 late.');
+      expect(await tagged(), isTrue);
+
+      await repo.delete(tagged1.id);
+
+      expect(await tagged(), isFalse);
+    });
+
+    test('editing the tag out takes it back to none', () async {
+      final Chit chit = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Coffee with @anant.',
+      );
+      expect(await tagged(), isTrue);
+
+      await repo.update(id: chit.id, text: 'Coffee.');
+
+      expect(await tagged(), isFalse);
+    });
+
+    test('a Devanagari topic counts, the grammar allowing marks', () async {
+      await repo.save(stamp: stampAt(morning), text: 'सुबह #चित्त');
+      expect(await tagged(), isTrue);
+    });
+  });
 }

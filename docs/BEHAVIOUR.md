@@ -151,13 +151,21 @@ and sigils and all, because that is what an edit edits — and the raw text is w
 
 ## 4. Screens
 
-**4.0 The shell.** The wordmark above, the three tabs below, and whichever tab is up between them.
+**4.0 The shell.** The wordmark above, the tabs below, and whichever tab is up between them.
 **The tabs are not drawn until something has been written** (ADR-097): on a fresh install *past* is
-an empty grid and *find* has nothing to look through, so three tabs where two go nowhere is chrome
-promising rooms that are not furnished yet. The first save draws them and they stay; deleting the
-last chit takes them away again, which is the same screen a fresh install gets and is honest for the
-same reason. **They do not fade in** — a bar that travels draws the eye to the movement rather than
-to the words, which is ADR-071's finding.
+an empty grid and *find* has nothing to look through, so tabs that go nowhere are chrome promising
+rooms that are not furnished yet. The first save draws them and they stay; deleting the last chit
+takes them away again, which is the same screen a fresh install gets and is honest for the same
+reason. **They do not fade in** — a bar that travels draws the eye to the movement rather than to
+the words, which is ADR-071's finding.
+
+**find is held back further, until a chit carries a tag** (ADR-109). The other three axes fill
+themselves — a sky word and a motion arrive with the ambient stamp and nobody asked for them — so a
+find furnished only by those is a room the writer never put anything in. **A tag is the one thing
+somebody has to mean**, so it is what opens the tab. Until then the bar holds two, evenly divided;
+find arrives on the right when the first `@name` or `#topic` is saved, and goes again if the last
+one is edited or deleted away — **and a reader standing in find when that happens is returned to
+Today**, since the tab they are in has stopped existing.
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
 **one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the
