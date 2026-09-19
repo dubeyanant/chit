@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- API 31+ does not draw windowBackground for the launch window; it draws
+         the system splash, which defaults to the launcher icon and so to a
+         432px bitmap blown up to 288dp. ADR-090 hands it the vector instead.
+         windowBackground is still declared, for the window behind Flutter. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_glyph</item>
+    </style>
+</resources>
