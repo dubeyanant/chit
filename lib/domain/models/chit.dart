@@ -1,7 +1,3 @@
-@Assert(
-  "text == null || text != ''",
-  'empty text is no text: an empty field is the chit §3.1 refuses to save',
-)
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'ambient_stamp.dart';
@@ -15,8 +11,8 @@ abstract class Chit with _$Chit {
   const Chit._();
 
   @Assert(
-    'text != null || audioPath != null',
-    'a chit with neither text nor audio is not a chit — README §5',
+    'text != null || audioPath != null || photoPath != null',
+    'a chit with no words, no recording and no photo is not a chit — README §5',
   )
   @Assert(
     "text == null || text != ''",
@@ -44,6 +40,8 @@ abstract class Chit with _$Chit {
     String? audioPath,
 
     Duration? audioDuration,
+
+    String? photoPath,
 
     WeatherCondition? weather,
 
@@ -76,4 +74,6 @@ abstract class Chit with _$Chit {
   bool get hasText => text != null;
 
   bool get hasAudio => audioPath != null;
+
+  bool get hasPhoto => photoPath != null;
 }

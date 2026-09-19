@@ -5,7 +5,7 @@ import 'package:just_audio/just_audio.dart' as plugin;
 import 'package:path/path.dart' as p;
 
 import '../../domain/services/audio_player.dart';
-import 'audio_store.dart';
+import '../files/file_store.dart';
 
 final class JustAudioPlayer implements AudioPlayer {
   JustAudioPlayer(this._store) {
@@ -13,7 +13,7 @@ final class JustAudioPlayer implements AudioPlayer {
     _player.positionStream.listen(_onPosition);
   }
 
-  final AudioStore _store;
+  final FileStore _store;
   final plugin.AudioPlayer _player = plugin.AudioPlayer();
   final StreamController<Playback> _out =
       StreamController<Playback>.broadcast();

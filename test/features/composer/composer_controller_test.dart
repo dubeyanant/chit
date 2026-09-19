@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:chitta/core/clock.dart';
-import 'package:chitta/data/audio/audio_store.dart';
 import 'package:chitta/data/db/app_database.dart';
+import 'package:chitta/data/files/file_store.dart';
 import 'package:chitta/data/repositories/chit_repository_impl.dart';
 import 'package:chitta/domain/models/ambient_stamp.dart';
 import 'package:chitta/domain/models/chit.dart';
@@ -15,6 +15,7 @@ import 'package:chitta/domain/services/ambient_signals.dart';
 import 'package:chitta/domain/services/audio_player.dart';
 import 'package:chitta/domain/services/audio_recorder.dart';
 import 'package:chitta/domain/services/location_service.dart';
+import 'package:chitta/domain/services/photo_source.dart';
 import 'package:chitta/domain/services/weather_service.dart';
 import 'package:chitta/features/composer/application/composer_controller.dart';
 import 'package:drift/native.dart';
@@ -45,7 +46,16 @@ void main() {
     clock = FakeClock(opened);
     repo = ChitRepositoryImpl(
       dao: db.chitDao,
-      audio: AudioStore(Future<Directory>.value(documents)),
+      audio: FileStore(
+        Future<Directory>.value(documents),
+        folder: 'audio',
+        extension: '.m4a',
+      ),
+      photos: FileStore(
+        Future<Directory>.value(documents),
+        folder: 'photos',
+        extension: '.jpg',
+      ),
       clock: clock,
     );
     location = _Location();
@@ -58,9 +68,13 @@ void main() {
     if (root.existsSync()) await root.delete(recursive: true);
   });
 
-  ProviderContainer containerOf([WeatherService? weather]) {
+  ProviderContainer containerOf([
+    WeatherService? weather,
+    PhotoSource? photos,
+  ]) {
     final ProviderContainer container = ProviderContainer(
       overrides: [
+        photoSourceProvider.overrideWithValue(photos ?? _Photos(null)),
         clockProvider.overrideWithValue(clock),
         chitRepositoryProvider.overrideWithValue(repo),
         locationServiceProvider.overrideWithValue(location),
@@ -585,6 +599,100 @@ void main() {
       expect(take.existsSync(), isFalse, reason: 'moved, not copied');
     });
   });
+
+  group('one photo per chit — ADR-106', () {
+    Future<String> aShot(String name) async {
+      final File file = File(p.join(root.path, '$name.jpg'));
+      await file.writeAsString('pretend this is a jpeg');
+      return file.path;
+    }
+
+    test('a photo alone is enough to save', () async {
+      final String shot = await aShot('one');
+      final ProviderContainer container = containerOf(null, _Photos(shot));
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+
+      expect(container.read(composerControllerProvider).canSave, isFalse);
+
+      await composer.keepPhoto(PhotoOrigin.camera);
+
+      expect(container.read(composerControllerProvider).canSave, isTrue);
+
+      clock.moveTo(savedAt);
+      await composer.save();
+
+      final Chit saved = await onlyChit();
+      expect(saved.hasPhoto, isTrue);
+      expect(saved.hasText, isFalse);
+    });
+
+    test('a second photo replaces the first, and drops its file', () async {
+      final String first = await aShot('first');
+      final String second = await aShot('second');
+      final _Photos photos = _Photos(first);
+      final ProviderContainer container = containerOf(null, photos);
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+
+      await composer.keepPhoto(PhotoOrigin.camera);
+      photos.next = second;
+      await composer.keepPhoto(PhotoOrigin.library);
+
+      expect(container.read(composerControllerProvider).photoTempPath, second);
+      expect(
+        File(first).existsSync(),
+        isFalse,
+        reason: 'the replaced shot is nobody\'s, so it goes',
+      );
+    });
+
+    test('a refused or cancelled picker changes nothing', () async {
+      final ProviderContainer container = containerOf(null, _Photos(null));
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+
+      composer.edit('Train 20 late.');
+      await composer.keepPhoto(PhotoOrigin.camera);
+
+      final ComposerState state = container.read(composerControllerProvider);
+      expect(state.hasPhoto, isFalse);
+      expect(state.text, 'Train 20 late.');
+    });
+
+    test('removing the photo drops its file and closes Save', () async {
+      final String shot = await aShot('gone');
+      final ProviderContainer container = containerOf(null, _Photos(shot));
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+
+      await composer.keepPhoto(PhotoOrigin.camera);
+      await composer.removePhoto();
+
+      expect(container.read(composerControllerProvider).canSave, isFalse);
+      expect(File(shot).existsSync(), isFalse);
+    });
+
+    test('saving with a photo opens a chit that has none', () async {
+      final ProviderContainer container = containerOf(
+        null,
+        _Photos(await aShot('kept')),
+      );
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+
+      await composer.keepPhoto(PhotoOrigin.camera);
+      clock.moveTo(savedAt);
+      await composer.save();
+
+      expect(container.read(composerControllerProvider).hasPhoto, isFalse);
+    });
+  });
 }
 
 final class _Location implements LocationService {
@@ -626,4 +734,18 @@ final class _FastWeather implements WeatherService {
   @override
   Future<WeatherCondition?> currentCondition() async =>
       WeatherCondition.raining;
+}
+
+final class _Photos implements PhotoSource {
+  _Photos(this.next);
+
+  String? next;
+
+  final List<PhotoOrigin> asked = <PhotoOrigin>[];
+
+  @override
+  Future<String?> take(PhotoOrigin from) async {
+    asked.add(from);
+    return next;
+  }
 }

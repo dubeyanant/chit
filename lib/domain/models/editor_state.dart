@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'audio_edit.dart';
 import 'chit.dart';
+import 'photo_edit.dart';
 
 part 'editor_state.freezed.dart';
 
@@ -15,6 +16,8 @@ abstract class EditorState with _$EditorState {
     required String text,
 
     @Default(AudioEdit.keep()) AudioEdit audio,
+
+    @Default(PhotoEdit.keep()) PhotoEdit photo,
 
     @Default(false) bool microphoneRefused,
   }) = _EditorState;
@@ -37,9 +40,24 @@ abstract class EditorState with _$EditorState {
     ReplaceAudio(:final Duration duration) => duration,
   };
 
-  bool get isDirty => text.trim() != (chit.text ?? '') || audio is! KeepAudio;
+  bool get hasPhoto => switch (photo) {
+    KeepPhoto() => chit.hasPhoto,
+    RemovePhoto() => false,
+    ReplacePhoto() => true,
+  };
 
-  bool get holdsAnything => text.trim().isNotEmpty || hasAudio;
+  String? get photoPath => switch (photo) {
+    KeepPhoto() => chit.photoPath,
+    RemovePhoto() => null,
+    ReplacePhoto(:final String tempPath) => tempPath,
+  };
+
+  bool get isDirty =>
+      text.trim() != (chit.text ?? '') ||
+      audio is! KeepAudio ||
+      photo is! KeepPhoto;
+
+  bool get holdsAnything => text.trim().isNotEmpty || hasAudio || hasPhoto;
 
   bool get canSave => isDirty && holdsAnything;
 

@@ -8,12 +8,17 @@ import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/audio_edit.dart';
 import '../../../domain/models/chit.dart';
 import '../../../domain/models/editor_state.dart';
+import '../../../domain/models/photo_edit.dart';
+import '../../../domain/services/photo_source.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/arrival.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/camera.dart';
 import '../../../shared/widgets/focus_ring.dart';
 import '../../../shared/widgets/microphone.dart';
+import '../../../shared/widgets/photo_frame.dart';
+import '../../../shared/widgets/photo_sheet.dart';
 import '../../../shared/widgets/prompt_sheet.dart';
 import '../../../shared/widgets/slip.dart';
 import '../../composer/application/recording_controller.dart';
@@ -139,6 +144,21 @@ class _Editor extends ConsumerWidget {
                       ),
                     ),
                   ],
+
+                  if (state.hasPhoto) ...<Widget>[
+                    SizedBox(height: space.s4),
+
+                    Arrival(
+                      from: Offset(0, space.s4),
+                      play: state.photo is ReplacePhoto,
+                      child: PhotoFrame(
+                        path: state.photoPath!,
+                        onRemove: ref
+                            .read(editorControllerProvider(id).notifier)
+                            .removePhoto,
+                      ),
+                    ),
+                  ],
                   SizedBox(height: space.s4),
                   Expanded(child: _Field(id: id)),
                   SizedBox(height: space.s4),
@@ -235,6 +255,16 @@ class _ActionRow extends ConsumerWidget {
               : _EditorMicrophone(id: id),
         ),
         if (!state.hasAudio) SizedBox(width: space.s2),
+
+        AnimatedSwitcher(
+          duration: motion.fade(ChitPace.exit),
+          switchInCurve: motion.curve,
+          switchOutCurve: motion.curve,
+          child: state.hasPhoto
+              ? const SizedBox.shrink()
+              : _EditorCamera(id: id),
+        ),
+        if (!state.hasPhoto) SizedBox(width: space.s2),
         QuietButton(
           label: 'Cancel',
           onPressed: () => leaveEditor(context, ref, id, ask: false),
@@ -268,6 +298,26 @@ class _ActionRow extends ConsumerWidget {
         ),
       ],
     );
+  }
+}
+
+class _EditorCamera extends ConsumerWidget {
+  const _EditorCamera({required this.id});
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) =>
+      Camera(onPhoto: () => _photograph(context, ref));
+
+  Future<void> _photograph(BuildContext context, WidgetRef ref) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final PhotoOrigin? from = await showPhotoSheet(context);
+    if (from == null) return;
+
+    ChitHaptics.selected();
+    await ref.read(editorControllerProvider(id).notifier).replacePhoto(from);
   }
 }
 

@@ -112,12 +112,14 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
     required String? text,
     required Value<String?> audioPath,
     required Value<int?> audioMs,
+    required Value<String?> photoPath,
     required DateTime updatedAt,
   }) => (update(chits)..where(($ChitsTable t) => t.id.equals(id))).write(
     ChitsCompanion(
       body: Value<String?>(text),
       audioPath: audioPath,
       audioMs: audioMs,
+      photoPath: photoPath,
       updatedAt: Value<int>(updatedAt.millisecondsSinceEpoch),
     ),
   );
@@ -159,6 +161,17 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
     final List<TypedResult> rows = await query.get();
     return <String>[
       for (final TypedResult row in rows) row.read(chits.audioPath)!,
+    ];
+  }
+
+  Future<List<String>> photoPaths() async {
+    final JoinedSelectStatement<$ChitsTable, ChitRow> query = selectOnly(chits)
+      ..addColumns(<Expression<Object>>[chits.photoPath])
+      ..where(chits.photoPath.isNotNull());
+
+    final List<TypedResult> rows = await query.get();
+    return <String>[
+      for (final TypedResult row in rows) row.read(chits.photoPath)!,
     ];
   }
 }

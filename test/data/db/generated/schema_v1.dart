@@ -57,6 +57,14 @@ class Chits extends Table with TableInfo {
     requiredDuringInsert: false,
     $customConstraints: 'NULL',
   );
+  late final GeneratedColumn<String> photoPath = GeneratedColumn<String>(
+    'photo_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
+  );
   late final GeneratedColumn<String> weather = GeneratedColumn<String>(
     'weather',
     aliasedName,
@@ -105,6 +113,7 @@ class Chits extends Table with TableInfo {
     body,
     audioPath,
     audioMs,
+    photoPath,
     weather,
     lat,
     lon,
@@ -131,7 +140,7 @@ class Chits extends Table with TableInfo {
   @override
   List<String> get customConstraints => const [
     'PRIMARY KEY(id)',
-    'CHECK(body IS NOT NULL OR audio_path IS NOT NULL)',
+    'CHECK(COALESCE(body, audio_path, photo_path) IS NOT NULL)',
     'CHECK(body IS NULL OR length(trim(body)) > 0)',
     'CHECK((audio_path IS NULL)=(audio_ms IS NULL))',
     'CHECK((lat IS NULL)=(lon IS NULL))',

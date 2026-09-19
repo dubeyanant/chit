@@ -1,16 +1,18 @@
 import 'dart:io';
 
 import 'package:chitta/core/clock.dart';
-import 'package:chitta/data/audio/audio_store.dart';
 import 'package:chitta/data/db/app_database.dart';
+import 'package:chitta/data/files/file_store.dart';
 import 'package:chitta/data/repositories/chit_repository_impl.dart';
 import 'package:chitta/domain/models/ambient_stamp.dart';
 import 'package:chitta/domain/models/audio_edit.dart';
 import 'package:chitta/domain/models/chit.dart';
 import 'package:chitta/domain/models/editor_state.dart';
+import 'package:chitta/domain/models/photo_edit.dart';
 import 'package:chitta/domain/repositories/chit_repository.dart';
 import 'package:chitta/domain/services/audio_player.dart';
 import 'package:chitta/domain/services/audio_recorder.dart';
+import 'package:chitta/domain/services/photo_source.dart';
 import 'package:chitta/features/composer/application/recording_controller.dart';
 import 'package:chitta/features/editor/application/editor_controller.dart';
 import 'package:drift/native.dart';
@@ -30,6 +32,7 @@ void main() {
   late FakeAudioPlayer player;
   late FakeAudioRecorder recorder;
   late ProviderContainer container;
+  late _Photos photos;
 
   final DateTime afternoon = DateTime(2026, 9, 17, 15);
 
@@ -39,17 +42,28 @@ void main() {
     clock = FakeClock(afternoon);
     repo = ChitRepositoryImpl(
       dao: db.chitDao,
-      audio: AudioStore(Future<Directory>.value(root)),
+      audio: FileStore(
+        Future<Directory>.value(root),
+        folder: 'audio',
+        extension: '.m4a',
+      ),
+      photos: FileStore(
+        Future<Directory>.value(root),
+        folder: 'photos',
+        extension: '.jpg',
+      ),
       clock: clock,
     );
     player = FakeAudioPlayer();
     recorder = FakeAudioRecorder();
+    photos = _Photos(null);
     container = ProviderContainer(
       overrides: [
         clockProvider.overrideWithValue(clock),
         chitRepositoryProvider.overrideWithValue(repo),
         audioPlayerProvider.overrideWithValue(player),
         audioRecorderProvider.overrideWithValue(recorder),
+        photoSourceProvider.overrideWithValue(photos),
       ],
     );
   });
@@ -499,4 +513,109 @@ void main() {
       },
     );
   });
+
+  group('a photo is edited the way a recording is — ADR-106', () {
+    Future<String> aShot(String name) async {
+      final File file = File(p.join(root.path, '$name.jpg'));
+      await file.writeAsString('pretend this is a jpeg');
+      return file.path;
+    }
+
+    Future<Chit> givenPhotographed(String? text) async {
+      final Chit chit = await repo.save(
+        stamp: AmbientStamp(capturedAt: afternoon),
+        text: text,
+        photoTempPath: await aShot('original'),
+      );
+      return chit;
+    }
+
+    test('a staged photo is dirty, and shows before it is saved', () async {
+      final Chit chit = await givenPhotographed('Train 20 late.');
+      final EditorController editor = await open(chit);
+
+      photos.next = await aShot('replacement');
+      await editor.replacePhoto(PhotoOrigin.camera);
+
+      final EditorState state = stateOf(chit);
+      expect(state.photo, isA<ReplacePhoto>());
+      expect(state.isDirty, isTrue);
+      expect(state.photoPath, endsWith('replacement.jpg'));
+    });
+
+    test('leaving without saving drops the staged shot', () async {
+      final Chit chit = await givenPhotographed('Train 20 late.');
+      final EditorController editor = await open(chit);
+
+      final String staged = await aShot('abandoned');
+      photos.next = staged;
+      await editor.replacePhoto(PhotoOrigin.library);
+      await editor.abandon();
+
+      expect(File(staged).existsSync(), isFalse);
+      expect((await repo.byId(chit.id))!.photoPath, chit.photoPath);
+    });
+
+    test('saving moves the staged shot in', () async {
+      final Chit chit = await givenPhotographed('Train 20 late.');
+      final EditorController editor = await open(chit);
+
+      photos.next = await aShot('kept');
+      await editor.replacePhoto(PhotoOrigin.camera);
+      await editor.save();
+
+      final Chit after = (await repo.byId(chit.id))!;
+      expect(after.hasPhoto, isTrue);
+      expect(
+        File(p.join(root.path, 'photos', '${chit.id}.jpg')).existsSync(),
+        isTrue,
+      );
+    });
+
+    test('removing the photo of a wordless chit closes Save', () async {
+      final Chit chit = await givenPhotographed(null);
+      final EditorController editor = await open(chit);
+
+      await editor.removePhoto();
+
+      final EditorState state = stateOf(chit);
+      expect(state.holdsAnything, isFalse);
+      expect(state.canSave, isFalse, reason: 'Cancel and Delete are the pair');
+    });
+
+    test('a photo alone lets the words go', () async {
+      final Chit chit = await givenPhotographed('Train 20 late.');
+      final EditorController editor = await open(chit);
+
+      editor.edit('   ');
+
+      final EditorState state = stateOf(chit);
+      expect(state.holdsAnything, isTrue);
+      expect(state.canSave, isTrue);
+    });
+
+    test('a replaced then removed photo leaves nothing staged', () async {
+      final Chit chit = await givenPhotographed('Train 20 late.');
+      final EditorController editor = await open(chit);
+
+      final String staged = await aShot('twice');
+      photos.next = staged;
+      await editor.replacePhoto(PhotoOrigin.camera);
+      await editor.removePhoto();
+
+      final EditorState state = stateOf(chit);
+      expect(state.hasPhoto, isFalse);
+      expect(state.photo, isA<RemovePhoto>());
+      expect(File(staged).existsSync(), isFalse);
+    });
+  });
+}
+
+final class _Photos implements PhotoSource {
+  _Photos(this.next);
+
+  String? next;
+
+  @override
+  Future<String?> take(PhotoOrigin from) async => next;
 }

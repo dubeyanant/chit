@@ -22,12 +22,17 @@ abstract class ComposerState with _$ComposerState {
 
     @Default(false) bool isRecording,
 
+    String? photoTempPath,
+
     @Default(false) bool microphoneRefused,
   }) = _ComposerState;
 
-  bool get canSave => text.trim().isNotEmpty || audioTempPath != null;
+  bool get canSave =>
+      text.trim().isNotEmpty || audioTempPath != null || photoTempPath != null;
 
   String get prompt => Prompts.forStamp(stamp);
 
   bool get hasAudio => audioTempPath != null;
+
+  bool get hasPhoto => photoTempPath != null;
 }

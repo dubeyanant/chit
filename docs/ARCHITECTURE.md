@@ -20,11 +20,14 @@ lib/
 ├── core/      the four ThemeExtensions of §6, the injected clock, the haptic vocabulary,
 │              the BuildContext sugar
 ├── domain/    models/ (Chit and its invariant, the stamp, the enums, the screen states, the
-│              sealed AudioEdit) · ambient/ · motion/ · weather/ · tags/ (the sealed ChitSpan
-│              and its grammar) · find/ (the four axes, and where a column sits) ·
+│              sealed AudioEdit and PhotoEdit) · ambient/ · motion/ · weather/ ·
+│              tags/ (the sealed ChitSpan and its grammar) ·
+│              find/ (the four axes, and where a column sits) ·
 │              geo/ (the projection, and how the map frames itself) ·
 │              repositories/ · services/
-├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
+├── data/      db/ · files/ (one store over a folder, both audio's and photos') ·
+│              audio/ (recorder, player) · photo/ (the picker) ·
+│              dev/ (the seeder, the frame log) ·
 │              weather/ · location/ · geo/ (the bundled atlas and its codec) ·
 │              repositories/
 ├── features/  shell (the masthead, the tabs and whether they are drawn), today, composer,
@@ -44,11 +47,11 @@ demand.**
 
 **The shared widgets are the chit vocabulary — no state, no provider, each takes only what it
 draws.** `DayThread` is why the archive's *same treatment as Today* is true by construction: one
-widget, not two that look alike. Four earn exceptions — **`AudioPill` watches a provider**, since
+widget, not two that look alike. Five earn exceptions — **`AudioPill` watches a provider**, since
 which pill is lit is a property of the app's one player rather than of the row — **through a
 `select` that answers with its own row's playback**, so one pill's playhead does not rebuild the
-forty pills around it (ADR-077); **`ChitRow`
-navigates**, pushing the editor itself rather than taking a callback both callers would pass
+forty pills around it (ADR-077); **`PhotoFrame` watches one too**, a stored path being relative and
+the store that resolves it living in `data` (ADR-106); **`ChitRow` navigates**, pushing the editor itself rather than taking a callback both callers would pass
 identically (ADR-061); **`ChitBody` navigates too, and is stateful for it** (ADR-086) — a tag goes
 to find on the same argument, and its `TapGestureRecognizer`s have to be owned and disposed, one
 built inside `build` leaking one a frame; and **`Microphone` takes a callback**, since the two
@@ -101,7 +104,8 @@ unwritable from inside a build; which line a visit draws is `FindLine`'s, and pu
 the open chit a loading state: it takes the instant half of the stamp and hands the slow half to
 `settle()`, which lands whenever it lands or never. `ComposerState` records what the chit holds, not
 which way in the user picked; keeping a recording **leaves the field exactly as it was**, and
-`audioTempPath` is cleared only by `removeTake`, which never touches `text`.
+`audioTempPath` is cleared only by `removeTake` and `photoTempPath` only by `removePhoto`, neither
+of which touches `text`.
 
 **The timeline is three providers, and only one touches the database.** The query window and the
 drawn window cannot be one provider — what is drawn depends on what came back, and what came back

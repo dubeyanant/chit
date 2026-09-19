@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:chitta/data/audio/audio_store.dart';
 import 'package:chitta/data/db/app_database.dart';
+import 'package:chitta/data/files/file_store.dart';
 import 'package:chitta/data/repositories/chit_repository_impl.dart';
 import 'package:chitta/domain/models/ambient_stamp.dart';
 import 'package:chitta/domain/models/audio_edit.dart';
 import 'package:chitta/domain/models/chit.dart';
 import 'package:chitta/domain/models/day_summary.dart';
 import 'package:chitta/domain/models/motion_state.dart';
+import 'package:chitta/domain/models/photo_edit.dart';
 import 'package:chitta/domain/models/weather_condition.dart';
 import 'package:chitta/domain/repositories/chit_repository.dart';
 import 'package:drift/native.dart';
@@ -35,7 +36,16 @@ void main() {
     clock = FakeClock(morning);
     repo = ChitRepositoryImpl(
       dao: db.chitDao,
-      audio: AudioStore(Future<Directory>.value(documents)),
+      audio: FileStore(
+        Future<Directory>.value(documents),
+        folder: 'audio',
+        extension: '.m4a',
+      ),
+      photos: FileStore(
+        Future<Directory>.value(documents),
+        folder: 'photos',
+        extension: '.jpg',
+      ),
       clock: clock,
     );
   });
@@ -924,6 +934,154 @@ void main() {
           .watchArchive(fromDay: 20260901, toDay: 20260930)
           .first;
       expect(archive.map((Chit c) => c.id), <String>[newest.id, oldest.id]);
+    });
+  });
+
+  group('a photo is the third thing a chit can be — README §5', () {
+    Future<String> aPhoto([String name = 'shot']) async {
+      final File file = File(p.join(cache.path, '$name.jpg'));
+      await file.writeAsString('pretend this is a jpeg');
+      return file.path;
+    }
+
+    File photoFileOf(Chit chit) =>
+        File(p.join(documents.path, 'photos', '${chit.id}.jpg'));
+
+    test('a chit of nothing but a photo is a chit', () async {
+      final String shot = await aPhoto();
+
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        photoTempPath: shot,
+      );
+
+      expect(saved.hasPhoto, isTrue);
+      expect(saved.hasText, isFalse);
+      expect(saved.hasAudio, isFalse);
+      expect(photoFileOf(saved).existsSync(), isTrue);
+      expect(File(shot).existsSync(), isFalse, reason: 'moved, not copied');
+    });
+
+    test('the stored path is relative, so an iOS container may move', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        photoTempPath: await aPhoto(),
+      );
+
+      expect(saved.photoPath, 'photos/${saved.id}.jpg');
+      expect(p.isAbsolute(saved.photoPath!), isFalse);
+    });
+
+    test('and it is resolved back to somewhere real', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        photoTempPath: await aPhoto(),
+      );
+
+      expect(await repo.photoFileOf(saved.photoPath!), photoFileOf(saved).path);
+    });
+
+    test(
+      'an absolute path is handed back untouched, as a staged one',
+      () async {
+        final String staged = await aPhoto('staged');
+        expect(await repo.photoFileOf(staged), staged);
+      },
+    );
+
+    test('deleting the chit takes the photo with it', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        photoTempPath: await aPhoto(),
+      );
+
+      await repo.delete(saved.id);
+
+      expect(photoFileOf(saved).existsSync(), isFalse);
+    });
+
+    test('a photo can be removed, leaving the words', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Train 20 late.',
+        photoTempPath: await aPhoto(),
+      );
+
+      await repo.update(
+        id: saved.id,
+        text: 'Train 20 late.',
+        photo: const PhotoEdit.remove(),
+      );
+
+      final Chit after = (await repo.byId(saved.id))!;
+      expect(after.hasPhoto, isFalse);
+      expect(after.text, 'Train 20 late.');
+      expect(photoFileOf(saved).existsSync(), isFalse);
+    });
+
+    test('a photo can be replaced, and the old file goes', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        photoTempPath: await aPhoto('first'),
+      );
+      final String second = await aPhoto('second');
+
+      await repo.update(
+        id: saved.id,
+        text: null,
+        photo: PhotoEdit.replace(tempPath: second),
+      );
+
+      final Chit after = (await repo.byId(saved.id))!;
+      expect(after.hasPhoto, isTrue);
+      expect(photoFileOf(after).existsSync(), isTrue);
+      expect(File(second).existsSync(), isFalse);
+    });
+
+    test('removing the only photo of a wordless chit is refused', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        photoTempPath: await aPhoto(),
+      );
+
+      await expectLater(
+        repo.update(id: saved.id, text: null, photo: const PhotoEdit.remove()),
+        throwsA(isA<ArgumentError>()),
+      );
+
+      expect(
+        photoFileOf(saved).existsSync(),
+        isTrue,
+        reason: 'the invariant is checked before the disk is touched',
+      );
+    });
+
+    test('a photo alone keeps a chit alive when its words go', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Train 20 late.',
+        photoTempPath: await aPhoto(),
+      );
+
+      await repo.update(id: saved.id, text: '   ');
+
+      final Chit after = (await repo.byId(saved.id))!;
+      expect(after.hasText, isFalse);
+      expect(after.hasPhoto, isTrue);
+    });
+
+    test('a swept photo folder keeps only what a row claims', () async {
+      final Chit saved = await repo.save(
+        stamp: stampAt(morning),
+        photoTempPath: await aPhoto(),
+      );
+      final File orphan = File(p.join(documents.path, 'photos', 'nobody.jpg'));
+      await orphan.writeAsString('left behind');
+
+      await repo.reconcilePhotos();
+
+      expect(orphan.existsSync(), isFalse);
+      expect(photoFileOf(saved).existsSync(), isTrue);
     });
   });
 }

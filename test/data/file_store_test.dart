@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:chitta/data/audio/audio_store.dart';
+import 'package:chitta/data/files/file_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
@@ -8,13 +8,17 @@ void main() {
   late Directory root;
   late Directory documents;
   late Directory cache;
-  late AudioStore store;
+  late FileStore store;
 
   setUp(() async {
     root = await Directory.systemTemp.createTemp('chit-audio-test');
     documents = await Directory(p.join(root.path, 'documents')).create();
     cache = await Directory(p.join(root.path, 'cache')).create();
-    store = AudioStore(Future<Directory>.value(documents));
+    store = FileStore(
+      Future<Directory>.value(documents),
+      folder: 'audio',
+      extension: '.m4a',
+    );
   });
 
   tearDown(() async {
@@ -28,7 +32,7 @@ void main() {
   }
 
   File kept(String chitId) =>
-      File(p.join(documents.path, AudioStore.folder, '$chitId.m4a'));
+      File(p.join(documents.path, store.folder, '$chitId.m4a'));
 
   group('keeping a recording', () {
     test('moves it, rather than leaving a second copy behind', () async {
@@ -43,14 +47,14 @@ void main() {
 
     test('creates the audio directory the first time', () async {
       expect(
-        Directory(p.join(documents.path, AudioStore.folder)).existsSync(),
+        Directory(p.join(documents.path, store.folder)).existsSync(),
         isFalse,
       );
 
       await store.keep(tempPath: await aRecording('r'), chitId: 'chit-1');
 
       expect(
-        Directory(p.join(documents.path, AudioStore.folder)).existsSync(),
+        Directory(p.join(documents.path, store.folder)).existsSync(),
         isTrue,
       );
     });

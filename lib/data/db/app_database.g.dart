@@ -70,6 +70,17 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _photoPathMeta = const VerificationMeta(
+    'photoPath',
+  );
+  @override
+  late final GeneratedColumn<String> photoPath = GeneratedColumn<String>(
+    'photo_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   late final GeneratedColumnWithTypeConverter<WeatherCondition?, String>
   weather = GeneratedColumn<String>(
@@ -125,6 +136,7 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
     body,
     audioPath,
     audioMs,
+    photoPath,
     weather,
     lat,
     lon,
@@ -182,6 +194,12 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
         audioMs.isAcceptableOrUnknown(data['audio_ms']!, _audioMsMeta),
       );
     }
+    if (data.containsKey('photo_path')) {
+      context.handle(
+        _photoPathMeta,
+        photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta),
+      );
+    }
     if (data.containsKey('lat')) {
       context.handle(
         _latMeta,
@@ -235,6 +253,10 @@ class $ChitsTable extends Chits with TableInfo<$ChitsTable, ChitRow> {
         DriftSqlType.int,
         data['${effectivePrefix}audio_ms'],
       ),
+      photoPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_path'],
+      ),
       weather: $ChitsTable.$converterweathern.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -286,6 +308,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
   final String? body;
   final String? audioPath;
   final int? audioMs;
+  final String? photoPath;
   final WeatherCondition? weather;
   final double? lat;
   final double? lon;
@@ -298,6 +321,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     this.body,
     this.audioPath,
     this.audioMs,
+    this.photoPath,
     this.weather,
     this.lat,
     this.lon,
@@ -318,6 +342,9 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     }
     if (!nullToAbsent || audioMs != null) {
       map['audio_ms'] = Variable<int>(audioMs);
+    }
+    if (!nullToAbsent || photoPath != null) {
+      map['photo_path'] = Variable<String>(photoPath);
     }
     if (!nullToAbsent || weather != null) {
       map['weather'] = Variable<String>(
@@ -351,6 +378,9 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
       audioMs: audioMs == null && nullToAbsent
           ? const Value.absent()
           : Value(audioMs),
+      photoPath: photoPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoPath),
       weather: weather == null && nullToAbsent
           ? const Value.absent()
           : Value(weather),
@@ -375,6 +405,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
       body: serializer.fromJson<String?>(json['body']),
       audioPath: serializer.fromJson<String?>(json['audioPath']),
       audioMs: serializer.fromJson<int?>(json['audioMs']),
+      photoPath: serializer.fromJson<String?>(json['photoPath']),
       weather: $ChitsTable.$converterweathern.fromJson(
         serializer.fromJson<String?>(json['weather']),
       ),
@@ -396,6 +427,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
       'body': serializer.toJson<String?>(body),
       'audioPath': serializer.toJson<String?>(audioPath),
       'audioMs': serializer.toJson<int?>(audioMs),
+      'photoPath': serializer.toJson<String?>(photoPath),
       'weather': serializer.toJson<String?>(
         $ChitsTable.$converterweathern.toJson(weather),
       ),
@@ -415,6 +447,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     Value<String?> body = const Value.absent(),
     Value<String?> audioPath = const Value.absent(),
     Value<int?> audioMs = const Value.absent(),
+    Value<String?> photoPath = const Value.absent(),
     Value<WeatherCondition?> weather = const Value.absent(),
     Value<double?> lat = const Value.absent(),
     Value<double?> lon = const Value.absent(),
@@ -427,6 +460,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     body: body.present ? body.value : this.body,
     audioPath: audioPath.present ? audioPath.value : this.audioPath,
     audioMs: audioMs.present ? audioMs.value : this.audioMs,
+    photoPath: photoPath.present ? photoPath.value : this.photoPath,
     weather: weather.present ? weather.value : this.weather,
     lat: lat.present ? lat.value : this.lat,
     lon: lon.present ? lon.value : this.lon,
@@ -441,6 +475,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
       body: data.body.present ? data.body.value : this.body,
       audioPath: data.audioPath.present ? data.audioPath.value : this.audioPath,
       audioMs: data.audioMs.present ? data.audioMs.value : this.audioMs,
+      photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
       weather: data.weather.present ? data.weather.value : this.weather,
       lat: data.lat.present ? data.lat.value : this.lat,
       lon: data.lon.present ? data.lon.value : this.lon,
@@ -458,6 +493,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
           ..write('body: $body, ')
           ..write('audioPath: $audioPath, ')
           ..write('audioMs: $audioMs, ')
+          ..write('photoPath: $photoPath, ')
           ..write('weather: $weather, ')
           ..write('lat: $lat, ')
           ..write('lon: $lon, ')
@@ -475,6 +511,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
     body,
     audioPath,
     audioMs,
+    photoPath,
     weather,
     lat,
     lon,
@@ -491,6 +528,7 @@ class ChitRow extends DataClass implements Insertable<ChitRow> {
           other.body == this.body &&
           other.audioPath == this.audioPath &&
           other.audioMs == this.audioMs &&
+          other.photoPath == this.photoPath &&
           other.weather == this.weather &&
           other.lat == this.lat &&
           other.lon == this.lon &&
@@ -505,6 +543,7 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
   final Value<String?> body;
   final Value<String?> audioPath;
   final Value<int?> audioMs;
+  final Value<String?> photoPath;
   final Value<WeatherCondition?> weather;
   final Value<double?> lat;
   final Value<double?> lon;
@@ -518,6 +557,7 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     this.body = const Value.absent(),
     this.audioPath = const Value.absent(),
     this.audioMs = const Value.absent(),
+    this.photoPath = const Value.absent(),
     this.weather = const Value.absent(),
     this.lat = const Value.absent(),
     this.lon = const Value.absent(),
@@ -532,6 +572,7 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     this.body = const Value.absent(),
     this.audioPath = const Value.absent(),
     this.audioMs = const Value.absent(),
+    this.photoPath = const Value.absent(),
     this.weather = const Value.absent(),
     this.lat = const Value.absent(),
     this.lon = const Value.absent(),
@@ -549,6 +590,7 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     Expression<String>? body,
     Expression<String>? audioPath,
     Expression<int>? audioMs,
+    Expression<String>? photoPath,
     Expression<String>? weather,
     Expression<double>? lat,
     Expression<double>? lon,
@@ -563,6 +605,7 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
       if (body != null) 'body': body,
       if (audioPath != null) 'audio_path': audioPath,
       if (audioMs != null) 'audio_ms': audioMs,
+      if (photoPath != null) 'photo_path': photoPath,
       if (weather != null) 'weather': weather,
       if (lat != null) 'lat': lat,
       if (lon != null) 'lon': lon,
@@ -579,6 +622,7 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     Value<String?>? body,
     Value<String?>? audioPath,
     Value<int?>? audioMs,
+    Value<String?>? photoPath,
     Value<WeatherCondition?>? weather,
     Value<double?>? lat,
     Value<double?>? lon,
@@ -593,6 +637,7 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
       body: body ?? this.body,
       audioPath: audioPath ?? this.audioPath,
       audioMs: audioMs ?? this.audioMs,
+      photoPath: photoPath ?? this.photoPath,
       weather: weather ?? this.weather,
       lat: lat ?? this.lat,
       lon: lon ?? this.lon,
@@ -622,6 +667,9 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
     }
     if (audioMs.present) {
       map['audio_ms'] = Variable<int>(audioMs.value);
+    }
+    if (photoPath.present) {
+      map['photo_path'] = Variable<String>(photoPath.value);
     }
     if (weather.present) {
       map['weather'] = Variable<String>(
@@ -657,6 +705,7 @@ class ChitsCompanion extends UpdateCompanion<ChitRow> {
           ..write('body: $body, ')
           ..write('audioPath: $audioPath, ')
           ..write('audioMs: $audioMs, ')
+          ..write('photoPath: $photoPath, ')
           ..write('weather: $weather, ')
           ..write('lat: $lat, ')
           ..write('lon: $lon, ')
@@ -691,6 +740,7 @@ typedef $$ChitsTableCreateCompanionBuilder = ChitsCompanion Function({
   Value<String?> body,
   Value<String?> audioPath,
   Value<int?> audioMs,
+  Value<String?> photoPath,
   Value<WeatherCondition?> weather,
   Value<double?> lat,
   Value<double?> lon,
@@ -705,6 +755,7 @@ typedef $$ChitsTableUpdateCompanionBuilder = ChitsCompanion Function({
   Value<String?> body,
   Value<String?> audioPath,
   Value<int?> audioMs,
+  Value<String?> photoPath,
   Value<WeatherCondition?> weather,
   Value<double?> lat,
   Value<double?> lon,
@@ -748,6 +799,11 @@ class $$ChitsTableFilterComposer extends Composer<_$AppDatabase, $ChitsTable> {
 
   ColumnFilters<int> get audioMs => $composableBuilder(
     column: $table.audioMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoPath => $composableBuilder(
+    column: $table.photoPath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -818,6 +874,11 @@ class $$ChitsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get photoPath => $composableBuilder(
+    column: $table.photoPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get weather => $composableBuilder(
     column: $table.weather,
     builder: (column) => ColumnOrderings(column),
@@ -871,6 +932,9 @@ class $$ChitsTableAnnotationComposer
   GeneratedColumn<int> get audioMs =>
       $composableBuilder(column: $table.audioMs, builder: (column) => column);
 
+  GeneratedColumn<String> get photoPath =>
+      $composableBuilder(column: $table.photoPath, builder: (column) => column);
+
   GeneratedColumnWithTypeConverter<WeatherCondition?, String> get weather =>
       $composableBuilder(column: $table.weather, builder: (column) => column);
 
@@ -921,6 +985,7 @@ class $$ChitsTableTableManager
                 Value<String?> body = const Value.absent(),
                 Value<String?> audioPath = const Value.absent(),
                 Value<int?> audioMs = const Value.absent(),
+                Value<String?> photoPath = const Value.absent(),
                 Value<WeatherCondition?> weather = const Value.absent(),
                 Value<double?> lat = const Value.absent(),
                 Value<double?> lon = const Value.absent(),
@@ -934,6 +999,7 @@ class $$ChitsTableTableManager
                 body: body,
                 audioPath: audioPath,
                 audioMs: audioMs,
+                photoPath: photoPath,
                 weather: weather,
                 lat: lat,
                 lon: lon,
@@ -949,6 +1015,7 @@ class $$ChitsTableTableManager
                 Value<String?> body = const Value.absent(),
                 Value<String?> audioPath = const Value.absent(),
                 Value<int?> audioMs = const Value.absent(),
+                Value<String?> photoPath = const Value.absent(),
                 Value<WeatherCondition?> weather = const Value.absent(),
                 Value<double?> lat = const Value.absent(),
                 Value<double?> lon = const Value.absent(),
@@ -962,6 +1029,7 @@ class $$ChitsTableTableManager
                 body: body,
                 audioPath: audioPath,
                 audioMs: audioMs,
+                photoPath: photoPath,
                 weather: weather,
                 lat: lat,
                 lon: lon,

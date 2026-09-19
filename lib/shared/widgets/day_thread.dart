@@ -11,6 +11,7 @@ import 'arrival.dart';
 import 'audio_pill.dart';
 import 'chit_body.dart';
 import 'focus_ring.dart';
+import 'photo_frame.dart';
 import 'thread_rail.dart';
 
 class DayThread extends StatefulWidget {
@@ -154,6 +155,12 @@ class _Body extends StatelessWidget {
                 path: chit.audioPath!,
                 duration: chit.audioDuration ?? Duration.zero,
               ),
+            ),
+
+          if (chit.hasPhoto)
+            Padding(
+              padding: EdgeInsets.only(left: inset, top: space.s2),
+              child: PhotoFrame(path: chit.photoPath!),
             ),
         ],
       ),

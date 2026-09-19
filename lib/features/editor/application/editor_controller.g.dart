@@ -50,7 +50,7 @@ final class EditorControllerProvider
   }
 }
 
-String _$editorControllerHash() => r'a3ebcb2c53b2536878e1535d6e1ed048f86b8c6c';
+String _$editorControllerHash() => r'8455ec68d50db3a72e6d2f658c0d0a03259bf5f0';
 
 final class EditorControllerFamily extends $Family
     with

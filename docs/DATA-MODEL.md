@@ -14,6 +14,7 @@ class Chits extends Table {
   TextColumn get body      => text().nullable()();        // README §5 calls it `text`
   TextColumn get audioPath => text().nullable()();        // relative to app documents
   IntColumn  get audioMs   => integer().nullable()();
+  TextColumn get photoPath => text().nullable()();        // relative, one per chit
   TextColumn get weather   => textEnum<WeatherCondition>().nullable()();
   RealColumn get lat       => real().nullable()();
   RealColumn get lon       => real().nullable()();
@@ -70,15 +71,15 @@ the clock between the stamp and the save.
 
 ## 2. The invariant
 
-> **At least one of `text` and `audioPath` is present.** — README §5
+> **At least one of `text`, `audioPath` and `photoPath` is present.** — README §5
 
-Three legal shapes, none of them a lifecycle: words alone, words and a recording, a recording alone.
-Held in **three places**, each tested where it lives, because an assert is compiled out of a release
-build, a check constraint says nothing about *why*, and a repository is one caller among however
+Seven legal shapes, none of them a lifecycle: each of the three alone, and every combination of
+them (ADR-106). Held in **three places**, each tested where it lives, because an assert is compiled
+out of a release build, a check constraint says nothing about *why*, and a repository is one caller among however
 many a later milestone adds.
 
 ```sql
-CHECK (body IS NOT NULL OR audio_path IS NOT NULL)
+CHECK (COALESCE(body, audio_path, photo_path) IS NOT NULL)
 CHECK (body IS NULL OR length(trim(body)) > 0)
 CHECK ((audio_path IS NULL) = (audio_ms IS NULL))
 CHECK ((lat IS NULL) = (lon IS NULL))
@@ -89,14 +90,15 @@ written by hand in the tests, *around* the repository, which is the only way to 
 is doing the work rather than the caller. **The domain model** is the second place — a `freezed`
 class with a private constructor and asserts, not a bag of public nullables, a sealed union buying
 ceremony rather than safety when the shapes differ only by which fields are populated; the UI asks
-`hasText` and `hasAudio`. One assert is weaker than the rule it stands for, a `const` constructor
-being unable to call `trim()`, so the model catches the empty string and leaves whitespace to the
+`hasText`, `hasAudio` and `hasPhoto`. One assert is weaker than the rule it stands for, a `const`
+constructor being unable to call `trim()`, so the model catches the empty string and leaves whitespace to the
 other two. **The repository** is the third, refusing an illegal chit with an `ArgumentError` naming
 what was wrong.
 
-**There is no `source` column.** Whether a chit has audio is `audioPath != null`, and nothing infers
-behaviour from a mode. A chit with both renders the text *and* the pill — the pill is not a fallback
-for missing words, it is the recording.
+**There is no `source` column.** Whether a chit has audio is `audioPath != null` and whether it has
+a photo is `photoPath != null`, and nothing infers behaviour from a mode. A chit that holds several
+of them renders all of them — the pill and the frame are not fallbacks for missing words, they are
+the recording and the photo.
 
 ## 3. Domain types and queries
 
@@ -173,7 +175,9 @@ dart run drift_dev schema generate drift_schemas/ test/data/db/generated/
 The four rules the first harness taught, which are why this section exists rather than only git:
 
 - One `from → to` step per version, and **once a version has shipped, its step and its snapshot are
-  never edited**.
+  never edited**. *This was broken once, on purpose*: ADR-107 added `photo_path` to v1 and rewrote
+  v1's snapshot, on the ground that no phone held chits anybody kept. **Every install from before it
+  must be uninstalled rather than updated** — its database is still v1 and would find no column.
 - **Steps gated on both ends** — `from < n && to >= n`. A step that ignored `to` would rebuild a v2
   database into the v3 shape and still call it v2. That bug was real.
 - A test that migrates **and reads rows back**. `migrateAndValidate` inspects the schema, not the
@@ -181,9 +185,9 @@ The four rules the first harness taught, which are why this section exists rathe
 - **Nothing is backfilled.** There is no way to know what a phone was doing last Tuesday, and a
   guess written into a row is indistinguishable from a fact a month later.
 
-On the horizon: the editor and the export need no schema change; backlog 7 is a nullable
-`replyToId`. **A photo per chit would be the one that bites** — a new nullable column, and §2's
-invariant turning three-way, which is the part worth protecting.
+On the horizon: the export needs no schema change; backlog 7 is a nullable `replyToId`. **The photo
+was the one that bit** (ADR-106), and it was added to v1 in place rather than migrated (ADR-107) —
+which is a debt, not a precedent.
 
 ## 6. Seed data for development
 
