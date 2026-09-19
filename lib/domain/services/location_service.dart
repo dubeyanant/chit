@@ -46,14 +46,24 @@ enum LocationPermissionOutcome {
   denied,
 
   deniedForever,
+}
 
-  serviceDisabled,
+enum LocationServiceOutcome {
+  alreadyOn,
+
+  turnedOn,
+
+  refused,
+
+  notPermitted,
 }
 
 abstract interface class LocationService {
   Future<GeoFix?> currentFix();
 
   Future<LocationPermissionOutcome> requestPermission();
+
+  Future<LocationServiceOutcome> requestService();
 
   Future<GeoFix?> lastKnownFix();
 }

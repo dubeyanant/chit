@@ -60,7 +60,9 @@ retired: 32, 33, 35, 36.**
     now gets its two asks rather than the app spending one, so a first refusal is recoverable by
     saving another chit. After the second there is still no settings screen and no line anywhere
     saying what was lost, so it can only be undone through the OS. A refused *microphone* names the
-    phone's settings; location still says nothing, deliberately.
+    phone's settings; location still says nothing, deliberately. **A refused location *switch* is
+    the softer case** (ADR-102): it is offered again on the next launch, so it is spent for a run
+    and never for good.
 23. **The open chit's preview goes stale without bound, and now it is only the weather**
     (ADR-042). ADR-080 took the clock off that line, which was the half a person could tell was
     wrong by looking at it; what is left is a sky word that can be hours old on a phone left open
@@ -205,3 +207,12 @@ retired: 32, 33, 35, 36.**
     **Nothing about the iOS half of v1 should be called ready**; what has shipped is Android.
 66. **— closed with item 63.** *`--split-per-abi` had not been installed from.* The owner has since
     installed and run a signed per-ABI build.
+67. **Nobody has seen the switch sheet, and it is the half no unit test reaches** (ADR-102). The
+    permission half is arithmetic and covered; the switch is raised by letting `getCurrentPosition`
+    reach Play Services' resolution, which needs Play Services present, the activity attached, and
+    a handset to watch. **Three things to look at**: whether the sheet appears at all on the
+    CPH2707; whether it arriving *after* the chit is saved reads as the app catching up or as a
+    jolt, which is item 58's question again; and whether once a launch is reasonable or nagging,
+    since somebody who means *no, not ever* has no way to say so. **On iOS there is no such sheet**
+    — `getCurrentPosition` throws, the run is spent and nothing is drawn, which is item 65's
+    territory and unverified like the rest of it.

@@ -151,12 +151,14 @@ tabs never disagree* — they are not kept in step, they are the same data.
 
 **The save is also where the place is asked for** (ADR-094), after the row is written and never
 before it, unawaited so the dialog never stands between somebody and the chit they just wrote.
-`PlacePermission` asks and reports back; the composer owns what a grant is worth. **`_settle` runs
-the stale re-read and the ask in that order and never at once** — two captures in flight can land
-out of order, and the one without a place must not be the one that wins. **A grant re-reads and
-patches the chit just saved**, which is also what moves the open chit, the composer listening for
-the reading (ADR-081). It re-reads only when the reading it holds has no place in it, so an install
-that already had the permission does no extra work.
+`PlacePermission` asks and reports back; the composer owns what a grant is worth. **It holds two
+things, not one** (ADR-102): how far the permission got, and whether the phone's location switch is
+still worth offering this run. **`_settle` runs the stale re-read and the ask in that order and
+never at once** — two captures in flight can land out of order, and the one without a place must
+not be the one that wins. **Anything newly won re-reads and patches the chit just saved** — the
+permission or the switch — which is also what moves the open chit, the composer listening for the
+reading (ADR-081). It re-reads only when the reading it holds has no place in it, so an install
+that already had both does no extra work.
 
 **Nothing in `lib/` or `test/` carries a comment** (ADR-095). The reason a line is the way it is
 lives in a record, and the record names the file — so the citation runs doc → code, the direction

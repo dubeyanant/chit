@@ -135,6 +135,10 @@ final class _CountingLocation implements LocationService {
   @override
   Future<LocationPermissionOutcome> requestPermission() async =>
       LocationPermissionOutcome.granted;
+
+  @override
+  Future<LocationServiceOutcome> requestService() async =>
+      LocationServiceOutcome.alreadyOn;
 }
 
 final class _ThrowingWeather implements WeatherService {
@@ -151,6 +155,10 @@ final class _ThrowingLocation implements LocationService {
 
   @override
   Future<LocationPermissionOutcome> requestPermission() async =>
+      throw const _Failure();
+
+  @override
+  Future<LocationServiceOutcome> requestService() async =>
       throw const _Failure();
 }
 

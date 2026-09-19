@@ -191,6 +191,10 @@ mixin _Grants implements LocationService {
       LocationPermissionOutcome.granted;
 
   @override
+  Future<LocationServiceOutcome> requestService() async =>
+      LocationServiceOutcome.alreadyOn;
+
+  @override
   Future<GeoFix?> lastKnownFix() async => null;
 }
 

@@ -609,6 +609,11 @@ final class _Location implements LocationService {
     permitted = true;
     return LocationPermissionOutcome.granted;
   }
+
+  @override
+  Future<LocationServiceOutcome> requestService() async => permitted
+      ? LocationServiceOutcome.alreadyOn
+      : LocationServiceOutcome.notPermitted;
 }
 
 final class _HangingWeather implements WeatherService {

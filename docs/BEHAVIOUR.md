@@ -95,7 +95,10 @@ ADR-045); no polling, no refresh on resume. **One minute** is set by the **place
 so the preview can be hours old on a phone left open all day — but **no chit is ever recorded with
 it**, saving re-reading, so the staleness is on the screen and never in the data. **The place is
 asked for at a save** (ADR-094), never at launch and never behind a screen of ours: the OS decides
-how many times, a refusal means quieter chits, and nothing in the UI mentions it either way.
+how many times, a refusal means quieter chits, and nothing in the UI mentions it either way. **The
+permission and the phone's location switch are separate asks**, in that order, and the switch is
+offered by the OS's own sheet — **once a run**, never again after a no, and not at all until the
+permission is held (ADR-102).
 
 **A reading landing mid-chit changes the facts and nothing else** (ADR-081). The launch capture
 finishes seconds after the app opens, which is squarely inside the time somebody spends writing

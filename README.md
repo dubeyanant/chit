@@ -116,8 +116,9 @@ reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's wo
 pure, so the widget that draws them holds no grammar, and `lib/domain/find/` says which axis a tag
 is found on. `lib/domain/find_line.dart` holds the two books find opens with — the house lines and
 the hints (ADR-086) — and turns a visit count into one of them (ADR-093).
-`lib/domain/services/place_permission.dart` is the whole of asking for location: it is called by the
-save and by nothing else, and draws nothing (ADR-094).
+`lib/domain/services/place_permission.dart` is the whole of asking for location — the permission and
+the phone's location switch both (ADR-102): it is called by the save and by nothing else, and draws
+nothing (ADR-094).
 `lib/core/haptics.dart` is the three steps of §6's haptic vocabulary and the only place
 `HapticFeedback` is called (ADR-096). `lib/features/shell/` owns the masthead, the tabs, and
 **whether the tabs are drawn at all** — they are not, until something has been written (ADR-097). `lib/shared/widgets/` is the chit vocabulary:
