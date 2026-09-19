@@ -49,6 +49,31 @@ void main() {
         0,
       );
     });
+
+    test('falls short of the end when the length is overstated', () {
+      const Duration sounded = Duration(milliseconds: 3000);
+      const Duration claimed = Duration(milliseconds: 3250);
+
+      expect(
+        AudioPill.barsLitAt(sounded, of: claimed),
+        lessThan(AudioPill.wave.length),
+        reason: 'the recorder used to time the encoder opening as audio',
+      );
+      expect(AudioPill.barsLitAt(sounded, of: sounded), AudioPill.wave.length);
+    });
+
+    test('strands more of a short take than a long one', () {
+      const Duration overshoot = Duration(milliseconds: 250);
+      int darkAfter(Duration sounded) =>
+          AudioPill.wave.length -
+          AudioPill.barsLitAt(sounded, of: sounded + overshoot);
+
+      expect(
+        darkAfter(const Duration(seconds: 3)),
+        greaterThan(darkAfter(const Duration(seconds: 30))),
+        reason: 'a fixed overshoot is a larger share of a shorter take',
+      );
+    });
   });
 
   group('one player, so two pills never sound at once', () {

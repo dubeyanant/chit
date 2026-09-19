@@ -45,6 +45,10 @@ recording is not words. **Save** commits it like any chit, and the order text an
 is not recorded. **There is no transcription** (ADR-058): the recording is the record, and anything
 a chit says in words was typed by a person.
 
+**A kept recording is played from its pill**, whose bars are the playhead: they fill as it sounds,
+**against the length the player decoded rather than the one the row stores** (ADR-103), and a take
+that reaches its end rests with every bar lit until it is tapped again, when it starts over.
+
 **3.5 — retired.** *When transcription fails, the voice survives alone.* Gone with transcription
 itself (ADR-058). **The number is not reused** — it is cited from other documents and from git.
 
@@ -90,12 +94,17 @@ at the same speed. **A motion that did not arrive is not drawn.** **`flying` wil
 fire, and that is not a bug to fix** — most devices disable GPS in airplane mode, so there is no
 fix and no speed; a barometer is the honest route if it ever matters.
 
-**3.6.3 When capture happens.** At launch, and at a save holding something stale (ADR-042,
-ADR-045); no polling, no refresh on resume. **One minute** is set by the **place**, not the weather,
-so the preview can be hours old on a phone left open all day — but **no chit is ever recorded with
-it**, saving re-reading, so the staleness is on the screen and never in the data. **The place is
+**3.6.3 When capture happens.** At launch, at a save holding something stale (ADR-042, ADR-045),
+and **on coming back to the app when what is on screen is half an hour old** (ADR-104); no polling.
+**One minute** is set by the **place**, not the weather, and it is the window a *save* uses; the
+half hour is the window a *screen* uses, so a glance away costs nothing — but **no chit is ever
+recorded with a stale reading**, saving re-reading, so what staleness is left is on the screen and
+never in the data. **The place is
 asked for at a save** (ADR-094), never at launch and never behind a screen of ours: the OS decides
-how many times, a refusal means quieter chits, and nothing in the UI mentions it either way.
+how many times, a refusal means quieter chits, and nothing in the UI mentions it either way. **The
+permission and the phone's location switch are separate asks**, in that order, and the switch is
+offered by the OS's own sheet — **once a run**, never again after a no, and not at all until the
+permission is held (ADR-102).
 
 **A reading landing mid-chit changes the facts and nothing else** (ADR-081). The launch capture
 finishes seconds after the app opens, which is squarely inside the time somebody spends writing

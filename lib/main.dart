@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+import 'app/ambient_resume.dart';
 import 'app/chit_app.dart';
 import 'core/clock.dart';
 import 'data/audio/audio_store.dart';
@@ -79,6 +80,7 @@ Future<void> main() async {
 
   WidgetsBinding.instance.addPostFrameCallback((Duration _) {
     unawaited(container.read(ambientSignalsProvider.notifier).prime());
+    container.read(ambientResumeProvider);
   });
 
   runApp(

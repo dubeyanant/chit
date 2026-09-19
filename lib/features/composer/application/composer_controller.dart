@@ -114,8 +114,8 @@ class ComposerController extends _$ComposerController implements RecordingSink {
     if (stale) await _refreshAmbience(id);
     if (!ref.mounted) return;
 
-    final bool granted = await ref.read(placePermissionProvider.notifier).ask();
-    if (!granted || !ref.mounted) return;
+    final bool won = await ref.read(placePermissionProvider.notifier).ask();
+    if (!won || !ref.mounted) return;
     if (ref.read(ambientSignalsProvider).lat != null) return;
 
     await _refreshAmbience(id);

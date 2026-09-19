@@ -181,8 +181,9 @@ The four rules the first harness taught, which are why this section exists rathe
 - **Nothing is backfilled.** There is no way to know what a phone was doing last Tuesday, and a
   guess written into a row is indistinguishable from a fact a month later.
 
-On the horizon: the editor needs no schema change; backlog 1 is new nullable columns; backlog 7 is a
-nullable `replyToId`. None break §2's invariant, which is the part worth protecting.
+On the horizon: the editor and the export need no schema change; backlog 7 is a nullable
+`replyToId`. **A photo per chit would be the one that bites** — a new nullable column, and §2's
+invariant turning three-way, which is the part worth protecting.
 
 ## 6. Seed data for development
 

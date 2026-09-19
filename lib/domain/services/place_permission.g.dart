@@ -13,7 +13,7 @@ part of 'place_permission.dart';
 final placePermissionProvider = PlacePermissionProvider._();
 
 final class PlacePermissionProvider
-    extends $NotifierProvider<PlacePermission, bool> {
+    extends $NotifierProvider<PlacePermission, PlaceAsk> {
   PlacePermissionProvider._()
     : super(
         from: null,
@@ -33,27 +33,27 @@ final class PlacePermissionProvider
   PlacePermission create() => PlacePermission();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
+  Override overrideWithValue(PlaceAsk value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
+      providerOverride: $SyncValueProvider<PlaceAsk>(value),
     );
   }
 }
 
-String _$placePermissionHash() => r'53cc1abc5ab55fbd9dc80e1bbb460f5cd5b3648d';
+String _$placePermissionHash() => r'788858ec72fd2c10b1d174396b799f4d719f708f';
 
-abstract class _$PlacePermission extends $Notifier<bool> {
-  bool build();
+abstract class _$PlacePermission extends $Notifier<PlaceAsk> {
+  PlaceAsk build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<bool, bool>;
+    final ref = this.ref as $Ref<PlaceAsk, PlaceAsk>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
+              AnyNotifier<PlaceAsk, PlaceAsk>,
+              PlaceAsk,
               Object?,
               Object?
             >;

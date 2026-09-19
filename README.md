@@ -31,7 +31,7 @@ hundred citations depend on it. **Never renumber.**
 | §0 §1 §2 §5 §10 | Start here · What Chitta is · Core concepts · Data model · The map | this file |
 | **§3 §4** | **Behaviour specification · Screens** | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) |
 | **§6 §7** | **Design system · The prototype (retired)** | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
-| **§8 §9** | **The three hard questions · Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
+| **§8 §9** | **The hard question · Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
 
 **The design authority is this file, `BEHAVIOUR.md` and `DESIGN-SYSTEM.md`.** Where another document
 disagrees, that document is wrong and is fixed in the change that found it. Both standing rules —
@@ -99,7 +99,7 @@ nothing enters `pubspec.yaml` without a line there ·
 ```
 lib/
 ├── main.dart   runApp(ProviderScope(child: ChitApp()))
-├── app/        the application root and the router (ADR-011)
+├── app/        the application root, the router (ADR-011), the resume watch (ADR-104)
 ├── core/       the design system, the clock, the haptic vocabulary, the BuildContext accessors
 ├── domain/     models and interfaces. Pure Dart; imports neither of the two below
 ├── data/       the implementations: Drift, files, network, platform plugins
@@ -116,8 +116,9 @@ reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's wo
 pure, so the widget that draws them holds no grammar, and `lib/domain/find/` says which axis a tag
 is found on. `lib/domain/find_line.dart` holds the two books find opens with — the house lines and
 the hints (ADR-086) — and turns a visit count into one of them (ADR-093).
-`lib/domain/services/place_permission.dart` is the whole of asking for location: it is called by the
-save and by nothing else, and draws nothing (ADR-094).
+`lib/domain/services/place_permission.dart` is the whole of asking for location — the permission and
+the phone's location switch both (ADR-102): it is called by the save and by nothing else, and draws
+nothing (ADR-094).
 `lib/core/haptics.dart` is the three steps of §6's haptic vocabulary and the only place
 `HapticFeedback` is called (ADR-096). `lib/features/shell/` owns the masthead, the tabs, and
 **whether the tabs are drawn at all** — they are not, until something has been written (ADR-097). `lib/shared/widgets/` is the chit vocabulary:

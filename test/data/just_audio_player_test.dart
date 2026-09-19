@@ -128,6 +128,50 @@ void main() {
     expect(seen.last, Playback.silent);
     expect(platform.loaded, isEmpty);
   });
+
+  test(
+    'a take carries the length the player decoded, not the row\'s',
+    () async {
+      await player.play(id: 'a', path: path('a.m4a'));
+      await pumpEventQueue();
+
+      expect(seen.last.length, const Duration(seconds: 3));
+    },
+  );
+
+  test('a take that finishes holds at its end, lit', () async {
+    await player.play(id: 'a', path: path('a.m4a'));
+    await pumpEventQueue();
+
+    platform.player.emitCompleted();
+    await pumpEventQueue();
+
+    expect(seen.last.holds('a'), isTrue, reason: 'it is still this pill');
+    expect(
+      seen.last.position,
+      seen.last.length,
+      reason: 'the last bar is lit, which is what finishing looks like',
+    );
+    expect(seen.last.playing, isFalse);
+  });
+
+  test('a finished take plays again from its own beginning', () async {
+    await player.play(id: 'a', path: path('a.m4a'));
+    await pumpEventQueue();
+    platform.player.emitCompleted();
+    await pumpEventQueue();
+
+    await player.play(id: 'a', path: path('a.m4a'));
+    await pumpEventQueue();
+
+    expect(seen.last.holds('a'), isTrue);
+    expect(
+      seen.last.position,
+      lessThan(const Duration(seconds: 1)),
+      reason: 'the held end must not survive the replay',
+    );
+    expect(platform.loaded, hasLength(1), reason: 'sought, not reloaded');
+  });
 }
 
 final class _FakeJustAudio extends JustAudioPlatform {
@@ -191,6 +235,14 @@ final class _FakePlatformPlayer extends AudioPlayerPlatform {
 
   void emitPositionOf(Duration at) {
     _position = at;
+    _emit();
+  }
+
+  void emitCompleted() {
+    _sounding?.complete();
+    _sounding = null;
+    _position = _take;
+    _state = ProcessingStateMessage.completed;
     _emit();
   }
 

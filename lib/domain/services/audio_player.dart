@@ -8,6 +8,7 @@ final class Playback {
   const Playback({
     this.id,
     this.position = Duration.zero,
+    this.length,
     this.playing = false,
   });
 
@@ -19,6 +20,8 @@ final class Playback {
 
   final Duration position;
 
+  final Duration? length;
+
   final bool playing;
 
   bool holds(String pill) => id == pill;
@@ -28,13 +31,14 @@ final class Playback {
       other is Playback &&
       other.id == id &&
       other.position == position &&
+      other.length == length &&
       other.playing == playing;
 
   @override
-  int get hashCode => Object.hash(id, position, playing);
+  int get hashCode => Object.hash(id, position, length, playing);
 
   @override
-  String toString() => 'Playback($id, $position, playing: $playing)';
+  String toString() => 'Playback($id, $position of $length, playing: $playing)';
 }
 
 abstract interface class AudioPlayer {

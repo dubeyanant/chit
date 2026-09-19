@@ -44,9 +44,9 @@ final class RecordAudioRecorder implements AudioRecorder {
     try {
       if (!await _recorder.hasPermission(request: false)) return false;
 
-      final DateTime now = _clock.now();
-      await _recorder.start(_config, path: tempPathFor(await _temp, now));
-      _startedAt = now;
+      final Directory temp = await _temp;
+      await _recorder.start(_config, path: tempPathFor(temp, _clock.now()));
+      _startedAt = _clock.now();
       return true;
     } on Object {
       return false;

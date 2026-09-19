@@ -119,7 +119,10 @@ read where it is used. **A throw and a hang both produce `null`**, the one delib
 *fail loudly in development*. **`AmbientSignals` owns *when*, `AmbientCapture` owns *what***: a
 reading is good for one minute, the row is written first and patched only if stale, and
 `updateAmbient` is a separate method so one rule lives in the type — **the patch moves neither
-`createdAt` nor `updatedAt`**.
+`createdAt` nor `updatedAt`**. It holds the two windows both (ADR-104): the minute a **save** may
+write from, and the half hour a **screen** may show. `lib/app/ambient_resume.dart` is the whole of
+the second — one `AppLifecycleListener` in a keepAlive provider, because what outlives a build is
+Riverpod's, read once in `main` so it is built rather than waited for.
 
 **The five-second prompt.** The timer lives in the controller, not the widget: the field relays out
 whenever the keyboard arrives or the action row grows, and a widget-held timer would restart each
@@ -151,12 +154,14 @@ tabs never disagree* — they are not kept in step, they are the same data.
 
 **The save is also where the place is asked for** (ADR-094), after the row is written and never
 before it, unawaited so the dialog never stands between somebody and the chit they just wrote.
-`PlacePermission` asks and reports back; the composer owns what a grant is worth. **`_settle` runs
-the stale re-read and the ask in that order and never at once** — two captures in flight can land
-out of order, and the one without a place must not be the one that wins. **A grant re-reads and
-patches the chit just saved**, which is also what moves the open chit, the composer listening for
-the reading (ADR-081). It re-reads only when the reading it holds has no place in it, so an install
-that already had the permission does no extra work.
+`PlacePermission` asks and reports back; the composer owns what a grant is worth. **It holds two
+things, not one** (ADR-102): how far the permission got, and whether the phone's location switch is
+still worth offering this run. **`_settle` runs the stale re-read and the ask in that order and
+never at once** — two captures in flight can land out of order, and the one without a place must
+not be the one that wins. **Anything newly won re-reads and patches the chit just saved** — the
+permission or the switch — which is also what moves the open chit, the composer listening for the
+reading (ADR-081). It re-reads only when the reading it holds has no place in it, so an install
+that already had both does no extra work.
 
 **Nothing in `lib/` or `test/` carries a comment** (ADR-095). The reason a line is the way it is
 lives in a record, and the record names the file — so the citation runs doc → code, the direction

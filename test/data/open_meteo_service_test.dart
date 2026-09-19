@@ -195,6 +195,10 @@ final class _Location implements LocationService {
   @override
   Future<LocationPermissionOutcome> requestPermission() async =>
       LocationPermissionOutcome.granted;
+
+  @override
+  Future<LocationServiceOutcome> requestService() async =>
+      LocationServiceOutcome.alreadyOn;
 }
 
 final class _ThrowingLocation implements LocationService {
@@ -207,6 +211,10 @@ final class _ThrowingLocation implements LocationService {
   @override
   Future<LocationPermissionOutcome> requestPermission() async =>
       LocationPermissionOutcome.granted;
+
+  @override
+  Future<LocationServiceOutcome> requestService() async =>
+      LocationServiceOutcome.alreadyOn;
 }
 
 class _Ok extends http.BaseClient {

@@ -4,29 +4,58 @@ import 'location_service.dart';
 
 part 'place_permission.g.dart';
 
+enum PlaceAccess { unasked, granted, refused, refusedForever }
+
+typedef PlaceAsk = ({PlaceAccess access, bool service});
+
+extension PlaceAccessAsking on PlaceAccess {
+  bool get worthAsking =>
+      this == PlaceAccess.unasked || this == PlaceAccess.refused;
+}
+
 @Riverpod(keepAlive: true)
 class PlacePermission extends _$PlacePermission {
   @override
-  bool build() => true;
+  PlaceAsk build() => (access: PlaceAccess.unasked, service: true);
 
   Future<bool> ask() async {
-    if (!state) return false;
+    final LocationService location = ref.read(locationServiceProvider);
+    bool won = false;
 
-    final LocationPermissionOutcome outcome = await ref
-        .read(locationServiceProvider)
-        .requestPermission();
+    if (state.access.worthAsking) {
+      final LocationPermissionOutcome outcome = await location
+          .requestPermission();
+
+      if (!ref.mounted) return false;
+
+      won = outcome == LocationPermissionOutcome.granted;
+      state = (access: _accessOf(outcome), service: state.service);
+    }
+
+    if (state.access != PlaceAccess.granted || !state.service) return won;
+
+    final LocationServiceOutcome outcome = await location.requestService();
 
     if (!ref.mounted) return false;
 
-    state = switch (outcome) {
-      LocationPermissionOutcome.granted => false,
-      LocationPermissionOutcome.deniedForever => false,
+    return switch (outcome) {
+      LocationServiceOutcome.alreadyOn => won,
+      LocationServiceOutcome.turnedOn => true,
+      LocationServiceOutcome.notPermitted => won,
 
-      LocationPermissionOutcome.denied => true,
-
-      LocationPermissionOutcome.serviceDisabled => true,
+      LocationServiceOutcome.refused => _rest(won),
     };
-
-    return outcome == LocationPermissionOutcome.granted;
   }
+
+  bool _rest(bool won) {
+    state = (access: state.access, service: false);
+    return won;
+  }
+
+  static PlaceAccess _accessOf(LocationPermissionOutcome outcome) =>
+      switch (outcome) {
+        LocationPermissionOutcome.granted => PlaceAccess.granted,
+        LocationPermissionOutcome.denied => PlaceAccess.refused,
+        LocationPermissionOutcome.deniedForever => PlaceAccess.refusedForever,
+      };
 }
