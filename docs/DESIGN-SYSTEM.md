@@ -45,19 +45,11 @@ running 12.66:1 down to 5.99:1. Two weights, one system: the microphone and Save
 Save carrying the brighter one and a wash, and **the quiet button** drops its outline altogether —
 the sheet's Discard, *Show every day*, Remove, and the editor's Cancel.
 
-**Nothing answers a press** (ADR-069 to ADR-071): no press feedback, no hover states, no token for
-either. A control's answer is the thing it does, and a held row is answered by the phone's tick.
-**There is one disabled state, and it is the calendar's chevrons** (ADR-088): `--ink-disabled`, no
-focus ring, no tap, `enabled: false` to a screen reader. It sits **under** §6.4's 3:1 component
-floor on purpose — a disabled control that met the floor set for a live one would be claiming it
-works. Anything else that cannot act still follows §4.1 and is simply not drawn.
-**The rule those washes taught is still live** — `--ink-faint` fails the floor on *any* wash, 4.12:1
-at even 4% — so wherever a tinted surface appears, the text on it goes up with it. Any new tinted
-surface inherits that, and §6.4 makes no exception for a surface that is brief.
-
-**The launcher icon shares the ground and nothing else** — an opening quote on `--paper`, drawn as
-artwork rather than assembled from tokens (ADR-075), so that the icon and the first screen it opens
-are one colour.
+**The launcher icon is `--ink` on `--paper` and nothing else** — an opening quote, drawn as artwork
+rather than assembled from tokens (ADR-075), so that the icon and the first screen it opens are one
+colour. **The launch screen is that same drawing, held as a vector** (ADR-090): Android 12 draws the
+icon at 288dp, where the generated bitmap tops out at 432px and arrives soft. The ground under it is
+`--paper` at every API level, there being no light theme to flash.
 
 **The map behind find is four washes of `--ink` on `--paper`** (ADR-089): `map-line` 7% for the
 towns and rivers, `map-water` 10% for the coast and the lakes, `map-fill` 10% for the city being
@@ -210,11 +202,3 @@ there it explains why the list changed.
   the movement. **The caret is the one stated exception, and it is not ours** (ADR-068).
 - **Semantics** — heading levels never skip, and controls that do nothing are not marked up as
   controls.
-
-## 7. The prototype — retired
-
-`design/chit-app-v6.html` was the visual target through v1 and was deleted once the app was the
-better reference. **The number is not reused**, being cited elsewhere. One requirement outlived it
-and is still binding: **the tabs never disagree** — the thread, the timeline, the calendar
-density, the month total and find's rows are readings of one table, kept in step by being the same
-data rather than by being synchronised (ARCHITECTURE.md §3).

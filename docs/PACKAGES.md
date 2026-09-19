@@ -26,7 +26,9 @@ rewrites the Android mipmaps, the iOS appiconset and the web icons from the two 
 `assets/icon/` and the config block in `pubspec.yaml` (ADR-075); the output is committed, so a fresh
 clone builds without running it. **Read the `project.pbxproj` diff after every run** — 0.14.4 writes
 `AppIcon` into `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS`, which takes `YES` or
-`NO`; the setting it means is `ASSETCATALOG_COMPILER_APPICON_NAME`, already correct beside it.
+`NO`; the setting it means is `ASSETCATALOG_COMPILER_APPICON_NAME`, already correct beside it. **It
+does not touch the splash** — `drawable/ic_splash_glyph.xml` is written by hand from the same export
+(ADR-090), so a redrawn glyph needs the rerun *and* that file.
 
 `json_serializable` is not listed: the only JSON is one Open-Meteo response, decoded by hand in one
 file. `drift_flutter` pulls `sqlite3_flutter_libs 0.6.0+eol` transitively; the marker is upstream's,
@@ -83,25 +85,6 @@ and mixing two idioms for local widget state makes the codebase harder to read t
 **`permission_handler`** — `record` asks for the microphone and `geolocator` for location, each with
 the flow their plugin already handles; a third library would be a second source of truth for two
 permissions.
-
-**Any speech engine at all.** `speech_to_text` **was** here and came out with the feature (ADR-058);
-a cloud engine was refused before that on privacy grounds and still is. Reopening either is a
-product decision, not a package one.
-
-**`flutter_activity_recognition` / `sensors_plus`** — ADR-037 took neither. `sensors_plus` gives raw
-accelerometer and gyroscope, and **neither measures speed**: recovering it from acceleration needs a
-double integration whose error compounds uselessly within seconds. `flutter_activity_recognition`
-wraps the platform classifiers, which do work — at the price of a **second runtime permission** on
-both platforms, a Play Services dependency, a stream-only API with no one-shot query, and no flying
-class regardless. `geolocator` already returns the speed on a fix chit was taking anyway.
-
-**`custom_lint`** — not a dependency, and **cannot become one**. `riverpod_lint` 3.x is built on
-`analysis_server_plugin` and enabled through `plugins:`, and the two cannot coexist:
-`riverpod_generator` needs `analyzer >=13` while the newest `custom_lint` is pinned to `analyzer ^8`,
-so version solving fails outright with both present — discovered while resolving, not chosen. The
-gain is that `flutter analyze` surfaces the Riverpod lints directly, with **no separate lint step**.
-It cost one thing: ADR-012's ban on `DateTime.now()` had no host for a lint rule, so it is a test
-that walks `lib/` instead.
 
 ## Platform configuration this implies
 

@@ -133,11 +133,14 @@ fault was *under* the fake, the test stands a fake platform under the real plugi
 **Assets and configuration.** `assets/fonts/` holds the three faces of §6.2 as **variable** fonts
 with an `OFL.txt` beside each (ADR-015 — weight must go through `fontVariations`, `fontWeight` alone
 being silently ignored). `assets/icon/` holds the two icon exports the launcher set is generated
-from by hand — not bundled into the app, and PACKAGES.md says which command. [`analysis_options.yaml`](analysis_options.yaml) is CLAUDE.md §4.1 in the
+from by hand — not bundled into the app, and PACKAGES.md says which command; the splash glyph beside
+it in `android/app/src/main/res/drawable/` is a vector and is **not** generated, so a redrawn icon is
+three files (ADR-090). [`analysis_options.yaml`](analysis_options.yaml) is CLAUDE.md §4.1 in the
 form the machine can check, with `riverpod_lint` running inside `flutter analyze` through the
 `plugins:` key. `android/` carries `RECORD_AUDIO`, both location permissions and `INTERNET`,
-`minSdk 24` (`record_android`'s floor, the highest of any plugin), and `kotlin.incremental=false`,
-without which every plugin's Kotlin compile fails to close its caches on Windows.
+`minSdk 24` (`record_android`'s floor, the highest of any plugin), a `values-v31` launch theme for
+the system splash, and `kotlin.incremental=false`, without which every plugin's Kotlin compile fails
+to close its caches on Windows.
 `ios/Runner/Info.plist` holds the microphone and location usage strings — the only copy in the app
 the design never sees. Android and iOS only (ADR-019); `web/` is kept because responsive web is
 planned after v1.
