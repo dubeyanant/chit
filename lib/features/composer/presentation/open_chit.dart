@@ -8,11 +8,15 @@ import '../../../core/haptics.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../domain/services/audio_player.dart';
+import '../../../domain/services/photo_source.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/arrival.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/camera.dart';
 import '../../../shared/widgets/microphone.dart';
+import '../../../shared/widgets/photo_frame.dart';
+import '../../../shared/widgets/photo_sheet.dart';
 import '../../../shared/widgets/slip.dart';
 import '../application/composer_controller.dart';
 import '../application/recording_controller.dart';
@@ -22,6 +26,8 @@ class OpenChit extends ConsumerWidget {
   const OpenChit({super.key});
 
   static const Key microphone = Key('open-chit-microphone');
+
+  static const Key camera = Key('open-chit-camera');
 
   static const Key prompt = Key('open-chit-prompt');
 
@@ -52,10 +58,28 @@ class OpenChit extends ConsumerWidget {
               ),
             ),
           ],
+
+          if (state.hasPhoto) ...<Widget>[
+            SizedBox(height: space.s4),
+
+            Arrival(
+              from: Offset(0, space.s4),
+              child: PhotoFrame(
+                path: state.photoTempPath!,
+                onRemove: ref
+                    .read(composerControllerProvider.notifier)
+                    .removePhoto,
+              ),
+            ),
+          ],
           SizedBox(height: space.s4),
           const _Field(),
           SizedBox(height: space.s4),
-          _ActionRow(canSave: state.canSave, hasAudio: state.hasAudio),
+          _ActionRow(
+            canSave: state.canSave,
+            hasAudio: state.hasAudio,
+            hasPhoto: state.hasPhoto,
+          ),
           if (state.microphoneRefused) ...<Widget>[
             SizedBox(height: space.s2),
             const _MicrophoneNote(),
@@ -179,11 +203,17 @@ class _MicrophoneNote extends StatelessWidget {
 }
 
 class _ActionRow extends ConsumerWidget {
-  const _ActionRow({required this.canSave, required this.hasAudio});
+  const _ActionRow({
+    required this.canSave,
+    required this.hasAudio,
+    required this.hasPhoto,
+  });
 
   final bool canSave;
 
   final bool hasAudio;
+
+  final bool hasPhoto;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -200,6 +230,14 @@ class _ActionRow extends ConsumerWidget {
               : const _OpenChitMicrophone(),
         ),
         if (!hasAudio) SizedBox(width: context.space.s2),
+
+        AnimatedSwitcher(
+          duration: motion.fade(ChitPace.exit),
+          switchInCurve: motion.curve,
+          switchOutCurve: motion.curve,
+          child: hasPhoto ? const SizedBox.shrink() : const _OpenChitCamera(),
+        ),
+        if (!hasPhoto) SizedBox(width: context.space.s2),
         Expanded(
           child: AnimatedSwitcher(
             duration: motion.fade(ChitPace.routine),
@@ -232,6 +270,24 @@ class _CommitControls extends ConsumerWidget {
         ),
       ],
     );
+  }
+}
+
+class _OpenChitCamera extends ConsumerWidget {
+  const _OpenChitCamera();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) =>
+      Camera(key: OpenChit.camera, onPhoto: () => _photograph(context, ref));
+
+  Future<void> _photograph(BuildContext context, WidgetRef ref) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final PhotoOrigin? from = await showPhotoSheet(context);
+    if (from == null) return;
+
+    ChitHaptics.selected();
+    await ref.read(composerControllerProvider.notifier).keepPhoto(from);
   }
 }
 

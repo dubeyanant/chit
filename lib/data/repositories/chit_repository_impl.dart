@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
 import '../../core/clock.dart';
@@ -7,23 +8,26 @@ import '../../domain/models/audio_edit.dart';
 import '../../domain/models/chit.dart';
 import '../../domain/models/day_summary.dart';
 import '../../domain/models/motion_state.dart';
+import '../../domain/models/photo_edit.dart';
 import '../../domain/models/weather_condition.dart';
 import '../../domain/repositories/chit_repository.dart';
-import '../audio/audio_store.dart';
 import '../db/app_database.dart';
 import '../db/daos/chit_dao.dart';
+import '../files/file_store.dart';
 
 final class ChitRepositoryImpl implements ChitRepository {
   const ChitRepositoryImpl({
     required this._dao,
     required this._audio,
+    required this._photos,
     required this._clock,
   });
 
   static const Uuid _uuid = Uuid();
 
   final ChitDao _dao;
-  final AudioStore _audio;
+  final FileStore _audio;
+  final FileStore _photos;
   final Clock _clock;
 
   @override
@@ -32,6 +36,7 @@ final class ChitRepositoryImpl implements ChitRepository {
     String? text,
     String? audioTempPath,
     Duration? audioDuration,
+    String? photoTempPath,
   }) async {
     final String? words = switch (text?.trim()) {
       null || '' => null,
@@ -43,9 +48,10 @@ final class ChitRepositoryImpl implements ChitRepository {
         'a recording has a length; a length without a recording is nothing',
       );
     }
-    if (words == null && audioTempPath == null) {
+    if (words == null && audioTempPath == null && photoTempPath == null) {
       throw ArgumentError(
-        'a chit with neither text nor audio is not a chit — README §5',
+        'a chit with no words, no recording and no photo is not a chit '
+        '— README §5',
       );
     }
 
@@ -54,6 +60,10 @@ final class ChitRepositoryImpl implements ChitRepository {
     final String? audioPath = audioTempPath == null
         ? null
         : await _audio.keep(tempPath: audioTempPath, chitId: id);
+
+    final String? photoPath = photoTempPath == null
+        ? null
+        : await _photos.keep(tempPath: photoTempPath, chitId: id);
 
     final Chit chit = Chit(
       id: id,
@@ -64,6 +74,7 @@ final class ChitRepositoryImpl implements ChitRepository {
       text: words,
       audioPath: audioPath,
       audioDuration: audioDuration,
+      photoPath: photoPath,
       weather: stamp.weather,
       lat: stamp.lat,
       lon: stamp.lon,
@@ -79,6 +90,7 @@ final class ChitRepositoryImpl implements ChitRepository {
         body: Value<String?>(chit.text),
         audioPath: Value<String?>(chit.audioPath),
         audioMs: Value<int?>(chit.audioDuration?.inMilliseconds),
+        photoPath: Value<String?>(chit.photoPath),
         weather: Value<WeatherCondition?>(chit.weather),
         lat: Value<double?>(chit.lat),
         lon: Value<double?>(chit.lon),
@@ -94,6 +106,7 @@ final class ChitRepositoryImpl implements ChitRepository {
     required String id,
     required String? text,
     AudioEdit audio = const AudioEdit.keep(),
+    PhotoEdit photo = const PhotoEdit.keep(),
   }) async {
     final Chit? existing = await byId(id);
     if (existing == null) {
@@ -110,9 +123,15 @@ final class ChitRepositoryImpl implements ChitRepository {
       RemoveAudio() => false,
       ReplaceAudio() => true,
     };
-    if (words == null && !willHaveAudio) {
+    final bool willHavePhoto = switch (photo) {
+      KeepPhoto() => existing.hasPhoto,
+      RemovePhoto() => false,
+      ReplacePhoto() => true,
+    };
+    if (words == null && !willHaveAudio && !willHavePhoto) {
       throw ArgumentError(
-        'a chit with neither text nor audio is not a chit — README §5',
+        'a chit with no words, no recording and no photo is not a chit '
+        '— README §5',
       );
     }
 
@@ -128,16 +147,28 @@ final class ChitRepositoryImpl implements ChitRepository {
       ),
     };
 
+    final Value<String?> photoPath = switch (photo) {
+      KeepPhoto() => const Value<String?>.absent(),
+      RemovePhoto() => const Value<String?>(null),
+      ReplacePhoto(:final String tempPath) => Value<String?>(
+        await _photos.keep(tempPath: tempPath, chitId: id),
+      ),
+    };
+
     await _dao.updateChitOf(
       id: id,
       text: words,
       audioPath: audioPath,
       audioMs: audioMs,
+      photoPath: photoPath,
       updatedAt: _clock.now(),
     );
 
     if (audio is RemoveAudio && existing.audioPath != null) {
       await _audio.delete(existing.audioPath!);
+    }
+    if (photo is RemovePhoto && existing.photoPath != null) {
+      await _photos.delete(existing.photoPath!);
     }
   }
 
@@ -149,6 +180,9 @@ final class ChitRepositoryImpl implements ChitRepository {
     await _dao.deleteRow(id);
     if (existing.audioPath != null) {
       await _audio.delete(existing.audioPath!);
+    }
+    if (existing.photoPath != null) {
+      await _photos.delete(existing.photoPath!);
     }
   }
 
@@ -208,7 +242,17 @@ final class ChitRepositoryImpl implements ChitRepository {
   Future<void> discardTemp(String tempPath) => _audio.discardTemp(tempPath);
 
   @override
+  Future<String> photoFileOf(String storedPath) async =>
+      p.isAbsolute(storedPath)
+      ? storedPath
+      : (await _photos.resolve(storedPath)).path;
+
+  @override
   Future<void> reconcileAudio() async => _audio.sweep(await _dao.audioPaths());
+
+  @override
+  Future<void> reconcilePhotos() async =>
+      _photos.sweep(await _dao.photoPaths());
 
   List<Chit> _chitsOf(List<ChitRow> rows) => <Chit>[
     for (final ChitRow row in rows) _chitOf(row),
@@ -224,6 +268,7 @@ final class ChitRepositoryImpl implements ChitRepository {
     audioDuration: row.audioMs == null
         ? null
         : Duration(milliseconds: row.audioMs!),
+    photoPath: row.photoPath,
     weather: row.weather,
     lat: row.lat,
     lon: row.lon,

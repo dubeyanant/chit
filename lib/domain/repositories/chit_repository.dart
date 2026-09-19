@@ -5,6 +5,7 @@ import '../models/audio_edit.dart';
 import '../models/chit.dart';
 import '../models/day_summary.dart';
 import '../models/motion_state.dart';
+import '../models/photo_edit.dart';
 import '../models/weather_condition.dart';
 
 part 'chit_repository.g.dart';
@@ -15,12 +16,14 @@ abstract interface class ChitRepository {
     String? text,
     String? audioTempPath,
     Duration? audioDuration,
+    String? photoTempPath,
   });
 
   Future<void> update({
     required String id,
     required String? text,
     AudioEdit audio = const AudioEdit.keep(),
+    PhotoEdit photo = const PhotoEdit.keep(),
   });
 
   Future<void> delete(String id);
@@ -54,7 +57,11 @@ abstract interface class ChitRepository {
 
   Future<void> discardTemp(String tempPath);
 
+  Future<String> photoFileOf(String storedPath);
+
   Future<void> reconcileAudio();
+
+  Future<void> reconcilePhotos();
 }
 
 @Riverpod(keepAlive: true)

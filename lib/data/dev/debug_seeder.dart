@@ -9,9 +9,9 @@ import '../../core/clock.dart';
 import '../../domain/models/chit.dart';
 import '../../domain/models/motion_state.dart';
 import '../../domain/models/weather_condition.dart';
-import '../audio/audio_store.dart';
 import '../db/app_database.dart';
 import '../db/daos/chit_dao.dart';
+import '../files/file_store.dart';
 
 typedef SeedOutcome = ({int rows, int recordings});
 
@@ -42,7 +42,7 @@ final class DebugSeeder {
   static int get count => _fixture.length;
 
   final ChitDao _dao;
-  final AudioStore _audio;
+  final FileStore _audio;
   final Clock _clock;
   final Future<Directory> _temp;
 

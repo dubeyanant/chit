@@ -8,12 +8,17 @@ import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/audio_edit.dart';
 import '../../../domain/models/chit.dart';
 import '../../../domain/models/editor_state.dart';
+import '../../../domain/models/photo_edit.dart';
+import '../../../domain/services/photo_source.dart';
 import '../../../shared/widgets/ambient_stamp_row.dart';
 import '../../../shared/widgets/arrival.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
+import '../../../shared/widgets/camera.dart';
 import '../../../shared/widgets/focus_ring.dart';
 import '../../../shared/widgets/microphone.dart';
+import '../../../shared/widgets/photo_frame.dart';
+import '../../../shared/widgets/photo_sheet.dart';
 import '../../../shared/widgets/prompt_sheet.dart';
 import '../../../shared/widgets/slip.dart';
 import '../../composer/application/recording_controller.dart';
@@ -98,6 +103,7 @@ class _Editor extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final space = context.space;
     final Chit chit = state.chit;
+    final bool typing = MediaQuery.viewInsetsOf(context).bottom > 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -118,29 +124,53 @@ class _Editor extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  AmbientStampRow.saved(
-                    stamp: chit.stamp,
-                    edited: chit.wasEdited,
-                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          AmbientStampRow.saved(
+                            stamp: chit.stamp,
+                            edited: chit.wasEdited,
+                          ),
 
-                  if (state.hasAudio) ...<Widget>[
-                    SizedBox(height: space.s4),
+                          if (state.hasAudio) ...<Widget>[
+                            SizedBox(height: space.s4),
 
-                    Arrival(
-                      from: Offset(0, space.s4),
-                      play: state.audio is ReplaceAudio,
-                      child: AudioPill(
-                        id: chit.id,
-                        path: state.audioPath!,
-                        duration: state.audioDuration ?? Duration.zero,
-                        onRemove: ref
-                            .read(editorControllerProvider(id).notifier)
-                            .removeAudio,
+                            Arrival(
+                              from: Offset(0, space.s4),
+                              play: state.audio is ReplaceAudio,
+                              child: AudioPill(
+                                id: chit.id,
+                                path: state.audioPath!,
+                                duration: state.audioDuration ?? Duration.zero,
+                                onRemove: ref
+                                    .read(editorControllerProvider(id).notifier)
+                                    .removeAudio,
+                              ),
+                            ),
+                          ],
+
+                          if (state.hasPhoto) ...<Widget>[
+                            SizedBox(height: space.s4),
+
+                            Arrival(
+                              from: Offset(0, space.s4),
+                              play: state.photo is ReplacePhoto,
+                              child: PhotoFrame(
+                                path: state.photoPath!,
+                                onRemove: ref
+                                    .read(editorControllerProvider(id).notifier)
+                                    .removePhoto,
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: space.s4),
+                          _Field(id: id),
+                        ],
                       ),
                     ),
-                  ],
-                  SizedBox(height: space.s4),
-                  Expanded(child: _Field(id: id)),
+                  ),
                   SizedBox(height: space.s4),
                   _ActionRow(id: id, state: state),
                   if (state.microphoneRefused) ...<Widget>[
@@ -153,13 +183,14 @@ class _Editor extends ConsumerWidget {
           ),
         ),
 
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: space.gutter,
-            vertical: space.s4,
+        if (!typing)
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: space.gutter,
+              vertical: space.s4,
+            ),
+            child: Center(child: _DeleteControl(id: id)),
           ),
-          child: Center(child: _DeleteControl(id: id)),
-        ),
       ],
     );
   }
@@ -175,6 +206,8 @@ class _Field extends ConsumerStatefulWidget {
 }
 
 class _FieldState extends ConsumerState<_Field> {
+  static const double floor = 120;
+
   late final TextEditingController _text = TextEditingController(
     text: ref.read(editorControllerProvider(widget.id)).value?.text ?? '',
   );
@@ -191,23 +224,26 @@ class _FieldState extends ConsumerState<_Field> {
 
     return Semantics(
       label: 'The chit',
-      child: TextField(
-        controller: _text,
-        onChanged: ref.read(editorControllerProvider(widget.id).notifier).edit,
-        style: context.type.composerBody,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: _FieldState.floor),
+        child: TextField(
+          controller: _text,
+          onChanged: ref
+              .read(editorControllerProvider(widget.id).notifier)
+              .edit,
+          style: context.type.composerBody,
 
-        cursorColor: colors.seal,
-        cursorWidth: 1.5,
+          cursorColor: colors.seal,
+          cursorWidth: 1.5,
 
-        expands: true,
-        maxLines: null,
-        minLines: null,
-        textAlignVertical: TextAlignVertical.top,
-        keyboardType: TextInputType.multiline,
-        textCapitalization: TextCapitalization.sentences,
-        onTapOutside: (PointerDownEvent _) =>
-            FocusManager.instance.primaryFocus?.unfocus(),
-        decoration: const InputDecoration.collapsed(hintText: null),
+          maxLines: null,
+          textAlignVertical: TextAlignVertical.top,
+          keyboardType: TextInputType.multiline,
+          textCapitalization: TextCapitalization.sentences,
+          onTapOutside: (PointerDownEvent _) =>
+              FocusManager.instance.primaryFocus?.unfocus(),
+          decoration: const InputDecoration.collapsed(hintText: null),
+        ),
       ),
     );
   }
@@ -235,6 +271,16 @@ class _ActionRow extends ConsumerWidget {
               : _EditorMicrophone(id: id),
         ),
         if (!state.hasAudio) SizedBox(width: space.s2),
+
+        AnimatedSwitcher(
+          duration: motion.fade(ChitPace.exit),
+          switchInCurve: motion.curve,
+          switchOutCurve: motion.curve,
+          child: state.hasPhoto
+              ? const SizedBox.shrink()
+              : _EditorCamera(id: id),
+        ),
+        if (!state.hasPhoto) SizedBox(width: space.s2),
         QuietButton(
           label: 'Cancel',
           onPressed: () => leaveEditor(context, ref, id, ask: false),
@@ -268,6 +314,26 @@ class _ActionRow extends ConsumerWidget {
         ),
       ],
     );
+  }
+}
+
+class _EditorCamera extends ConsumerWidget {
+  const _EditorCamera({required this.id});
+
+  final String id;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) =>
+      Camera(onPhoto: () => _photograph(context, ref));
+
+  Future<void> _photograph(BuildContext context, WidgetRef ref) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final PhotoOrigin? from = await showPhotoSheet(context);
+    if (from == null) return;
+
+    ChitHaptics.selected();
+    await ref.read(editorControllerProvider(id).notifier).replacePhoto(from);
   }
 }
 
@@ -325,6 +391,7 @@ class _DeleteControl extends ConsumerWidget {
       question: 'Delete this chit?',
       keep: 'Keep it',
       letGo: 'Delete',
+      roomForLetGo: true,
     );
     if (!delete) return;
 

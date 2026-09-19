@@ -35,7 +35,10 @@ final class PrimaryButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(space.radius),
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: space.s4),
+              padding: EdgeInsets.symmetric(
+                vertical: space.s4,
+                horizontal: space.s4,
+              ),
               child: Text(
                 label,
                 textAlign: TextAlign.center,
@@ -50,11 +53,18 @@ final class PrimaryButton extends StatelessWidget {
 }
 
 final class QuietButton extends StatelessWidget {
-  const QuietButton({required this.label, required this.onPressed, super.key});
+  const QuietButton({
+    required this.label,
+    required this.onPressed,
+    this.wide = false,
+    super.key,
+  });
 
   final String label;
 
   final VoidCallback onPressed;
+
+  final bool wide;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +81,7 @@ final class QuietButton extends StatelessWidget {
             padding: EdgeInsets.all(space.s4),
             child: Text(
               label,
-
+              textAlign: wide ? TextAlign.center : TextAlign.start,
               style: context.type.button.copyWith(color: colors.inkFaint),
             ),
           ),

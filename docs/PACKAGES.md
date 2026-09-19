@@ -7,7 +7,9 @@ without a line here.** Versions are those resolved in `pubspec.lock`.
 `drift_flutter` the local database, opened with no async bootstrap (ADR-003) · `go_router` the tab
 shell (ADR-011) · `freezed_annotation` immutable models with a private constructor that can assert
 its invariant · `record` recording to a temp file, and the microphone permission ask (ADR-052) ·
-`just_audio` playback · `geolocator` the fix and the location permission flow, whose **last known**
+`just_audio` playback · `image_picker` the camera and the photo library, and the permission ask for
+each — **one photo per chit** (ADR-106), downscaled to 2048px and re-encoded at 85 so a slip carries
+a photograph and not a raw sensor dump · `geolocator` the fix and the location permission flow, whose **last known**
 fix is what the weather call uses so the two signals stay parallel (ADR-025), and whose `Position`
 carries `speed`, `speedAccuracy` and `altitude` — **the whole of motion capture** (ADR-037), which
 is why chit needs no motion-sensor package and no second permission · `http` one call, to Open-Meteo
@@ -89,12 +91,16 @@ permissions.
 
 **Android** — `RECORD_AUDIO`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (precise first,
 coarse as the fallback — ADR-016), `INTERNET`; `minSdk = 24`, `record_android`'s floor and the
-highest of any plugin here. **iOS** — `NSMicrophoneUsageDescription` and
-`NSLocationWhenInUseUsageDescription`, written in Chitta's own voice and the only copy in the app the
-design never sees; `IPHONEOS_DEPLOYMENT_TARGET` is 15.0, above every plugin's floor. Both location
+highest of any plugin here. **`image_picker` needs no Android permission of its own** — the camera
+is reached by intent and the system photo picker reads nothing else, so declaring `CAMERA` would
+make a permission required that the app does not otherwise need. **iOS** —
+`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` and
+`NSLocationWhenInUseUsageDescription`, written in Chitta's own voice and the only copy in the app
+the design never sees; `IPHONEOS_DEPLOYMENT_TARGET` is 15.0, above every plugin's floor. Both location
 strings should say what §3.6 says the app does: it records that a place was there, and never shows
 which one. The microphone string says the thing that is unusual, true and most likely to earn the
-permission — that the recording stays on the phone.
+permission — that the recording stays on the phone, and the two photo strings say the same of a
+photo.
 
 ## Shipping a release
 

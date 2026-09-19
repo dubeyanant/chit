@@ -24,10 +24,14 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<!-- README 3.4 / 3.6. These three strings are the only copy in the app the
+	<!-- README 3.4 / 3.6. These strings are the only copy in the app the
 	     design never sees, so they are written in Chitta's own voice. -->
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Chitta records a chit when you tap the microphone. The recording is kept on this phone and stays attached to what you wrote.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Chitta takes one photo for a chit when you tap the camera. The photo is kept on this phone and stays attached to what you wrote.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Chitta can attach a photo you already have to a chit. It reads only the one you choose, and the copy it keeps never leaves this phone.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Chitta notes that you were somewhere when you wrote, so a chit carries where it came from. It never shows the place by name.</string>
 	<key>LSRequiresIPhoneOS</key>

@@ -10,6 +10,7 @@ import '../../../domain/repositories/chit_repository.dart';
 import '../../../domain/services/ambient_signals.dart';
 import '../../../domain/services/audio_player.dart';
 import '../../../domain/services/audio_recorder.dart';
+import '../../../domain/services/photo_source.dart';
 import '../../../domain/services/place_permission.dart';
 import 'recording_sink.dart';
 
@@ -91,6 +92,7 @@ class ComposerController extends _$ComposerController implements RecordingSink {
           text: chit.text,
           audioTempPath: chit.audioTempPath,
           audioDuration: chit.audioDuration,
+          photoTempPath: chit.photoTempPath,
         );
 
     unawaited(_settle(saved.id, stale: !fresh));
@@ -186,5 +188,29 @@ class ComposerController extends _$ComposerController implements RecordingSink {
 
     await ref.read(audioPlayerProvider).stopIf(Playback.openChit);
     await ref.read(chitRepositoryProvider).discardTemp(take);
+  }
+
+  Future<void> keepPhoto(PhotoOrigin from) async {
+    final String? shot = await ref.read(photoSourceProvider).take(from);
+    if (shot == null || !ref.mounted) return;
+
+    final String? replaced = state.photoTempPath;
+
+    _cancelPrompt();
+    state = state.copyWith(photoTempPath: shot, showPrompt: false);
+
+    if (replaced != null) {
+      await ref.read(chitRepositoryProvider).discardTemp(replaced);
+    }
+  }
+
+  Future<void> removePhoto() async {
+    final String? shot = state.photoTempPath;
+    if (shot == null) return;
+
+    state = state.copyWith(photoTempPath: null);
+    if (!state.canSave) _armPrompt();
+
+    await ref.read(chitRepositoryProvider).discardTemp(shot);
   }
 }

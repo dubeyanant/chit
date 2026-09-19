@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:chitta/core/clock.dart';
-import 'package:chitta/data/audio/audio_store.dart';
 import 'package:chitta/data/db/app_database.dart';
+import 'package:chitta/data/files/file_store.dart';
 import 'package:chitta/data/repositories/chit_repository_impl.dart';
 import 'package:chitta/domain/models/ambient_stamp.dart';
 import 'package:chitta/domain/models/chit.dart';
@@ -32,7 +32,16 @@ void main() {
     clock = FakeClock(afternoon);
     repo = ChitRepositoryImpl(
       dao: db.chitDao,
-      audio: AudioStore(Future<Directory>.value(root)),
+      audio: FileStore(
+        Future<Directory>.value(root),
+        folder: 'audio',
+        extension: '.m4a',
+      ),
+      photos: FileStore(
+        Future<Directory>.value(root),
+        folder: 'photos',
+        extension: '.jpg',
+      ),
       clock: clock,
     );
 

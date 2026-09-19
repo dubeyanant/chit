@@ -10,24 +10,29 @@ where another document disagrees, that document is wrong.
 record on **Save**, and opening it six times leaves nothing behind. **A chit is stamped when it is
 saved** (ADR-040), so it is always filed on the day it was written; **the open chit shows no time at
 all** (ADR-080), a clock drawn before the stamp exists being a preview of a number it cannot
-promise. **There is no Discard** (ADR-060) — the words are cleared by
-selecting them, the recording by **Remove** on the pill. **Saving never waits**: the row is written
-at once with what is in hand, and a reading older than **one minute** is refreshed behind the save
-and the chit corrected a moment later; inside the minute nothing is asked, a burst of chits in one
-sitting being one moment (ADR-042, ADR-045).
+promise. **There is no Discard** (ADR-060) — the words are cleared by selecting them, the recording
+by **Remove** on the pill, and the photo by **Remove** beside its frame. **Saving never waits**: the
+row is written at once with what is in hand, and a reading older than **one minute** is refreshed
+behind the save and the chit corrected a moment later; inside the minute nothing is asked, a burst
+of chits in one sitting being one moment (ADR-042, ADR-045).
 
-**3.2 One surface, two ways in.** The field is live the moment the chit opens, with a **microphone**
-beside it as an equal; there is no mode, and a chit may end up typed, recorded, or both. **Tapping
-the page gives the field focus; tapping away takes it back** — the keyboard comes up on first touch,
-never on launch (ADR-023). The microphone stays an equal by being reachable and never a step:
-available on an empty or half-written chit, its target unchanged by text appearing, and using it
-never discards what is in the field. **A chit holds one recording**, so once kept the microphone
-retires and the text stays editable; **a kept take is dropped by Remove**, and the microphone comes
-back when it goes, so recording again is the way to a different take. Remove does not touch the
-words. **A refused microphone raises nothing and explains once**: the sheet does not open, the
-microphone stays tappable, and the line *"The microphone isn't allowed. You can turn it on in your
-phone's settings."* appears under the action row — naming the phone's settings because ADR-094
-spends the app's one permission dialog on location.
+**3.2 One surface, three ways in.** The field is live the moment the chit opens, with a
+**microphone** and a **camera** beside it as equals; there is no mode, and a chit may end up typed,
+recorded, photographed, or any of those together (ADR-106). **Tapping the page gives the field
+focus; tapping away takes it back** — the keyboard comes up on first touch, never on launch
+(ADR-023). The microphone stays an equal by being reachable and never a step: available on an
+empty or half-written chit, its target unchanged by text appearing, and using it never discards
+what is in the field. **A chit holds one recording**, so once kept the microphone retires and the
+text stays editable; **a kept take is dropped by Remove**, and the microphone comes back when it
+goes, so recording again is the way to a different take. Remove does not touch the words.
+**A chit holds one photo**, and the camera behaves exactly as the microphone does: it retires
+once a photo is kept, comes back when **Remove** takes it, and tapping it asks the phone for a new
+one — take it now or choose one already there. A photo never touches the words either.
+
+**A refused microphone raises nothing and explains once**: the sheet does not open, the microphone
+stays tappable, and the line *"The microphone isn't allowed. You can turn it on in your phone's
+settings."* appears under the action row — naming the phone's settings because ADR-094 spends the
+app's one permission dialog on location.
 
 **3.3 The prompt waits five seconds.** If nothing is written after **5 seconds** a prompt fades in
 over ~700ms; typing dismisses it and cancels the timer, and clearing the field restarts it. Shown
@@ -48,6 +53,13 @@ a chit says in words was typed by a person.
 **A kept recording is played from its pill**, whose bars are the playhead: they fill as it sounds,
 **against the length the player decoded rather than the one the row stores** (ADR-103), and a take
 that reaches its end rests with every bar lit until it is tapped again, when it starts over.
+
+**3.4.1 The photo.** Tapping the camera raises a sheet with two ways to one photo — **Take one**
+opens the phone's camera, **Choose one** its library — and both hand back a single image that is
+copied beside the chit and never read again from where it came (ADR-106). It is drawn as a frame
+under the stamp: full width, a fixed height, cropped to fill rather than letterboxed. **A refused
+camera or library does nothing at all** — no photo is staged and nothing is said, the OS having
+already said it.
 
 **3.5 — retired.** *When transcription fails, the voice survives alone.* Gone with transcription
 itself (ADR-058). **The number is not reused** — it is cited from other documents and from git.
@@ -178,7 +190,8 @@ middle gives one small haptic (ADR-034), so the strip is silent when it moves it
 **nothing is drawn under the finger** (ADR-071) — what says the hold landed is the phone's own tick,
 one of the three the app speaks in (§6, ADR-096).
 No chevron: the row *is* the target. A tap does nothing, the thread being a reading surface whose
-one tap is the pill's; there is no swipe, deleting living in the editor and not a thumb's width from
+one tap is the pill's — **a photo in the thread is looked at and not tapped** (ADR-106), the frame
+being a mark on the slip and not a control; there is no swipe, deleting living in the editor and not a thumb's width from
 a scroll. Before anything is written it reads *"Nothing written yet today."*, with no count, no rail
 and no placeholder row.
 
@@ -222,9 +235,12 @@ before or after it. **The number is not reused** — it is cited from other docu
 **4.5 The chit editor.** Reached by holding any chit in the thread, and **it covers the tab bar**
 (ADR-062): one task, one way out. The header is a back arrow on the page gutter and the word
 *Editing* — not the day, the slip's stamp carrying the time, and not the wordmark, this being
-somewhere you came into. **The slip fills the screen** (ADR-066): the saved stamp, the pill with
-**Remove** beside it, then the field taking every line left and scrolling inside itself, then
-**Cancel** and **Save**, with *Delete this chit* pinned below the slip and always on screen.
+somewhere you came into. **The slip fills the screen** (ADR-066): the saved stamp, the pill and the
+photo frame with **Remove** beside each, then the field, then **Cancel** and **Save**, with
+*Delete this chit* below the slip. **The slip scrolls its own contents** (ADR-108) — the stamp, the
+pill, the frame and the field move together while the action row stays at the foot, so a chit
+carrying both a recording and a photo can still be written in with the keyboard up, and the caret is
+carried into view as it moves. **The field grows from a floor** rather than taking whatever is left.
 
 **Nothing on this screen can move the stamp** — not the time, the day, the weather, the place or the
 motion. An edit changes what the chit says, never when or where it was written, and **a chit whose
@@ -234,7 +250,7 @@ word `edited` (§3.6.1), which appears on the slip the moment Save returns.
 **Save appears once something has changed** — *changed* meaning *differs from what was loaded*, so a
 character typed and deleted, or a trailing space the save would trim, is not a change; it is
 withheld again if what it would write is no longer a chit. Saving writes the words and whatever was
-done to the recording in one write (ADR-063), moves `updatedAt`, and returns. **Cancel is always
+done to the recording and the photo in one write (ADR-063), moves `updatedAt`, and returns. **Cancel is always
 there, and it leaves at once** (ADR-066) — a press on a button that says Cancel is the decision —
 while **the back arrow and the system back gesture ask** when something has changed, a swipe not
 being a decision. Either way the row is exactly as it was, an edit living nowhere but this screen
@@ -244,17 +260,23 @@ until Save.
 below, a question, two answers in the two button weights — **the quiet one always lets go, the
 bright one always keeps**, and dragging, tapping the scrim or pressing back keeps. Three acts, three
 words: *Discard* throws away something in flight, *Cancel* abandons an edit, *Delete this chit*
-destroys a record.
+destroys a record. **Which answer gets the wide slot is not that rule** (ADR-105): everywhere but
+one, the bright *keep* is the wide one; on *Delete this chit* the quiet *Delete* is, with Keep it
+small to its left.
 
-**Every change to the recording is staged until Save** (ADR-063, ADR-065): Remove stages a removal,
-the pill goes and the microphone comes back; a take kept from the sheet is staged as a replacement
-and plays from where it sits until Save moves it in. A removal that leaves the chit with nothing
-withholds Save, leaving Cancel and *Delete this chit* — the honest pair.
+**Every change to the recording or the photo is staged until Save** (ADR-063, ADR-065, ADR-106):
+Remove stages a removal, the pill or the frame goes and its control comes back; a take kept from the
+sheet or a photo taken from the camera is staged as a replacement and is played or drawn from where
+it sits until Save moves it in. A removal that leaves the chit with nothing withholds Save, leaving
+Cancel and *Delete this chit* — the honest pair.
 
-**Delete this chit** is quiet and apart from the action row: the one destructive act is always on
-screen, and a step of the scale away from Save rather than an inch from it. It is named in full so
-it cannot be read as Discard. It asks, and **there is no undo** (ADR-064) — there is no trash and no
-backend, and the prompt is the whole of the protection.
+**Delete this chit** is quiet and apart from the action row, a step of the scale away from Save
+rather than an inch from it. It is named in full so it cannot be read as Discard. It asks, and
+**there is no undo** (ADR-064) — there is no trash and no backend, and the prompt is the whole of
+the protection. **It is not drawn while the keyboard is up** (ADR-108): the step that keeps it
+apart from Cancel closes when the slip is squeezed, and two quiet buttons touching read as one
+control. It comes back with the keyboard, and a chit is never destroyed from a screen somebody is
+writing on.
 
 **4.6 Find.** The third tab, and the way back to a chit you cannot date. **Three screens deep, and
 each one is a route** (ADR-084), so the system back walks up a level rather than out of the tab.

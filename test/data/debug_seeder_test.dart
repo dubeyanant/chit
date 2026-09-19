@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:chitta/data/audio/audio_store.dart';
 import 'package:chitta/data/db/app_database.dart';
 import 'package:chitta/data/dev/debug_seeder.dart';
+import 'package:chitta/data/files/file_store.dart';
 import 'package:chitta/data/repositories/chit_repository_impl.dart';
 import 'package:chitta/domain/models/ambient_stamp.dart';
 import 'package:chitta/domain/models/chit.dart';
@@ -21,7 +21,7 @@ void main() {
   late Directory documents;
   late AppDatabase db;
   late FakeClock clock;
-  late AudioStore audio;
+  late FileStore audio;
   late DebugSeeder seeder;
   late ChitRepository repo;
 
@@ -32,14 +32,27 @@ void main() {
     documents = await Directory(p.join(root.path, 'documents')).create();
     db = AppDatabase(NativeDatabase.memory());
     clock = FakeClock(afternoon);
-    audio = AudioStore(Future<Directory>.value(documents));
+    audio = FileStore(
+      Future<Directory>.value(documents),
+      folder: 'audio',
+      extension: '.m4a',
+    );
     seeder = DebugSeeder(
       dao: db.chitDao,
       audio: audio,
       clock: clock,
       temp: Directory(p.join(root.path, 'cache')).create(),
     );
-    repo = ChitRepositoryImpl(dao: db.chitDao, audio: audio, clock: clock);
+    repo = ChitRepositoryImpl(
+      dao: db.chitDao,
+      audio: audio,
+      photos: FileStore(
+        Future<Directory>.value(documents),
+        folder: 'photos',
+        extension: '.jpg',
+      ),
+      clock: clock,
+    );
   });
 
   tearDown(() async {
@@ -62,7 +75,7 @@ void main() {
   };
 
   Future<List<File>> recordings() async {
-    final Directory dir = Directory(p.join(documents.path, AudioStore.folder));
+    final Directory dir = Directory(p.join(documents.path, audio.folder));
     if (!dir.existsSync()) return <File>[];
     return dir.listSync().whereType<File>().toList();
   }

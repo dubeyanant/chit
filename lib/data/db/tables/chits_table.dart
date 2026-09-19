@@ -18,6 +18,8 @@ class Chits extends Table {
 
   IntColumn get audioMs => integer().nullable()();
 
+  TextColumn get photoPath => text().nullable()();
+
   TextColumn get weather => textEnum<WeatherCondition>().nullable()();
 
   RealColumn get lat => real().nullable()();
@@ -33,7 +35,7 @@ class Chits extends Table {
 
   @override
   List<String> get customConstraints => <String>[
-    'CHECK (body IS NOT NULL OR audio_path IS NOT NULL)',
+    'CHECK (COALESCE(body, audio_path, photo_path) IS NOT NULL)',
     'CHECK (body IS NULL OR length(trim(body)) > 0)',
     'CHECK ((audio_path IS NULL) = (audio_ms IS NULL))',
     'CHECK ((lat IS NULL) = (lon IS NULL))',

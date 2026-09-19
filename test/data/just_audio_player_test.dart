@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:chitta/data/audio/audio_store.dart';
 import 'package:chitta/data/audio/just_audio_player.dart';
+import 'package:chitta/data/files/file_store.dart';
 import 'package:chitta/domain/services/audio_player.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,7 +32,13 @@ void main() {
     for (final String name in <String>['a.m4a', 'b.m4a']) {
       File('${takes.path}/$name').writeAsBytesSync(<int>[0, 1, 2, 3]);
     }
-    player = JustAudioPlayer(AudioStore(Future<Directory>.value(takes)));
+    player = JustAudioPlayer(
+      FileStore(
+        Future<Directory>.value(takes),
+        folder: 'audio',
+        extension: '.m4a',
+      ),
+    );
     seen = <Playback>[];
     watching = player.playback.listen(seen.add);
   });

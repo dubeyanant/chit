@@ -13,14 +13,15 @@ these documents and the `Chit` classes keep the short name.
 This file holds what chit is (§1–§2), what a chit is (§5), and the map (§10). Read
 [`CLAUDE.md`](CLAUDE.md) first for how to work here, then
 [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) — what is open, what comes after v1, and the
-numbered items a session must know. **v1 is finished** (ADR-073), so there is no next task waiting.
+numbered items a session must know. **v1 shipped** (ADR-073); **v1.1 is in progress**.
 
-> **Status: v1 is done.** A chit can be typed or spoken, carries the time, the weather and what the
-> phone was doing, and is read back on Today, on a scrolling timeline and in past, a grid of the
-> months written. **Voice is recording and playback: there is no transcription** (ADR-058). A saved
-> chit is opened by holding it, and its words, its recording and the chit itself can be changed or
-> destroyed. **Migrations are live** (ADR-099) and **nothing is backed up off the phone** (ADR-100),
-> so a lost phone is lost chits until there is an export format.
+> **Status: v1.1 is being built.** A chit can be typed, spoken or photographed, carries the time,
+> the weather and what the phone was doing, and is read back on Today, on a scrolling timeline and
+> in past, a grid of the months written. **Voice is recording and playback: there is no
+> transcription** (ADR-058), and **a chit carries at most one photo** (ADR-106). A saved chit is
+> opened by holding it, and its words, its recording, its photo and the chit itself can be changed
+> or destroyed. **Nothing is backed up off the phone** (ADR-100), so a lost phone is lost chits
+> until there is an export format.
 
 **Section numbers are global and stable.** §1 to §10 are numbered once across four files, and a
 section keeps its number wherever it lives, so §6.1 resolves the same way from anywhere. Roughly two
@@ -48,13 +49,14 @@ you get on with your life. Everything follows from that:
 | People write in bursts, not sessions | A chit is short. The composer is always open on the home screen |
 | A day holds many chits | The home screen is a thread of today |
 | Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready, on a fresh install as on any other. **Nothing is asked for until there is something to ask about**: the place, once, after the first chit is saved (ADR-094) |
-| Speaking is often faster than typing | One surface: a live field, a microphone beside it. A chit holds words, a recording, or both |
-| The moment matters as much as the words | Time, weather, motion and location are recorded with every chit |
+| Speaking is often faster than typing | One surface: a live field, a microphone and a camera beside it. A chit holds words, a recording, one photo, or any of them together |
+| The moment matters as much as the words | Time, weather, motion and location are recorded with every chit, and a photo can be kept beside them (ADR-106) |
 | The habit survives on rhythm, not scores | Rhythm is shape and colour; the app keeps no score |
 
 ## 2. Core concepts
 
-- **chit** — one entry. Text, a recording, or both. Timestamped and stamped with ambient context.
+- **chit** — one entry. Words, a recording, one photo, or any of them together (ADR-106).
+  Timestamped and stamped with ambient context.
 - **the open chit** — a blank chit at the top of the home screen, which becomes a record when saved.
 - **the ambient stamp** — the time and one ambient fact, carried by every chit. The time is read
   when the chit is **saved** (ADR-040); the weather, the motion and the fix are read at launch and
@@ -70,14 +72,15 @@ you get on with your life. Everything follows from that:
 | `id`, `createdAt` | `createdAt` drives both the timeline and the day grouping |
 | `text` | what the chit says, typed. **Null on a chit that is only a recording** |
 | `audioPath` | present whenever a recording was kept |
+| `photoPath` | present whenever a photo was kept. **One per chit** (ADR-106) |
 | `weather` | a condition word |
 | `location` | stored; **not surfaced in the UI** (ADR-066) |
 | `motion` | `stationary`, `walking`, `traveling`, `flying`, read off the same fix as `location` (ADR-037). Drawn as a word beside the time, and `stationary` is not drawn at all (ADR-078) |
 
-`text` and `audioPath` are independently nullable and **at least one is always present** — a chit
-with neither is not a chit, and is what §3.1 refuses to save. That leaves three shapes, all
-ordinary: words alone, words and a recording, a recording alone. **A chit does not record where its
-words came from**; every chit's words are typed (ADR-058).
+`text`, `audioPath` and `photoPath` are independently nullable and **at least one is always
+present** — a chit with none of the three is not a chit, and is what §3.1 refuses to save. Words
+alone, a recording alone and a photo alone are all ordinary, as is any combination of them. **A chit
+does not record where its words came from**; every chit's words are typed (ADR-058).
 
 ## 10. The map
 
@@ -124,8 +127,12 @@ nothing (ADR-094).
 **whether the tabs are drawn at all** — they are not, until something has been written (ADR-097). `lib/shared/widgets/` is the chit vocabulary:
 the slip and its tear edge, the chit's own body text, the stamp
 row and its motion marks, the rail and the thread over it, a day's heading and its group, the
-wordmark, the heading row the tabs hang their title in, the two button weights, the microphone, the
-pill, the prompt sheet, `Arrival`, `StaggeredEntrance` and `FocusRing`.
+wordmark, the heading row the tabs hang their title in, the two button weights, the microphone and
+the camera beside it, the pill, the photo frame, the prompt and photo sheets, `Arrival`,
+`StaggeredEntrance` and `FocusRing`. `lib/data/files/file_store.dart` is one store over a folder and
+an extension, and both the audio and the photo stores are it (ADR-106);
+`lib/domain/services/photo_source.dart` is the one door a photo comes in through, and the picker
+behind it is `data`'s.
 
 **Tests.** `flutter test`. **There are no widget tests, and there will not be** (ADR-031) — what can
 only be seen on a screen is seen on a handset and written into the commit. Suites sit beside what

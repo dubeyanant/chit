@@ -4,17 +4,27 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'audio_store.g.dart';
+part 'file_store.g.dart';
 
-final class AudioStore {
-  const AudioStore(this._documents);
+final class FileStore {
+  const FileStore(
+    this._documents, {
+    required this.folder,
+    required this.extension,
+  });
 
-  factory AudioStore.appDocuments() =>
-      AudioStore(getApplicationDocumentsDirectory());
+  factory FileStore.appDocuments({
+    required String folder,
+    required String extension,
+  }) => FileStore(
+    getApplicationDocumentsDirectory(),
+    folder: folder,
+    extension: extension,
+  );
 
-  static const String folder = 'audio';
+  final String folder;
 
-  static const String _extension = '.m4a';
+  final String extension;
 
   final Future<Directory> _documents;
 
@@ -22,13 +32,13 @@ final class AudioStore {
     required String tempPath,
     required String chitId,
   }) async {
-    final Directory dir = await _audioDirectory();
+    final Directory dir = await _folderDirectory();
     if (!dir.existsSync()) {
       await dir.create(recursive: true);
     }
 
-    final String relative = p.posix.join(folder, '$chitId$_extension');
-    final String target = p.join(dir.path, '$chitId$_extension');
+    final String relative = p.posix.join(folder, '$chitId$extension');
+    final String target = p.join(dir.path, '$chitId$extension');
     final File temp = File(tempPath);
 
     try {
@@ -63,7 +73,7 @@ final class AudioStore {
   );
 
   Future<void> sweep(Iterable<String> claimed) async {
-    final Directory dir = await _audioDirectory();
+    final Directory dir = await _folderDirectory();
     if (!dir.existsSync()) return;
 
     final Set<String> keep = claimed.toSet();
@@ -75,9 +85,14 @@ final class AudioStore {
     }
   }
 
-  Future<Directory> _audioDirectory() async =>
+  Future<Directory> _folderDirectory() async =>
       Directory(p.join((await _documents).path, folder));
 }
 
 @Riverpod(keepAlive: true)
-AudioStore audioStore(Ref ref) => AudioStore.appDocuments();
+FileStore audioStore(Ref ref) =>
+    FileStore.appDocuments(folder: 'audio', extension: '.m4a');
+
+@Riverpod(keepAlive: true)
+FileStore photoStore(Ref ref) =>
+    FileStore.appDocuments(folder: 'photos', extension: '.jpg');

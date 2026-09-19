@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'audio_store.dart';
+part of 'photo_source.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,43 +9,43 @@ part of 'audio_store.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(audioStore)
-final audioStoreProvider = AudioStoreProvider._();
+@ProviderFor(photoSource)
+final photoSourceProvider = PhotoSourceProvider._();
 
-final class AudioStoreProvider
-    extends $FunctionalProvider<AudioStore, AudioStore, AudioStore>
-    with $Provider<AudioStore> {
-  AudioStoreProvider._()
+final class PhotoSourceProvider
+    extends $FunctionalProvider<PhotoSource, PhotoSource, PhotoSource>
+    with $Provider<PhotoSource> {
+  PhotoSourceProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'audioStoreProvider',
+        name: r'photoSourceProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$audioStoreHash();
+  String debugGetCreateSourceHash() => _$photoSourceHash();
 
   @$internal
   @override
-  $ProviderElement<AudioStore> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<PhotoSource> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  AudioStore create(Ref ref) {
-    return audioStore(ref);
+  PhotoSource create(Ref ref) {
+    return photoSource(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AudioStore value) {
+  Override overrideWithValue(PhotoSource value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AudioStore>(value),
+      providerOverride: $SyncValueProvider<PhotoSource>(value),
     );
   }
 }
 
-String _$audioStoreHash() => r'3f07863b193ba288a4e49953dc468088f1b474dd';
+String _$photoSourceHash() => r'9335068b0b423a9756fc2677cd3ded67f7b31ba6';
