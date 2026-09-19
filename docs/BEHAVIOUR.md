@@ -168,8 +168,10 @@ tab they are in has stopped existing.
 
 **The wordmark opens the guide** (ADR-110). चित्त is on every tab and has never done anything;
 tapping it raises a slip of what the app cannot teach in passing — that a chit is **held** to open
-it, and that `@` names a person and `#` a topic. It is the only place in the app that explains
-itself, and it is reached rather than shown: nothing raises it, and no install has to dismiss it.
+it, that `@` names a person and `#` a topic, and that `_` joins words inside a tag and is read as a
+space. It is the only place in the app that explains itself. **It shows itself once**, on the first
+launch of an install (ADR-111), and closes with the line that says how to get back to it; after
+that it is reached and never shown, and an uninstall is the only thing that resets it.
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
 **one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the

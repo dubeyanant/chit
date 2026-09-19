@@ -25,7 +25,8 @@ lib/
 │              find/ (the four axes, and where a column sits) ·
 │              geo/ (the projection, and how the map frames itself) ·
 │              repositories/ · services/
-├── data/      db/ · files/ (one store over a folder, both audio's and photos') ·
+├── data/      db/ · files/ (one store over a folder, both audio's and photos', and the
+│              guide's read-mark) ·
 │              audio/ (recorder, player) · photo/ (the picker) ·
 │              dev/ (the seeder, the frame log) ·
 │              weather/ · location/ · geo/ (the bundled atlas and its codec) ·
@@ -98,7 +99,9 @@ the bar (ADR-097); whether find has anywhere to go draws *find* within it (ADR-1
 for the ambient axes and a narrow candidate query for tags, joined in a provider, so the shell
 never holds every chit to answer a boolean the way find's `watchEvery` would.
 `ChitRoute.drawnWhen` is the rule and is pure, so which tabs exist is tested without a widget.
-**A reader standing in find when its last axis empties is returned to Today** after the frame.
+**A reader standing in find when its last axis empties is returned to Today** after the frame. It
+also offers the guide once per install, after the first frame and never awaited (ADR-111), so
+*opening the app costs nothing* still holds.
 
 **The shell watches its own branch index for one thing.** Arriving at find moves its line (ADR-093),
 and the branch index is where every way of arriving meets — the tab bar, and a tag tap that switches

@@ -34,5 +34,13 @@ abstract final class Guide {
           'Put # in front of a word — #sleep — and every chit carrying it '
           'gathers under that word in find.',
     ),
+    GuideEntry(
+      title: 'Join words with _',
+      words:
+          'A tag stops at the first space, so #deep_work and @anant_dubey '
+          'hold together. The underscore is read as a space, not kept.',
+    ),
   ];
+
+  static const String again = 'Tap चित्त at the top to read this again.';
 }

@@ -14,9 +14,10 @@ fix is what the weather call uses so the two signals stay parallel (ADR-025), an
 carries `speed`, `speedAccuracy` and `altitude` — **the whole of motion capture** (ADR-037), which
 is why chit needs no motion-sensor package and no second permission · `http` one call, to Open-Meteo
 · `intl` dates and tabular figures · `path_provider` + `path` · `uuid` client-generated ids
-(ADR-004). **Nothing is stored outside the database** — `shared_preferences` held the first-run flags
-until ADR-094 deleted the screen that needed them, and `main()` now awaits nothing before the first
-frame.
+(ADR-004). **Almost nothing is stored outside the database** — `shared_preferences` held the first-run flags
+until ADR-094 deleted the screen that needed them, and it did not come back for ADR-111's guide
+mark, which is one empty file in app documents: no package, and an uninstall clears it the way it
+clears everything. `main()` still awaits nothing before the first frame.
 
 **Development.** `build_runner` · `riverpod_generator` · `riverpod_lint`, enabled through `plugins:`
 rather than `custom_lint` (below) · `drift_dev` · `freezed` · `flutter_lints` ·

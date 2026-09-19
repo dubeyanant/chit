@@ -14,19 +14,23 @@ screen. Answerable by living with the app for a week rather than by more design.
 
 Ordered by how much each reinforces what chit already is, not by appetite.
 
-3. **Resurfacing** — a chit from a year ago on the home screen.
 4. **Adapt the prompt to time-to-first-word.**
 7. **Chit threading** — one chit replying to another. Hold until real usage shows people write in
    chains.
 
-**3** makes the app stickier. **1 and 5 are dropped**, not deferred (ADR-101).
+**1 and 5 are dropped** (ADR-101), and **3, resurfacing, is dropped** (ADR-112) — nothing left here
+is scheduled, and neither is anything that makes the app stickier.
 
-**v1.1 is planned** and holds **an export format** — restore-only and text-only, which ADR-100 makes
-the only way a chit survives a lost phone — plus **resurfacing** (3), a **photo per chit** if its
-shape survives the deciding, and three fixes to what v1 shipped: the location ask, the audio pill's
-playhead, and the stale sky of item 23. After it: §8.3 answered with real usage, then the backlog
-above, then responsive web. Deliberately not on the list: **any speech engine, cloud or on-device**
-(ADR-005, ADR-058).
+**v1.1 is built.** It holds a **photo per chit** (ADR-106), the **guide** and its one showing
+(ADR-110, ADR-111), **find held back until it goes somewhere** (ADR-109), Delete taking the wide
+slot (ADR-105), and four fixes to what v1 shipped: the location ask, the audio pill's playhead, the
+stale sky of item 23, and the editor under a keyboard (ADR-108).
+
+**v1.2 holds two things**, neither started: **an export format** — restore-only and text-only, which
+ADR-100 makes the only way a chit survives a lost phone — and a **force update**, which would be the
+first thing in this app to need a server, and so the first to argue with ADR-009. After them: §8.3
+answered with real usage, then what is left of the backlog, then responsive web. Deliberately not on
+the list: **any speech engine, cloud or on-device** (ADR-005, ADR-058).
 
 ## Known and unscheduled
 
@@ -265,7 +269,8 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     from the wordmark. **What is left is the case the ambient half does not cover**: a journal whose
     chits never caught weather or movement — location refused, no network — still has no find until
     somebody writes a tag, and such a person is the one least likely to know how.
-77. **Nobody has found the guide, because nobody has looked for it** (ADR-110). A tap on the
+77. **Nobody has found the guide by looking for it** (ADR-110). ADR-111 makes that matter less —
+    it shows itself once, so the wordmark is a way *back* rather than the only way in. A tap on the
     wordmark is not a discoverable gesture — it is the same objection item 44 raised against find's
     hints, moved. **The guide catches the curious, not the lost.** Two things to watch: whether
     anybody opens it at all, and whether चित्त gaining a touch target reads as the masthead having
@@ -274,3 +279,11 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     at. The masthead is **1px taller** now, the wordmark carrying `minTouchTarget` where it used to
     carry `s3` of padding; nothing else moved, and §6.3's *a tab switch does not move the heading*
     still holds because all three shift together.
+78. **The guide's one showing has been felt by nobody** (ADR-111). It lands **after the first
+    frame**, so a fresh install draws Today and then a sheet rises over it — whether that reads as
+    the app introducing itself or as something interrupting the blank page it just promised is the
+    question, and it is the same one ADR-094 answered *no* to for a screen. **The mark is written
+    when the sheet is dismissed, not when it opens**, so an app killed with the guide up will offer
+    it again; that is deliberate and untested on a device. **There is no way to see it a second time
+    except the wordmark**, which is what the closing line exists to say, and whether that line is
+    read is item 77's question wearing a different hat.

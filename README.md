@@ -119,8 +119,9 @@ reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's wo
 pure, so the widget that draws them holds no grammar, and `lib/domain/find/` says which axis a tag
 is found on. `lib/domain/find_line.dart` holds the two books find opens with — the house lines and
 the hints (ADR-086) — and turns a visit count into one of them (ADR-093). `lib/domain/guide.dart`
-is the book the wordmark opens, the hold gesture and the tag syntax having no other home
-(ADR-110).
+is the book the wordmark opens and shows itself once from (ADR-110, ADR-111), the hold gesture and
+the tag syntax having no other home; `lib/data/files/guide_memory_file.dart` is the mark that says
+it has been read — one file beside the chits, so an uninstall takes it.
 `lib/domain/services/place_permission.dart` is the whole of asking for location — the permission and
 the phone's location switch both (ADR-102): it is called by the save and by nothing else, and draws
 nothing (ADR-094).

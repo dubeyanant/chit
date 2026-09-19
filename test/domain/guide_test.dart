@@ -11,6 +11,7 @@ void main() {
       expect(all, contains('Hold'), reason: 'ADR-061, item 44');
       expect(all, contains('@'), reason: 'ADR-082, item 44');
       expect(all, contains('#'), reason: 'ADR-082, item 44');
+      expect(all, contains('_'), reason: 'the underscore is a space in a tag');
     });
 
     test('every entry says something, and says it once', () {
@@ -32,7 +33,8 @@ void main() {
         expect(
           entry.title.length,
           lessThanOrEqualTo(Guide.longestTitle),
-          reason: '"${entry.title}" wraps, and a heading that wraps reads as two',
+          reason:
+              '"${entry.title}" wraps, and a heading that wraps reads as two',
         );
       }
     });
@@ -45,6 +47,12 @@ void main() {
           reason: '"${entry.title}" has grown into documentation',
         );
       }
+    });
+
+    test('it says where to find it again, since nothing else does', () {
+      expect(Guide.again, contains('चित्त'));
+      expect(Guide.again.trim(), endsWith('.'));
+      expect(Guide.again.length, lessThanOrEqualTo(Guide.longestWords));
     });
 
     test('it is prose, not a keyboard shortcut list', () {

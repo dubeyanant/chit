@@ -60,6 +60,14 @@ final class GuideSheet extends StatelessWidget {
                           SizedBox(height: space.s2),
                           Text(entry.words, style: type.emptyNote),
                         ],
+
+                        SizedBox(height: space.s5),
+                        Text(
+                          Guide.again,
+                          style: type.emptyNote.copyWith(
+                            color: colors.inkFaint,
+                          ),
+                        ),
                       ],
                     ),
                   ),

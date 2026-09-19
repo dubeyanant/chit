@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../core/extensions.dart';
 import '../../../core/theme/chit_motion.dart';
+import '../../../domain/services/guide_memory.dart';
 import '../../../shared/widgets/focus_ring.dart';
 import '../../../shared/widgets/guide_sheet.dart';
 import '../../../shared/widgets/wordmark.dart';
@@ -21,6 +24,22 @@ class ShellScreen extends ConsumerStatefulWidget {
 }
 
 class _ShellScreenState extends ConsumerState<ShellScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((Duration _) {
+      unawaited(_offerGuide());
+    });
+  }
+
+  Future<void> _offerGuide() async {
+    final GuideMemory memory = ref.read(guideMemoryProvider);
+    if (await memory.hasBeenRead() || !mounted) return;
+
+    await showGuideSheet(context);
+    await memory.remember();
+  }
+
   @override
   void didUpdateWidget(covariant ShellScreen old) {
     super.didUpdateWidget(old);
