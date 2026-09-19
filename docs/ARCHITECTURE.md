@@ -27,7 +27,8 @@ lib/
 ├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
 │              weather/ · location/ · geo/ (the bundled atlas and its codec) ·
 │              repositories/
-├── features/  shell, today, composer, past, find, editor
+├── features/  shell (the masthead, the tabs and whether they are drawn), today, composer,
+│              past, find, editor
 └── shared/    widgets/ (the chit vocabulary) · day_label.dart · day_group.dart
 ```
 
@@ -60,7 +61,7 @@ screens that draw it send the same take to different owners (ADR-065).
 | Kind | Example | Lifetime |
 |---|---|---|
 | Infrastructure | the router, database, repository, services | `keepAlive` |
-| Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `monthSummariesProvider`, `archiveChitsProvider` | auto-disposed; Drift re-emits on subscribe |
+| Stream of truth | `todayChitsProvider`, `timelineChitsProvider`, `monthSummariesProvider`, `archiveChitsProvider`, `anyChitWrittenProvider` | auto-disposed; Drift re-emits on subscribe |
 | The clock, once | `todayProvider`, `timelineQueryWindowProvider`, `visibleMonthProvider` | auto-disposed; one read of the clock per screen |
 | Derived | `timelineWindowProvider`, `drawnMonthProvider`, `archiveDaysProvider` | pure functions of the above — except the last two, which **hold their last answer while the stream under them loads** (ADR-049) |
 | Screen state | `composerControllerProvider`, `selectedDayProvider`, `editorControllerProvider(id)` | auto-disposed; the editor's is a family keyed by chit id |

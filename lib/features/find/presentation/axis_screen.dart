@@ -7,6 +7,7 @@ import '../../../core/extensions.dart';
 import '../../../domain/find/find_axis.dart';
 import '../application/find_providers.dart';
 import 'widgets/find_list.dart';
+import 'widgets/outline_backdrop.dart';
 
 class AxisScreen extends ConsumerWidget {
   const AxisScreen({required this.axis, super.key});
@@ -14,7 +15,12 @@ class AxisScreen extends ConsumerWidget {
   final FindAxis axis;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => Stack(
+    fit: StackFit.expand,
+    children: <Widget>[const OutlineBackdrop(), _words(context, ref)],
+  );
+
+  Widget _words(BuildContext context, WidgetRef ref) {
     final Map<FindAxis, List<FindValue>>? loaded = ref.watch(
       axisValuesProvider,
     );

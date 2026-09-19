@@ -8,6 +8,7 @@ import '../../../core/theme/chit_motion.dart';
 import '../../../shared/widgets/focus_ring.dart';
 import '../../../shared/widgets/wordmark.dart';
 import '../../find/application/find_line_provider.dart';
+import '../application/shell_providers.dart';
 
 class ShellScreen extends ConsumerStatefulWidget {
   const ShellScreen({required this.navigationShell, super.key});
@@ -34,13 +35,15 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool written = ref.watch(anyChitWrittenProvider).value ?? false;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: <Widget>[
             const _Masthead(),
             Expanded(child: widget.navigationShell),
-            _TabBar(navigationShell: widget.navigationShell),
+            if (written) _TabBar(navigationShell: widget.navigationShell),
           ],
         ),
       ),

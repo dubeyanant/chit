@@ -199,6 +199,9 @@ final class ChitRepositoryImpl implements ChitRepository {
       _dao.watchArchive(fromDay: fromDay, toDay: toDay).map(_chitsOf);
 
   @override
+  Stream<bool> watchAnyWritten() => _dao.watchAnyWritten();
+
+  @override
   Stream<List<Chit>> watchEvery() => _dao.watchEvery().map(_chitsOf);
 
   @override

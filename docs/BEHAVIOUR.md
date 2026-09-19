@@ -130,6 +130,14 @@ and sigils and all, because that is what an edit edits — and the raw text is w
 
 ## 4. Screens
 
+**4.0 The shell.** The wordmark above, the three tabs below, and whichever tab is up between them.
+**The tabs are not drawn until something has been written** (ADR-097): on a fresh install *past* is
+an empty grid and *find* has nothing to look through, so three tabs where two go nowhere is chrome
+promising rooms that are not furnished yet. The first save draws them and they stay; deleting the
+last chit takes them away again, which is the same screen a fresh install gets and is honest for the
+same reason. **They do not fade in** — a bar that travels draws the eye to the movement rather than
+to the words, which is ADR-071's finding.
+
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
 **one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the
 past's month sit at the same height** (§6.3), so switching tab does not move the heading. Then
@@ -267,8 +275,12 @@ reading surface, and the right edge is where a right thumb already is. **The lin
 not quotations** — nothing is attributed, a misattribution being a defect that ships and cannot be
 checked from inside the app.
 
-**Behind the words there is a faint map** (ADR-089) — and **only here**, never on the two screens
-below, which are routes that cover it. It shows where the **newest chit that knew where it was** was
+**Behind the words there is a faint map** (ADR-089) — here and **on the screen one step in**, and
+nowhere deeper: the axis screen is still a list of words to choose between, where the screen below
+it is the chits themselves and the map behind a body of writing is a texture under text. **It is the
+same map, not a second one**: the two screens are the same rectangle of the same branch, so the
+framing arithmetic lands on the same answer and nothing has to be kept in step. It shows where the
+**newest chit that knew where it was** was
 written: the built-up area around that fix drawn **filled**, its neighbouring towns, the coast, the
 lakes and the rivers around it left as outlines, and the fix itself the one bright mark, sitting
 wherever it actually falls rather than in the middle. The view is **the city and most of the same

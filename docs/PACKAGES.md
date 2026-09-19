@@ -95,3 +95,71 @@ design never sees; `IPHONEOS_DEPLOYMENT_TARGET` is 15.0, above every plugin's fl
 strings should say what §3.6 says the app does: it records that a place was there, and never shows
 which one. The microphone string says the thing that is unusual, true and most likely to earn the
 permission — that the recording stays on the phone.
+
+## Shipping a release
+
+**The keystore is the owner's and is never committed** (ADR-098). Without `android/key.properties` a
+release build still runs — signed with the **debug** key, and it says so on every build. Such an APK
+installs and can then never be updated, the signature not matching any properly signed build, so the
+line is worth reading.
+
+```bash
+keytool -genkeypair -v -keystore ~/chitta-release.jks -storetype PKCS12 \
+  -keyalg RSA -keysize 2048 -validity 10000 -alias chitta
+```
+
+Then `android/key.properties`, which `android/.gitignore` already covers:
+
+```properties
+storePassword=…
+keyPassword=…
+keyAlias=chitta
+storeFile=C:/absolute/path/to/chitta-release.jks
+```
+
+**Back up four things, somewhere that is not this machine**: the `.jks` file, the store password,
+the key password and the alias. `key.properties` is not one of them — it is a pointer, rewritten in
+a minute from the other four, and it holds secrets so it stays out of git.
+
+**What losing them costs depends on how the app was delivered**, and the two answers are not alike:
+
+| | Who signs what users install | If the key is lost |
+|---|---|---|
+| **A download** (GitHub, sideload) | this keystore, directly | **nothing can ever update it.** A new key is a new app — it installs beside the old one and opens empty (ADR-074) |
+| **Play** | Google, with the *app signing key* it holds; this keystore is only the **upload key** that proves the upload is yours | **recoverable** — Google registers a new upload key on request. The app signing key is Google's copy and cannot be lost |
+
+**Play App Signing is not optional** for an app first published now, so the keystore there is an
+upload key whatever else it is.
+
+**The trap is shipping both ways.** An APK downloaded from GitHub is signed by *this* key; an APK
+from Play is signed by whatever key Play holds. If Play generates its own, the two signatures differ
+and **nobody who installed from a download can update from Play** — Android refuses, and the way
+through is uninstall-and-lose-the-chits. To keep one lineage, **upload this keystore as the app
+signing key when enrolling** rather than letting Play generate one. That choice is made once, at
+enrolment, and is not revisitable afterwards.
+
+**`versionCode` has to rise for every Play upload.** It comes from the `+n` in `pubspec.yaml`'s
+`version:` — `1.0.0+1` is versionCode 1 — and Play rejects a build that reuses one.
+
+```bash
+flutter build apk --release --split-per-abi   # three APKs, ~20 MB each
+flutter build appbundle --release             # for Play, which re-signs and splits per device
+```
+
+**`--split-per-abi` is what a direct download wants**: the universal APK carries arm64, armeabi-v7a
+and x86_64 at once and is three times the size for no gain on a phone. **Verify what was signed
+before it goes anywhere**: `apksigner verify --print-certs <apk>` prints the certificate, and a
+debug-signed build says `CN=Android Debug`.
+
+**The release certificate, generated 19 September 2026 and valid to February 2054:**
+
+```
+CN=Anant Dubey, O=Anant Dubey, L=Mumbai, ST=Maharashtra, C=IN
+SHA-256  cc38c02fb1540d9273bb04ec514b897866965e8c43ca6ab46eac32771ee2c6b6
+SHA-1    52b61903bceabce74a90f911c3eaa91c81164de8
+```
+
+**A fingerprint is public** — it is readable out of any published APK, and printing it is what lets
+somebody check that a download is the build it claims to be. **A release build whose fingerprint is
+not this one is signed by the wrong key**, and the reason is almost always that `key.properties` was
+missing and the build fell back to debug, which it says on the console when it does.

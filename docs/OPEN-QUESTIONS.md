@@ -24,16 +24,15 @@ Ordered by how much each reinforces what chit already is, not by appetite.
 **1 and 3** make the app stickier; **5** makes it distinctive.
 
 **After v1** (signed off 18 September 2026, ADR-073), nothing is scheduled. In order: §8.3 answered
-with real usage; the backlog above; **migrations back** (item 38) before the first install anybody
-would miss; **an export format**, which is what would pay back ADR-004's accepted cost of no backup;
-then responsive web. Deliberately not on the list: **any speech engine, cloud or on-device**
-(ADR-005, ADR-058).
+with real usage; **an export format**, which ADR-100 makes the only way a chit survives a lost phone
+and which is what would pay back ADR-004's accepted cost; the backlog above; then responsive web.
+Deliberately not on the list: **any speech engine, cloud or on-device** (ADR-005, ADR-058).
 
 ## Known and unscheduled
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 44, 47, 48, 52, 53;
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 38, 39, 40, 43, 44, 47, 48, 52, 53;
 retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
@@ -82,10 +81,11 @@ retired: 32, 33, 35, 36.**
 37. **The seeded recordings are WAVs wearing an `.m4a` extension, and iOS may refuse them** — Android
     sniffs the content and plays it, while AVFoundation may pick its parser from the extension,
     making every seeded pill silent on an iPhone for a reason unrelated to the player.
-38. **There are no database migrations, and that reverses the day chit holds real data.** ADR-059
-    pinned `schemaVersion` at 1 and deleted the harness. **The trigger is the first install that is
-    not a development one.** DATA-MODEL.md §6 has the four rules the harness taught; the code is in
-    git at `ff78077`. Leaving it until *after* that install is how somebody's chits go.
+38. **— closed, by the trigger it named.** *There are no database migrations.* v1 ships, so there
+    are: `schemaVersion` 1 has a committed snapshot, the ladder is in place and empty, and a bump
+    without its step throws at `open` (ADR-099). **What is not closed is the other half of 004's
+    cost** — with ADR-100 turning Android's backup off, a lost phone is lost chits and there is
+    still no export format. That is the backlog item that now has teeth.
 41. **One stored name still says `chit`, and that is on purpose** (ADR-074). The package is `chitta`
     — `pubspec.yaml`, `applicationId`, the iOS bundle id — but `driftDatabase(name: 'chit')` is not,
     so that an applicationId reversed later still finds the chits somebody wrote. Rename it only
@@ -129,7 +129,7 @@ retired: 32, 33, 35, 36.**
     Item 46's numbers are from the archive and say nothing about this. **Three things to try before
     an index, in order**: the parse is the suspect, not the query; `weather` and `motion` could be
     pushed into SQL and deliberately were not; and only then the `weather` index ADR-077 deleted,
-    which is a schema change and ADR-059's reinstall. A tags table is the end of that road and is
+    which is a schema change — a step and a snapshot now (ADR-099), not a reinstall. A tags table is the end of that road and is
     what would also make backlog 8's tap cheap.
 50. **The find tab has been seen, and most of it is answered** (ADR-084). The owner read it on a
     CPH2707 and called the layout right — **the right-flush column does not read as a mistake** —
@@ -175,3 +175,35 @@ retired: 32, 33, 35, 36.**
     nowhere — a constant that looks arbitrary, an ordering that looks incidental — it may be one the
     strip took. `git show` before the ADR-095 commit is where to look, and the answer belongs in a
     record, not back in the file.
+61. **The tab bar arrives a frame or two after launch** (ADR-097), because the answer to *has
+    anything been written* is a query and `main()` awaits nothing (ADR-094). Today's thread and the
+    strip fill in on the same beat, so it should read as the app arriving rather than as a bar
+    popping in — **nobody has watched a cold start for it**. The other moment is the **first save**,
+    where the bar appears mid-session and the open chit moves up under the thumb at the same instant
+    ADR-096's `committed` haptic fires. It is deliberately not animated (ADR-071 on travel taking
+    the eye), and if the jolt reads worse than the travel would, that is the trade to revisit.
+62. **Deleting the last chit takes the tabs away** (ADR-097), which is correct and has not been
+    seen. It happens from the editor, which covers the tab bar anyway (ADR-062), so the bar is gone
+    before the screen returns — the question is whether coming back to a Today with no tabs reads as
+    a fresh start or as something broken.
+63. **The release key exists and signs, and the refusal it causes is confirmed** (ADR-098). The
+    keystore is at `C:\Users\anant\keys\chitta-release.jks`, all three per-ABI APKs carry
+    `cc38c02f…` (PACKAGES.md prints the fingerprint), and installing one over the debug-signed build
+    on the CPH2707 failed with exactly `INSTALL_FAILED_UPDATE_INCOMPATIBLE: signatures do not
+    match` — the attempt changed nothing, the old build still being there afterwards. **So every
+    handset carrying a test build must be uninstalled before it can take a signed one, and
+    uninstalling takes its chits with it.** Do it while the only chits are test ones. **What is
+    still unproven is that a signed APK runs**, because nothing has been installed from one yet —
+    that needs the uninstall first, and is the same act as item 66.
+64. **`allowBackup="false"` is a trade, not a free win** (ADR-100). It stops the chits going to
+    Google's servers, which is what the README has always promised — and it also stops a new phone
+    inheriting them during setup. Until there is an export format, **the only copy of somebody's
+    journal is the handset**. If that reads as too sharp a cost, the honest reversal is not to turn
+    backup back on but to ship the export, because backup-on would mean the README is wrong.
+65. **iOS has not been built, let alone run** — there is no Mac here. The `LaunchScreen.storyboard`
+    is still the template's white one (item 58's sibling, ADR-090), `Info.plist`'s two usage strings
+    have never been read on a device, and the seeded recordings may be silent there (item 37).
+    **Nothing about the iOS half of v1 should be called ready**; what has shipped is Android.
+66. **`--split-per-abi` has not been installed from.** The universal APK is what has been tested on
+    the handset all along; the per-ABI ones are what a download should get (PACKAGES.md), and the
+    only way to know the arm64 one runs is to install it. Check that before attaching it anywhere.

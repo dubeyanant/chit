@@ -85,6 +85,13 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
             ]))
           .watch();
 
+  Stream<bool> watchAnyWritten() =>
+      (selectOnly(chits)
+            ..addColumns(<Expression<Object>>[chits.id])
+            ..limit(1))
+          .watch()
+          .map((List<TypedResult> rows) => rows.isNotEmpty);
+
   Stream<List<ChitRow>> watchEvery() =>
       (select(chits)..orderBy(<OrderClauseGenerator<$ChitsTable>>[
             ($ChitsTable t) => OrderingTerm.desc(t.localDay),
