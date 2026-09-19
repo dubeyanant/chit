@@ -117,13 +117,33 @@ keyAlias=chitta
 storeFile=C:/absolute/path/to/chitta-release.jks
 ```
 
-**Back the keystore and its passwords up somewhere that is not this machine.** Losing them means the
-app can never be updated again under the same `applicationId`, and there is no recovery — a new key
-is a new app, installed beside the old one and opening empty (ADR-074).
+**Back up four things, somewhere that is not this machine**: the `.jks` file, the store password,
+the key password and the alias. `key.properties` is not one of them — it is a pointer, rewritten in
+a minute from the other four, and it holds secrets so it stays out of git.
+
+**What losing them costs depends on how the app was delivered**, and the two answers are not alike:
+
+| | Who signs what users install | If the key is lost |
+|---|---|---|
+| **A download** (GitHub, sideload) | this keystore, directly | **nothing can ever update it.** A new key is a new app — it installs beside the old one and opens empty (ADR-074) |
+| **Play** | Google, with the *app signing key* it holds; this keystore is only the **upload key** that proves the upload is yours | **recoverable** — Google registers a new upload key on request. The app signing key is Google's copy and cannot be lost |
+
+**Play App Signing is not optional** for an app first published now, so the keystore there is an
+upload key whatever else it is.
+
+**The trap is shipping both ways.** An APK downloaded from GitHub is signed by *this* key; an APK
+from Play is signed by whatever key Play holds. If Play generates its own, the two signatures differ
+and **nobody who installed from a download can update from Play** — Android refuses, and the way
+through is uninstall-and-lose-the-chits. To keep one lineage, **upload this keystore as the app
+signing key when enrolling** rather than letting Play generate one. That choice is made once, at
+enrolment, and is not revisitable afterwards.
+
+**`versionCode` has to rise for every Play upload.** It comes from the `+n` in `pubspec.yaml`'s
+`version:` — `1.0.0+1` is versionCode 1 — and Play rejects a build that reuses one.
 
 ```bash
 flutter build apk --release --split-per-abi   # three APKs, ~20 MB each
-flutter build appbundle --release             # for Play, which signs per device
+flutter build appbundle --release             # for Play, which re-signs and splits per device
 ```
 
 **`--split-per-abi` is what a direct download wants**: the universal APK carries arm64, armeabi-v7a
