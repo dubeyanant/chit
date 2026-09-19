@@ -8,7 +8,6 @@ import '../../../shared/widgets/day_group_view.dart';
 import '../../today/application/today_controller.dart';
 import '../application/find_providers.dart';
 
-/// Every chit carrying one value, read the way every other day is read.
 class ValueScreen extends ConsumerWidget {
   const ValueScreen({required this.axis, required this.slug, super.key});
 

@@ -3,7 +3,6 @@ import 'package:chitta/domain/geo/outline_shape.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  // A unit square, counted anticlockwise, from (0,0) to (1,1).
   OutlineShape square({OutlineLayer layer = OutlineLayer.urban}) =>
       OutlineShape(
         layer: layer,
@@ -55,9 +54,6 @@ void main() {
     });
 
     test('a concave shape does not fill its own notch', () {
-      // A C, opening east: the gap between the arms is outside the shape even
-      // though it is well inside the bounds. Ray casting is the reason, and a
-      // bounds check on its own would get this wrong.
       final OutlineShape c = OutlineShape(
         layer: OutlineLayer.urban,
         points: const <GeoPoint>[
@@ -78,7 +74,9 @@ void main() {
 
     test('asking an open line what it contains is a mistake, and says so', () {
       expect(
-        () => square(layer: OutlineLayer.coast).contains(const GeoPoint(0.5, 0.5)),
+        () =>
+            square(layer: OutlineLayer.coast)
+                .contains(const GeoPoint(0.5, 0.5)),
         throwsA(isA<AssertionError>()),
       );
     });
@@ -93,9 +91,6 @@ void main() {
     });
 
     test('their order is the order the codec reads them in', () {
-      // The atlas stores layers positionally. Reordering this enum silently
-      // reads rivers as coastline, so the order is asserted rather than
-      // trusted — see OutlineAtlas.
       expect(OutlineLayer.values, <OutlineLayer>[
         OutlineLayer.urban,
         OutlineLayer.coast,

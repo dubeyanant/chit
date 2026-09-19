@@ -27,7 +27,7 @@ are *context for where now sits* — no thread, no count, nothing to tap. Three 
 window in which "yesterday was quiet and today is not" is visible at a glance, and the largest that
 still reads as one glance.
 
-**The calendar is a shape, not a grid of numbers to read one at a time.** Density is how much ink
+**past is a shape, not a grid of numbers to read one at a time.** Density is how much ink
 went down that day, which is why the steps are ink rather than accent. It stops at today because
 tiles for days that have not happened read as days with nothing written in them.
 
@@ -36,7 +36,7 @@ against a chit at once, and `--ink-faint` sits on two surfaces and must clear 4.
 **Translucent surfaces are their own surface** — a 3.5% wash is enough to fail a pair.
 
 **"Used sparingly" is advice nobody can fail.** v5 obeyed it item by item and ended with an orange
-thread and an orange calendar: every use defensible, the sum not. The rule that can actually be
+thread and an orange month grid: every use defensible, the sum not. The rule that can actually be
 broken is **the seal marks what is live, and a record is ink** (ADR-022). The test of a new element
 is not "is this important enough for the accent" — everything is — but "is this happening now".
 

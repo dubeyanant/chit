@@ -8,8 +8,8 @@ import 'package:chitta/domain/models/ambient_stamp.dart';
 import 'package:chitta/domain/models/chit.dart';
 import 'package:chitta/domain/models/day_summary.dart';
 import 'package:chitta/domain/repositories/chit_repository.dart';
-import 'package:chitta/features/calendar/application/archive_provider.dart';
-import 'package:chitta/features/calendar/application/month_provider.dart';
+import 'package:chitta/features/past/application/archive_provider.dart';
+import 'package:chitta/features/past/application/month_provider.dart';
 import 'package:chitta/shared/day_group.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +27,7 @@ void main() {
   final DateTime afternoon = DateTime(2026, 9, 17, 15);
 
   setUp(() async {
-    root = await Directory.systemTemp.createTemp('chit-calendar-test');
+    root = await Directory.systemTemp.createTemp('chit-past-test');
     db = AppDatabase(NativeDatabase.memory());
     clock = FakeClock(afternoon);
     repo = ChitRepositoryImpl(
@@ -89,7 +89,7 @@ void main() {
       expect(
         clock.reads,
         1,
-        reason: 'the calendar reads the clock through todayProvider, once',
+        reason: 'past reads the clock through todayProvider, once',
       );
     });
 

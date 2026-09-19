@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/extensions.dart';
+import '../../../../core/haptics.dart';
 import '../../../../core/theme/chit_colors.dart';
 import '../../../../core/theme/chit_motion.dart';
 import '../../application/month_provider.dart';
@@ -45,7 +46,7 @@ final class MonthGrid extends StatelessWidget {
                     child: Text(
                       letter,
                       textAlign: TextAlign.center,
-                      style: context.type.calendarWeekday,
+                      style: context.type.pastWeekday,
                     ),
                   ),
               ],
@@ -68,7 +69,10 @@ final class MonthGrid extends StatelessWidget {
                         isToday: day == shape.todayDay,
                         selected: shape.localDayOf(day) == selectedDay,
                         semanticsDate: '$day ${shape.month.name}',
-                        onTap: () => onTapDay(shape.localDayOf(day)),
+                        onTap: () {
+                          ChitHaptics.selected();
+                          onTapDay(shape.localDayOf(day));
+                        },
                       ),
                     },
                   ),
@@ -130,8 +134,8 @@ final class DayTile extends StatelessWidget {
             child: Text(
               '$day',
               style: isToday && !written
-                  ? type.calendarDay.copyWith(color: colors.inkFaint)
-                  : type.calendarDay,
+                  ? type.pastDay.copyWith(color: colors.inkFaint)
+                  : type.pastDay,
             ),
           )
         : null;

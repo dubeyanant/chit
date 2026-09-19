@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/extensions.dart';
+import '../../../core/haptics.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/audio_edit.dart';
 import '../../../domain/models/chit.dart';
@@ -327,6 +328,7 @@ class _DeleteControl extends ConsumerWidget {
     );
     if (!delete) return;
 
+    ChitHaptics.destroyed();
     await ref.read(editorControllerProvider(id).notifier).delete();
     if (context.mounted) context.pop();
   }

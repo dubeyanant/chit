@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions.dart';
+import '../../../core/haptics.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../domain/models/composer_state.dart';
 import '../../../domain/services/audio_player.dart';
@@ -221,7 +224,10 @@ class _CommitControls extends ConsumerWidget {
         Expanded(
           child: PrimaryButton(
             label: 'Save',
-            onPressed: ref.read(composerControllerProvider.notifier).save,
+            onPressed: () async {
+              ChitHaptics.committed();
+              await ref.read(composerControllerProvider.notifier).save();
+            },
           ),
         ),
       ],
@@ -244,7 +250,9 @@ class _OpenChitMicrophone extends ConsumerWidget {
     final bool began = await ref
         .read(recordingControllerProvider.notifier)
         .start(into: ref.read(composerControllerProvider.notifier));
-    if (!began || !context.mounted) return;
+    if (!began) return;
+    ChitHaptics.selected();
+    if (!context.mounted) return;
 
     await showRecordingSheet(context, ref);
   }

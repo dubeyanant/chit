@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-/// A point on the earth, in degrees.
 @immutable
 final class GeoPoint {
   const GeoPoint(this.lat, this.lon);
@@ -20,11 +19,6 @@ final class GeoPoint {
   String toString() => 'GeoPoint($lat, $lon)';
 }
 
-/// A rectangle of the earth.
-///
-/// **Longitude does not wrap.** The atlas is cut on a grid that does not wrap
-/// either, and the widest view find draws is a degree or two across, so a box
-/// spanning the antimeridian is a state this app cannot reach.
 @immutable
 final class GeoBox {
   const GeoBox({

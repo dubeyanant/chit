@@ -1,23 +1,8 @@
-/// The line find opens with — BEHAVIOUR.md §4.6.
-///
-/// **Two books in one slot** (ADR-086): mostly house lines, and every fourth
-/// day a hint about something the app does not otherwise say out loud. A hint
-/// that lived permanently under the thing it described would be chrome on the
-/// two sparest screens in the app; one that comes round twice a week is read
-/// once and then recognised.
 abstract final class FindLine {
-  /// The longest a line may be, counted in characters.
-  ///
-  /// Two lines of the quote face at the gutter, which is what the screen has
-  /// room for above a bottom-anchored column. A test counts them.
   static const int longest = 92;
 
-  /// One day in [every] draws a hint instead of a line.
   static const int every = 4;
 
-  /// **House lines, not quotations.** Nothing here is attributed, because a
-  /// misattributed quotation is a defect that ships and cannot be checked
-  /// from inside the app.
   static const List<String> quotes = <String>[
     'A day you do not write down is a day you take on trust.',
     'You are not keeping a record. You are keeping company.',
@@ -66,10 +51,6 @@ abstract final class FindLine {
     'This is the quiet part of the day, put somewhere.',
   ];
 
-  /// What the app does that nothing on screen says.
-  ///
-  /// Each earns its place by being **undiscoverable**: a gesture, a rotation,
-  /// or a piece of syntax. Nothing here restates what a screen already shows.
   static const List<String> hints = <String>[
     'Tap a @name or a #topic in a chit to find every chit with it.',
     'An underscore in a tag reads as a space: #morning_pages.',
@@ -80,19 +61,13 @@ abstract final class FindLine {
     'This line changes daily, and every fourth day it explains something.',
   ];
 
-  /// One line, the same all day and different tomorrow.
-  ///
-  /// **Not random**: a line that changed on every glance would be an ambient
-  /// loop (ADR-027), and a book indexed by the day is testable without a
-  /// seeded `Random` and without reading a clock in here.
-  static String forDay(int localDay) {
-    final int i = localDay.abs();
+  static String forVisit(int visit) {
+    final int i = visit.abs();
 
     return i % every == 0
         ? hints[(i ~/ every) % hints.length]
         : quotes[i % quotes.length];
   }
 
-  /// Both books, for the tests that hold every line to the same rules.
   static List<String> get all => <String>[...quotes, ...hints];
 }

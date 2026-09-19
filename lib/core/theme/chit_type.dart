@@ -29,8 +29,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     required this.quote,
     required this.sheetState,
     required this.sheetTime,
-    required this.calendarDay,
-    required this.calendarWeekday,
+    required this.pastDay,
+    required this.pastWeekday,
     required this.monthSummary,
     required this.monthSummaryStrong,
     required this.dayHeading,
@@ -172,12 +172,6 @@ final class ChitType extends ThemeExtension<ChitType> {
         letterSpacingEm: 0.01,
       ),
 
-      // **`--ink-muted`, not `--ink-faint`** — the line sits over the map
-      // (ADR-089), and a tinted surface is measured rather than inherited
-      // (§6.4). `--ink-faint` is 5.08:1 on bare paper and drops under the floor
-      // over the city fill; this is the same move the audio pill's duration
-      // made for the same reason. The aside is still an aside: 15px, serif and
-      // italic are three differences colour was never carrying alone.
       quote: _serif(
         size: 15,
         weight: 400,
@@ -200,13 +194,8 @@ final class ChitType extends ThemeExtension<ChitType> {
         tabularFigures: true,
       ),
 
-      calendarDay: _serif(
-        size: 16.5,
-        weight: 400,
-        color: colors.ink,
-        height: 1,
-      ),
-      calendarWeekday: _sans(
+      pastDay: _serif(size: 16.5, weight: 400, color: colors.ink, height: 1),
+      pastWeekday: _sans(
         size: 11.5,
         weight: 500,
         color: colors.inkFaint,
@@ -345,11 +334,8 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   final TextStyle chitText;
 
-  /// A @person in a saved chit — chitText, in the real italic face.
   final TextStyle chitPerson;
 
-  /// A #topic in a saved chit — chitText, quieter. Its sigil is the second
-  /// difference §6.4 asks for, colour never being allowed to be the only one.
   final TextStyle chitTopic;
 
   final TextStyle composerBody;
@@ -370,19 +356,17 @@ final class ChitType extends ThemeExtension<ChitType> {
 
   final TextStyle tabLabel;
 
-  /// One word in find's right-hand column — an axis, or a value on one.
   final TextStyle filterWord;
 
-  /// The line find opens with: an aside, in the voice §6.2 keeps for asides.
   final TextStyle quote;
 
   final TextStyle sheetState;
 
   final TextStyle sheetTime;
 
-  final TextStyle calendarDay;
+  final TextStyle pastDay;
 
-  final TextStyle calendarWeekday;
+  final TextStyle pastWeekday;
 
   final TextStyle monthSummary;
 
@@ -415,8 +399,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     quote,
     sheetState,
     sheetTime,
-    calendarDay,
-    calendarWeekday,
+    pastDay,
+    pastWeekday,
     monthSummary,
     monthSummaryStrong,
     dayHeading,
@@ -448,8 +432,8 @@ final class ChitType extends ThemeExtension<ChitType> {
     TextStyle? quote,
     TextStyle? sheetState,
     TextStyle? sheetTime,
-    TextStyle? calendarDay,
-    TextStyle? calendarWeekday,
+    TextStyle? pastDay,
+    TextStyle? pastWeekday,
     TextStyle? monthSummary,
     TextStyle? monthSummaryStrong,
     TextStyle? dayHeading,
@@ -479,8 +463,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       quote: quote ?? this.quote,
       sheetState: sheetState ?? this.sheetState,
       sheetTime: sheetTime ?? this.sheetTime,
-      calendarDay: calendarDay ?? this.calendarDay,
-      calendarWeekday: calendarWeekday ?? this.calendarWeekday,
+      pastDay: pastDay ?? this.pastDay,
+      pastWeekday: pastWeekday ?? this.pastWeekday,
       monthSummary: monthSummary ?? this.monthSummary,
       monthSummaryStrong: monthSummaryStrong ?? this.monthSummaryStrong,
       dayHeading: dayHeading ?? this.dayHeading,
@@ -515,12 +499,8 @@ final class ChitType extends ThemeExtension<ChitType> {
       quote: TextStyle.lerp(quote, other.quote, t)!,
       sheetState: TextStyle.lerp(sheetState, other.sheetState, t)!,
       sheetTime: TextStyle.lerp(sheetTime, other.sheetTime, t)!,
-      calendarDay: TextStyle.lerp(calendarDay, other.calendarDay, t)!,
-      calendarWeekday: TextStyle.lerp(
-        calendarWeekday,
-        other.calendarWeekday,
-        t,
-      )!,
+      pastDay: TextStyle.lerp(pastDay, other.pastDay, t)!,
+      pastWeekday: TextStyle.lerp(pastWeekday, other.pastWeekday, t)!,
       monthSummary: TextStyle.lerp(monthSummary, other.monthSummary, t)!,
       monthSummaryStrong: TextStyle.lerp(
         monthSummaryStrong,

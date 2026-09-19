@@ -110,10 +110,10 @@ at one instant and drawn as one row.
 |---|---|
 | Today, the thread | `watchDay` — `WHERE localDay = ? ORDER BY createdAt DESC` |
 | Today, the timeline | `watchDayRange` — three days, **oldest first** |
-| Calendar, density **and** summary | `watchDaySummaries` — one query; the total is the rows' sum, the day count their length |
+| past, density **and** summary | `watchDaySummaries` — one query; the total is the rows' sum, the day count their length |
 | Archive | `watchArchive` — one month, `ORDER BY localDay DESC, createdAt DESC` (ADR-079) |
 | Archive, filtered | `watchDay` — *one day's chits, newest first* is one question |
-| Calendar, the chevrons | `watchWrittenMonths` — `GROUP BY localDay / 100` (ADR-047) |
+| past, the chevrons | `watchWrittenMonths` — `GROUP BY localDay / 100` (ADR-047) |
 | Find | `watchEvery` — every row, same order, **and no `WHERE` at all** (ADR-083) |
 
 **`watchEvery` is the one unbounded query, and it is deliberate.** Find narrows on four axes, two of
@@ -189,7 +189,7 @@ and **the console is the only place it reports**.
 
 **Sixty chits over three months, dated relative to the day it runs.** Yesterday and the day before
 hold five each — density step four, and ten marks across two days on the strip — then threes, twos
-and singles thinning backwards over eighty-nine days and four calendar months, so the chevrons have
+and singles thinning backwards over eighty-nine days and four months, so the chevrons have
 somewhere to go and one month holds more than a screenful. **Twelve days in the middle hold nothing**,
 which is the only thing that draws the week a past month leaves out (ADR-048). **Today is left
 alone**: it belongs to whoever is holding the phone. **Every seeded id starts with `seed-`**,

@@ -60,8 +60,6 @@ final class ChitRepositoryImpl implements ChitRepository {
       createdAt: stamp.capturedAt,
       localDay: Chit.localDayOf(stamp.capturedAt),
 
-      // The stamp's instant, not a second reading of the clock: a chit nobody
-      // has edited must carry the two equal, which is what `wasEdited` asks.
       updatedAt: stamp.capturedAt,
       text: words,
       audioPath: audioPath,

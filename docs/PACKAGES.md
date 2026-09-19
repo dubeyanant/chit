@@ -12,10 +12,9 @@ fix is what the weather call uses so the two signals stay parallel (ADR-025), an
 carries `speed`, `speedAccuracy` and `altitude` — **the whole of motion capture** (ADR-037), which
 is why chit needs no motion-sensor package and no second permission · `http` one call, to Open-Meteo
 · `intl` dates and tabular figures · `path_provider` + `path` · `uuid` client-generated ids
-(ADR-004) · `shared_preferences` **two booleans**, whether the first-run screen has been shown and
-whether the app has spent its one permission ask (ADR-041) — the only state outside the database,
-and the only thing `main()` awaits before the first frame, the router being unable to pick the right
-first screen without it.
+(ADR-004). **Nothing is stored outside the database** — `shared_preferences` held the first-run flags
+until ADR-094 deleted the screen that needed them, and `main()` now awaits nothing before the first
+frame.
 
 **Development.** `build_runner` · `riverpod_generator` · `riverpod_lint`, enabled through `plugins:`
 rather than `custom_lint` (below) · `drift_dev` · `freezed` · `flutter_lints` ·
@@ -76,7 +75,7 @@ to draw one word — subset before shipping.
 
 ## Considered and not taken
 
-**`isar` / `hive`** — the calendar's per-day counts, the month summary and the weather-search
+**`isar` / `hive`** — past's per-day counts, the month summary and the weather-search
 backlog item are aggregate queries SQL answers in the database and a document store answers in Dart.
 **`google_fonts`** — a network fetch on first run, in an app whose premise is that it opens instantly
 and works offline. **`firebase_*` / `supabase_flutter`** — out of scope for v1 (ADR-004). **`dio`** —

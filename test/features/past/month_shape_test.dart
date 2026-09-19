@@ -1,6 +1,6 @@
 import 'package:chitta/domain/models/chit.dart';
 import 'package:chitta/domain/models/day_summary.dart';
-import 'package:chitta/features/calendar/application/month_provider.dart';
+import 'package:chitta/features/past/application/month_provider.dart';
 import 'package:chitta/shared/day_group.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -323,8 +323,7 @@ void main() {
   group('the archive labels a day', () {
     const int todayDay = 20260917;
 
-    DayGroup on(int localDay) =>
-        DayGroup(localDay: localDay, chits: const []);
+    DayGroup on(int localDay) => DayGroup(localDay: localDay, chits: const []);
 
     test('Today and Yesterday by name', () {
       expect(on(20260917).label(today: todayDay), 'Today');

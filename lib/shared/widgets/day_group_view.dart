@@ -4,7 +4,6 @@ import '../../core/extensions.dart';
 import '../day_group.dart';
 import 'day_thread.dart';
 
-/// A day's heading — its label, a hairline, its count — over its thread.
 final class DayGroupView extends StatelessWidget {
   const DayGroupView({required this.day, required this.today, super.key});
 

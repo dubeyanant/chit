@@ -71,21 +71,19 @@ void main() {
       expect(FindAxis.ofTag(TagKind.topic), FindAxis.topics);
     });
 
-    test('the slug is what the value route is keyed on', () {
-      const TagSpan tag = TagSpan(
-        kind: TagKind.person,
-        label: 'Anant Dubey',
-      );
+    test('the label a value route is keyed on is folded at the parse', () {
+      final TagSpan tag = ChitTags.tagsIn('saw @Anant_Dubey today').single;
 
-      expect(tag.slug, 'anant dubey');
+      expect(tag.label, 'anant dubey');
       expect(tag.key, 'person:anant dubey');
     });
 
     test('two spellings reach the same route', () {
-      const TagSpan upper = TagSpan(kind: TagKind.person, label: 'Mira');
-      const TagSpan lower = TagSpan(kind: TagKind.person, label: 'mira');
+      final TagSpan upper = ChitTags.tagsIn('@Mira').single;
+      final TagSpan lower = ChitTags.tagsIn('@mira').single;
 
-      expect(upper.slug, lower.slug);
+      expect(upper.label, lower.label);
+      expect(upper.key, lower.key);
     });
   });
 

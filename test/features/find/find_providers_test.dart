@@ -95,7 +95,8 @@ void main() {
       expect(
         container.read(axisValuesProvider),
         isNull,
-        reason: 'an empty map here is what made the axis screen draw its '
+        reason:
+            'an empty map here is what made the axis screen draw its '
             'empty state for a frame and then throw it away',
       );
     });
@@ -107,26 +108,30 @@ void main() {
       );
     });
 
-    test('an app with nothing in it loads to empty, which is an answer', () async {
-      await write('no tags, no sky');
-      await settle();
+    test(
+      'an app with nothing in it loads to empty, which is an answer',
+      () async {
+        await write('no tags, no sky');
+        await settle();
 
-      final Map<FindAxis, List<FindValue>>? values = container.read(
-        axisValuesProvider,
-      );
+        final Map<FindAxis, List<FindValue>>? values = container.read(
+          axisValuesProvider,
+        );
 
-      expect(values, isNotNull);
-      for (final FindAxis axis in FindAxis.values) {
-        expect(values![axis], isEmpty, reason: '${axis.slug} has nothing');
-      }
-    });
+        expect(values, isNotNull);
+        for (final FindAxis axis in FindAxis.values) {
+          expect(values![axis], isEmpty, reason: '${axis.slug} has nothing');
+        }
+      },
+    );
 
     test('an axis with nothing on it stays empty while others fill', () async {
       await write('wet', weather: WeatherCondition.raining);
       await settle();
 
-      final Map<FindAxis, List<FindValue>> values =
-          container.read(axisValuesProvider)!;
+      final Map<FindAxis, List<FindValue>> values = container.read(
+        axisValuesProvider,
+      )!;
 
       expect(values[FindAxis.weather], hasLength(1));
       expect(values[FindAxis.motion], isEmpty);
@@ -178,8 +183,10 @@ void main() {
       await settle();
 
       expect(labelsOf(FindAxis.people), <String>['anant', 'rahul', 'mira']);
-      expect(<int>[for (final FindValue v in valuesOf(FindAxis.people)) v.count],
-          <int>[3, 2, 1]);
+      expect(
+        <int>[for (final FindValue v in valuesOf(FindAxis.people)) v.count],
+        <int>[3, 2, 1],
+      );
     });
 
     test('a tie breaks alphabetically, so nothing swaps on a save', () async {
@@ -201,7 +208,8 @@ void main() {
       expect(
         valuesOf(FindAxis.people).single.label,
         'anant dubey',
-        reason: 'the rows arrive newest first, so the latest spelling is the '
+        reason:
+            'the rows arrive newest first, so the latest spelling is the '
             'one drawn — change how you write a name and the list follows',
       );
     });
@@ -211,11 +219,10 @@ void main() {
       await write('@anant dubey');
       await settle();
 
-      expect(
-        labelsOf(FindAxis.people),
-        <String>['anant', 'anant dubey'],
-        reason: 'the second chit tags @anant and leaves "dubey" as words',
-      );
+      expect(labelsOf(FindAxis.people), <String>[
+        'anant',
+        'anant dubey',
+      ], reason: 'the second chit tags @anant and leaves "dubey" as words');
     });
 
     test('naming somebody twice in one chit counts once', () async {

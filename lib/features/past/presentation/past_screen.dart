@@ -12,8 +12,8 @@ import '../application/month_provider.dart';
 import 'widgets/month_bar.dart';
 import 'widgets/month_grid.dart';
 
-class CalendarScreen extends ConsumerWidget {
-  const CalendarScreen({super.key});
+class PastScreen extends ConsumerWidget {
+  const PastScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

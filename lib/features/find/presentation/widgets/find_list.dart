@@ -5,15 +5,9 @@ import '../../../../core/theme/chit_motion.dart';
 import '../../../../domain/find/find_axis.dart';
 import '../../../../shared/widgets/focus_ring.dart';
 
-/// One word in find's right-hand column.
-///
-/// **Flush right** (ADR-084): the one place in the app that is not left-
-/// aligned, because this column is a set of targets rather than a reading
-/// surface, and the right edge is where a right thumb already is.
 final class FindWord extends StatelessWidget {
   const FindWord({required this.word, required this.onTap, super.key});
 
-  /// Every row is this tall, which is what [sitsAtBottom] measures with.
   static const double rowHeight = 44;
 
   final String word;
@@ -56,11 +50,6 @@ final class FindWord extends StatelessWidget {
   }
 }
 
-/// find's column of words, bottom-anchored while it fits and scrolling from
-/// the top once it does not — ADR-084.
-///
-/// [above] is drawn over the words when, and only when, they fit: it is the
-/// quote, and a screen that has run out of room has run out of room for it.
 final class FindList extends StatelessWidget {
   const FindList({required this.rows, this.above, super.key});
 
@@ -99,11 +88,7 @@ final class FindList extends StatelessWidget {
           padding: padding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              ?above,
-              const Spacer(),
-              ...rows,
-            ],
+            children: <Widget>[?above, const Spacer(), ...rows],
           ),
         );
       },

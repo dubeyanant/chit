@@ -33,7 +33,7 @@ then responsive web. Deliberately not on the list: **any speech engine, cloud or
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 47, 48, 52, 53;
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 39, 40, 43, 44, 47, 48, 52, 53;
 retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
@@ -57,9 +57,11 @@ retired: 32, 33, 35, 36.**
     a 95th-percentile 3.0 m/s, and air travel at 40–80 m/s — but nobody has walked, ridden or flown
     with this app and checked. The boundary most likely to read wrong is still `walking` against
     `traveling` at 3.0 m/s, where a runner is filed as walking on purpose.
-22. **A refused location permission is a dead end** — the app asks once and never again, and there
-    is no settings screen, so a refusal can only be undone through the OS. A refused *microphone*
-    names the phone's settings; location says nothing.
+22. **A refused location permission is a dead end** — and less of one than it was (ADR-094). The OS
+    now gets its two asks rather than the app spending one, so a first refusal is recoverable by
+    saving another chit. After the second there is still no settings screen and no line anywhere
+    saying what was lost, so it can only be undone through the OS. A refused *microphone* names the
+    phone's settings; location still says nothing, deliberately.
 23. **The open chit's preview goes stale without bound, and now it is only the weather**
     (ADR-042). ADR-080 took the clock off that line, which was the half a person could tell was
     wrong by looking at it; what is left is a sky word that can be hours old on a phone left open
@@ -84,19 +86,18 @@ retired: 32, 33, 35, 36.**
     pinned `schemaVersion` at 1 and deleted the harness. **The trigger is the first install that is
     not a development one.** DATA-MODEL.md §6 has the four rules the harness taught; the code is in
     git at `ff78077`. Leaving it until *after* that install is how somebody's chits go.
-41. **Two stored names still say `chit`, and that is on purpose** (ADR-074). The package is `chitta`
-    — `pubspec.yaml`, `applicationId`, the iOS bundle id — but `driftDatabase(name: 'chit')` and the
-    two `chit.firstRun.*` preference keys are not, so that an applicationId reversed later still
-    finds the chits somebody wrote. Rename them only once nothing could be carrying data under the
-    old id. The `Chit` classes and the repository directory keep the short name for their own
-    reasons: an entry *is* a chit.
+41. **One stored name still says `chit`, and that is on purpose** (ADR-074). The package is `chitta`
+    — `pubspec.yaml`, `applicationId`, the iOS bundle id — but `driftDatabase(name: 'chit')` is not,
+    so that an applicationId reversed later still finds the chits somebody wrote. Rename it only
+    once nothing could be carrying data under the old id. *The two `chit.firstRun.*` preference keys
+    were the other one, and went with ADR-094's screen.* The `Chit` classes and the repository
+    directory keep the short name for their own reasons: an entry *is* a chit.
 42. **Nobody has seen the icon on an iPhone.**
-44. **The first-run screen has a copy ceiling, because it does not scroll** (ADR-076). On the 800dp
-    handset it was checked on, the two slips and the two answers leave roughly 65dp of slack above
-    the first slip; a phone with much less height, or a sentence added to either slip, clips instead
-    of scrolling. Cut something before adding something. **ADR-087's three lines draw as six** and
-    the owner confirmed the screen still does not scroll on that handset — so the slack is thinner
-    than 65dp now and nobody has re-measured it. Treat the ceiling as reached.
+44. **— closed.** *The first-run screen has a copy ceiling, because it does not scroll.* There is no
+    first-run screen (ADR-094), so there is no ceiling. **The item it leaves behind**: the hold
+    gesture and the tag syntax were taught there and are now taught only by find's hints, which come
+    round every fourth visit and may never be seen by somebody who does not open that tab. If the
+    app has to teach them again, the place is where they are used, not a screen in front of Today.
 45. **Today's thread is still built eagerly**, and deliberately: it holds one day, and a day is
     bounded by how much a person writes in one. Somebody writing sixty chits in a day would feel it
     before the archive does. The fix would be the archive's (ADR-077), but the rail is drawn behind
@@ -143,4 +144,34 @@ retired: 32, 33, 35, 36.**
     was chosen because find's words *are* the ambient vocabulary and a chit says `raining` in
     Hanken — but §6.2 also gives **tab labels** to Newsreader, and this column is as much
     navigation as it is vocabulary. Nobody has decided it is wrong; **switching `filterWord` to
-    `_serif` is one line** if the two ever read as a mismatch.
+    `_serif` is one line** if the two ever read as a mismatch.57. **None of the four changes of 091–094 has been seen on a handset.** Each is a looking question
+    and none of them is arithmetic. **The tab now reads `past`** — one word narrower than
+    `calendar`, in a three-way row that divides the width evenly, so the label sits differently in
+    its share. **find's line moves on arriving at the tab**, which is the one of these that could
+    read as *broken* rather than as *different*: switching away and back to compare two screens now
+    changes the line, and whether that reads as alive or as restless is the thing to watch.
+    **A tag drawn in lower case changes how a name reads** — `@Anant` was somebody's name as they
+    write it and is now `anant`, and a person's name folded may read as carelessness rather than as
+    a convention. If it does, the fix is to fold the *key* and draw the label as typed, which is
+    what ADR-092 rejected for the drift it allows.
+58. **The location dialog lands on the first save** (ADR-094), and **the grant is now carried back**
+    — the owner saw a granted chit keep an empty stamp until the app was restarted, so the save that
+    won the permission re-reads and patches both the chit it wrote and the open one. What is still
+    unwatched is the *timing*: the re-read happens while somebody is looking at the thread, so a
+    stamp gains a word a second or two after the chit appears, and whether that reads as the app
+    catching up or as a glitch is a looking question. The second ask lands on the second save, which
+    is a stranger place to meet it than the first; if two dialogs two chits apart read as nagging,
+    the honest change is to ask once and let the OS's second chance go unused.
+59. **The haptic vocabulary has three steps and has been felt on nothing** (ADR-096). `selected`,
+    `committed` and `destroyed` are `selectionClick`, `lightImpact` and `mediumImpact`, and **the
+    three are meant to be tellable apart in the hand** — on a phone whose motor is weak, or whose
+    owner has system haptics turned down, they may be one buzz with three names. Feel them in order
+    before trusting the vocabulary. The pair most likely to collapse is `selected` against
+    `committed`, which is the pair Save depends on. **iOS and Android differ here**: `selectionClick`
+    is a distinctly lighter tick on iOS than on Android, so the ladder may read as even on one and
+    steep on the other.
+60. **553 comments were deleted at once** (ADR-095), and what they carried was checked against the
+    records one file at a time, not exhaustively. If a future session finds a line whose reason is
+    nowhere — a constant that looks arbitrary, an ordering that looks incidental — it may be one the
+    strip took. `git show` before the ADR-095 commit is where to look, and the answer belongs in a
+    record, not back in the file.

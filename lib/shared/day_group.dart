@@ -3,10 +3,6 @@ import 'package:flutter/foundation.dart';
 import '../domain/models/chit.dart';
 import 'day_label.dart';
 
-/// One day's chits, in the order they are read — newest first.
-///
-/// Shared by the calendar's archive and by find (BEHAVIOUR.md §4.6): both
-/// draw days, and a day is the same thing on either screen.
 @immutable
 final class DayGroup {
   const DayGroup({required this.localDay, required this.chits});
@@ -31,7 +27,6 @@ final class DayGroup {
   String toString() => 'DayGroup($localDay, ${chits.length} chits)';
 }
 
-/// Buckets [chits] into days, keeping the order they arrive in.
 List<DayGroup> groupByDay(List<Chit> chits) {
   final List<DayGroup> days = <DayGroup>[];
   int? current;

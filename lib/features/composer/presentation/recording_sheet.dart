@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions.dart';
+import '../../../core/haptics.dart';
 import '../../../domain/models/recording_state.dart';
 import '../../../shared/widgets/audio_pill.dart';
 import '../../../shared/widgets/buttons.dart';
@@ -265,6 +266,7 @@ class _Actions extends ConsumerWidget {
   Future<void> _keep(BuildContext context, WidgetRef ref) async {
     final NavigatorState navigator = Navigator.of(context);
     await ref.read(recordingControllerProvider.notifier).stopAndKeep();
+    ChitHaptics.committed();
     navigator.pop(true);
   }
 }

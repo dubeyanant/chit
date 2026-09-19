@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../core/extensions.dart';
+import '../../core/haptics.dart';
 import '../../domain/models/chit.dart';
 import '../../domain/tags/chit_tags.dart';
 import 'ambient_stamp_row.dart';
@@ -75,8 +73,7 @@ class ChitRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      // The spoken form, not the raw row: a reader hearing "anant underscore
-      // dubey" is being read the writing and not the chit.
+
       label:
           'Chit, '
           '${chit.hasText ? ChitTags.spoken(chit.text!) : 'a recording'}',
@@ -90,7 +87,7 @@ class ChitRow extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
 
           onLongPress: () {
-            unawaited(HapticFeedback.selectionClick());
+            ChitHaptics.selected();
             _open(context);
           },
           child: _Body(chit: chit),

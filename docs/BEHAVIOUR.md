@@ -26,7 +26,7 @@ retires and the text stays editable; **a kept take is dropped by Remove**, and t
 back when it goes, so recording again is the way to a different take. Remove does not touch the
 words. **A refused microphone raises nothing and explains once**: the sheet does not open, the
 microphone stays tappable, and the line *"The microphone isn't allowed. You can turn it on in your
-phone's settings."* appears under the action row — naming the phone's settings because ADR-041
+phone's settings."* appears under the action row — naming the phone's settings because ADR-094
 spends the app's one permission dialog on location.
 
 **3.3 The prompt waits five seconds.** If nothing is written after **5 seconds** a prompt fades in
@@ -93,9 +93,9 @@ fix and no speed; a barometer is the honest route if it ever matters.
 **3.6.3 When capture happens.** At launch, and at a save holding something stale (ADR-042,
 ADR-045); no polling, no refresh on resume. **One minute** is set by the **place**, not the weather,
 so the preview can be hours old on a phone left open all day — but **no chit is ever recorded with
-it**, saving re-reading, so the staleness is on the screen and never in the data. **Permission is
-asked once, on first run** (ADR-041); a refusal means quieter chits, and nothing in the UI mentions
-it.
+it**, saving re-reading, so the staleness is on the screen and never in the data. **The place is
+asked for at a save** (ADR-094), never at launch and never behind a screen of ours: the OS decides
+how many times, a refusal means quieter chits, and nothing in the UI mentions it either way.
 
 **A reading landing mid-chit changes the facts and nothing else** (ADR-081). The launch capture
 finishes seconds after the app opens, which is squarely inside the time somebody spends writing
@@ -110,8 +110,10 @@ alone, so its sigil stays and carries the rest.
 
 **An underscore inside a tag is a space** — `@anant_dubey` is written with the underscore and reads
 *anant dubey*, because a tag has to survive being one word while typing and be two when read. A run
-of them is still one space. **The whole tag counts as one thing**, matched regardless of case and
-of whether it was spelt with underscores or not, which is what a search would count later.
+of them is still one space. **A tag is drawn in lower case however it was typed** (ADR-092):
+`@Anant` and `@anant` are one person and read as one word, the fold happening where the tag is read
+out of the words so that the chit, the row in find and the route cannot disagree. **The whole tag
+counts as one thing**, which is what a search counts later; the stored text keeps what was typed.
 
 **A tag starts at a word start and ends on a letter, a digit or a mark.** `work@example.com` carries
 no tag, `@anant.` tags the name and leaves the full stop, `@anant's` leaves the possessive, and a
@@ -130,7 +132,7 @@ and sigils and all, because that is what an edit edits — and the raw text is w
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
 **one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the
-calendar's month sit at the same height** (§6.3), so switching tab does not move the heading. Then
+past's month sit at the same height** (§6.3), so switching tab does not move the heading. Then
 the timeline, the open chit on its visible second slip, the day's thread, and the चित्त mark closing
 the day.
 
@@ -156,13 +158,14 @@ middle gives one small haptic (ADR-034), so the strip is silent when it moves it
 **There is no settings control** — a control that does nothing is not marked up as one.
 
 *The thread.* **A chit is opened by holding it**, on Today and in the archive alike (ADR-061), and
-**nothing is drawn under the finger** (ADR-071) — what says the hold landed is the phone's own tick.
+**nothing is drawn under the finger** (ADR-071) — what says the hold landed is the phone's own tick,
+one of the three the app speaks in (§6, ADR-096).
 No chevron: the row *is* the target. A tap does nothing, the thread being a reading surface whose
 one tap is the pill's; there is no swipe, deleting living in the editor and not a thumb's width from
 a scroll. Before anything is written it reads *"Nothing written yet today."*, with no count, no rail
 and no placeholder row.
 
-**4.2 Calendar.** A date carries a number when something was written that day, and the tile's
+**4.2 Past.** A date carries a number when something was written that day, and the tile's
 density scales with how much — four steps of **ink**, 6% at one chit to 30% at four or more. Today
 keeps its number and is ringed in `--seal`, with **2px of paper between the ring and the wash** so
 it clears the contrast floor whatever the density (ADR-046). **The current month is drawn up to
@@ -195,25 +198,9 @@ uppercase in the app), the elapsed figure in tabular figures, twenty waveform st
 **Discard** and **Stop & keep**. **Every other way out is Discard's** — the drag, the scrim and the
 back gesture all cancel, so nothing is kept and the take is deleted (ADR-055).
 
-**4.4 First run.** **Once in the life of an install** (ADR-041): the wordmark, then two slips on a
-chit's tear edge and two answers. **The first says the three things a screen cannot** (ADR-074,
-ADR-087) — that the page is always open and a few words then **Save** make a chit; that a chit is
-opened again by **holding** it; and that **`@names` and `#topics` are how you find one later**.
-**The microphone is deliberately not among them**: its icon is on the slip and says what it is,
-where a hold and a sigil have nothing to look at. *That the take is kept rather than transcribed
-used to be here* — it is a hint in find's line now (§4.6), a fact worth keeping and not worth a
-line of the one screen that cannot scroll. **The second asks**: a chit is stamped with the time and
-— if you let it — the weather, whether you were moving, and that a place was recorded; it never
-shows where, and none of it leaves the phone. **The wordmark is centred here and nowhere else**, and
-**the screen does not scroll** — the copy is cut until it fits, a first screen that slides under the
-thumb being a worse welcome than a shorter sentence. Then **Allow**, which raises the system dialog
-and then opens Today, and **Not now**, which opens Today and **raises nothing** — a quiet option
-that still summoned a system prompt would be a dark pattern wearing a polite label. Whatever the answer the app opens, a refusal is not
-an error state, and **neither is asked again** (ADR-016). A bare system prompt cannot say what it
-buys; this screen makes the case — *so a chit can remember what the weather was* — before the
-platform's dialog arrives as a confirmation of something already agreed to, and **nothing on it is a
-new kind of object**. **Only location is asked for here**; the microphone is asked for the first
-time somebody taps it.
+**4.4 — retired.** *First run.* The welcome screen is gone and **the app opens on Today** (ADR-094);
+the place is asked for at the first save, by the platform's own dialog and with nothing of ours
+before or after it. **The number is not reused** — it is cited from other documents and from git.
 
 **4.5 The chit editor.** Reached by holding any chit in the thread, and **it covers the tab bar**
 (ADR-062): one task, one way out. The header is a back arrow on the page gutter and the word
@@ -255,8 +242,10 @@ backend, and the prompt is the whole of the protection.
 **4.6 Find.** The third tab, and the way back to a chit you cannot date. **Three screens deep, and
 each one is a route** (ADR-084), so the system back walks up a level rather than out of the tab.
 
-*The first screen.* A line at the top, **the same all day and different tomorrow** — usually one of
-forty-five house lines, and **every fourth day a hint instead** (ADR-086) about something the app
+*The first screen.* A line at the top, **the same for as long as find is the tab on screen, and a
+different one next time it is arrived at** (ADR-093) — walking down to an axis and back is the same
+visit, so the line never moves while it is being read. Usually one of
+forty-five house lines, and **every fourth one a hint instead** (ADR-086) about something the app
 does and does not otherwise say: the tag syntax, that an underscore in a tag reads as a space, that
 the question on an empty chit is a different one every time. **A hint lives here rather than under
 the thing it describes** — a caption that never goes away is chrome on the sparest screens in the
