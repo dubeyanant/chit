@@ -153,10 +153,12 @@ corruption.
 
 ## 5. Migrations
 
-**They are live** (ADR-099), v1 being the first build that goes to a phone whose chits somebody would
-miss. `schemaVersion` is **1**, `drift_schemas/drift_schema_v1.json` is the snapshot it ships on, and
-`AppDatabase.steps` is the ladder — empty, because nothing has changed yet, and in place so that the
-first change is an addition rather than an archaeology.
+**There are none yet, and that is the point of taking the snapshot now** (ADR-099). The schema as it
+stands **is version 1**: a fresh install runs `onCreate` and gets it directly, and no migration code
+ever executes for anybody on v1. `drift_schemas/drift_schema_v1.json` is the record of that shape,
+and `AppDatabase.steps` is the ladder — **empty**, so the first schema change is an addition rather
+than an archaeology. Once v1 is on phones, that file is the only thing that knows what their
+database looks like.
 
 **A schema change is three things in one commit**: the bumped `schemaVersion`, a `SchemaStep` whose
 `to` is the new version, and a fresh snapshot. `onUpgrade` walks the ladder and **throws if it lands

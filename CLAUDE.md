@@ -208,8 +208,10 @@ compiled. **To look at a change on a handset, `flutter build apk --release` firs
 app is in front, and a screenshot pass can end up typing into it. Capture with
 `adb exec-out screencap -p` and ask for the gestures.
 
-**Migrations are live** (ADR-059, reversed by ADR-099 — v1 ships to phones that will keep what they
-write). Changing a table means **bumping `schemaVersion`, adding a `SchemaStep` beside it, and
+**There are no migrations yet, and the machinery for the first one is in place** (ADR-059, reversed
+by ADR-099). **The schema as it stands is version 1** — a fresh install creates it, nothing migrates
+into it, and `drift_schemas/drift_schema_v1.json` is the record of its shape to migrate *from*.
+Changing a table means **bumping `schemaVersion`, adding a `SchemaStep` beside it, and
 dumping the snapshot**, in one change:
 
 ```bash
