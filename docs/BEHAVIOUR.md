@@ -236,8 +236,11 @@ before or after it. **The number is not reused** — it is cited from other docu
 (ADR-062): one task, one way out. The header is a back arrow on the page gutter and the word
 *Editing* — not the day, the slip's stamp carrying the time, and not the wordmark, this being
 somewhere you came into. **The slip fills the screen** (ADR-066): the saved stamp, the pill and the
-photo frame with **Remove** beside each, then the field taking every line left and scrolling inside
-itself, then **Cancel** and **Save**, with *Delete this chit* pinned below the slip and always on screen.
+photo frame with **Remove** beside each, then the field, then **Cancel** and **Save**, with
+*Delete this chit* below the slip. **The slip scrolls its own contents** (ADR-108) — the stamp, the
+pill, the frame and the field move together while the action row stays at the foot, so a chit
+carrying both a recording and a photo can still be written in with the keyboard up, and the caret is
+carried into view as it moves. **The field grows from a floor** rather than taking whatever is left.
 
 **Nothing on this screen can move the stamp** — not the time, the day, the weather, the place or the
 motion. An edit changes what the chit says, never when or where it was written, and **a chit whose
@@ -267,10 +270,13 @@ sheet or a photo taken from the camera is staged as a replacement and is played 
 it sits until Save moves it in. A removal that leaves the chit with nothing withholds Save, leaving
 Cancel and *Delete this chit* — the honest pair.
 
-**Delete this chit** is quiet and apart from the action row: the one destructive act is always on
-screen, and a step of the scale away from Save rather than an inch from it. It is named in full so
-it cannot be read as Discard. It asks, and **there is no undo** (ADR-064) — there is no trash and no
-backend, and the prompt is the whole of the protection.
+**Delete this chit** is quiet and apart from the action row, a step of the scale away from Save
+rather than an inch from it. It is named in full so it cannot be read as Discard. It asks, and
+**there is no undo** (ADR-064) — there is no trash and no backend, and the prompt is the whole of
+the protection. **It is not drawn while the keyboard is up** (ADR-108): the step that keeps it
+apart from Cancel closes when the slip is squeezed, and two quiet buttons touching read as one
+control. It comes back with the keyboard, and a chit is never destroyed from a screen somebody is
+writing on.
 
 **4.6 Find.** The third tab, and the way back to a chit you cannot date. **Three screens deep, and
 each one is a route** (ADR-084), so the system back walks up a level rather than out of the tab.

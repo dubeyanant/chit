@@ -252,3 +252,9 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     audio suite covers `keep`, `sweep` and `resolve` through the audio instance; the photo instance
     is covered only through the repository. If the two ever need different behaviour — a photo
     wanting a thumbnail, say — that is the point at which they stop being one class.
+75. **The editor's field floor is 120px and was picked by eye, not measured** (ADR-108). It is what
+    the field is worth when a chit is one line and the slip has room to spare; too low and the slip
+    looks half-empty above the action row, too high and a chit with a photo scrolls when it need
+    not. **The composer was not touched** — its open chit already sits in Today's `CustomScrollView`,
+    so the keyboard case was never broken there, and the two screens now reach the same behaviour by
+    different routes. If the editor's scroll ever reads differently from Today's, that is why.
