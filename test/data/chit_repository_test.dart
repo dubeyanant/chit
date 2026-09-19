@@ -702,6 +702,52 @@ void main() {
       expect(await repo.watchDay(20260915).first, isEmpty);
     });
 
+    group('watchAnyWritten — whether the tabs are drawn, ADR-097', () {
+      test('an install with nothing in it has written nothing', () async {
+        expect(await repo.watchAnyWritten().first, isFalse);
+      });
+
+      test('one chit is enough', () async {
+        await chitAt(DateTime(2026, 9, 15, 9), 'First.');
+
+        expect(await repo.watchAnyWritten().first, isTrue);
+      });
+
+      test('it does not care how many, nor which day', () async {
+        await chitAt(DateTime(2026, 1, 2, 9), 'One.');
+        await chitAt(DateTime(2026, 9, 15, 9), 'Two.');
+        await chitAt(DateTime(2026, 9, 15, 10), 'Three.');
+
+        expect(await repo.watchAnyWritten().first, isTrue);
+      });
+
+      test('deleting the last one takes it back to nothing', () async {
+        final Chit only = await chitAt(DateTime(2026, 9, 15, 9), 'First.');
+        expect(await repo.watchAnyWritten().first, isTrue);
+
+        await repo.delete(only.id);
+
+        expect(await repo.watchAnyWritten().first, isFalse);
+      });
+
+      test('it re-emits as chits arrive and go', () async {
+        final List<bool> seen = <bool>[];
+        final StreamSubscription<bool> watching = repo.watchAnyWritten().listen(
+          seen.add,
+        );
+        addTearDown(watching.cancel);
+        await pumpEventQueue();
+
+        final Chit only = await chitAt(DateTime(2026, 9, 15, 9), 'First.');
+        await pumpEventQueue();
+
+        await repo.delete(only.id);
+        await pumpEventQueue();
+
+        expect(seen, <bool>[false, true, false]);
+      });
+    });
+
     group('watchDayRange — the timeline, ADR-024', () {
       test('reads the range oldest first, which is left to right', () async {
         final Chit first = await chitAt(DateTime(2026, 9, 14, 9), 'First.');

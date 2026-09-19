@@ -11,6 +11,7 @@ analyzer:
     - web/**
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - "test/data/db/generated/**"
 
   language:
     strict-casts: true

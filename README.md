@@ -19,8 +19,8 @@ numbered items a session must know. **v1 is finished** (ADR-073), so there is no
 > phone was doing, and is read back on Today, on a scrolling timeline and in past, a grid of the
 > months written. **Voice is recording and playback: there is no transcription** (ADR-058). A saved
 > chit is opened by holding it, and its words, its recording and the chit itself can be changed or
-> destroyed. **There are no database migrations** (ADR-059) — see OPEN-QUESTIONS.md item 38 before
-> installing it anywhere the chits would be missed.
+> destroyed. **Migrations are live** (ADR-099) and **nothing is backed up off the phone** (ADR-100),
+> so a lost phone is lost chits until there is an export format.
 
 **Section numbers are global and stable.** §1 to §10 are numbered once across four files, and a
 section keeps its number wherever it lives, so §6.1 resolves the same way from anywhere. Roughly two
@@ -107,6 +107,7 @@ lib/
 └── shared/     widgets used by more than one feature
 
 tool/           pack_outlines.mjs — builds assets/geo/outline.bin, run by hand (ADR-089)
+drift_schemas/  one JSON snapshot per shipped schema version — never edited (ADR-099)
 ```
 
 `lib/core/theme/` is §6 as four `ThemeExtension`s, reached through `context.colors`, `.type`,
@@ -118,7 +119,8 @@ the hints (ADR-086) — and turns a visit count into one of them (ADR-093).
 `lib/domain/services/place_permission.dart` is the whole of asking for location: it is called by the
 save and by nothing else, and draws nothing (ADR-094).
 `lib/core/haptics.dart` is the three steps of §6's haptic vocabulary and the only place
-`HapticFeedback` is called (ADR-096). `lib/shared/widgets/` is the chit vocabulary:
+`HapticFeedback` is called (ADR-096). `lib/features/shell/` owns the masthead, the tabs, and
+**whether the tabs are drawn at all** — they are not, until something has been written (ADR-097). `lib/shared/widgets/` is the chit vocabulary:
 the slip and its tear edge, the chit's own body text, the stamp
 row and its motion marks, the rail and the thread over it, a day's heading and its group, the
 wordmark, the heading row the tabs hang their title in, the two button weights, the microphone, the
@@ -128,7 +130,8 @@ pill, the prompt sheet, `Arrival`, `StaggeredEntrance` and `FocusRing`.
 only be seen on a screen is seen on a handset and written into the commit. Suites sit beside what
 they guard, mirroring `lib/`, plus `test/support/` for the fakes and the WCAG arithmetic and
 `test/docs/` for the two source rules enforcing themselves — no widget tests (ADR-031) and no
-comments (ADR-095). What is covered is ARCHITECTURE.md §4.
+comments (ADR-095) — and `test/data/db/generated/`, written by `drift_dev schema generate` from the
+snapshots and held to the same exemption as `*.g.dart`. What is covered is ARCHITECTURE.md §4.
 Three patterns worth keeping: **a rule that fails silently gets a test that checks a property, not
 an example** (asserting "no fade is slower than it was" caught a motion rule that was
 self-consistent and wrong); **an invariant worth having is worth holding in more than one place**,

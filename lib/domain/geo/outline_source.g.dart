@@ -8,16 +8,9 @@ part of 'outline_source.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// **Loaded when find is first opened, not at startup.** The atlas is a
-/// megabyte that only one screen reads, and ADR-009's promise is that the app
-/// opens instantly; a tab a person may never visit does not get to spend that.
 
 @ProviderFor(outlineSource)
 final outlineSourceProvider = OutlineSourceProvider._();
-
-/// **Loaded when find is first opened, not at startup.** The atlas is a
-/// megabyte that only one screen reads, and ADR-009's promise is that the app
-/// opens instantly; a tab a person may never visit does not get to spend that.
 
 final class OutlineSourceProvider
     extends
@@ -27,9 +20,6 @@ final class OutlineSourceProvider
           FutureOr<OutlineSource>
         >
     with $FutureModifier<OutlineSource>, $FutureProvider<OutlineSource> {
-  /// **Loaded when find is first opened, not at startup.** The atlas is a
-  /// megabyte that only one screen reads, and ADR-009's promise is that the app
-  /// opens instantly; a tab a person may never visit does not get to spend that.
   OutlineSourceProvider._()
     : super(
         from: null,

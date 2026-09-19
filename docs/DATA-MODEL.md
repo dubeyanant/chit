@@ -115,13 +115,14 @@ at one instant and drawn as one row.
 | Archive, filtered | `watchDay` — *one day's chits, newest first* is one question |
 | past, the chevrons | `watchWrittenMonths` — `GROUP BY localDay / 100` (ADR-047) |
 | Find | `watchEvery` — every row, same order, **and no `WHERE` at all** (ADR-083) |
+| The shell, whether the tabs are drawn | `watchAnyWritten` — `SELECT id FROM chits LIMIT 1`, read as a bool (ADR-097). **The cheapest question the schema answers**: no count, no ordering, one row or none |
 
 **`watchEvery` is the one unbounded query, and it is deliberate.** Find narrows on four axes, two of
 which — people and topics — live inside the body text and have **no index to ask**, so the rows come
 to Dart and are filtered there; weather and motion could be pushed into SQL and are not, a half-
 pushed filter being two places to be wrong. ADR-077 deleted the `weather` index *because it served
-this and nothing else*, and it has not come back: bringing it back is a schema change and ADR-059's
-reinstall, and nothing has measured slow yet. **This is the first thing to suspect if find stutters**
+this and nothing else*, and it has not come back: bringing it back is a schema change, which is now a
+step and a snapshot (ADR-099) rather than a reinstall, and nothing has measured slow yet. **This is the first thing to suspect if find stutters**
 — open item 49.
 
 **Six queries behind seven readings**, which is the mechanism behind *the tabs never disagree*:
@@ -152,15 +153,22 @@ corruption.
 
 ## 5. Migrations
 
-**There are none, on purpose** (ADR-059). `schemaVersion` is **1** and stays there; changing a table
-changes the schema, and an install carrying the old shape is reinstalled — `onUpgrade` throws a
-message saying exactly that, a database the app cannot trust having to fail at `open` rather than
-three screens later as a column quietly missing.
+**They are live** (ADR-099), v1 being the first build that goes to a phone whose chits somebody would
+miss. `schemaVersion` is **1**, `drift_schemas/drift_schema_v1.json` is the snapshot it ships on, and
+`AppDatabase.steps` is the ladder — empty, because nothing has changed yet, and in place so that the
+first change is an addition rather than an archaeology.
 
-**The trigger to bring them back is data somebody would miss** — the first install that is not a
-development one. Open item 38 carries it, and what returns is all of it: `drift_dev schema dump` and
-`schema generate`, plus the four rules the deleted harness taught, which are why this section exists
-rather than only git.
+**A schema change is three things in one commit**: the bumped `schemaVersion`, a `SchemaStep` whose
+`to` is the new version, and a fresh snapshot. `onUpgrade` walks the ladder and **throws if it lands
+anywhere but the version the app expects**, so a bump that forgot its step fails at `open` rather
+than three screens later as a column quietly missing.
+
+```bash
+dart run drift_dev schema dump lib/data/db/app_database.dart drift_schemas/
+dart run drift_dev schema generate drift_schemas/ test/data/db/generated/
+```
+
+The four rules the first harness taught, which are why this section exists rather than only git:
 
 - One `from → to` step per version, and **once a version has shipped, its step and its snapshot are
   never edited**.

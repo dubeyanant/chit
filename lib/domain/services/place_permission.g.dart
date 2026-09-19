@@ -8,33 +8,12 @@ part of 'place_permission.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Asking for the place, which happens at a save and nowhere else — ADR-094.
-///
-/// **The OS owns how many times somebody is asked.** Android shows the dialog
-/// twice and then answers `deniedForever` without one; this asks until it gets
-/// an answer that will not change, and **draws nothing of its own either way**
-/// — no screen before the dialog, no explanation after a refusal. A permission
-/// the app cannot have is a quieter chit, which is not an error state.
 
 @ProviderFor(PlacePermission)
 final placePermissionProvider = PlacePermissionProvider._();
 
-/// Asking for the place, which happens at a save and nowhere else — ADR-094.
-///
-/// **The OS owns how many times somebody is asked.** Android shows the dialog
-/// twice and then answers `deniedForever` without one; this asks until it gets
-/// an answer that will not change, and **draws nothing of its own either way**
-/// — no screen before the dialog, no explanation after a refusal. A permission
-/// the app cannot have is a quieter chit, which is not an error state.
 final class PlacePermissionProvider
     extends $NotifierProvider<PlacePermission, bool> {
-  /// Asking for the place, which happens at a save and nowhere else — ADR-094.
-  ///
-  /// **The OS owns how many times somebody is asked.** Android shows the dialog
-  /// twice and then answers `deniedForever` without one; this asks until it gets
-  /// an answer that will not change, and **draws nothing of its own either way**
-  /// — no screen before the dialog, no explanation after a refusal. A permission
-  /// the app cannot have is a quieter chit, which is not an error state.
   PlacePermissionProvider._()
     : super(
         from: null,
@@ -62,15 +41,7 @@ final class PlacePermissionProvider
   }
 }
 
-String _$placePermissionHash() => r'69b074616146b7140f56a2b8dd2f4811db852bb7';
-
-/// Asking for the place, which happens at a save and nowhere else — ADR-094.
-///
-/// **The OS owns how many times somebody is asked.** Android shows the dialog
-/// twice and then answers `deniedForever` without one; this asks until it gets
-/// an answer that will not change, and **draws nothing of its own either way**
-/// — no screen before the dialog, no explanation after a refusal. A permission
-/// the app cannot have is a quieter chit, which is not an error state.
+String _$placePermissionHash() => r'53cc1abc5ab55fbd9dc80e1bbb460f5cd5b3648d';
 
 abstract class _$PlacePermission extends $Notifier<bool> {
   bool build();

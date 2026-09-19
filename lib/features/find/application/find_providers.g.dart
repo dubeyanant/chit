@@ -8,12 +8,9 @@ part of 'find_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Every chit, which find narrows rather than queries.
 
 @ProviderFor(everyChit)
 final everyChitProvider = EveryChitProvider._();
-
-/// Every chit, which find narrows rather than queries.
 
 final class EveryChitProvider
     extends
@@ -23,7 +20,6 @@ final class EveryChitProvider
           Stream<List<Chit>>
         >
     with $FutureModifier<List<Chit>>, $StreamProvider<List<Chit>> {
-  /// Every chit, which find narrows rather than queries.
   EveryChitProvider._()
     : super(
         from: null,
@@ -51,15 +47,11 @@ final class EveryChitProvider
 
 String _$everyChitHash() => r'3765a2cf2134ebb33b70b978a03de49d2c252616';
 
-/// What each axis can offer, read once per change to the chits.
-
 @ProviderFor(AxisValues)
 final axisValuesProvider = AxisValuesProvider._();
 
-/// What each axis can offer, read once per change to the chits.
 final class AxisValuesProvider
     extends $NotifierProvider<AxisValues, Map<FindAxis, List<FindValue>>?> {
-  /// What each axis can offer, read once per change to the chits.
   AxisValuesProvider._()
     : super(
         from: null,
@@ -91,8 +83,6 @@ final class AxisValuesProvider
 
 String _$axisValuesHash() => r'6d4c1ffa43f47bc8197a0fe9eea85a8c06d79093';
 
-/// What each axis can offer, read once per change to the chits.
-
 abstract class _$AxisValues extends $Notifier<Map<FindAxis, List<FindValue>>?> {
   Map<FindAxis, List<FindValue>>? build();
   @$mustCallSuper
@@ -119,18 +109,13 @@ abstract class _$AxisValues extends $Notifier<Map<FindAxis, List<FindValue>>?> {
   }
 }
 
-/// The chits carrying one value of one axis, grouped by day.
-
 @ProviderFor(chitsOfValue)
 final chitsOfValueProvider = ChitsOfValueFamily._();
-
-/// The chits carrying one value of one axis, grouped by day.
 
 final class ChitsOfValueProvider
     extends
         $FunctionalProvider<List<DayGroup>?, List<DayGroup>?, List<DayGroup>?>
     with $Provider<List<DayGroup>?> {
-  /// The chits carrying one value of one axis, grouped by day.
   ChitsOfValueProvider._({
     required ChitsOfValueFamily super.from,
     required (FindAxis, String) super.argument,
@@ -184,8 +169,6 @@ final class ChitsOfValueProvider
 
 String _$chitsOfValueHash() => r'd83bbed4398b7263d716a2e778c4437a8a26f78e';
 
-/// The chits carrying one value of one axis, grouped by day.
-
 final class ChitsOfValueFamily extends $Family
     with $FunctionalFamilyOverride<List<DayGroup>?, (FindAxis, String)> {
   ChitsOfValueFamily._()
@@ -196,8 +179,6 @@ final class ChitsOfValueFamily extends $Family
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
-
-  /// The chits carrying one value of one axis, grouped by day.
 
   ChitsOfValueProvider call(FindAxis axis, String slug) =>
       ChitsOfValueProvider._(argument: (axis, slug), from: this);

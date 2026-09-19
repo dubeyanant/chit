@@ -17,6 +17,7 @@ void main() {
         if (path.endsWith('.g.dart') || path.endsWith('.freezed.dart')) {
           continue;
         }
+        if (path.contains('/generated/')) continue;
         if (path.endsWith('no_comments_test.dart')) continue;
 
         offences.addAll(commentsIn(path, entity.readAsStringSync()));

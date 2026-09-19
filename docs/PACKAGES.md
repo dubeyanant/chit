@@ -95,3 +95,38 @@ design never sees; `IPHONEOS_DEPLOYMENT_TARGET` is 15.0, above every plugin's fl
 strings should say what §3.6 says the app does: it records that a place was there, and never shows
 which one. The microphone string says the thing that is unusual, true and most likely to earn the
 permission — that the recording stays on the phone.
+
+## Shipping a release
+
+**The keystore is the owner's and is never committed** (ADR-098). Without `android/key.properties` a
+release build still runs — signed with the **debug** key, and it says so on every build. Such an APK
+installs and can then never be updated, the signature not matching any properly signed build, so the
+line is worth reading.
+
+```bash
+keytool -genkeypair -v -keystore ~/chitta-release.jks -storetype PKCS12 \
+  -keyalg RSA -keysize 2048 -validity 10000 -alias chitta
+```
+
+Then `android/key.properties`, which `android/.gitignore` already covers:
+
+```properties
+storePassword=…
+keyPassword=…
+keyAlias=chitta
+storeFile=C:/absolute/path/to/chitta-release.jks
+```
+
+**Back the keystore and its passwords up somewhere that is not this machine.** Losing them means the
+app can never be updated again under the same `applicationId`, and there is no recovery — a new key
+is a new app, installed beside the old one and opening empty (ADR-074).
+
+```bash
+flutter build apk --release --split-per-abi   # three APKs, ~20 MB each
+flutter build appbundle --release             # for Play, which signs per device
+```
+
+**`--split-per-abi` is what a direct download wants**: the universal APK carries arm64, armeabi-v7a
+and x86_64 at once and is three times the size for no gain on a phone. **Verify what was signed
+before it goes anywhere**: `apksigner verify --print-certs <apk>` prints the certificate, and a
+debug-signed build says `CN=Android Debug`.

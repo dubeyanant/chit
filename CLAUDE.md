@@ -153,8 +153,8 @@ both bundle ids are `chitta`; the `Chit` classes, the Drift file and the repo di
   say why**, and a comment is a third place for the reason to live, out of reach of every rule in §0
   that keeps the other two true. When a line needs explaining, either the name is wrong and you
   rename it, or the reason is a decision and it belongs in `docs/DECISIONS.md` with the citation
-  going the other way — the record names the file. The generated `*.g.dart` and `*.freezed.dart`
-  are exempt: they are not written here. A test fails if a comment reappears.
+  going the other way — the record names the file. The generated `*.g.dart`, `*.freezed.dart` and
+  `test/data/db/generated/` are exempt: they are not written here. A test fails if one reappears.
 - **No widget tests. Ever.** (ADR-031.) Nothing under `test/` may call `testWidgets`, `pumpWidget`
   or `WidgetTester`, and no test may build a widget in order to look at it. **A claim that can only
   be checked by pumping a screen is checked on a device instead** — build it, look at it, and write
@@ -208,9 +208,19 @@ compiled. **To look at a change on a handset, `flutter build apk --release` firs
 app is in front, and a screenshot pass can end up typing into it. Capture with
 `adb exec-out screencap -p` and ask for the gestures.
 
-**There are no migrations** (ADR-059). `schemaVersion` stays 1, changing a table changes the schema,
-and an install carrying the old shape is **reinstalled**. That holds only while Chitta has no data
-anybody would miss; `docs/DATA-MODEL.md` §5 says what comes back when it does.
+**Migrations are live** (ADR-059, reversed by ADR-099 — v1 ships to phones that will keep what they
+write). Changing a table means **bumping `schemaVersion`, adding a `SchemaStep` beside it, and
+dumping the snapshot**, in one change:
+
+```bash
+dart run drift_dev schema dump lib/data/db/app_database.dart drift_schemas/
+dart run drift_dev schema generate drift_schemas/ test/data/db/generated/
+```
+
+`onUpgrade` **throws when no step covers the version it is asked for**, so a bump without its step
+fails at `open` rather than three screens later as a column quietly missing. `docs/DATA-MODEL.md` §5
+has the four rules a step has to obey; the one that bites is that **a shipped version's step and
+snapshot are never edited again**.
 
 Windows: `flutter pub get` warns unless **Developer Mode** is enabled — plugin builds need symlink
 support. `start ms-settings:developers`.

@@ -1,7 +1,30 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Release signing, ADR-098. The keystore and its passwords are the owner's and
+// are never committed; key.properties beside this file supplies them. Without
+// it a release build still works and is signed with the debug key, which is
+// what `flutter run --release` needs — so the absence is announced rather than
+// assumed, an APK that installs and can never be updated being the failure
+// this guards.
+val keyPropertiesFile = rootProject.file("key.properties")
+val keyProperties = Properties()
+val signedForRelease = keyPropertiesFile.exists()
+
+if (signedForRelease) {
+    FileInputStream(keyPropertiesFile).use { keyProperties.load(it) }
+} else {
+    println(
+        "chitta: android/key.properties is missing, so the release build is " +
+            "signed with the DEBUG key. It will install, and no properly " +
+            "signed build can ever update it. See docs/PACKAGES.md."
+    )
 }
 
 android {
@@ -15,27 +38,33 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.infiniteants.chitta"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         // record_android requires 24; it is the highest floor of any plugin in
-        // PACKAGES.md. speech_to_text asks 21, path_provider 21, just_audio 16.
+        // PACKAGES.md. path_provider asks 21, just_audio 16.
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
-        // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
-        // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
-        // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
-        // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (signedForRelease) {
+                keyAlias = keyProperties.getProperty("keyAlias")
+                keyPassword = keyProperties.getProperty("keyPassword")
+                storeFile = file(keyProperties.getProperty("storeFile"))
+                storePassword = keyProperties.getProperty("storePassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (signedForRelease) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
