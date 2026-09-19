@@ -6,6 +6,7 @@ import '../../../app/router.dart';
 import '../../../core/extensions.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../shared/widgets/focus_ring.dart';
+import '../../../shared/widgets/guide_sheet.dart';
 import '../../../shared/widgets/wordmark.dart';
 import '../../find/application/find_line_provider.dart';
 import '../application/shell_providers.dart';
@@ -36,8 +37,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   @override
   Widget build(BuildContext context) {
     final bool written = ref.watch(anyChitWrittenProvider).value ?? false;
-    final bool tagged = ref.watch(anyChitTaggedProvider).value ?? false;
-    final List<ChitRoute> drawn = ChitRoute.drawnWhen(tagged: tagged);
+    final List<ChitRoute> drawn = ChitRoute.drawnWhen(
+      findGoesSomewhere: ref.watch(findGoesSomewhereProvider),
+    );
 
     if (!drawn.contains(ChitRoute.find) &&
         widget.navigationShell.currentIndex == ChitRoute.find.index) {
@@ -68,11 +70,11 @@ class _Masthead extends StatelessWidget {
   Widget build(BuildContext context) {
     final space = context.space;
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: space.gutter,
-        vertical: space.s3,
+      padding: EdgeInsets.symmetric(horizontal: space.gutter),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Wordmark(onOpenGuide: () => showGuideSheet(context)),
       ),
-      child: const Align(alignment: Alignment.centerLeft, child: Wordmark()),
     );
   }
 }

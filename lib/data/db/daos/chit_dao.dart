@@ -92,6 +92,18 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
           .watch()
           .map((List<TypedResult> rows) => rows.isNotEmpty);
 
+  Stream<bool> watchAnyAmbientAxis() =>
+      (selectOnly(chits)
+            ..addColumns(<Expression<Object>>[chits.id])
+            ..where(
+              chits.weather.isNotNull() |
+                  (chits.motion.isNotNull() &
+                      chits.motion.equalsValue(MotionState.stationary).not()),
+            )
+            ..limit(1))
+          .watch()
+          .map((List<TypedResult> rows) => rows.isNotEmpty);
+
   Stream<List<String>> watchTagCandidates() {
     final JoinedSelectStatement<$ChitsTable, ChitRow> query = selectOnly(chits)
       ..addColumns(<Expression<Object>>[chits.body])

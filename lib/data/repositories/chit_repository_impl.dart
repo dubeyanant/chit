@@ -243,6 +243,9 @@ final class ChitRepositoryImpl implements ChitRepository {
   );
 
   @override
+  Stream<bool> watchAnyAmbientAxis() => _dao.watchAnyAmbientAxis();
+
+  @override
   Stream<List<Chit>> watchEvery() => _dao.watchEvery().map(_chitsOf);
 
   @override

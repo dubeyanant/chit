@@ -118,18 +118,20 @@ drift_schemas/  one JSON snapshot per shipped schema version — never edited (A
 reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's words (ADR-082) —
 pure, so the widget that draws them holds no grammar, and `lib/domain/find/` says which axis a tag
 is found on. `lib/domain/find_line.dart` holds the two books find opens with — the house lines and
-the hints (ADR-086) — and turns a visit count into one of them (ADR-093).
+the hints (ADR-086) — and turns a visit count into one of them (ADR-093). `lib/domain/guide.dart`
+is the book the wordmark opens, the hold gesture and the tag syntax having no other home
+(ADR-110).
 `lib/domain/services/place_permission.dart` is the whole of asking for location — the permission and
 the phone's location switch both (ADR-102): it is called by the save and by nothing else, and draws
 nothing (ADR-094).
 `lib/core/haptics.dart` is the three steps of §6's haptic vocabulary and the only place
 `HapticFeedback` is called (ADR-096). `lib/features/shell/` owns the masthead, the tabs, and
 **whether the tabs are drawn at all** — they are not, until something has been written (ADR-097),
-and *find* is not until a chit carries a tag (ADR-109). `lib/shared/widgets/` is the chit vocabulary:
+and *find* is not until an axis has a value in it (ADR-109). `lib/shared/widgets/` is the chit vocabulary:
 the slip and its tear edge, the chit's own body text, the stamp
 row and its motion marks, the rail and the thread over it, a day's heading and its group, the
 wordmark, the heading row the tabs hang their title in, the two button weights, the microphone and
-the camera beside it, the pill, the photo frame, the prompt and photo sheets, `Arrival`,
+the camera beside it, the pill, the photo frame, the prompt, photo and guide sheets, `Arrival`,
 `StaggeredEntrance` and `FocusRing`. `lib/data/files/file_store.dart` is one store over a folder and
 an extension, and both the audio and the photo stores are it (ADR-106);
 `lib/domain/services/photo_source.dart` is the one door a photo comes in through, and the picker

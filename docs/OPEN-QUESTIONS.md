@@ -33,7 +33,7 @@ above, then responsive web. Deliberately not on the list: **any speech engine, c
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
 nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 30, 31, 34, 38, 39, 40, 43, 44, 47, 48,
-52, 53, 63, 66; retired: 32, 33, 35, 36.**
+52, 53, 63, 66, 76; retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
    `ChitType._opticalSizeFor` converts logical pixels to points at 0.75, which is what a browser does
@@ -96,11 +96,12 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     were the other one, and went with ADR-094's screen.* The `Chit` classes and the repository
     directory keep the short name for their own reasons: an entry *is* a chit.
 42. **Nobody has seen the icon on an iPhone.**
-44. **— closed.** *The first-run screen has a copy ceiling, because it does not scroll.* There is no
-    first-run screen (ADR-094), so there is no ceiling. **The item it leaves behind**: the hold
-    gesture and the tag syntax were taught there and are now taught only by find's hints, which come
-    round every fourth visit and may never be seen by somebody who does not open that tab. If the
-    app has to teach them again, the place is where they are used, not a screen in front of Today.
+44. **— closed twice over.** *The first-run screen has a copy ceiling, because it does not scroll.*
+    There is no first-run screen (ADR-094). **What it left behind — the hold gesture and the tag
+    syntax having no home — is answered by the guide** (ADR-110), reached from the wordmark. It is
+    not *where they are used*, which is what this item argued for; it is a place that exists and is
+    never shown to anybody who did not ask. **A composer hint is still the better answer** if the
+    guide turns out to go unfound, and that is item 77.
 45. **Today's thread is still built eagerly**, and deliberately: it holds one day, and a day is
     bounded by how much a person writes in one. Somebody writing sixty chits in a day would feel it
     before the archive does. The fix would be the archive's (ADR-077), but the rail is drawn behind
@@ -258,14 +259,18 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     not. **The composer was not touched** — its open chit already sits in Today's `CustomScrollView`,
     so the keyboard case was never broken there, and the two screens now reach the same behaviour by
     different routes. If the editor's scroll ever reads differently from Today's, that is why.
-76. **Tags are now unteachable, and this is the item that has to be fixed before v1.1 ships**
-    (ADR-109). Item 44 recorded that the tag syntax lost its only home when ADR-094 deleted the
-    first-run screen, and is taught now by **find's hints** and by find's own empty lines — *"No
-    chit names anybody yet. Write @ and a name."* **Both of those live inside find, and find is now
-    behind a tag.** Nobody who does not already know the syntax can reach the place that teaches
-    it, so on a fresh install the third tab may never appear at all. The fix is the one item 44
-    already named — **teach it where it is used**, in the composer, not in the room it unlocks —
-    and it is no longer optional polish: without it ADR-109 quietly removes a feature rather than
-    deferring it. **The cheap reversal, if it has to ship before the teaching does, is to draw find
-    when any axis has a value** rather than only a tag, which is one condition in
-    `ChitRoute.drawnWhen`.
+76. **— closed before it shipped.** *Tags were unteachable: both places that taught the syntax
+    lived inside find, and find was behind a tag.* ADR-109 now counts a sky word or a motion, so
+    find is reachable and its hints teach again, and ADR-110's guide teaches the same two things
+    from the wordmark. **What is left is the case the ambient half does not cover**: a journal whose
+    chits never caught weather or movement — location refused, no network — still has no find until
+    somebody writes a tag, and such a person is the one least likely to know how.
+77. **Nobody has found the guide, because nobody has looked for it** (ADR-110). A tap on the
+    wordmark is not a discoverable gesture — it is the same objection item 44 raised against find's
+    hints, moved. **The guide catches the curious, not the lost.** Two things to watch: whether
+    anybody opens it at all, and whether चित्त gaining a touch target reads as the masthead having
+    become a control. **The better answer is still item 44's** — teach the tag syntax in the
+    composer, where it is used — and the guide does not remove that, it gives it somewhere to point
+    at. The masthead is **1px taller** now, the wordmark carrying `minTouchTarget` where it used to
+    carry `s3` of padding; nothing else moved, and §6.3's *a tab switch does not move the heading*
+    still holds because all three shift together.

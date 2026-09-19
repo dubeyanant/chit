@@ -47,7 +47,7 @@ demand.**
 
 **The shared widgets are the chit vocabulary — no state, no provider, each takes only what it
 draws.** `DayThread` is why the archive's *same treatment as Today* is true by construction: one
-widget, not two that look alike. Five earn exceptions — **`AudioPill` watches a provider**, since
+widget, not two that look alike. Six earn exceptions — **`AudioPill` watches a provider**, since
 which pill is lit is a property of the app's one player rather than of the row — **through a
 `select` that answers with its own row's playback**, so one pill's playhead does not rebuild the
 forty pills around it (ADR-077); **`PhotoFrame` watches one too**, a stored path being relative and
@@ -55,7 +55,8 @@ the store that resolves it living in `data` (ADR-106); **`ChitRow` navigates**, 
 identically (ADR-061); **`ChitBody` navigates too, and is stateful for it** (ADR-086) — a tag goes
 to find on the same argument, and its `TapGestureRecognizer`s have to be owned and disposed, one
 built inside `build` leaking one a frame; and **`Microphone` takes a callback**, since the two
-screens that draw it send the same take to different owners (ADR-065).
+screens that draw it send the same take to different owners (ADR-065); and **`Wordmark` takes one**
+(ADR-110), the shell knowing how to raise a sheet and the wordmark only how to be tapped.
 
 ## 2. Riverpod conventions
 
@@ -93,10 +94,11 @@ router has no redirect and `main()` awaits nothing** (ADR-094): there is no scre
 Today, and nothing on disk to read to find that out.
 
 **The shell watches two booleans and its own branch index.** Whether anything has been written draws
-the bar (ADR-097); whether anything carries a tag draws *find* within it (ADR-109), through a query
-of its own rather than find's `watchEvery`, so the shell never holds every chit to answer a
-boolean. `ChitRoute.drawnWhen` is the rule and is pure, so which tabs exist is tested without a
-widget. **A reader standing in find when its last tag goes is returned to Today** after the frame.
+the bar (ADR-097); whether find has anywhere to go draws *find* within it (ADR-109) — a `LIMIT 1`
+for the ambient axes and a narrow candidate query for tags, joined in a provider, so the shell
+never holds every chit to answer a boolean the way find's `watchEvery` would.
+`ChitRoute.drawnWhen` is the rule and is pure, so which tabs exist is tested without a widget.
+**A reader standing in find when its last axis empties is returned to Today** after the frame.
 
 **The shell watches its own branch index for one thing.** Arriving at find moves its line (ADR-093),
 and the branch index is where every way of arriving meets — the tab bar, and a tag tap that switches

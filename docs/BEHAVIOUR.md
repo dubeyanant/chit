@@ -159,13 +159,17 @@ takes them away again, which is the same screen a fresh install gets and is hone
 reason. **They do not fade in** — a bar that travels draws the eye to the movement rather than to
 the words, which is ADR-071's finding.
 
-**find is held back further, until a chit carries a tag** (ADR-109). The other three axes fill
-themselves — a sky word and a motion arrive with the ambient stamp and nobody asked for them — so a
-find furnished only by those is a room the writer never put anything in. **A tag is the one thing
-somebody has to mean**, so it is what opens the tab. Until then the bar holds two, evenly divided;
-find arrives on the right when the first `@name` or `#topic` is saved, and goes again if the last
-one is edited or deleted away — **and a reader standing in find when that happens is returned to
-Today**, since the tab they are in has stopped existing.
+**find is held back further, until it has somewhere to go** (ADR-109): a chit carrying a tag, or a
+sky word, or a motion — any axis with a value in it. **`stationary` is not one**, being stored and
+never drawn (§3.6.1), so it is no row to arrive at. Until then the bar holds two, evenly divided;
+find arrives on the right the moment an axis fills, and goes again if the last value is edited or
+deleted away — **and a reader standing in find when that happens is returned to Today**, since the
+tab they are in has stopped existing.
+
+**The wordmark opens the guide** (ADR-110). चित्त is on every tab and has never done anything;
+tapping it raises a slip of what the app cannot teach in passing — that a chit is **held** to open
+it, and that `@` names a person and `#` a topic. It is the only place in the app that explains
+itself, and it is reached rather than shown: nothing raises it, and no install has to dismiss it.
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
 **one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the

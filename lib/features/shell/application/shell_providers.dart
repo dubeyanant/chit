@@ -11,3 +11,12 @@ Stream<bool> anyChitWritten(Ref ref) =>
 @riverpod
 Stream<bool> anyChitTagged(Ref ref) =>
     ref.watch(chitRepositoryProvider).watchAnyTagged();
+
+@riverpod
+Stream<bool> anyAmbientAxis(Ref ref) =>
+    ref.watch(chitRepositoryProvider).watchAnyAmbientAxis();
+
+@riverpod
+bool findGoesSomewhere(Ref ref) =>
+    (ref.watch(anyAmbientAxisProvider).value ?? false) ||
+    (ref.watch(anyChitTaggedProvider).value ?? false);

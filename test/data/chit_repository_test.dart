@@ -1155,4 +1155,47 @@ void main() {
       expect(await tagged(), isTrue);
     });
   });
+
+  group('whether find goes anywhere at all — ADR-109', () {
+    Future<bool> ambient() => repo.watchAnyAmbientAxis().first;
+
+    test('a journal of bare words offers no axis', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Train 20 late.');
+      expect(await ambient(), isFalse);
+    });
+
+    test('a sky word is an axis', () async {
+      await repo.save(
+        stamp: AmbientStamp(
+          capturedAt: morning,
+          weather: WeatherCondition.raining,
+        ),
+        text: 'Train 20 late.',
+      );
+      expect(await ambient(), isTrue);
+    });
+
+    test('a motion is an axis', () async {
+      await repo.save(
+        stamp: AmbientStamp(capturedAt: morning, motion: MotionState.walking),
+        text: 'Train 20 late.',
+      );
+      expect(await ambient(), isTrue);
+    });
+
+    test('stationary is not — it is stored and never drawn', () async {
+      await repo.save(
+        stamp: AmbientStamp(
+          capturedAt: morning,
+          motion: MotionState.stationary,
+        ),
+        text: 'Train 20 late.',
+      );
+      expect(
+        await ambient(),
+        isFalse,
+        reason: 'find offers no stationary row, so it is not somewhere to go',
+      );
+    });
+  });
 }
