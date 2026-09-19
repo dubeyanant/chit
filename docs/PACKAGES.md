@@ -150,3 +150,16 @@ flutter build appbundle --release             # for Play, which re-signs and spl
 and x86_64 at once and is three times the size for no gain on a phone. **Verify what was signed
 before it goes anywhere**: `apksigner verify --print-certs <apk>` prints the certificate, and a
 debug-signed build says `CN=Android Debug`.
+
+**The release certificate, generated 19 September 2026 and valid to February 2054:**
+
+```
+CN=Anant Dubey, O=Anant Dubey, L=Mumbai, ST=Maharashtra, C=IN
+SHA-256  cc38c02fb1540d9273bb04ec514b897866965e8c43ca6ab46eac32771ee2c6b6
+SHA-1    52b61903bceabce74a90f911c3eaa91c81164de8
+```
+
+**A fingerprint is public** — it is readable out of any published APK, and printing it is what lets
+somebody check that a download is the build it claims to be. **A release build whose fingerprint is
+not this one is signed by the wrong key**, and the reason is almost always that `key.properties` was
+missing and the build fell back to debug, which it says on the console when it does.

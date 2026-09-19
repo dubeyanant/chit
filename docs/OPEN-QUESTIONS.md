@@ -186,13 +186,15 @@ retired: 32, 33, 35, 36.**
     seen. It happens from the editor, which covers the tab bar anyway (ADR-062), so the bar is gone
     before the screen returns — the question is whether coming back to a Today with no tabs reads as
     a fresh start or as something broken.
-63. **The release is signed, and nothing signed by the real key has been installed** (ADR-098). The
-    path was verified end to end with a throwaway key — `apksigner verify` named it, then the key and
-    its `key.properties` were deleted — so what is proven is the wiring, not the owner's keystore.
-    **The first real signed build is the one that matters**: install it over a debug-signed one and
-    Android refuses with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, which means **every phone carrying a
-    test build has to uninstall first, losing its chits**. Do that before anybody is writing for
-    real, not after.
+63. **The release key exists and signs, and the refusal it causes is confirmed** (ADR-098). The
+    keystore is at `C:\Users\anant\keys\chitta-release.jks`, all three per-ABI APKs carry
+    `cc38c02f…` (PACKAGES.md prints the fingerprint), and installing one over the debug-signed build
+    on the CPH2707 failed with exactly `INSTALL_FAILED_UPDATE_INCOMPATIBLE: signatures do not
+    match` — the attempt changed nothing, the old build still being there afterwards. **So every
+    handset carrying a test build must be uninstalled before it can take a signed one, and
+    uninstalling takes its chits with it.** Do it while the only chits are test ones. **What is
+    still unproven is that a signed APK runs**, because nothing has been installed from one yet —
+    that needs the uninstall first, and is the same act as item 66.
 64. **`allowBackup="false"` is a trade, not a free win** (ADR-100). It stops the chits going to
     Google's servers, which is what the README has always promised — and it also stops a new phone
     inheriting them during setup. Until there is an export format, **the only copy of somebody's
