@@ -1,4 +1,4 @@
-import 'package:chitta/features/today/application/timeline_provider.dart';
+import 'package:chitt/features/today/application/timeline_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

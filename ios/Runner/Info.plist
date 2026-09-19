@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Chitta</string>
+	<string>Chitt</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Chitta</string>
+	<string>Chitt</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -25,15 +25,15 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<!-- README 3.4 / 3.6. These strings are the only copy in the app the
-	     design never sees, so they are written in Chitta's own voice. -->
+	     design never sees, so they are written in Chitt's own voice. -->
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Chitta records a chit when you tap the microphone. The recording is kept on this phone and stays attached to what you wrote.</string>
+	<string>Chitt records a chit when you tap the microphone. The recording is kept on this phone and stays attached to what you wrote.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Chitta takes one photo for a chit when you tap the camera. The photo is kept on this phone and stays attached to what you wrote.</string>
+	<string>Chitt takes one photo for a chit when you tap the camera. The photo is kept on this phone and stays attached to what you wrote.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Chitta can attach a photo you already have to a chit. It reads only the one you choose, and the copy it keeps never leaves this phone.</string>
+	<string>Chitt can attach a photo you already have to a chit. It reads only the one you choose, and the copy it keeps never leaves this phone.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Chitta notes that you were somewhere when you wrote, so a chit carries where it came from. It never shows the place by name.</string>
+	<string>Chitt notes that you were somewhere when you wrote, so a chit carries where it came from. It never shows the place by name.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

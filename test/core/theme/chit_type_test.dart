@@ -1,5 +1,5 @@
-import 'package:chitta/core/theme/chit_colors.dart';
-import 'package:chitta/core/theme/chit_type.dart';
+import 'package:chitt/core/theme/chit_colors.dart';
+import 'package:chitt/core/theme/chit_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

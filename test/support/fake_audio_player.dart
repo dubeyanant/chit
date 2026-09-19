@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:chitta/domain/services/audio_player.dart';
+import 'package:chitt/domain/services/audio_player.dart';
 
 final class FakeAudioPlayer implements AudioPlayer {
   final Set<String> missing = <String>{};

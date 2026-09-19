@@ -14,6 +14,7 @@ import 'data/db/app_database.dart';
 import 'data/dev/debug_seeder.dart';
 import 'data/dev/frame_log.dart';
 import 'data/files/file_store.dart';
+import 'data/files/guide_memory_file.dart';
 import 'data/geo/asset_outline_atlas.dart';
 import 'data/location/geolocator_location_service.dart';
 import 'data/photo/image_picker_photo_source.dart';
@@ -24,6 +25,7 @@ import 'domain/repositories/chit_repository.dart';
 import 'domain/services/ambient_signals.dart';
 import 'domain/services/audio_player.dart';
 import 'domain/services/audio_recorder.dart';
+import 'domain/services/guide_memory.dart';
 import 'domain/services/location_service.dart';
 import 'domain/services/photo_source.dart';
 import 'domain/services/weather_service.dart';
@@ -63,6 +65,10 @@ Future<void> main() async {
 
       audioPlayerProvider.overrideWith(
         (Ref ref) => JustAudioPlayer(ref.watch(audioStoreProvider)),
+      ),
+
+      guideMemoryProvider.overrideWith(
+        (Ref ref) => GuideMemoryFile.appDocuments(),
       ),
 
       photoSourceProvider.overrideWith((Ref ref) => ImagePickerPhotoSource()),

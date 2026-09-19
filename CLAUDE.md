@@ -1,4 +1,4 @@
-# Working on Chitta
+# Working on Chitt
 
 Read this first. It is loaded into every Claude Code session automatically.
 
@@ -125,9 +125,9 @@ exist, the interfaces in `domain` earning their place because tests are the seco
 duplication; extract a rule, never a coincidence. **Fail loudly in development, degrade quietly in
 production**: `assert` for what must never happen, a null and an undrawn element for a signal that
 did not arrive (ADR-007). **Name things as the README names them** — the app is **चित्त** on screen
-and **Chitta** to the phone, one entry is a **chit**, a `Chit`, and the blank one at the top of Today
+and **Chitt** to the phone, one entry is a **chit**, a `Chit`, and the blank one at the top of Today
 is the *open chit*, not a draft or a note; a synonym is a bug in the making. The Dart package and
-both bundle ids are `chitta`; the `Chit` classes, the Drift file and the repo directory stay
+both bundle ids are `chitt`; the `Chit` classes, the Drift file and the repo directory stay
 `chit` (ADR-074).
 
 ### 4.2 The specific rules

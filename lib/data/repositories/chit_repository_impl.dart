@@ -11,6 +11,7 @@ import '../../domain/models/motion_state.dart';
 import '../../domain/models/photo_edit.dart';
 import '../../domain/models/weather_condition.dart';
 import '../../domain/repositories/chit_repository.dart';
+import '../../domain/tags/chit_tags.dart';
 import '../db/app_database.dart';
 import '../db/daos/chit_dao.dart';
 import '../files/file_store.dart';
@@ -234,6 +235,15 @@ final class ChitRepositoryImpl implements ChitRepository {
 
   @override
   Stream<bool> watchAnyWritten() => _dao.watchAnyWritten();
+
+  @override
+  Stream<bool> watchAnyTagged() => _dao.watchTagCandidates().map(
+    (List<String> bodies) =>
+        bodies.any((String body) => ChitTags.tagsIn(body).isNotEmpty),
+  );
+
+  @override
+  Stream<bool> watchAnyAmbientAxis() => _dao.watchAnyAmbientAxis();
 
   @override
   Stream<List<Chit>> watchEvery() => _dao.watchEvery().map(_chitsOf);

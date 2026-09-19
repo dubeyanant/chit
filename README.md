@@ -1,12 +1,13 @@
-# Chitta
+# Chitt
 
 A private journal for things that hit you during the day.
 
-**चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field where impressions land; a
-**chit** is a small slip of paper you scribble on and keep. **The app signs itself चित्त on screen
-and Chitta wherever the phone says it** — the drawer, the switcher, the stores — and **one entry is
-a chit**. The Dart package and both bundle ids are `chitta` (ADR-074); the repository directory,
-these documents and the `Chit` classes keep the short name.
+**चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field where impressions land, and
+**Chitt** is that name shortened; a **chit** is a small slip of paper you scribble on and keep.
+**The app signs itself चित्त on screen and Chitt wherever the phone says it** — the drawer, the
+switcher, the stores — and **one entry is a chit**. The Dart package and both bundle ids are
+`chitt` (ADR-074, ADR-113); the repository directory, these documents and the `Chit` classes keep
+the short name.
 
 ## 0. Start here
 
@@ -29,7 +30,7 @@ hundred citations depend on it. **Never renumber.**
 
 | | Section | Lives in |
 |---|---|---|
-| §0 §1 §2 §5 §10 | Start here · What Chitta is · Core concepts · Data model · The map | this file |
+| §0 §1 §2 §5 §10 | Start here · What Chitt is · Core concepts · Data model · The map | this file |
 | **§3 §4** | **Behaviour specification · Screens** | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) |
 | **§6 §7** | **Design system · The prototype (retired)** | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
 | **§8 §9** | **The hard question · Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
@@ -39,9 +40,9 @@ disagrees, that document is wrong and is fixed in the change that found it. Both
 every change closes the loop on the docs it made untrue, and nothing that has stopped earning its
 place gets committed — live in [`CLAUDE.md`](CLAUDE.md) §0.
 
-## 1. What Chitta is
+## 1. What Chitt is
 
-Chitta assumes **you write when something hits you**: several times a day, in a few words, and then
+Chitt assumes **you write when something hits you**: several times a day, in a few words, and then
 you get on with your life. Everything follows from that:
 
 | Assumption | Consequence |
@@ -118,17 +119,21 @@ drift_schemas/  one JSON snapshot per shipped schema version — never edited (A
 reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's words (ADR-082) —
 pure, so the widget that draws them holds no grammar, and `lib/domain/find/` says which axis a tag
 is found on. `lib/domain/find_line.dart` holds the two books find opens with — the house lines and
-the hints (ADR-086) — and turns a visit count into one of them (ADR-093).
+the hints (ADR-086) — and turns a visit count into one of them (ADR-093). `lib/domain/guide.dart`
+is the book the wordmark opens and shows itself once from (ADR-110, ADR-111), the hold gesture and
+the tag syntax having no other home; `lib/data/files/guide_memory_file.dart` is the mark that says
+it has been read — one file beside the chits, so an uninstall takes it.
 `lib/domain/services/place_permission.dart` is the whole of asking for location — the permission and
 the phone's location switch both (ADR-102): it is called by the save and by nothing else, and draws
 nothing (ADR-094).
 `lib/core/haptics.dart` is the three steps of §6's haptic vocabulary and the only place
 `HapticFeedback` is called (ADR-096). `lib/features/shell/` owns the masthead, the tabs, and
-**whether the tabs are drawn at all** — they are not, until something has been written (ADR-097). `lib/shared/widgets/` is the chit vocabulary:
+**whether the tabs are drawn at all** — they are not, until something has been written (ADR-097),
+and *find* is not until an axis has a value in it (ADR-109). `lib/shared/widgets/` is the chit vocabulary:
 the slip and its tear edge, the chit's own body text, the stamp
 row and its motion marks, the rail and the thread over it, a day's heading and its group, the
 wordmark, the heading row the tabs hang their title in, the two button weights, the microphone and
-the camera beside it, the pill, the photo frame, the prompt and photo sheets, `Arrival`,
+the camera beside it, the pill, the photo frame, the prompt, photo and guide sheets, `Arrival`,
 `StaggeredEntrance` and `FocusRing`. `lib/data/files/file_store.dart` is one store over a folder and
 an extension, and both the audio and the photo stores are it (ADR-106);
 `lib/domain/services/photo_source.dart` is the one door a photo comes in through, and the picker

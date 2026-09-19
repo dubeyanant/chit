@@ -1,9 +1,9 @@
-import 'package:chitta/core/clock.dart';
-import 'package:chitta/domain/models/composer_state.dart';
-import 'package:chitta/domain/models/recording_state.dart';
-import 'package:chitta/domain/services/audio_recorder.dart';
-import 'package:chitta/features/composer/application/composer_controller.dart';
-import 'package:chitta/features/composer/application/recording_controller.dart';
+import 'package:chitt/core/clock.dart';
+import 'package:chitt/domain/models/composer_state.dart';
+import 'package:chitt/domain/models/recording_state.dart';
+import 'package:chitt/domain/services/audio_recorder.dart';
+import 'package:chitt/features/composer/application/composer_controller.dart';
+import 'package:chitt/features/composer/application/recording_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

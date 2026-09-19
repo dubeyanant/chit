@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:chitta/data/db/app_database.dart';
-import 'package:chitta/data/files/file_store.dart';
-import 'package:chitta/data/repositories/chit_repository_impl.dart';
-import 'package:chitta/domain/models/ambient_stamp.dart';
-import 'package:chitta/domain/models/audio_edit.dart';
-import 'package:chitta/domain/models/chit.dart';
-import 'package:chitta/domain/models/day_summary.dart';
-import 'package:chitta/domain/models/motion_state.dart';
-import 'package:chitta/domain/models/photo_edit.dart';
-import 'package:chitta/domain/models/weather_condition.dart';
-import 'package:chitta/domain/repositories/chit_repository.dart';
+import 'package:chitt/data/db/app_database.dart';
+import 'package:chitt/data/files/file_store.dart';
+import 'package:chitt/data/repositories/chit_repository_impl.dart';
+import 'package:chitt/domain/models/ambient_stamp.dart';
+import 'package:chitt/domain/models/audio_edit.dart';
+import 'package:chitt/domain/models/chit.dart';
+import 'package:chitt/domain/models/day_summary.dart';
+import 'package:chitt/domain/models/motion_state.dart';
+import 'package:chitt/domain/models/photo_edit.dart';
+import 'package:chitt/domain/models/weather_condition.dart';
+import 'package:chitt/domain/repositories/chit_repository.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -1082,6 +1082,120 @@ void main() {
 
       expect(orphan.existsSync(), isFalse);
       expect(photoFileOf(saved).existsSync(), isTrue);
+    });
+  });
+
+  group('whether anything carries a tag — ADR-109', () {
+    Future<bool> tagged() => repo.watchAnyTagged().first;
+
+    test('an empty journal carries none', () async {
+      expect(await tagged(), isFalse);
+    });
+
+    test('a chit with plain words carries none', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Train 20 late.');
+      expect(await tagged(), isFalse);
+    });
+
+    test('a person makes one', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Coffee with @anant.');
+      expect(await tagged(), isTrue);
+    });
+
+    test('a topic makes one', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Slept badly #sleep');
+      expect(await tagged(), isTrue);
+    });
+
+    test('a sigil that is not a tag does not', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Call me @ 5, # 3 down.');
+      expect(
+        await tagged(),
+        isFalse,
+        reason: 'the SQL only narrows; the grammar decides',
+      );
+    });
+
+    test('a recording-only chit cannot carry one', () async {
+      await repo.save(
+        stamp: stampAt(morning),
+        audioTempPath: await aRecording(),
+        audioDuration: const Duration(seconds: 3),
+      );
+      expect(await tagged(), isFalse);
+    });
+
+    test('deleting the last tagged chit takes it back to none', () async {
+      final Chit tagged1 = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Coffee with @anant.',
+      );
+      await repo.save(stamp: stampAt(morning), text: 'Train 20 late.');
+      expect(await tagged(), isTrue);
+
+      await repo.delete(tagged1.id);
+
+      expect(await tagged(), isFalse);
+    });
+
+    test('editing the tag out takes it back to none', () async {
+      final Chit chit = await repo.save(
+        stamp: stampAt(morning),
+        text: 'Coffee with @anant.',
+      );
+      expect(await tagged(), isTrue);
+
+      await repo.update(id: chit.id, text: 'Coffee.');
+
+      expect(await tagged(), isFalse);
+    });
+
+    test('a Devanagari topic counts, the grammar allowing marks', () async {
+      await repo.save(stamp: stampAt(morning), text: 'सुबह #चित्त');
+      expect(await tagged(), isTrue);
+    });
+  });
+
+  group('whether find goes anywhere at all — ADR-109', () {
+    Future<bool> ambient() => repo.watchAnyAmbientAxis().first;
+
+    test('a journal of bare words offers no axis', () async {
+      await repo.save(stamp: stampAt(morning), text: 'Train 20 late.');
+      expect(await ambient(), isFalse);
+    });
+
+    test('a sky word is an axis', () async {
+      await repo.save(
+        stamp: AmbientStamp(
+          capturedAt: morning,
+          weather: WeatherCondition.raining,
+        ),
+        text: 'Train 20 late.',
+      );
+      expect(await ambient(), isTrue);
+    });
+
+    test('a motion is an axis', () async {
+      await repo.save(
+        stamp: AmbientStamp(capturedAt: morning, motion: MotionState.walking),
+        text: 'Train 20 late.',
+      );
+      expect(await ambient(), isTrue);
+    });
+
+    test('stationary is not — it is stored and never drawn', () async {
+      await repo.save(
+        stamp: AmbientStamp(
+          capturedAt: morning,
+          motion: MotionState.stationary,
+        ),
+        text: 'Train 20 late.',
+      );
+      expect(
+        await ambient(),
+        isFalse,
+        reason: 'find offers no stationary row, so it is not somewhere to go',
+      );
     });
   });
 }

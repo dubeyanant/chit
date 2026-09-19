@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:chitta/data/weather/open_meteo_service.dart';
-import 'package:chitta/domain/models/weather_condition.dart';
-import 'package:chitta/domain/services/location_service.dart';
+import 'package:chitt/data/weather/open_meteo_service.dart';
+import 'package:chitt/domain/models/weather_condition.dart';
+import 'package:chitt/domain/services/location_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 

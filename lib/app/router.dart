@@ -25,6 +25,12 @@ enum ChitRoute {
   final String path;
 
   final String label;
+
+  static List<ChitRoute> drawnWhen({required bool findGoesSomewhere}) =>
+      <ChitRoute>[
+        for (final ChitRoute route in ChitRoute.values)
+          if (route != ChitRoute.find || findGoesSomewhere) route,
+      ];
 }
 
 const String editorRouteName = 'editor';

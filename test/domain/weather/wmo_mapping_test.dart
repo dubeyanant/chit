@@ -1,5 +1,5 @@
-import 'package:chitta/domain/models/weather_condition.dart';
-import 'package:chitta/domain/weather/wmo_mapping.dart';
+import 'package:chitt/domain/models/weather_condition.dart';
+import 'package:chitt/domain/weather/wmo_mapping.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

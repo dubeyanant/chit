@@ -14,26 +14,30 @@ screen. Answerable by living with the app for a week rather than by more design.
 
 Ordered by how much each reinforces what chit already is, not by appetite.
 
-3. **Resurfacing** — a chit from a year ago on the home screen.
 4. **Adapt the prompt to time-to-first-word.**
 7. **Chit threading** — one chit replying to another. Hold until real usage shows people write in
    chains.
 
-**3** makes the app stickier. **1 and 5 are dropped**, not deferred (ADR-101).
+**1 and 5 are dropped** (ADR-101), and **3, resurfacing, is dropped** (ADR-112) — nothing left here
+is scheduled, and neither is anything that makes the app stickier.
 
-**v1.1 is planned** and holds **an export format** — restore-only and text-only, which ADR-100 makes
-the only way a chit survives a lost phone — plus **resurfacing** (3), a **photo per chit** if its
-shape survives the deciding, and three fixes to what v1 shipped: the location ask, the audio pill's
-playhead, and the stale sky of item 23. After it: §8.3 answered with real usage, then the backlog
-above, then responsive web. Deliberately not on the list: **any speech engine, cloud or on-device**
-(ADR-005, ADR-058).
+**v1.1 is built.** It holds a **photo per chit** (ADR-106), the **guide** and its one showing
+(ADR-110, ADR-111), **find held back until it goes somewhere** (ADR-109), Delete taking the wide
+slot (ADR-105), and four fixes to what v1 shipped: the location ask, the audio pill's playhead, the
+stale sky of item 23, and the editor under a keyboard (ADR-108).
+
+**v1.2 holds two things**, neither started: **an export format** — restore-only and text-only, which
+ADR-100 makes the only way a chit survives a lost phone — and a **force update**, which would be the
+first thing in this app to need a server, and so the first to argue with ADR-009. After them: §8.3
+answered with real usage, then what is left of the backlog, then responsive web. Deliberately not on
+the list: **any speech engine, cloud or on-device** (ADR-005, ADR-058).
 
 ## Known and unscheduled
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
 nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 30, 31, 34, 38, 39, 40, 43, 44, 47, 48,
-52, 53, 63, 66; retired: 32, 33, 35, 36.**
+52, 53, 63, 66, 76; retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
    `ChitType._opticalSizeFor` converts logical pixels to points at 0.75, which is what a browser does
@@ -89,18 +93,19 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     without its step throws at `open` (ADR-099). **What is not closed is the other half of 004's
     cost** — with ADR-100 turning Android's backup off, a lost phone is lost chits and there is
     still no export format. That is the backlog item that now has teeth.
-41. **One stored name still says `chit`, and that is on purpose** (ADR-074). The package is `chitta`
+41. **One stored name still says `chit`, and that is on purpose** (ADR-074). The package is `chitt`
     — `pubspec.yaml`, `applicationId`, the iOS bundle id — but `driftDatabase(name: 'chit')` is not,
     so that an applicationId reversed later still finds the chits somebody wrote. Rename it only
     once nothing could be carrying data under the old id. *The two `chit.firstRun.*` preference keys
     were the other one, and went with ADR-094's screen.* The `Chit` classes and the repository
     directory keep the short name for their own reasons: an entry *is* a chit.
 42. **Nobody has seen the icon on an iPhone.**
-44. **— closed.** *The first-run screen has a copy ceiling, because it does not scroll.* There is no
-    first-run screen (ADR-094), so there is no ceiling. **The item it leaves behind**: the hold
-    gesture and the tag syntax were taught there and are now taught only by find's hints, which come
-    round every fourth visit and may never be seen by somebody who does not open that tab. If the
-    app has to teach them again, the place is where they are used, not a screen in front of Today.
+44. **— closed twice over.** *The first-run screen has a copy ceiling, because it does not scroll.*
+    There is no first-run screen (ADR-094). **What it left behind — the hold gesture and the tag
+    syntax having no home — is answered by the guide** (ADR-110), reached from the wordmark. It is
+    not *where they are used*, which is what this item argued for; it is a place that exists and is
+    never shown to anybody who did not ask. **A composer hint is still the better answer** if the
+    guide turns out to go unfound, and that is item 77.
 45. **Today's thread is still built eagerly**, and deliberately: it holds one day, and a day is
     bounded by how much a person writes in one. Somebody writing sixty chits in a day would feel it
     before the archive does. The fix would be the archive's (ADR-077), but the rail is drawn behind
@@ -258,3 +263,27 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     not. **The composer was not touched** — its open chit already sits in Today's `CustomScrollView`,
     so the keyboard case was never broken there, and the two screens now reach the same behaviour by
     different routes. If the editor's scroll ever reads differently from Today's, that is why.
+76. **— closed before it shipped.** *Tags were unteachable: both places that taught the syntax
+    lived inside find, and find was behind a tag.* ADR-109 now counts a sky word or a motion, so
+    find is reachable and its hints teach again, and ADR-110's guide teaches the same two things
+    from the wordmark. **What is left is the case the ambient half does not cover**: a journal whose
+    chits never caught weather or movement — location refused, no network — still has no find until
+    somebody writes a tag, and such a person is the one least likely to know how.
+77. **Nobody has found the guide by looking for it** (ADR-110). ADR-111 makes that matter less —
+    it shows itself once, so the wordmark is a way *back* rather than the only way in. A tap on the
+    wordmark is not a discoverable gesture — it is the same objection item 44 raised against find's
+    hints, moved. **The guide catches the curious, not the lost.** Two things to watch: whether
+    anybody opens it at all, and whether चित्त gaining a touch target reads as the masthead having
+    become a control. **The better answer is still item 44's** — teach the tag syntax in the
+    composer, where it is used — and the guide does not remove that, it gives it somewhere to point
+    at. The masthead is **1px taller** now, the wordmark carrying `minTouchTarget` where it used to
+    carry `s3` of padding; nothing else moved, and §6.3's *a tab switch does not move the heading*
+    still holds because all three shift together.
+78. **The guide's one showing has been felt by nobody** (ADR-111). It lands **after the first
+    frame**, so a fresh install draws Today and then a sheet rises over it — whether that reads as
+    the app introducing itself or as something interrupting the blank page it just promised is the
+    question, and it is the same one ADR-094 answered *no* to for a screen. **The mark is written
+    when the sheet is dismissed, not when it opens**, so an app killed with the guide up will offer
+    it again; that is deliberate and untested on a device. **There is no way to see it a second time
+    except the wordmark**, which is what the closing line exists to say, and whether that line is
+    read is item 77's question wearing a different hat.

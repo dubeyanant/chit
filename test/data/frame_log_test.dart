@@ -1,4 +1,4 @@
-import 'package:chitta/data/dev/frame_log.dart';
+import 'package:chitt/data/dev/frame_log.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

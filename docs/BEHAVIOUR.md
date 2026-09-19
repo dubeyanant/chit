@@ -1,6 +1,6 @@
 # Behaviour
 
-**What Chitta does** (§3) **and what it looks like doing it** (§4). This file and
+**What Chitt does** (§3) **and what it looks like doing it** (§4). This file and
 [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) are the design authority alongside the [README](../README.md);
 where another document disagrees, that document is wrong.
 
@@ -151,13 +151,28 @@ and sigils and all, because that is what an edit edits — and the raw text is w
 
 ## 4. Screens
 
-**4.0 The shell.** The wordmark above, the three tabs below, and whichever tab is up between them.
+**4.0 The shell.** The wordmark above, the tabs below, and whichever tab is up between them.
 **The tabs are not drawn until something has been written** (ADR-097): on a fresh install *past* is
-an empty grid and *find* has nothing to look through, so three tabs where two go nowhere is chrome
-promising rooms that are not furnished yet. The first save draws them and they stay; deleting the
-last chit takes them away again, which is the same screen a fresh install gets and is honest for the
-same reason. **They do not fade in** — a bar that travels draws the eye to the movement rather than
-to the words, which is ADR-071's finding.
+an empty grid and *find* has nothing to look through, so tabs that go nowhere are chrome promising
+rooms that are not furnished yet. The first save draws them and they stay; deleting the last chit
+takes them away again, which is the same screen a fresh install gets and is honest for the same
+reason. **They do not fade in** — a bar that travels draws the eye to the movement rather than to
+the words, which is ADR-071's finding.
+
+**find is held back further, until it has somewhere to go** (ADR-109): a chit carrying a tag, or a
+sky word, or a motion — any axis with a value in it. **`stationary` is not one**, being stored and
+never drawn (§3.6.1), so it is no row to arrive at. Until then the bar holds two, evenly divided;
+find arrives on the right the moment an axis fills, and goes again if the last value is edited or
+deleted away — **and a reader standing in find when that happens is returned to Today**, since the
+tab they are in has stopped existing.
+
+**The wordmark opens the guide** (ADR-110). चित्त is on every tab and has never done anything;
+tapping it raises a slip of what the app cannot teach in passing — that a chit is **held** to open
+it, that `@` names a person and `#` a topic, and that `_` joins words inside a tag and is read as a
+space. It is the only place in the app that explains itself. **It shows itself once**, on the first
+launch of an install (ADR-111), and **opens with the line that says how to get back to it** — the
+first thing read on the one showing nobody asked for is how to ask for it again; after
+that it is reached and never shown, and an uninstall is the only thing that resets it.
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on
 **one line at 26px**, the weekday italic and faint, the date in full ink. **That line and the

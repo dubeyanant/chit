@@ -1,5 +1,5 @@
-import 'package:chitta/core/theme/chit_motion.dart';
-import 'package:chitta/shared/widgets/staggered_entrance.dart';
+import 'package:chitt/core/theme/chit_motion.dart';
+import 'package:chitt/shared/widgets/staggered_entrance.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

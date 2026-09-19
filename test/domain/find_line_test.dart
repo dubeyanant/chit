@@ -1,4 +1,4 @@
-import 'package:chitta/domain/find_line.dart';
+import 'package:chitt/domain/find_line.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

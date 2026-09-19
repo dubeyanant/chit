@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../core/extensions.dart';
 import '../../../core/theme/chit_motion.dart';
+import '../../../domain/services/guide_memory.dart';
 import '../../../shared/widgets/focus_ring.dart';
+import '../../../shared/widgets/guide_sheet.dart';
 import '../../../shared/widgets/wordmark.dart';
 import '../../find/application/find_line_provider.dart';
 import '../application/shell_providers.dart';
@@ -20,6 +24,22 @@ class ShellScreen extends ConsumerStatefulWidget {
 }
 
 class _ShellScreenState extends ConsumerState<ShellScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((Duration _) {
+      unawaited(_offerGuide());
+    });
+  }
+
+  Future<void> _offerGuide() async {
+    final GuideMemory memory = ref.read(guideMemoryProvider);
+    if (await memory.hasBeenRead() || !mounted) return;
+
+    await showGuideSheet(context);
+    await memory.remember();
+  }
+
   @override
   void didUpdateWidget(covariant ShellScreen old) {
     super.didUpdateWidget(old);
@@ -36,6 +56,16 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   @override
   Widget build(BuildContext context) {
     final bool written = ref.watch(anyChitWrittenProvider).value ?? false;
+    final List<ChitRoute> drawn = ChitRoute.drawnWhen(
+      findGoesSomewhere: ref.watch(findGoesSomewhereProvider),
+    );
+
+    if (!drawn.contains(ChitRoute.find) &&
+        widget.navigationShell.currentIndex == ChitRoute.find.index) {
+      WidgetsBinding.instance.addPostFrameCallback((Duration _) {
+        if (mounted) widget.navigationShell.goBranch(ChitRoute.today.index);
+      });
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -43,7 +73,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
           children: <Widget>[
             const _Masthead(),
             Expanded(child: widget.navigationShell),
-            if (written) _TabBar(navigationShell: widget.navigationShell),
+            if (written)
+              _TabBar(navigationShell: widget.navigationShell, drawn: drawn),
           ],
         ),
       ),
@@ -58,19 +89,21 @@ class _Masthead extends StatelessWidget {
   Widget build(BuildContext context) {
     final space = context.space;
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: space.gutter,
-        vertical: space.s3,
+      padding: EdgeInsets.symmetric(horizontal: space.gutter),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Wordmark(onOpenGuide: () => showGuideSheet(context)),
       ),
-      child: const Align(alignment: Alignment.centerLeft, child: Wordmark()),
     );
   }
 }
 
 class _TabBar extends StatelessWidget {
-  const _TabBar({required this.navigationShell});
+  const _TabBar({required this.navigationShell, required this.drawn});
 
   final StatefulNavigationShell navigationShell;
+
+  final List<ChitRoute> drawn;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +119,7 @@ class _TabBar extends StatelessWidget {
         padding: EdgeInsets.only(top: space.s3, bottom: space.s2),
         child: Row(
           children: <Widget>[
-            for (final ChitRoute route in ChitRoute.values)
+            for (final ChitRoute route in drawn)
               Expanded(
                 child: _Tab(
                   label: route.label,

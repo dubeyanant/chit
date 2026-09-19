@@ -1,6 +1,6 @@
-import 'package:chitta/core/clock.dart';
-import 'package:chitta/domain/find_line.dart';
-import 'package:chitta/features/find/application/find_line_provider.dart';
+import 'package:chitt/core/clock.dart';
+import 'package:chitt/domain/find_line.dart';
+import 'package:chitt/features/find/application/find_line_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

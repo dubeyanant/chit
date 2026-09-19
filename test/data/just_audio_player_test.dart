@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:chitta/data/audio/just_audio_player.dart';
-import 'package:chitta/data/files/file_store.dart';
-import 'package:chitta/domain/services/audio_player.dart';
+import 'package:chitt/data/audio/just_audio_player.dart';
+import 'package:chitt/data/files/file_store.dart';
+import 'package:chitt/domain/services/audio_player.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio_platform_interface/just_audio_platform_interface.dart';

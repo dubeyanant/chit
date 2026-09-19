@@ -92,6 +92,31 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
           .watch()
           .map((List<TypedResult> rows) => rows.isNotEmpty);
 
+  Stream<bool> watchAnyAmbientAxis() =>
+      (selectOnly(chits)
+            ..addColumns(<Expression<Object>>[chits.id])
+            ..where(
+              chits.weather.isNotNull() |
+                  (chits.motion.isNotNull() &
+                      chits.motion.equalsValue(MotionState.stationary).not()),
+            )
+            ..limit(1))
+          .watch()
+          .map((List<TypedResult> rows) => rows.isNotEmpty);
+
+  Stream<List<String>> watchTagCandidates() {
+    final JoinedSelectStatement<$ChitsTable, ChitRow> query = selectOnly(chits)
+      ..addColumns(<Expression<Object>>[chits.body])
+      ..where(chits.body.like('%@%') | chits.body.like('%#%'));
+
+    return query.watch().map(
+      (List<TypedResult> rows) => <String>[
+        for (final TypedResult row in rows)
+          if (row.read(chits.body) case final String body) body,
+      ],
+    );
+  }
+
   Stream<List<ChitRow>> watchEvery() =>
       (select(chits)..orderBy(<OrderClauseGenerator<$ChitsTable>>[
             ($ChitsTable t) => OrderingTerm.desc(t.localDay),

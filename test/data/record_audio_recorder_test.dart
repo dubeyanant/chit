@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:chitta/data/audio/record_audio_recorder.dart';
-import 'package:chitta/domain/services/audio_recorder.dart';
+import 'package:chitt/data/audio/record_audio_recorder.dart';
+import 'package:chitt/domain/services/audio_recorder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 

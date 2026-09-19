@@ -1,5 +1,5 @@
-import 'package:chitta/domain/services/location_service.dart';
-import 'package:chitta/domain/services/place_permission.dart';
+import 'package:chitt/domain/services/location_service.dart';
+import 'package:chitt/domain/services/place_permission.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

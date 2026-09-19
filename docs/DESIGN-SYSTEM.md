@@ -73,7 +73,7 @@ was read off a handset rather than computed. **The same word closes Today** at 1
 `--ink-faint` — a full stop on the day, quieter so it is not read twice. That is the one place a
 colour token is used at part strength, allowed because the mark is decoration and excluded from
 semantics, so §6.4's floor for *functional* text does not reach it. **The wordmark reads as
-*Chitta* to a screen reader** and the closing mark is excluded outright, neither being a word
+*Chitt* to a screen reader** and the closing mark is excluded outright, neither being a word
 anybody needs pronounced at them.
 
 **Uppercase appears in one place: `LISTENING`** on the recording sheet — a state, shown while a

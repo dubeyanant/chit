@@ -1,16 +1,16 @@
 import 'dart:io';
 
-import 'package:chitta/core/clock.dart';
-import 'package:chitta/data/db/app_database.dart';
-import 'package:chitta/data/files/file_store.dart';
-import 'package:chitta/data/repositories/chit_repository_impl.dart';
-import 'package:chitta/domain/models/ambient_stamp.dart';
-import 'package:chitta/domain/models/chit.dart';
-import 'package:chitta/domain/models/day_summary.dart';
-import 'package:chitta/domain/repositories/chit_repository.dart';
-import 'package:chitta/features/past/application/archive_provider.dart';
-import 'package:chitta/features/past/application/month_provider.dart';
-import 'package:chitta/shared/day_group.dart';
+import 'package:chitt/core/clock.dart';
+import 'package:chitt/data/db/app_database.dart';
+import 'package:chitt/data/files/file_store.dart';
+import 'package:chitt/data/repositories/chit_repository_impl.dart';
+import 'package:chitt/domain/models/ambient_stamp.dart';
+import 'package:chitt/domain/models/chit.dart';
+import 'package:chitt/domain/models/day_summary.dart';
+import 'package:chitt/domain/repositories/chit_repository.dart';
+import 'package:chitt/features/past/application/archive_provider.dart';
+import 'package:chitt/features/past/application/month_provider.dart';
+import 'package:chitt/shared/day_group.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

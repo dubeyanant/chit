@@ -14,9 +14,10 @@ fix is what the weather call uses so the two signals stay parallel (ADR-025), an
 carries `speed`, `speedAccuracy` and `altitude` — **the whole of motion capture** (ADR-037), which
 is why chit needs no motion-sensor package and no second permission · `http` one call, to Open-Meteo
 · `intl` dates and tabular figures · `path_provider` + `path` · `uuid` client-generated ids
-(ADR-004). **Nothing is stored outside the database** — `shared_preferences` held the first-run flags
-until ADR-094 deleted the screen that needed them, and `main()` now awaits nothing before the first
-frame.
+(ADR-004). **Almost nothing is stored outside the database** — `shared_preferences` held the first-run flags
+until ADR-094 deleted the screen that needed them, and it did not come back for ADR-111's guide
+mark, which is one empty file in app documents: no package, and an uninstall clears it the way it
+clears everything. `main()` still awaits nothing before the first frame.
 
 **Development.** `build_runner` · `riverpod_generator` · `riverpod_lint`, enabled through `plugins:`
 rather than `custom_lint` (below) · `drift_dev` · `freezed` · `flutter_lints` ·
@@ -95,7 +96,7 @@ highest of any plugin here. **`image_picker` needs no Android permission of its 
 is reached by intent and the system photo picker reads nothing else, so declaring `CAMERA` would
 make a permission required that the app does not otherwise need. **iOS** —
 `NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` and
-`NSLocationWhenInUseUsageDescription`, written in Chitta's own voice and the only copy in the app
+`NSLocationWhenInUseUsageDescription`, written in Chitt's own voice and the only copy in the app
 the design never sees; `IPHONEOS_DEPLOYMENT_TARGET` is 15.0, above every plugin's floor. Both location
 strings should say what §3.6 says the app does: it records that a place was there, and never shows
 which one. The microphone string says the thing that is unusual, true and most likely to earn the
