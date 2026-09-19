@@ -43,11 +43,6 @@ final class ChitColors extends ThemeExtension<ChitColors> {
 
   final Color inkFaint;
 
-  /// A control that is drawn and cannot be used — 2.4:1 on paper (ADR-088).
-  ///
-  /// **Deliberately under §6.4's 3:1 component floor**: it must read as
-  /// present and not as available, and a disabled control meeting the floor
-  /// set for a live one would be lying about what it does.
   final Color inkDisabled;
 
   final Color hair;
@@ -69,21 +64,11 @@ final class ChitColors extends ThemeExtension<ChitColors> {
 
   static const List<double> densitySteps = <double>[0.06, 0.12, 0.20, 0.30];
 
-  /// The map behind find's first screen — ADR-089, drawn with [inkWash] on
-  /// `--paper` so that overlapping shapes never compound into a surface nobody
-  /// measured.
-  ///
-  /// **[mapHost] is the ceiling, and it is set by the text above it**, not by
-  /// taste: it is the lightest thing a word can come to rest on, and §6.4 holds
-  /// the quote and the column to 4.5:1 against it. `contrast_test.dart` asserts
-  /// both, and that nothing here is brighter.
   static const double mapLine = 0.07;
   static const double mapWater = 0.10;
   static const double mapFill = 0.10;
   static const double mapHost = 0.13;
 
-  /// The fix itself, on its own disc of `--paper` — so the one bright mark on
-  /// the screen reads the same whether it falls on the city or off it.
   static const double mapPin = 0.42;
 
   @override

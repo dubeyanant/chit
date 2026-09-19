@@ -10,6 +10,7 @@ import '../../../domain/repositories/chit_repository.dart';
 import '../../../domain/services/ambient_signals.dart';
 import '../../../domain/services/audio_player.dart';
 import '../../../domain/services/audio_recorder.dart';
+import '../../../domain/services/place_permission.dart';
 import 'recording_sink.dart';
 
 part 'composer_controller.g.dart';
@@ -24,9 +25,6 @@ class ComposerController extends _$ComposerController implements RecordingSink {
   ComposerState build() {
     ref.onDispose(_cancelPrompt);
 
-    // Listened to, never watched. The reading lands seconds after launch, and
-    // a watch would rebuild the controller into a blank chit — throwing away
-    // whatever was being typed into it, and orphaning a kept take's file.
     ref.listen(ambientSignalsProvider, (
       AmbientReading? _,
       AmbientReading next,
@@ -95,7 +93,7 @@ class ComposerController extends _$ComposerController implements RecordingSink {
           audioDuration: chit.audioDuration,
         );
 
-    if (!fresh) unawaited(_refreshAmbience(saved.id));
+    unawaited(_settle(saved.id, stale: !fresh));
 
     if (!ref.mounted) return;
     state = _openChit();
@@ -103,11 +101,6 @@ class ComposerController extends _$ComposerController implements RecordingSink {
 
   AmbientStamp _stampNow() => _stampOf(ref.read(ambientSignalsProvider));
 
-  /// The reading as a stamp, keeping the hour [opened] was taken at.
-  ///
-  /// A signal arriving mid-chit moves the facts and not the moment: the prompt
-  /// is chosen by the hour the chit was *opened* (ADR-029), and the stamp a
-  /// save writes is read fresh in [save] rather than taken from here.
   AmbientStamp _stampOf(AmbientReading reading, {AmbientStamp? opened}) =>
       AmbientStamp(
         capturedAt: opened?.capturedAt ?? ref.read(clockProvider).now(),
@@ -116,6 +109,17 @@ class ComposerController extends _$ComposerController implements RecordingSink {
         lon: reading.lon,
         motion: reading.motion,
       );
+
+  Future<void> _settle(String id, {required bool stale}) async {
+    if (stale) await _refreshAmbience(id);
+    if (!ref.mounted) return;
+
+    final bool granted = await ref.read(placePermissionProvider.notifier).ask();
+    if (!granted || !ref.mounted) return;
+    if (ref.read(ambientSignalsProvider).lat != null) return;
+
+    await _refreshAmbience(id);
+  }
 
   Future<void> _refreshAmbience(String id) async {
     await ref.read(ambientSignalsProvider.notifier).refresh();

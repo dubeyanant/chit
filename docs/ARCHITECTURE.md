@@ -17,7 +17,8 @@ split `application/` and `presentation/`.
 ```
 lib/
 ├── app/       the root and the router — go_router: shell + three tabs
-├── core/      the four ThemeExtensions of §6, the injected clock, the BuildContext sugar
+├── core/      the four ThemeExtensions of §6, the injected clock, the haptic vocabulary,
+│              the BuildContext sugar
 ├── domain/    models/ (Chit and its invariant, the stamp, the enums, the screen states, the
 │              sealed AudioEdit) · ambient/ · motion/ · weather/ · tags/ (the sealed ChitSpan
 │              and its grammar) · find/ (the four axes, and where a column sits) ·
@@ -25,8 +26,8 @@ lib/
 │              repositories/ · services/
 ├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
 │              weather/ · location/ · geo/ (the bundled atlas and its codec) ·
-│              preferences/ · repositories/
-├── features/  shell, today, composer, calendar, find, editor, onboarding
+│              repositories/
+├── features/  shell, today, composer, past, find, editor
 └── shared/    widgets/ (the chit vocabulary) · day_label.dart · day_group.dart
 ```
 
@@ -83,7 +84,14 @@ is hand-rolling beside the package that already has the seam.
 two exceptions are the recording sheet (ADR-011) and the prompt sheet (ADR-064): modal sheets, not
 routes, because dismissing either is not a back navigation. **Startup is synchronous** — Drift
 resolves its path lazily, so there is no async bootstrap and no loading state before the home
-screen; *opening the app costs nothing* is a startup requirement, not just a visual one.
+screen; *opening the app costs nothing* is a startup requirement, not just a visual one. **The
+router has no redirect and `main()` awaits nothing** (ADR-094): there is no screen owed before
+Today, and nothing on disk to read to find that out.
+
+**The shell watches its own branch index for one thing.** Arriving at find moves its line (ADR-093),
+and the branch index is where every way of arriving meets — the tab bar, and a tag tap that switches
+tab. `ShellScreen` reads it in `didUpdateWidget` and writes **after the frame**, a provider being
+unwritable from inside a build; which line a visit draws is `FindLine`'s, and pure.
 
 ## 3. The data flow
 
@@ -134,13 +142,26 @@ what it started, and the `if` keeps a chit playing in the thread from being sile
 **Save, and why the tabs cannot disagree.** `save()` writes the row and moves the audio in one call,
 ordered so a failed move never leaves a row pointing at nothing. `update()` takes the words and a
 sealed `AudioEdit` in one write (ADR-063); `createdAt`, `localDay` and the ambient fields are not
-parameters, so an edit cannot move a chit in the thread or relight a calendar tile. The editor loads
+parameters, so an edit cannot move a chit in the thread or relight a tile in past. The editor loads
 its chit **once** rather than watching it (ADR-062), so it is the one screen that does not re-emit
 on a write — the write is its own. Everything downstream is a Drift stream: four providers over four
 queries, so one save updates them all by construction. That is the whole mechanism behind *the two
 tabs never disagree* — they are not kept in step, they are the same data.
 
-**The calendar is two chains off one reading of the day.** `MonthShape` is a plain value for the
+**The save is also where the place is asked for** (ADR-094), after the row is written and never
+before it, unawaited so the dialog never stands between somebody and the chit they just wrote.
+`PlacePermission` asks and reports back; the composer owns what a grant is worth. **`_settle` runs
+the stale re-read and the ask in that order and never at once** — two captures in flight can land
+out of order, and the one without a place must not be the one that wins. **A grant re-reads and
+patches the chit just saved**, which is also what moves the open chit, the composer listening for
+the reading (ADR-081). It re-reads only when the reading it holds has no place in it, so an install
+that already had the permission does no extra work.
+
+**Nothing in `lib/` or `test/` carries a comment** (ADR-095). The reason a line is the way it is
+lives in a record, and the record names the file — so the citation runs doc → code, the direction
+§0 already keeps true. A test fails if one reappears.
+
+**past is two chains off one reading of the day.** `MonthShape` is a plain value for the
 same reason `TimelineWindow` is, and **the current month draws up to today and stops** because a
 future month's `lastDrawnDay` is zero, not because the widget checked. **The drawn month lags the
 visible month by one answer, on purpose** (ADR-049), the bar taking its name from the drawn one so

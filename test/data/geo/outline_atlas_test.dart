@@ -10,8 +10,6 @@ import 'package:chitta/domain/geo/outline_shape.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  // The asset the app ships, read off disk rather than out of the bundle: the
-  // decoding is what is under test, and a bundle needs a binding.
   final Uint8List bytes = File(outlineAtlasAsset).readAsBytesSync();
   final OutlineAtlas atlas = OutlineAtlas.decode(bytes);
 
@@ -26,7 +24,9 @@ void main() {
 
     test('something that is not an atlas is refused, not misread', () {
       expect(
-        () => OutlineAtlas.decode(Uint8List.fromList(<int>[1, 2, 3, 4, 5, 6, 7, 8, 9])),
+        () => OutlineAtlas.decode(
+          Uint8List.fromList(<int>[1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        ),
         throwsA(isA<FormatException>()),
       );
     });
@@ -35,29 +35,35 @@ void main() {
       final Uint8List future = Uint8List.fromList(bytes);
       future[4] = 99;
 
-      expect(() => OutlineAtlas.decode(future), throwsA(isA<FormatException>()));
+      expect(
+        () => OutlineAtlas.decode(future),
+        throwsA(isA<FormatException>()),
+      );
     });
   });
 
   group('finding the city somebody is standing in', () {
     test('a fix in a city comes back with that city, whole', () {
-      // Bandra, Mumbai.
       final OutlineShape? city = atlas.cityAt(const GeoPoint(19.076, 72.8777));
 
       expect(city, isNotNull);
       expect(city!.layer, OutlineLayer.urban);
       expect(city.contains(const GeoPoint(19.076, 72.8777)), isTrue);
-      // Whole, not clipped to its cell: a shape cut at the grid could not fill.
+
       expect(city.points.length, greaterThan(10));
     });
 
     test('it works away from India too, which is the point of bundling it', () {
       for (final GeoPoint fix in const <GeoPoint>[
-        GeoPoint(51.5072, -0.1276), // London
-        GeoPoint(-23.5505, -46.6333), // São Paulo
-        GeoPoint(35.6762, 139.6503), // Tokyo
+        GeoPoint(51.5072, -0.1276),
+        GeoPoint(-23.5505, -46.6333),
+        GeoPoint(35.6762, 139.6503),
       ]) {
-        expect(atlas.cityAt(fix), isNotNull, reason: '$fix should be in a city');
+        expect(
+          atlas.cityAt(fix),
+          isNotNull,
+          reason: '$fix should be in a city',
+        );
       }
     });
 
@@ -80,8 +86,6 @@ void main() {
     });
 
     test('a shape filed in two cells is only handed back once', () {
-      // A box wide enough to span cells. Twice over is visibly darker than
-      // once, so the duplicate has to go before it reaches a painter.
       final List<OutlineShape> near = atlas.shapesIn(
         const GeoBox(south: 17, west: 71, north: 23, east: 77),
       );
@@ -98,7 +102,12 @@ void main() {
     });
 
     test('everything handed back actually meets the box', () {
-      const GeoBox box = GeoBox(south: 12.7, west: 77.3, north: 13.2, east: 77.9);
+      const GeoBox box = GeoBox(
+        south: 12.7,
+        west: 77.3,
+        north: 13.2,
+        east: 77.9,
+      );
 
       for (final OutlineShape s in atlas.shapesIn(box)) {
         expect(s.bounds.overlaps(box), isTrue);
@@ -107,15 +116,15 @@ void main() {
 
     test('empty ocean reads as empty, not as a crash', () {
       expect(
-        atlas.shapesIn(const GeoBox(south: -20, west: -140, north: -19, east: -139)),
+        atlas.shapesIn(
+          const GeoBox(south: -20, west: -140, north: -19, east: -139),
+        ),
         isEmpty,
       );
     });
   });
 }
 
-// The rule and the real file together — the domain tests stand shapes in front
-// of MapFraming by hand, and this is the one place the two meet.
 void _framing(OutlineAtlas atlas) {
   group('framing against the file the app ships', () {
     const double width = 393;
@@ -155,8 +164,14 @@ void _framing(OutlineAtlas atlas) {
         final MapFrame f = frameAt(fix.lat, fix.lon)!;
         final MapProjection p = f.projection(width: width, height: height);
 
-        expect(p.xOf(f.pin.lon), lessThanOrEqualTo(MapFraming.pinMaxX * width + 0.01));
-        expect(p.yOf(f.pin.lat), lessThanOrEqualTo(MapFraming.pinMaxY * height + 0.01));
+        expect(
+          p.xOf(f.pin.lon),
+          lessThanOrEqualTo(MapFraming.pinMaxX * width + 0.01),
+        );
+        expect(
+          p.yOf(f.pin.lat),
+          lessThanOrEqualTo(MapFraming.pinMaxY * height + 0.01),
+        );
       }
     });
 

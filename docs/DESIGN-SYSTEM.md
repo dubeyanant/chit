@@ -33,14 +33,14 @@ measured rather than assumed.
 
 **The seal means now.** One accent, one job: it marks what is live — the tick at `now`, the caret,
 the record dot, the ring around today, the pill *while it is playing*. Nothing else. Everything that
-is a record rather than a happening is ink: the strip's marks, the calendar's density, the tab pip,
+is a record rather than a happening is ink: the strip's marks, past's density, the tab pip,
 the pill at rest, the microphone, Save (ADR-022). `--seal` is for marks, fills, borders and icons;
 wherever the accent carries **words** it lifts to `--seal-ink`, `--seal` measuring 4.09:1 on a chit
 where text must clear 4.5:1.
 
 **The ink washes** — hierarchy comes from weight, not colour. The audio pill at rest is `--ink`
 3.5%, carrying its duration in `--ink-muted`; **Save** is `--ink` 7% with an `--ink-muted` border
-and its label at 10.85:1; the calendar's four density steps are 6 / 12 / 20 / 30%, their numerals
+and its label at 10.85:1; past's four density steps are 6 / 12 / 20 / 30%, their numerals
 running 12.66:1 down to 5.99:1. Two weights, one system: the microphone and Save share a border,
 Save carrying the brighter one and a wash, and **the quiet button** drops its outline altogether —
 the sheet's Discard, *Show every day*, Remove, and the editor's Cancel.
@@ -124,19 +124,30 @@ centre of its mark, and the node is centred on the stamp line it belongs to, an 
 a block of text being a number that is correct exactly once.
 
 **A screen's heading is one row, `minTouchTarget` tall**, with its words centred in it — `HeadingRow`,
-used by Today's date and the calendar's month bar. 44 because a heading row may carry a control and
-the calendar's chevrons do; fixed because a row that grows a chevron would otherwise move the words
+used by Today's date and past's month bar. 44 because a heading row may carry a control and
+past's chevrons do; fixed because a row that grows a chevron would otherwise move the words
 under it, and switching tab would shift the heading. The editor's header is the same height for the
 same reason, off its back arrow. **Every tab opens `s3` under the masthead** (ADR-087) — one value,
 in all three, because the rule that a tab switch does not move the heading only holds while they
 agree; the masthead's own `s3` sits above it, so the wordmark and the heading are 24px apart.
 
-**Haptics** — one, and it is the whole list: a `selectionClick` when the strip scrolls past a day
-boundary (ADR-034). A haptic is **not motion** and is not removed by reduced motion, which costs a
-user animation and not confirmation that their action landed.
+**Haptics** — three steps, and every one of them goes through `ChitHaptics` (ADR-096), never a bare
+`HapticFeedback` call:
+
+| | What it means | Where it fires |
+|---|---|---|
+| `selected` | something is now chosen or reached | the strip crossing a day boundary (ADR-034) · a hold landing on a chit (ADR-071) · a recording actually starting · a tag tapped (ADR-086) · a date tapped in past |
+| `committed` | something now exists | **Save** · **Stop & keep** |
+| `destroyed` | something is now gone | deleting a chit, which has no undo |
+
+**The app never buzzes for something it did itself** — the strip is silent when it moves itself, and
+that is the rule and not that one case. **Nor for a tab switch**, three tabs tapped all day being
+where a vocabulary turns into noise, **nor for a dimmed chevron** (ADR-088), where silence is the
+honest answer that nothing happened. A haptic is **not motion** and is not removed by reduced
+motion, which costs a user animation and not confirmation that their action landed.
 
 **Radius** — 2px almost everywhere; paper has cut edges. Two exceptions, both tokens: the recording
-sheet's top corners at 8px, and the calendar's day tiles at 4px with `s1` between them, the gap
+sheet's top corners at 8px, and past's day tiles at 4px with `s1` between them, the gap
 living *inside* each cell so the tap target clears 44px however narrow the screen. **Elevation** —
 hairlines carry the structure, the open chit's one faint shadow only seating it against the pad
 behind. **The perforation** is holes in the colour of the surface *beneath* the slip, never a dotted
@@ -180,7 +191,7 @@ there it explains why the list changed.
   pair in the app). **Translucent surfaces count as their own surface**: the pill's 3.5% wash drops
   `--ink-faint` to 4.17:1, so the pill's duration is `--ink-muted`. **Any new tinted surface gets
   measured, never inherited.** A ring is a non-text component with a 3:1 floor, which is why today's
-  calendar ring sits on paper rather than on the density wash (ADR-046).
+  the ring on today sits on paper rather than on the density wash (ADR-046).
 - **Colour is never the only difference.** `--seal` is *less* contrasty on `--paper` than
   `--ink-faint` is — 4.56:1 against 5.08:1 — so the accent reads as the accent because of hue, and
   hue is exactly what a signal may not rest on alone. The tick at now is **taller and thinner** than

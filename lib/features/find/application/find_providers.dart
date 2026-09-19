@@ -12,7 +12,6 @@ import '../../../shared/day_group.dart';
 
 part 'find_providers.g.dart';
 
-/// One row on an axis: what it is called, and how many chits carry it.
 @immutable
 final class FindValue {
   const FindValue({
@@ -21,10 +20,8 @@ final class FindValue {
     required this.count,
   });
 
-  /// What it is called in a route — an enum name, or a folded tag label.
   final String slug;
 
-  /// What it is called on screen.
   final String label;
 
   final int count;
@@ -43,18 +40,12 @@ final class FindValue {
   String toString() => 'FindValue($slug, $count)';
 }
 
-/// Every chit, which find narrows rather than queries.
 @riverpod
 Stream<List<Chit>> everyChit(Ref ref) =>
     ref.watch(chitRepositoryProvider).watchEvery();
 
-/// What each axis can offer, read once per change to the chits.
 @riverpod
 class AxisValues extends _$AxisValues {
-  /// **Null until the chits have arrived**, never an empty map standing in for
-  /// them (ADR-085). An empty map is a real answer — *nothing has been written
-  /// with any of this on it* — and a screen that cannot tell the two apart
-  /// draws its empty state for a frame and then throws it away.
   @override
   Map<FindAxis, List<FindValue>>? build() =>
       switch (ref.watch(everyChitProvider)) {
@@ -73,8 +64,6 @@ class AxisValues extends _$AxisValues {
         weather.update(chit.weather!.name, _up, ifAbsent: _one);
       }
 
-      // `stationary` is stored and never drawn (§3.6.1), so it is never
-      // offered either — a word find hands you is a word a chit shows.
       if (chit.motion != null && chit.motion != MotionState.stationary) {
         motion.update(chit.motion!.name, _up, ifAbsent: _one);
       }
@@ -86,9 +75,7 @@ class AxisValues extends _$AxisValues {
           TagKind.person => people,
           TagKind.topic => topics,
         };
-        // The rows arrive newest first, so the first spelling seen is the
-        // latest one written — change how you write a name and the list
-        // follows it, while the key keeps the older chits underneath.
+
         into.update(
           tag.key,
           (_Counted it) => it.more(),
@@ -120,8 +107,6 @@ class AxisValues extends _$AxisValues {
   static List<FindValue> _alphabetical(List<FindValue> values) =>
       values..sort((FindValue a, FindValue b) => a.label.compareTo(b.label));
 
-  /// Most written first, and **alphabetical where two tie** — otherwise two
-  /// tags written once each would swap places on every save.
   static List<FindValue> _byFrequency(Map<String, _Counted> counted) {
     final List<FindValue> values = <FindValue>[
       for (final MapEntry<String, _Counted> it in counted.entries)
@@ -153,7 +138,6 @@ final class _Counted {
   _Counted more() => _Counted(label, count + 1);
 }
 
-/// The chits carrying one value of one axis, grouped by day.
 @riverpod
 List<DayGroup>? chitsOfValue(Ref ref, FindAxis axis, String slug) {
   final List<Chit>? chits = switch (ref.watch(everyChitProvider)) {

@@ -53,6 +53,14 @@ supersession edits the row in place**, rewriting it to the current truth with a 
 used to say; git carries the before. One row can hold several related calls from the same session.
 **Numbers are never reused**, roughly two hundred citations pointing into that file.
 
+**A row is one or two lines, and so is every entry in the design documents.** Not one long line with
+the same words packed tighter — **fewer words**. Records 001 to 073 are the length to write at; the
+ones after them grew into essays, were cut back, and are what the rule exists to prevent. Say what
+was decided and the one reason it turned on. The argument you had on the way there is not the
+decision, the alternatives you rejected are not the decision, and neither belongs in the row: if a
+fact is load-bearing somewhere else, it belongs in the document that owns it, and if it is load-
+bearing nowhere, it goes.
+
 ### 0.3 Write it short
 
 Every word in a doc or a comment is a word a future session pays to read before it can act. State
@@ -119,15 +127,16 @@ production**: `assert` for what must never happen, a null and an undrawn element
 did not arrive (ADR-007). **Name things as the README names them** — the app is **चित्त** on screen
 and **Chitta** to the phone, one entry is a **chit**, a `Chit`, and the blank one at the top of Today
 is the *open chit*, not a draft or a note; a synonym is a bug in the making. The Dart package and
-both bundle ids are `chitta`; the `Chit` classes, the Drift file, the preference keys and the repo
-directory stay `chit` (ADR-074).
+both bundle ids are `chitta`; the `Chit` classes, the Drift file and the repo directory stay
+`chit` (ADR-074).
 
 ### 4.2 The specific rules
 
 - **The layer rule.** `features` never imports `data` (`docs/ARCHITECTURE.md` §1).
 - **Never call `DateTime.now()`.** Inject `Clock` (ADR-012). There is a test for it.
-- **Never write a bare `TextStyle`, colour, duration or padding** — they come from the four theme
-  extensions in `lib/core/theme/`. A literal in a widget is a design-system leak.
+- **Never write a bare `TextStyle`, colour, duration, padding or `HapticFeedback` call** — the first
+  four come from the four theme extensions in `lib/core/theme/`, and the haptic from `ChitHaptics`
+  (ADR-096). A literal in a widget is a design-system leak.
 - **Every gap and padding comes off the 4px scale** — `s1`…`s8`, no one-off spacings. A *dimension*
   may sit off the scale when it is a property of one component and named where it is drawn; a *gap*
   may not, because a gap is a relationship and the scale exists to keep relationships consistent.
@@ -139,6 +148,13 @@ directory stay `chit` (ADR-074).
   Riverpod owns everything that outlives a build, the router included; before hand-rolling near
   either, check whether the package has the seam already. The two deliberate exceptions are modal
   sheets and not routes: ADR-011's recording sheet and ADR-064's prompt sheet.
+- **No comments. Ever.** (ADR-095.) Nothing under `lib/` or `test/` carries a comment — not a `///`
+  doc comment, not a `//` aside, not a `/* */` block. **The code says what it does and the documents
+  say why**, and a comment is a third place for the reason to live, out of reach of every rule in §0
+  that keeps the other two true. When a line needs explaining, either the name is wrong and you
+  rename it, or the reason is a decision and it belongs in `docs/DECISIONS.md` with the citation
+  going the other way — the record names the file. The generated `*.g.dart` and `*.freezed.dart`
+  are exempt: they are not written here. A test fails if a comment reappears.
 - **No widget tests. Ever.** (ADR-031.) Nothing under `test/` may call `testWidgets`, `pumpWidget`
   or `WidgetTester`, and no test may build a widget in order to look at it. **A claim that can only
   be checked by pumping a screen is checked on a device instead** — build it, look at it, and write
@@ -158,7 +174,7 @@ imperative and lowercase, no trailing full stop. `feat` behaviour a user can see
 behaviour that already shipped · `refactor` shape, not behaviour · `perf` faster, same behaviour ·
 `test` tests only · `docs` documentation only · `build` dependencies, Gradle, Xcode, fonts, platform
 config, codegen · `chore` anything that fits nowhere above (rare) · `style` formatting only (rarer —
-`dart format` runs first). Scope is the area (`theme`, `composer`, `calendar`, `db`), omitted when
+`dart format` runs first). Scope is the area (`theme`, `composer`, `past`, `db`), omitted when
 the change is global.
 
 **The body says why, not what** — the diff already says what. Mention the decision record when the

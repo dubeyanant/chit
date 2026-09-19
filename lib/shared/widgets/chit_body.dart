@@ -4,19 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../core/extensions.dart';
+import '../../core/haptics.dart';
 import '../../domain/find/find_axis.dart';
 import '../../domain/tags/chit_tags.dart';
 
-/// A saved chit's words, with its tags drawn as tags and reached as tags —
-/// BEHAVIOUR.md §3.7.
-///
-/// **A person loses its `@` and a topic keeps its `#`** (ADR-082): italic is
-/// difference enough for a name, while a topic's only other difference would
-/// be colour, which §6.4 forbids a signal to rest on alone.
-///
-/// **A tag is tapped and the row is held** (ADR-086). It navigates itself
-/// rather than taking a callback every caller would pass identically, which
-/// is the argument ADR-061 made for `ChitRow`.
 final class ChitBody extends StatefulWidget {
   const ChitBody(this.text, {super.key});
 
@@ -27,10 +18,6 @@ final class ChitBody extends StatefulWidget {
 }
 
 class _ChitBodyState extends State<ChitBody> {
-  /// One recognizer per tag, kept so they can be disposed.
-  ///
-  /// A `TapGestureRecognizer` owns a pointer subscription; building one inside
-  /// `build` leaks one per frame.
   List<TapGestureRecognizer> _taps = const <TapGestureRecognizer>[];
 
   List<ChitSpan> _spans = const <ChitSpan>[];
@@ -59,8 +46,7 @@ class _ChitBodyState extends State<ChitBody> {
 
     _taps = <TapGestureRecognizer>[
       for (final ChitSpan span in _spans)
-        if (span is TagSpan)
-          TapGestureRecognizer()..onTap = () => _open(span),
+        if (span is TagSpan) TapGestureRecognizer()..onTap = () => _open(span),
     ];
   }
 
@@ -71,10 +57,9 @@ class _ChitBodyState extends State<ChitBody> {
     _taps = const <TapGestureRecognizer>[];
   }
 
-  /// **Unwinds and re-enters** rather than pushing (ADR-086): `go` rebuilds
-  /// find's stack as root → axis → value, so back always walks the real path
-  /// up and tapping tag after tag never piles one.
   void _open(TagSpan tag) {
+    ChitHaptics.selected();
+
     final FindAxis axis = FindAxis.ofTag(tag.kind);
 
     context.go(
@@ -82,7 +67,7 @@ class _ChitBodyState extends State<ChitBody> {
         findValueRouteName,
         pathParameters: <String, String>{
           findAxisParameter: axis.slug,
-          findValueParameter: tag.slug,
+          findValueParameter: tag.label,
         },
       ),
     );

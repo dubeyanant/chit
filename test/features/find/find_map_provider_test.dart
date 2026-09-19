@@ -25,9 +25,8 @@ void main() {
 
   setUp(() async {
     root = await Directory.systemTemp.createTemp('chit-find-map-test');
-    final Directory documents = await Directory(
-      p.join(root.path, 'documents'),
-    ).create();
+    final Directory documents = await Directory(p.join(root.path, 'documents'))
+        .create();
     db = AppDatabase(NativeDatabase.memory());
     final FakeClock clock = FakeClock(monday);
     repo = ChitRepositoryImpl(
@@ -44,7 +43,10 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.listen<GeoPoint?>(latestFixProvider, (GeoPoint? _, GeoPoint? _) {});
+    container.listen<GeoPoint?>(
+      latestFixProvider,
+      (GeoPoint? _, GeoPoint? _) {},
+    );
   });
 
   tearDown(() async {

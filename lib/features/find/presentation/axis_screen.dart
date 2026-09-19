@@ -8,7 +8,6 @@ import '../../../domain/find/find_axis.dart';
 import '../application/find_providers.dart';
 import 'widgets/find_list.dart';
 
-/// One axis' values — no quote, and ordered as the axis says (§4.6).
 class AxisScreen extends ConsumerWidget {
   const AxisScreen({required this.axis, super.key});
 
@@ -16,11 +15,10 @@ class AxisScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Map<FindAxis, List<FindValue>>? loaded = ref.watch(axisValuesProvider);
+    final Map<FindAxis, List<FindValue>>? loaded = ref.watch(
+      axisValuesProvider,
+    );
 
-    // Nothing at all while the chits are still arriving — an empty column is
-    // an answer, and drawing one before there is an answer is the flash
-    // ADR-085 removed.
     if (loaded == null) return const SizedBox.shrink();
 
     final List<FindValue> values = loaded[axis] ?? const <FindValue>[];

@@ -42,7 +42,7 @@ final class ComposerControllerProvider
 }
 
 String _$composerControllerHash() =>
-    r'deda2beb10210de8d25074818850e4130ecc67d6';
+    r'5c8f64e352e0f7455c8ce9966db17cdf2d9ebd85';
 
 abstract class _$ComposerController extends $Notifier<ComposerState> {
   ComposerState build();

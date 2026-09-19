@@ -10,16 +10,6 @@ import '../../../../domain/geo/outline_shape.dart';
 import '../../../../domain/geo/outline_source.dart';
 import '../../application/find_map_provider.dart';
 
-/// The map behind find's first screen — ADR-089.
-///
-/// The city the newest pinned chit was written in, **filled**; its neighbours,
-/// the coast, the lakes and the rivers around it in outline; and the fix itself
-/// the one bright mark. It is a region and never a street: what is drawn is the
-/// shape of where you were, not the way through it.
-///
-/// **Nothing is drawn unless there is something to draw** — no fix, no atlas
-/// yet, or nowhere with anything on it, and the screen is the screen it always
-/// was (ADR-007).
 final class OutlineBackdrop extends ConsumerWidget {
   const OutlineBackdrop({super.key});
 
@@ -28,9 +18,6 @@ final class OutlineBackdrop extends ConsumerWidget {
     final GeoPoint? pin = ref.watch(latestFixProvider);
     if (pin == null) return const SizedBox.shrink();
 
-    // The atlas is read the first time find is opened, so the first frame of
-    // the first visit has no map on it and the second does. Nothing waits and
-    // nothing is said about it — ADR-085's null, one layer down.
     final OutlineSource? source = switch (ref.watch(outlineSourceProvider)) {
       AsyncData<OutlineSource>(:final OutlineSource value) => value,
       _ => null,
@@ -71,15 +58,10 @@ final class _OutlinePainter extends CustomPainter {
     required this.colors,
   });
 
-  /// Hairlines, and the one thicker line the host city is drawn with. These sit
-  /// off the 4px scale deliberately: a stroke is a property of the thing it
-  /// draws, not a gap between two things (CLAUDE.md §4.2).
   static const double _thin = 0.8;
   static const double _line = 1;
   static const double _host = 1.2;
 
-  /// The fix, and the disc of paper it stands on so that it reads the same
-  /// whether it lands on the city or off it.
   static const double _pinRadius = 3;
   static const double _pinDisc = 7;
 
@@ -96,8 +78,6 @@ final class _OutlinePainter extends CustomPainter {
 
     final List<OutlineShape> shapes = source.shapesIn(at.bounds);
 
-    // Water first, then the coast over it, then the towns, then the city being
-    // stood in — so the subject is the last thing drawn and nothing crosses it.
     _draw(canvas, at, shapes, OutlineLayer.rivers, ChitColors.mapLine, _thin);
     _draw(canvas, at, shapes, OutlineLayer.lakes, ChitColors.mapWater, _line);
     _draw(canvas, at, shapes, OutlineLayer.coast, ChitColors.mapWater, _line);
@@ -159,9 +139,6 @@ final class _OutlinePainter extends CustomPainter {
     return path;
   }
 
-  /// **Composited on paper rather than drawn translucent**: two shapes that
-  /// overlap would otherwise stack into a third surface nobody measured, and
-  /// §6.4 holds the words above to the surface they actually sit on.
   Paint _fill(double wash) =>
       Paint()..color = colors.inkWash(colors.paper, opacity: wash);
 

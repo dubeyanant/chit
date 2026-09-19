@@ -85,11 +85,6 @@ class ChitDao extends DatabaseAccessor<AppDatabase> with _$ChitDaoMixin {
             ]))
           .watch();
 
-  /// Every chit there is, newest day first — what find narrows down.
-  ///
-  /// Unbounded on purpose: find's four axes include the tags, which live in
-  /// the body text and have no index to ask, so the rows come to Dart. The
-  /// `(localDay, createdAt)` index of ADR-077 still answers the ordering.
   Stream<List<ChitRow>> watchEvery() =>
       (select(chits)..orderBy(<OrderClauseGenerator<$ChitsTable>>[
             ($ChitsTable t) => OrderingTerm.desc(t.localDay),

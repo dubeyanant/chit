@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
@@ -6,11 +7,30 @@ import '../../../core/extensions.dart';
 import '../../../core/theme/chit_motion.dart';
 import '../../../shared/widgets/focus_ring.dart';
 import '../../../shared/widgets/wordmark.dart';
+import '../../find/application/find_line_provider.dart';
 
-class ShellScreen extends StatelessWidget {
+class ShellScreen extends ConsumerStatefulWidget {
   const ShellScreen({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
+
+  @override
+  ConsumerState<ShellScreen> createState() => _ShellScreenState();
+}
+
+class _ShellScreenState extends ConsumerState<ShellScreen> {
+  @override
+  void didUpdateWidget(covariant ShellScreen old) {
+    super.didUpdateWidget(old);
+
+    final int was = old.navigationShell.currentIndex;
+    final int now = widget.navigationShell.currentIndex;
+    if (was == now || now != ChitRoute.find.index) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((Duration _) {
+      if (mounted) ref.read(findVisitProvider.notifier).arrived();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +39,8 @@ class ShellScreen extends StatelessWidget {
         child: Column(
           children: <Widget>[
             const _Masthead(),
-            Expanded(child: navigationShell),
-            _TabBar(navigationShell: navigationShell),
+            Expanded(child: widget.navigationShell),
+            _TabBar(navigationShell: widget.navigationShell),
           ],
         ),
       ),

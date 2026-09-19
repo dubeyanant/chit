@@ -323,8 +323,6 @@ void main() {
   });
 
   group('the map is a surface, and it is measured like one', () {
-    // Every wash the backdrop draws with, composited the way it is drawn —
-    // on paper, so that two shapes overlapping never make a third surface.
     final Map<String, double> washes = <String, double>{
       'map-line': ChitColors.mapLine,
       'map-water': ChitColors.mapWater,
@@ -355,8 +353,6 @@ void main() {
     }
 
     test('map-host is the ceiling, and nothing on the map is brighter', () {
-      // The floors above are only worth anything while this holds: a wash
-      // added above map-host would sit under the same words untested.
       expect(
         washes.values.reduce((double a, double b) => a > b ? a : b),
         ChitColors.mapHost,
@@ -364,8 +360,6 @@ void main() {
     });
 
     test('the quote could not have stayed --ink-faint', () {
-      // Why chit_type.dart raised it. Not a preference: the line the app used
-      // to draw would be under the floor the moment the map arrived behind it.
       expect(
         contrastRatio(
           colors.inkFaint,
@@ -376,9 +370,6 @@ void main() {
     });
 
     test('the pin clears the 3:1 a non-text mark is held to', () {
-      // Measured on paper and not on the map, because the pin is drawn on its
-      // own disc of paper — which is what makes this number the whole story
-      // wherever the fix happens to fall.
       expect(
         contrastRatio(
           colors.inkWash(colors.paper, opacity: ChitColors.mapPin),

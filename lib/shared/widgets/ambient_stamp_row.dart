@@ -19,16 +19,12 @@ final class AmbientStampRow extends StatelessWidget {
     super.key,
   }) : _onOpenChit = false;
 
-  /// What the open chit says before a signal arrives, so the line is never
-  /// blank and the field never moves under the thumb — BEHAVIOUR.md §3.6.1.
   static const String writing = 'writing';
 
-  /// Drawn only where [edited] is true, which is where `updatedAt` has moved.
   static const String wasEdited = 'edited';
 
   final AmbientStamp stamp;
 
-  /// Whether this chit has been changed since it was written.
   final bool edited;
 
   final bool _onOpenChit;
@@ -55,8 +51,6 @@ final class AmbientStampRow extends StatelessWidget {
   List<Widget> _facts() {
     final AmbientFact? fact = AmbientFact.of(stamp);
 
-    // The open chit carries no time at all: it is stamped when it is saved
-    // (ADR-040), so any clock drawn here is a preview that goes stale.
     if (_onOpenChit) {
       return <Widget>[Text(fact == null ? writing : _wordOf(fact))];
     }
@@ -76,4 +70,3 @@ final class AmbientStampRow extends StatelessWidget {
   static String _timeOf(DateTime at) =>
       DateFormat('h:mm a').format(at).toLowerCase();
 }
-

@@ -16,7 +16,7 @@ This file holds what chit is (§1–§2), what a chit is (§5), and the map (§1
 numbered items a session must know. **v1 is finished** (ADR-073), so there is no next task waiting.
 
 > **Status: v1 is done.** A chit can be typed or spoken, carries the time, the weather and what the
-> phone was doing, and is read back on Today, on a scrolling timeline and in a calendar of the
+> phone was doing, and is read back on Today, on a scrolling timeline and in past, a grid of the
 > months written. **Voice is recording and playback: there is no transcription** (ADR-058). A saved
 > chit is opened by holding it, and its words, its recording and the chit itself can be changed or
 > destroyed. **There are no database migrations** (ADR-059) — see OPEN-QUESTIONS.md item 38 before
@@ -47,7 +47,7 @@ you get on with your life. Everything follows from that:
 |---|---|
 | People write in bursts, not sessions | A chit is short. The composer is always open on the home screen |
 | A day holds many chits | The home screen is a thread of today |
-| Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready. **One exception, once:** a fresh install says what to expect, explains what is captured, and asks (ADR-041, ADR-074) |
+| Writing happens mid-thought | Opening the app costs nothing — the page is blank and ready, on a fresh install as on any other. **Nothing is asked for until there is something to ask about**: the place, once, after the first chit is saved (ADR-094) |
 | Speaking is often faster than typing | One surface: a live field, a microphone beside it. A chit holds words, a recording, or both |
 | The moment matters as much as the words | Time, weather, motion and location are recorded with every chit |
 | The habit survives on rhythm, not scores | Rhythm is shape and colour; the app keeps no score |
@@ -100,10 +100,10 @@ nothing enters `pubspec.yaml` without a line there ·
 lib/
 ├── main.dart   runApp(ProviderScope(child: ChitApp()))
 ├── app/        the application root and the router (ADR-011)
-├── core/       the design system, the clock, the BuildContext accessors
+├── core/       the design system, the clock, the haptic vocabulary, the BuildContext accessors
 ├── domain/     models and interfaces. Pure Dart; imports neither of the two below
 ├── data/       the implementations: Drift, files, network, platform plugins
-├── features/   one per screen — shell, today, composer, calendar, find, editor, onboarding
+├── features/   one per screen — shell, today, composer, past, find, editor
 └── shared/     widgets used by more than one feature
 
 tool/           pack_outlines.mjs — builds assets/geo/outline.bin, run by hand (ADR-089)
@@ -114,7 +114,11 @@ tool/           pack_outlines.mjs — builds assets/geo/outline.bin, run by hand
 reach motion. `lib/domain/tags/` reads `@person` and `#topic` out of a chit's words (ADR-082) —
 pure, so the widget that draws them holds no grammar, and `lib/domain/find/` says which axis a tag
 is found on. `lib/domain/find_line.dart` holds the two books find opens with — the house lines and
-the hints (ADR-086). `lib/shared/widgets/` is the chit vocabulary:
+the hints (ADR-086) — and turns a visit count into one of them (ADR-093).
+`lib/domain/services/place_permission.dart` is the whole of asking for location: it is called by the
+save and by nothing else, and draws nothing (ADR-094).
+`lib/core/haptics.dart` is the three steps of §6's haptic vocabulary and the only place
+`HapticFeedback` is called (ADR-096). `lib/shared/widgets/` is the chit vocabulary:
 the slip and its tear edge, the chit's own body text, the stamp
 row and its motion marks, the rail and the thread over it, a day's heading and its group, the
 wordmark, the heading row the tabs hang their title in, the two button weights, the microphone, the
@@ -123,7 +127,8 @@ pill, the prompt sheet, `Arrival`, `StaggeredEntrance` and `FocusRing`.
 **Tests.** `flutter test`. **There are no widget tests, and there will not be** (ADR-031) — what can
 only be seen on a screen is seen on a handset and written into the commit. Suites sit beside what
 they guard, mirroring `lib/`, plus `test/support/` for the fakes and the WCAG arithmetic and
-`test/docs/` for the no-widget-test rule enforcing itself. What is covered is ARCHITECTURE.md §4.
+`test/docs/` for the two source rules enforcing themselves — no widget tests (ADR-031) and no
+comments (ADR-095). What is covered is ARCHITECTURE.md §4.
 Three patterns worth keeping: **a rule that fails silently gets a test that checks a property, not
 an example** (asserting "no fade is slower than it was" caught a motion rule that was
 self-consistent and wrong); **an invariant worth having is worth holding in more than one place**,

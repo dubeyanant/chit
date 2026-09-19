@@ -4,44 +4,27 @@ import '../../domain/geo/geo_point.dart';
 import '../../domain/geo/outline_shape.dart';
 import '../../domain/geo/outline_source.dart';
 
-/// The bundled outlines, read out of `assets/geo/outline.bin` — ADR-089.
-///
-/// **The format, which `tool/pack_outlines.mjs` writes and this reads:**
-///
-/// ```text
-/// header  'CHTO'  u8 version  u8 cellDeg  u16 cellCount
-/// index   cellCount x { u16 key, u32 offset, u32 length }, ascending key
-/// body    per cell, the four layers of OutlineLayer in order:
-///           layer = varint shapeCount, then that many shapes
-///           shape = varint pointCount, then that many (zigzag lat, zigzag lon)
-///                   the first absolute and the rest deltas, in milli-degrees
-/// key     latIndex * 180 + lonIndex, each floor((degrees + 90|180) / cellDeg)
-/// ```
-///
-/// **Cells are why this is cheap**: a viewport a degree or two across touches
-/// four of them at most, so a draw reads a few kilobytes rather than the 1.1 MB
-/// the app ships. Nothing here walks the whole file.
 final class OutlineAtlas implements OutlineSource {
   OutlineAtlas._(this._bytes, this._index, this.cellDeg);
 
-  /// Reads the header and the index. **The shapes are not decoded here** — a
-  /// cell is decoded the first time something asks for it, and kept after.
   factory OutlineAtlas.decode(Uint8List bytes) {
     final ByteData data = ByteData.sublistView(bytes);
 
     final bool magic =
         bytes.length > _headerBytes &&
-        bytes[0] == 0x43 && // C
-        bytes[1] == 0x48 && // H
-        bytes[2] == 0x54 && // T
-        bytes[3] == 0x4F; // O
+        bytes[0] == 0x43 &&
+        bytes[1] == 0x48 &&
+        bytes[2] == 0x54 &&
+        bytes[3] == 0x4F;
     if (!magic) {
       throw const FormatException('not an outline atlas: bad magic');
     }
 
     final int version = bytes[4];
     if (version != _version) {
-      throw FormatException('outline atlas version $version, expected $_version');
+      throw FormatException(
+        'outline atlas version $version, expected $_version',
+      );
     }
 
     final int cellDeg = bytes[5];
@@ -63,25 +46,18 @@ final class OutlineAtlas implements OutlineSource {
   static const int _headerBytes = 8;
   static const int _indexBytes = 10;
 
-  /// Degrees to a cell, both ways. Written into the file so that regenerating
-  /// the asset at a different grid does not need a code change.
   final int cellDeg;
 
   final Uint8List _bytes;
   final Map<int, _Cell> _index;
   final Map<int, List<OutlineShape>> _decoded = <int, List<OutlineShape>>{};
 
-  /// How many cells the file holds — what a test asserts the asset is not empty
-  /// by, and what a bad path would otherwise fail silently on.
   int get cellCount => _index.length;
 
   @override
   List<OutlineShape> shapesIn(GeoBox box) {
     final List<OutlineShape> found = <OutlineShape>[];
 
-    // A shape wider than a cell is filed in each cell it touches, so that a
-    // polygon stays whole enough to fill. Reading two of those cells would
-    // otherwise draw it twice, and twice over is visibly darker than once.
     final Set<String> seen = <String>{};
 
     for (final int key in _keysFor(box)) {
@@ -170,7 +146,6 @@ final class _Cell {
   final int length;
 }
 
-/// A cursor over the varints of one cell.
 final class _Reader {
   _Reader(this._bytes, this._at);
 
@@ -189,7 +164,6 @@ final class _Reader {
     return result;
   }
 
-  /// Zigzag: the sign is the low bit, so a small negative stays one byte.
   int signed() {
     final int raw = unsigned();
     return (raw & 1) == 1 ? -((raw + 1) >> 1) : raw >> 1;

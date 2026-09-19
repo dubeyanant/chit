@@ -4,8 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('projecting a point onto the screen', () {
-    // One degree of latitude is kmPerDegree, so a span of exactly that over a
-    // hundred pixels makes every number here checkable by hand.
     MapProjection at(GeoPoint centre) => MapProjection(
       centre: centre,
       spanKm: kmPerDegree,
@@ -25,7 +23,7 @@ void main() {
 
       expect(p.xOf(1), closeTo(150, 1e-9));
       expect(p.xOf(-1), closeTo(-50, 1e-9));
-      // North is a smaller y: the screen counts down and the earth counts up.
+
       expect(p.yOf(1), closeTo(0, 1e-9));
       expect(p.yOf(-1), closeTo(200, 1e-9));
     });
@@ -34,7 +32,6 @@ void main() {
       final double atEquator = at(const GeoPoint(0, 0)).xOf(1);
       final double atSixty = at(const GeoPoint(60, 0)).xOf(1);
 
-      // cos(60) is a half exactly, so a degree of longitude is half as wide.
       expect(atSixty - 50, closeTo((atEquator - 50) / 2, 1e-6));
     });
 
@@ -53,16 +50,13 @@ void main() {
       final GeoBox box = at(const GeoPoint(0, 0)).bounds;
 
       expect(box.lonSpan, closeTo(1, 1e-9));
-      // Twice as tall in pixels is twice as tall on the ground.
+
       expect(box.latSpan, closeTo(2, 1e-9));
       expect(box.centre.lat, closeTo(0, 1e-9));
       expect(box.centre.lon, closeTo(0, 1e-9));
     });
 
     test('a fix at the pole is drawn wrong rather than not at all', () {
-      // cos(90) is zero and every longitude there is the same place. The scale
-      // has a floor so the arithmetic stays finite — a map that is wrong at the
-      // pole beats one that divides by zero on a screen somebody is looking at.
       final MapProjection p = at(const GeoPoint(90, 0));
 
       expect(p.xOf(10).isFinite, isTrue);

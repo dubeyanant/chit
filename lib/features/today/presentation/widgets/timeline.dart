@@ -1,10 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions.dart';
+import '../../../../core/haptics.dart';
 import '../../../../core/theme/chit_space.dart';
 import '../../../../domain/models/chit.dart';
 import '../../application/timeline_provider.dart';
@@ -68,7 +66,7 @@ class _TimelineState extends ConsumerState<Timeline> {
         .dayAt(centre.clamp(0.0, 1.0));
 
     if (_dayUnderCentre != null && day != _dayUnderCentre) {
-      unawaited(HapticFeedback.selectionClick());
+      ChitHaptics.selected();
     }
     _dayUnderCentre = day;
   }

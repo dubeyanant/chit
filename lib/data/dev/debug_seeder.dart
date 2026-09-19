@@ -106,9 +106,7 @@ final class DebugSeeder {
             seed.audioSeconds == null ? null : seed.audioSeconds! * 1000,
           ),
           weather: Value<WeatherCondition?>(seed.weather),
-          // Nudged off the centre so two chits are never the same point, by
-          // little enough that it cannot walk one outside a city as tight as
-          // New York's seven kilometres.
+
           lat: Value<double?>(
             place == null ? null : place.lat + (index % 7) * _jitter,
           ),
@@ -124,20 +122,11 @@ final class DebugSeeder {
     return (rows: rows, recordings: recordings);
   }
 
-  static DateTime _whenOf(_Seed seed, DateTime now) =>
-      Chit.startOfLocalDay(
-        now,
-        offsetDays: -seed.daysAgo,
-      ).add(Duration(hours: seed.hour, minutes: seed.minute));
+  static DateTime _whenOf(_Seed seed, DateTime now) => Chit.startOfLocalDay(
+    now,
+    offsetDays: -seed.daysAgo,
+  ).add(Duration(hours: seed.hour, minutes: seed.minute));
 
-  /// Which place each seeded chit was written in, keyed by its index in the
-  /// fixture. A chit that carries no fix is absent.
-  ///
-  /// **One place per step back in time** (ADR-089): the newest pinned chit is
-  /// in the first place, the one before it in the second, and so on round the
-  /// list. So deleting the newest chit and opening find again lands the map
-  /// somewhere else in the world — which is the only way to see it anywhere but
-  /// where you are without getting on a plane.
   static Map<int, _Place> _placesFor(DateTime now) {
     final List<int> pinned = <int>[
       for (final (int index, _Seed seed) in _fixture.indexed)
@@ -288,18 +277,6 @@ final class DebugSeeder {
     'Two lines of something ordinary, so the rows are not all one height.',
   ];
 
-  /// Where the seeded chits were written, newest first — twelve places so that
-  /// the map behind find can be looked at somewhere other than here.
-  ///
-  /// **Every one of these stands inside a built-up area in the outline atlas**,
-  /// checked against `outline.bin` when they were chosen rather than assumed: a
-  /// place Natural Earth holds no city for draws a map with nothing filled, and
-  /// would read as a bug in the map rather than as a small town. Reykjavík and
-  /// Singapore were dropped for exactly that.
-  /// **Mumbai is last and not first on purpose.** The fixture is looked at from
-  /// a handset that is usually in it, so a newest seeded chit in Mumbai would
-  /// draw the same map the real one already did, and the first delete would
-  /// read as nothing having happened.
   static const List<_Place> _places = <_Place>[
     _Place('Tokyo', 35.6762, 139.6503),
     _Place('New York', 40.7128, -74.0060),
@@ -315,8 +292,6 @@ final class DebugSeeder {
     _Place('Mumbai', 19.0760, 72.8777),
   ];
 
-  /// Where the stress rows sit. One city, because that seed is for measuring
-  /// frames and not for looking at anything.
   static const double _lat = 19.076;
   static const double _lon = 72.8777;
 
@@ -571,7 +546,6 @@ final class _Seed {
   final bool pinned;
 }
 
-/// Somewhere a seeded chit was written.
 final class _Place {
   const _Place(this.name, this.lat, this.lon);
 

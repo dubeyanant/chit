@@ -59,9 +59,7 @@ void main() {
     });
 
     test('a leading one is not a tag at all', () {
-      expect(ChitTags.parse('@_anant'), <ChitSpan>[
-        const PlainSpan('@_anant'),
-      ]);
+      expect(ChitTags.parse('@_anant'), <ChitSpan>[const PlainSpan('@_anant')]);
     });
   });
 
@@ -140,16 +138,16 @@ void main() {
 
   group('the whole thing counts as one — the key', () {
     test('case does not make a second person', () {
-      const TagSpan lower = TagSpan(kind: TagKind.person, label: 'anant dubey');
-      const TagSpan upper = TagSpan(kind: TagKind.person, label: 'Anant Dubey');
-
-      expect(lower.key, upper.key);
+      expect(
+        ChitTags.tagsIn('@anant_dubey').single.key,
+        ChitTags.tagsIn('@Anant_Dubey').single.key,
+      );
     });
 
     test('an underscore and a space reach the same key', () {
       expect(
         ChitTags.tagsIn('@anant_dubey').single.key,
-        const TagSpan(kind: TagKind.person, label: 'Anant Dubey').key,
+        const TagSpan(kind: TagKind.person, label: 'anant dubey').key,
       );
     });
 
@@ -164,16 +162,66 @@ void main() {
       final List<TagSpan> tags = ChitTags.tagsIn('@Anant and @anant again');
 
       expect(tags, hasLength(1));
-      expect(tags.single.label, 'Anant');
+      expect(tags.single.label, 'anant');
     });
 
     test('and the order is the order they were written', () {
       expect(
-        ChitTags.tagsIn(
-          'Told @anant about #rent and #rent again, then @mira',
-        ).map((TagSpan t) => t.key),
+        ChitTags.tagsIn('Told @anant about #rent and #rent again, then @mira')
+            .map((TagSpan t) => t.key),
         <String>['person:anant', 'topic:rent', 'person:mira'],
       );
     });
   });
+
+  group('a tag is drawn in lower case, however it was typed — ADR-092', () {
+    test('a person is folded', () {
+      expect(_labels('Saw @Anant_Dubey'), <String>['anant dubey']);
+    });
+
+    test('a topic is folded', () {
+      expect(_labels('#MorningPages and #RENT'), <String>[
+        'morningpages',
+        'rent',
+      ]);
+    });
+
+    test('the words around a tag keep the case they were written in', () {
+      expect(
+        ChitTags.parse('Told @Mira about Tuesday')
+            .whereType<PlainSpan>()
+            .map((PlainSpan s) => s.text),
+        <String>['Told ', ' about Tuesday'],
+      );
+    });
+
+    test('what is spoken is folded too, being what is drawn', () {
+      expect(
+        ChitTags.spoken('Saw @Anant about #Rent'),
+        'Saw anant about #rent',
+      );
+    });
+
+    test('a script with no case is left as it is', () {
+      expect(_labels('#चित्त'), <String>['चित्त']);
+    });
+
+    test('the fold is the parse, so nothing downstream has to repeat it', () {
+      for (final String written in <String>[
+        '@ANANT',
+        '@Anant',
+        '@anant',
+        '@AnAnT',
+      ]) {
+        final TagSpan tag = ChitTags.tagsIn(written).single;
+
+        expect(tag.label, 'anant');
+        expect(tag.key, 'person:anant');
+      }
+    });
+  });
 }
+
+List<String> _labels(String text) => <String>[
+  for (final TagSpan tag in ChitTags.tagsIn(text)) tag.label,
+];

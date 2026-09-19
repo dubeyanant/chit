@@ -1,11 +1,6 @@
 import '../models/motion_state.dart';
 import '../models/weather_condition.dart';
 
-/// The word a motion is said in — BEHAVIOUR.md §3.6.
-///
-/// One list, because §3.6 requires the same words and case wherever they
-/// appear: the stamp on a chit and the row find narrows by are the same
-/// vocabulary, and two copies of it would drift.
 extension MotionWord on MotionState {
   String get word {
     assert(
@@ -22,7 +17,6 @@ extension MotionWord on MotionState {
   }
 }
 
-/// The word a sky is said in — BEHAVIOUR.md §3.6.
 extension WeatherWord on WeatherCondition {
   String get word => switch (this) {
     WeatherCondition.raining => 'raining',

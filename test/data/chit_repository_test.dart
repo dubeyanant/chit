@@ -58,8 +58,6 @@ void main() {
 
   group('a saved chit has never been edited — §3.6.1', () {
     test('updatedAt is the stamp, not a second reading of the clock', () async {
-      // The clock has moved on since the composer took its instant; reading it
-      // again here would make every chit ever saved draw the word `edited`.
       clock.moveTo(morning.add(const Duration(milliseconds: 40)));
 
       final Chit saved = await repo.save(
@@ -661,7 +659,7 @@ void main() {
       expect(audioFileOf(chit).existsSync(), isFalse);
     });
 
-    test('the thread and the calendar re-emit without it', () async {
+    test('the thread and past re-emit without it', () async {
       final Chit chit = await repo.save(
         stamp: stampAt(morning),
         text: 'Gone soon.',

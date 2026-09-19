@@ -41,38 +41,54 @@ void main() {
     });
   });
 
-  group('one line a day, the same all day', () {
-    test('the same day gives the same line', () {
-      expect(FindLine.forDay(20260919), FindLine.forDay(20260919));
+  group('one line a visit, held for the whole visit — ADR-093', () {
+    test('the same visit gives the same line', () {
+      expect(FindLine.forVisit(4117), FindLine.forVisit(4117));
     });
 
-    test('every day of a year lands inside one of the books', () {
-      for (int day = 20260101; day <= 20261231; day++) {
-        expect(FindLine.all, contains(FindLine.forDay(day)));
-      }
-    });
-  });
-
-  group('one day in four explains something — ADR-086', () {
-    test('a day divisible by four draws a hint', () {
-      expect(FindLine.hints, contains(FindLine.forDay(20260920)));
-      expect(FindLine.quotes, isNot(contains(FindLine.forDay(20260920))));
-    });
-
-    test('the days between it draw quotes', () {
-      for (final int day in <int>[20260917, 20260918, 20260919]) {
+    test('the next visit gives a different one', () {
+      for (int visit = 0; visit < 200; visit++) {
         expect(
-          FindLine.quotes,
-          contains(FindLine.forDay(day)),
-          reason: '$day is not a multiple of four',
+          FindLine.forVisit(visit),
+          isNot(FindLine.forVisit(visit + 1)),
+          reason: 'visit $visit and the one after it draw the same line',
         );
       }
     });
 
-    test('a month of days is about a quarter hints', () {
+    test('a long run of visits lands inside one of the books', () {
+      for (int visit = 0; visit < 2000; visit++) {
+        expect(FindLine.all, contains(FindLine.forVisit(visit)));
+      }
+    });
+
+    test('the day it is seeded with cannot take it out of range', () {
+      for (final int seed in <int>[0, -1, 20260919, -20260919]) {
+        expect(FindLine.all, contains(FindLine.forVisit(seed)));
+      }
+    });
+  });
+
+  group('one visit in four explains something — ADR-086', () {
+    test('a visit divisible by four draws a hint', () {
+      expect(FindLine.hints, contains(FindLine.forVisit(20260920)));
+      expect(FindLine.quotes, isNot(contains(FindLine.forVisit(20260920))));
+    });
+
+    test('the visits between it draw quotes', () {
+      for (final int visit in <int>[20260917, 20260918, 20260919]) {
+        expect(
+          FindLine.quotes,
+          contains(FindLine.forVisit(visit)),
+          reason: '$visit is not a multiple of four',
+        );
+      }
+    });
+
+    test('a run of visits is about a quarter hints', () {
       final int hints = <int>[
-        for (int day = 20260901; day <= 20260930; day++)
-          if (FindLine.hints.contains(FindLine.forDay(day))) day,
+        for (int visit = 20260901; visit <= 20260930; visit++)
+          if (FindLine.hints.contains(FindLine.forVisit(visit))) visit,
       ].length;
 
       expect(hints, greaterThanOrEqualTo(6));
@@ -81,7 +97,7 @@ void main() {
 
     test('every hint is reachable, none stranded in the book', () {
       final Set<String> seen = <String>{
-        for (int day = 20260101; day <= 20271231; day++) FindLine.forDay(day),
+        for (int visit = 0; visit < 2000; visit++) FindLine.forVisit(visit),
       };
 
       for (final String hint in FindLine.hints) {

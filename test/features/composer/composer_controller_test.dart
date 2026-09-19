@@ -100,8 +100,6 @@ void main() {
 
       composer.edit('Train 20 late.');
 
-      // The launch capture finishing is what used to rebuild the controller
-      // into a blank chit, seconds after somebody had started writing.
       await container.read(ambientSignalsProvider.notifier).prime();
 
       final ComposerState state = container.read(composerControllerProvider);
@@ -238,6 +236,90 @@ void main() {
         savedAt,
         reason: 'ADR-014: a late signal is not an edit',
       );
+    });
+  });
+
+  group('a grant at a save reaches the chit and the open one — ADR-094', () {
+    test('the chit that was saved is patched with the place', () async {
+      location.permitted = false;
+
+      final ProviderContainer container = containerOf(_FastWeather());
+      await container.read(ambientSignalsProvider.notifier).prime();
+
+      expect(container.read(ambientSignalsProvider).lat, isNull);
+
+      clock.moveTo(opened.add(const Duration(seconds: 20)));
+
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+      composer.edit('Train 20 late.');
+      await composer.save();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(location.asks, 1);
+      expect((await onlyChit()).lat, 1);
+    });
+
+    test('and the open chit is carrying it too', () async {
+      location.permitted = false;
+
+      final ProviderContainer container = containerOf(_FastWeather());
+      await container.read(ambientSignalsProvider.notifier).prime();
+
+      clock.moveTo(opened.add(const Duration(seconds: 20)));
+
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+      composer.edit('Train 20 late.');
+      await composer.save();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(container.read(ambientSignalsProvider).lat, 1);
+      expect(container.read(composerControllerProvider).stamp.lat, 1);
+    });
+
+    test('a second save does not ask again, nor read again for it', () async {
+      location.permitted = false;
+
+      final ProviderContainer container = containerOf(_FastWeather());
+      await container.read(ambientSignalsProvider.notifier).prime();
+
+      clock.moveTo(opened.add(const Duration(seconds: 20)));
+
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+      composer.edit('Train 20 late.');
+      await composer.save();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      final int after = location.fixes;
+
+      composer.edit('And again.');
+      await composer.save();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(location.asks, 1);
+      expect(location.fixes, after);
+    });
+
+    test('an install that already had the place reads nothing extra', () async {
+      final ProviderContainer container = containerOf(_FastWeather());
+      await container.read(ambientSignalsProvider.notifier).prime();
+
+      expect(location.fixes, 1);
+      clock.moveTo(opened.add(const Duration(seconds: 20)));
+
+      final ComposerController composer = container.read(
+        composerControllerProvider.notifier,
+      );
+      composer.edit('Train 20 late.');
+      await composer.save();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(location.fixes, 1, reason: 'the grant changed nothing to re-read');
     });
   });
 
@@ -508,19 +590,25 @@ void main() {
 final class _Location implements LocationService {
   GeoFix? answer = const GeoFix(lat: 1, lon: 2, speed: 20, speedAccuracy: 1);
   int fixes = 0;
+  int asks = 0;
+
+  bool permitted = true;
 
   @override
   Future<GeoFix?> currentFix() async {
     fixes++;
-    return answer;
+    return permitted ? answer : null;
   }
 
   @override
-  Future<GeoFix?> lastKnownFix() async => answer;
+  Future<GeoFix?> lastKnownFix() async => permitted ? answer : null;
 
   @override
-  Future<LocationPermissionOutcome> requestPermission() async =>
-      LocationPermissionOutcome.granted;
+  Future<LocationPermissionOutcome> requestPermission() async {
+    asks++;
+    permitted = true;
+    return LocationPermissionOutcome.granted;
+  }
 }
 
 final class _HangingWeather implements WeatherService {
