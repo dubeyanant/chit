@@ -31,7 +31,7 @@ hundred citations depend on it. **Never renumber.**
 | §0 §1 §2 §5 §10 | Start here · What Chitta is · Core concepts · Data model · The map | this file |
 | **§3 §4** | **Behaviour specification · Screens** | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) |
 | **§6 §7** | **Design system · The prototype (retired)** | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
-| **§8 §9** | **The three hard questions · Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
+| **§8 §9** | **The hard question · Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
 
 **The design authority is this file, `BEHAVIOUR.md` and `DESIGN-SYSTEM.md`.** Where another document
 disagrees, that document is wrong and is fixed in the change that found it. Both standing rules —

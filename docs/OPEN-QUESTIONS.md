@@ -3,7 +3,7 @@
 **What is not settled** (§8), **what is not built** (§9), and what a session has to know before it
 changes anything near them. The nearest thing to a plan the repository still has.
 
-## 8. One hard questions
+## 8. One hard question
 
 Numbering is stable — an answered question keeps its number, because it is cited.
 
@@ -14,25 +14,25 @@ screen. Answerable by living with the app for a week rather than by more design.
 
 Ordered by how much each reinforces what chit already is, not by appetite.
 
-1. **Extend ambient capture** — coarse place ("home", "office"), what was playing.
 3. **Resurfacing** — a chit from a year ago on the home screen.
 4. **Adapt the prompt to time-to-first-word.**
-5. **The stitch** — one continuous year-long line, one mark per day.
 7. **Chit threading** — one chit replying to another. Hold until real usage shows people write in
    chains.
 
-**1 and 3** make the app stickier; **5** makes it distinctive.
+**3** makes the app stickier. **1 and 5 are dropped**, not deferred (ADR-101).
 
-**After v1** (signed off 18 September 2026, ADR-073), nothing is scheduled. In order: §8.3 answered
-with real usage; **an export format**, which ADR-100 makes the only way a chit survives a lost phone
-and which is what would pay back ADR-004's accepted cost; the backlog above; then responsive web.
-Deliberately not on the list: **any speech engine, cloud or on-device** (ADR-005, ADR-058).
+**v1.1 is planned** and holds **an export format** — restore-only and text-only, which ADR-100 makes
+the only way a chit survives a lost phone — plus **resurfacing** (3), a **photo per chit** if its
+shape survives the deciding, and three fixes to what v1 shipped: the location ask, the audio pill's
+playhead, and item 23's stale sky. After it: §8.3 answered with real usage, then the backlog above,
+then responsive web. Deliberately not on the list: **any speech engine, cloud or on-device**
+(ADR-005, ADR-058).
 
 ## Known and unscheduled
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 38, 39, 40, 43, 44, 47, 48, 52, 53;
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 38, 39, 40, 43, 44, 47, 48, 52, 53, 63, 66;
 retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
@@ -129,8 +129,8 @@ retired: 32, 33, 35, 36.**
     Item 46's numbers are from the archive and say nothing about this. **Three things to try before
     an index, in order**: the parse is the suspect, not the query; `weather` and `motion` could be
     pushed into SQL and deliberately were not; and only then the `weather` index ADR-077 deleted,
-    which is a schema change — a step and a snapshot now (ADR-099), not a reinstall. A tags table is the end of that road and is
-    what would also make backlog 8's tap cheap.
+    which is a schema change — a step and a snapshot now (ADR-099), not a reinstall. A tags table is
+    the end of that road, and is what would also make a tapped tag (ADR-086) cheap.
 50. **The find tab has been seen, and most of it is answered** (ADR-084). The owner read it on a
     CPH2707 and called the layout right — **the right-flush column does not read as a mistake** —
     and the glitch they found there was real and is fixed (ADR-085). Two things are still
@@ -192,9 +192,8 @@ retired: 32, 33, 35, 36.**
     on the CPH2707 failed with exactly `INSTALL_FAILED_UPDATE_INCOMPATIBLE: signatures do not
     match` — the attempt changed nothing, the old build still being there afterwards. **So every
     handset carrying a test build must be uninstalled before it can take a signed one, and
-    uninstalling takes its chits with it.** Do it while the only chits are test ones. **What is
-    still unproven is that a signed APK runs**, because nothing has been installed from one yet —
-    that needs the uninstall first, and is the same act as item 66.
+    uninstalling takes its chits with it.** Do it while the only chits are test ones. **A signed
+    APK runs** — the owner installed one, closing this and item 66 together.
 64. **`allowBackup="false"` is a trade, not a free win** (ADR-100). It stops the chits going to
     Google's servers, which is what the README has always promised — and it also stops a new phone
     inheriting them during setup. Until there is an export format, **the only copy of somebody's
@@ -204,6 +203,5 @@ retired: 32, 33, 35, 36.**
     is still the template's white one (item 58's sibling, ADR-090), `Info.plist`'s two usage strings
     have never been read on a device, and the seeded recordings may be silent there (item 37).
     **Nothing about the iOS half of v1 should be called ready**; what has shipped is Android.
-66. **`--split-per-abi` has not been installed from.** The universal APK is what has been tested on
-    the handset all along; the per-ABI ones are what a download should get (PACKAGES.md), and the
-    only way to know the arm64 one runs is to install it. Check that before attaching it anywhere.
+66. **— closed with item 63.** *`--split-per-abi` had not been installed from.* The owner has since
+    installed and run a signed per-ABI build.
