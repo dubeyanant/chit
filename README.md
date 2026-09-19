@@ -105,6 +105,8 @@ lib/
 ├── data/       the implementations: Drift, files, network, platform plugins
 ├── features/   one per screen — shell, today, composer, calendar, find, editor, onboarding
 └── shared/     widgets used by more than one feature
+
+tool/           pack_outlines.mjs — builds assets/geo/outline.bin, run by hand (ADR-089)
 ```
 
 `lib/core/theme/` is §6 as four `ThemeExtension`s, reached through `context.colors`, `.type`,

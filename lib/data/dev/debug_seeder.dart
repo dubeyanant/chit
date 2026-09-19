@@ -51,7 +51,9 @@ final class DebugSeeder {
       case modeSeed:
         final SeedOutcome done = await seed();
         return 'chit: seeded ${done.rows} rows and ${done.recordings} '
-            'recordings (${count - done.rows} were already there)';
+            'recordings (${count - done.rows} were already there); '
+            'pinned newest-first through '
+            '${_places.map((_Place it) => it.name).join(', ')}';
       case modeStress:
         final SeedOutcome done = await stress();
         return 'chit: stressed with ${done.rows} rows and ${done.recordings} '
@@ -71,6 +73,7 @@ final class DebugSeeder {
 
   Future<SeedOutcome> seed() async {
     final DateTime now = _clock.now();
+    final Map<int, _Place> places = _placesFor(now);
     int rows = 0;
     int recordings = 0;
 
@@ -78,10 +81,7 @@ final class DebugSeeder {
       final String id = _idOf(index);
       if (await _dao.byId(id) != null) continue;
 
-      final DateTime at = Chit.startOfLocalDay(
-        now,
-        offsetDays: -seed.daysAgo,
-      ).add(Duration(hours: seed.hour, minutes: seed.minute));
+      final DateTime at = _whenOf(seed, now);
 
       String? audioPath;
       if (seed.audioSeconds != null) {
@@ -92,7 +92,7 @@ final class DebugSeeder {
         recordings++;
       }
 
-      final bool pinned = seed.pinned;
+      final _Place? place = places[index];
       await _dao.insertRow(
         ChitsCompanion.insert(
           id: id,
@@ -106,8 +106,15 @@ final class DebugSeeder {
             seed.audioSeconds == null ? null : seed.audioSeconds! * 1000,
           ),
           weather: Value<WeatherCondition?>(seed.weather),
-          lat: Value<double?>(pinned ? _lat + index * _jitter : null),
-          lon: Value<double?>(pinned ? _lon - index * _jitter : null),
+          // Nudged off the centre so two chits are never the same point, by
+          // little enough that it cannot walk one outside a city as tight as
+          // New York's seven kilometres.
+          lat: Value<double?>(
+            place == null ? null : place.lat + (index % 7) * _jitter,
+          ),
+          lon: Value<double?>(
+            place == null ? null : place.lon - (index % 7) * _jitter,
+          ),
           motion: Value<MotionState?>(seed.motion),
         ),
       );
@@ -115,6 +122,37 @@ final class DebugSeeder {
     }
 
     return (rows: rows, recordings: recordings);
+  }
+
+  static DateTime _whenOf(_Seed seed, DateTime now) =>
+      Chit.startOfLocalDay(
+        now,
+        offsetDays: -seed.daysAgo,
+      ).add(Duration(hours: seed.hour, minutes: seed.minute));
+
+  /// Which place each seeded chit was written in, keyed by its index in the
+  /// fixture. A chit that carries no fix is absent.
+  ///
+  /// **One place per step back in time** (ADR-089): the newest pinned chit is
+  /// in the first place, the one before it in the second, and so on round the
+  /// list. So deleting the newest chit and opening find again lands the map
+  /// somewhere else in the world — which is the only way to see it anywhere but
+  /// where you are without getting on a plane.
+  static Map<int, _Place> _placesFor(DateTime now) {
+    final List<int> pinned = <int>[
+      for (final (int index, _Seed seed) in _fixture.indexed)
+        if (seed.pinned) index,
+    ];
+
+    pinned.sort(
+      (int a, int b) =>
+          _whenOf(_fixture[b], now).compareTo(_whenOf(_fixture[a], now)),
+    );
+
+    return <int, _Place>{
+      for (final (int rank, int index) in pinned.indexed)
+        index: _places[rank % _places.length],
+    };
   }
 
   Future<SeedOutcome> stress() async {
@@ -250,6 +288,35 @@ final class DebugSeeder {
     'Two lines of something ordinary, so the rows are not all one height.',
   ];
 
+  /// Where the seeded chits were written, newest first — twelve places so that
+  /// the map behind find can be looked at somewhere other than here.
+  ///
+  /// **Every one of these stands inside a built-up area in the outline atlas**,
+  /// checked against `outline.bin` when they were chosen rather than assumed: a
+  /// place Natural Earth holds no city for draws a map with nothing filled, and
+  /// would read as a bug in the map rather than as a small town. Reykjavík and
+  /// Singapore were dropped for exactly that.
+  /// **Mumbai is last and not first on purpose.** The fixture is looked at from
+  /// a handset that is usually in it, so a newest seeded chit in Mumbai would
+  /// draw the same map the real one already did, and the first delete would
+  /// read as nothing having happened.
+  static const List<_Place> _places = <_Place>[
+    _Place('Tokyo', 35.6762, 139.6503),
+    _Place('New York', 40.7128, -74.0060),
+    _Place('London', 51.5072, -0.1276),
+    _Place('Cape Town', -33.9249, 18.4241),
+    _Place('Sydney', -33.8688, 151.2093),
+    _Place('Rio de Janeiro', -22.9068, -43.1729),
+    _Place('Paris', 48.8566, 2.3522),
+    _Place('Istanbul', 41.0082, 28.9784),
+    _Place('Bangalore', 12.9716, 77.5946),
+    _Place('Cairo', 30.0444, 31.2357),
+    _Place('San Francisco', 37.7749, -122.4194),
+    _Place('Mumbai', 19.0760, 72.8777),
+  ];
+
+  /// Where the stress rows sit. One city, because that seed is for measuring
+  /// frames and not for looking at anything.
   static const double _lat = 19.076;
   static const double _lon = 72.8777;
 
@@ -502,4 +569,15 @@ final class _Seed {
   final int? audioSeconds;
   final MotionState? motion;
   final bool pinned;
+}
+
+/// Somewhere a seeded chit was written.
+final class _Place {
+  const _Place(this.name, this.lat, this.lon);
+
+  final String name;
+
+  final double lat;
+
+  final double lon;
 }

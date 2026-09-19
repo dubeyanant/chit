@@ -9,6 +9,7 @@ import '../../../domain/find_line.dart';
 import '../../today/application/today_controller.dart';
 import '../application/find_providers.dart';
 import 'widgets/find_list.dart';
+import 'widgets/outline_backdrop.dart';
 
 /// The find tab's first screen — a line, and the ways down that go anywhere.
 class FindScreen extends ConsumerWidget {
@@ -29,6 +30,24 @@ class FindScreen extends ConsumerWidget {
         if (values?[axis]?.isNotEmpty ?? false) axis,
     ];
 
+    // **Only here.** The map belongs to find's first screen and nowhere else
+    // (ADR-089); the two screens below are routes that cover it, so it goes
+    // when a word is tapped without anything having to take it away.
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        const OutlineBackdrop(),
+        _words(context, today, values, offered),
+      ],
+    );
+  }
+
+  Widget _words(
+    BuildContext context,
+    int today,
+    Map<FindAxis, List<FindValue>>? values,
+    List<FindAxis> offered,
+  ) {
     return FindList(
       above: _Quote(line: FindLine.forDay(today)),
       rows: <Widget>[

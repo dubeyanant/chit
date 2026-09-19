@@ -59,6 +59,16 @@ surface inherits that, and §6.4 makes no exception for a surface that is brief.
 artwork rather than assembled from tokens (ADR-075), so that the icon and the first screen it opens
 are one colour.
 
+**The map behind find is four washes of `--ink` on `--paper`** (ADR-089): `map-line` 7% for the
+towns and rivers, `map-water` 10% for the coast and the lakes, `map-fill` 10% for the city being
+stood in, and `map-host` 13% for its edge. **Each is composited, not drawn translucent**, so two
+shapes crossing never stack into a fifth surface nobody measured. **`map-host` is the ceiling, and
+the text above it set the number** — it is the lightest thing a word comes to rest on, so §6.4 holds
+both the column and the quote to 4.5:1 against it, and `contrast_test.dart` asserts that and that
+nothing on the map is brighter. **The fix is `map-pin` at 42% on its own disc of `--paper`**, which
+is what makes it the same mark whether it lands on the city or off it — and the only number on this
+surface measured against paper rather than against the map.
+
 ### 6.2 Typography
 
 **Newsreader** is the writing voice — dates, entry text, section labels, tab labels. **Hanken
@@ -102,8 +112,10 @@ drawn rather than sheared.
 **`filterWord` is find's column** (ADR-084) — 16.5px Hanken in `--ink`, each word its own
 `minTouchTarget` row. **It is the one thing in the app set flush right**: everything else hangs off
 the left gutter, and this column is a set of targets rather than prose, sitting where a right thumb
-already is. **`quote` is the line above it** — 15px serif italic in `--ink-faint`, §6.2's voice for
-an aside, which is what a line nobody signed is.
+already is. **`quote` is the line above it** — 15px serif italic, §6.2's voice for an aside, which is
+what a line nobody signed is. **`--ink-muted`, not `--ink-faint`**: it sits over the map (§6.1,
+ADR-089), where `--ink-faint` falls under the floor, and the pill's duration made the same move for
+the same reason. The aside survives it — size, face and slope were never resting on colour.
 
 ### 6.3 Spacing, shape, motion
 

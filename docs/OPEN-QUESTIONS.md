@@ -170,3 +170,17 @@ retired: 32, 33, 35, 36.**
     a brighter colour: §6.4 will not have a disabled control clearing the floor a live one is held
     to. The overhang is the other half — the glyph should now land on the gutter the month name
     starts from, and whether the pair reads as aligned or as overhung is a looking question.
+55. **The map has been seen in one city only** (ADR-089). A CPH2707 in Mumbai, which answered the
+    three things that were open — it reads as faint rather than as dirty, the quote at
+    `--ink-muted` reads as legible rather than as loud, and the pin's disc of paper reads as a mark
+    — and cost three changes: the span factor, the pin's weight, and a seeder that now walks the
+    world. **What is still unlooked-at is both ends of the clamp**, neither of which Mumbai
+    reaches. **New York's built-up area is 7km wide**, so it frames at `minSpanKm` and the fill
+    will be a small island in a lot of paper; **Tokyo's is 201km and London's 109km**, so both sit
+    at the 110km cap with the city running off every edge — the case where there is no shape to
+    read because the shape is bigger than the screen. Seed and delete forward to reach them.
+    **The host city's edge is the other one**: 13% over a 10% fill is the whole of the difference
+    between *the city* and *a city*, and at arm's length in Mumbai it was the fill doing the work
+    rather than the edge. If the edge turns out to carry nothing, the honest move is to **drop it
+    and let the fill be the shape**, not to brighten it — 13% is the ceiling §6.4 allows over the
+    quote, and there is nothing above it to spend.

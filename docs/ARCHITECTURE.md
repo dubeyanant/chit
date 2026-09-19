@@ -21,9 +21,11 @@ lib/
 ├── domain/    models/ (Chit and its invariant, the stamp, the enums, the screen states, the
 │              sealed AudioEdit) · ambient/ · motion/ · weather/ · tags/ (the sealed ChitSpan
 │              and its grammar) · find/ (the four axes, and where a column sits) ·
+│              geo/ (the projection, and how the map frames itself) ·
 │              repositories/ · services/
 ├── data/      db/ · audio/ (store, recorder, player) · dev/ (the seeder, the frame log) ·
-│              weather/ · location/ · preferences/ · repositories/
+│              weather/ · location/ · geo/ (the bundled atlas and its codec) ·
+│              preferences/ · repositories/
 ├── features/  shell, today, composer, calendar, find, editor, onboarding
 └── shared/    widgets/ (the chit vocabulary) · day_label.dart · day_group.dart
 ```

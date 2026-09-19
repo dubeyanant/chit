@@ -278,6 +278,21 @@ reading surface, and the right edge is where a right thumb already is. **The lin
 not quotations** — nothing is attributed, a misattribution being a defect that ships and cannot be
 checked from inside the app.
 
+**Behind the words there is a faint map** (ADR-089) — and **only here**, never on the two screens
+below, which are routes that cover it. It shows where the **newest chit that knew where it was** was
+written: the built-up area around that fix drawn **filled**, its neighbouring towns, the coast, the
+lakes and the rivers around it left as outlines, and the fix itself the one bright mark, sitting
+wherever it actually falls rather than in the middle. The view is **the city and most of the same
+again around it** — near enough that a place is recognisable, wide enough that its river or its
+coast comes with it — and it opens wider when there is little about, so a town off the edge is
+reached rather than lost. **It is a region and never a street**: no roads, no labels, no names.
+
+**Nothing is drawn where there is nothing.** A phone that never got a fix, a first run with no chits
+yet, and a fix in open desert with no town, no water and no coast within reach all draw no map at
+all — a lone mark on an empty screen reads as a fault rather than as a fact (ADR-007). The map is
+**still**: it does not animate, drift or reappear, and it changes only when a newer chit is written
+somewhere else, which re-frames it around the new place.
+
 *The second screen.* One axis' values, **no quote**, the same right-flush column. `weather` and
 `motion` read **alphabetically**, both being short lists a reader already knows the whole of, where
 alphabetical is what lets a word be *found*. `people` and `topics` read **most written first**, both

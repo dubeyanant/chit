@@ -198,6 +198,17 @@ column added for a tool. Seeding is idempotent; clearing deletes exactly the see
 recordings. It writes through the DAO rather than the repository, which generates its own ids, but
 `localDay` still comes from `Chit.localDayOf`.
 
+**The pinned chits walk the world, newest first** (ADR-089) — Tokyo, New York, London, Cape Town,
+Sydney, Rio, Paris, Istanbul, Bangalore, Cairo, San Francisco, Mumbai, and round again. **Mumbai is
+last and not first**, because this gets looked at from a handset that is usually in it: a newest
+seeded chit there would draw the map the real one already drew, and the first delete would read as
+nothing having happened. **That order is the feature**: the map behind find draws the newest chit that carries a fix, so deleting the
+newest chit and opening find again lands it on the next city, which is the only way to see the map
+anywhere but where the handset is. **Each of the twelve was checked against `outline.bin` for a
+built-up area to fill** rather than assumed — a place Natural Earth holds no city for draws a map
+with nothing filled, which reads as a broken map rather than as a small town, and that is why
+Reykjavík and Singapore are not on the list. The console names them on every seed.
+
 **`stress` is for measuring, not for looking at** (ADR-077): 2,000 rows spread evenly over 1,095
 days, ids `seed-s00000` upward, written in one transaction, with four rotating bodies of different
 lengths so the rows are not all one height. `clear` takes them too — they carry the same `seed-`

@@ -46,7 +46,19 @@ assets/fonts/
 assets/icon/
 ├── icon.png               1024²  the icon as drawn, opaque, square corners
 └── icon_foreground.png    1024²  the glyph alone, transparent — Android's adaptive layer
+
+assets/geo/
+└── outline.bin            1.1 MB  the outlines behind find's first screen — ADR-089
 ```
+
+**`outline.bin` is generated, and committed like the codegen is.** It is Natural Earth 10m —
+urban areas, coastline, lakes and river centrelines — simplified, quantised to milli-degrees and cut
+into a 2° grid by [`tool/pack_outlines.mjs`](../tool/pack_outlines.mjs), which documents the
+`mapshaper` invocation that feeds it. **Natural Earth is public domain**, which is why nothing is
+credited on screen and why it was taken over OSM, whose ODbL would put a permanent line on a surface
+that has no room for one. The script needs Node and a download; the committed binary is what stops a
+fresh clone needing either. `lib/data/geo/outline_atlas.dart` documents the byte format and is the
+only thing that reads it.
 
 **Neither is bundled into the app.** They are sources for `flutter_launcher_icons`, which is why
 they are not under `flutter: assets:`; the icon the phone draws is the generated set under

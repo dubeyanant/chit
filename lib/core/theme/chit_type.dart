@@ -172,10 +172,16 @@ final class ChitType extends ThemeExtension<ChitType> {
         letterSpacingEm: 0.01,
       ),
 
+      // **`--ink-muted`, not `--ink-faint`** — the line sits over the map
+      // (ADR-089), and a tinted surface is measured rather than inherited
+      // (§6.4). `--ink-faint` is 5.08:1 on bare paper and drops under the floor
+      // over the city fill; this is the same move the audio pill's duration
+      // made for the same reason. The aside is still an aside: 15px, serif and
+      // italic are three differences colour was never carrying alone.
       quote: _serif(
         size: 15,
         weight: 400,
-        color: colors.inkFaint,
+        color: colors.inkMuted,
         italic: true,
         height: 1.5,
       ),
