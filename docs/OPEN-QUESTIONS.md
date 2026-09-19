@@ -216,3 +216,14 @@ retired: 32, 33, 35, 36.**
     since somebody who means *no, not ever* has no way to say so. **On iOS there is no such sheet**
     — `getCurrentPosition` throws, the run is spent and nothing is drawn, which is item 65's
     territory and unverified like the rest of it.
+68. **Every recording written before ADR-103 carries a duration longer than its audio.** The row was
+    timed from before `_recorder.start()` returned, so it counts the encoder opening — 100–300ms on
+    Android — as sound. **Nothing re-reads it**: the pill now measures against the length
+    `just_audio` decodes, so the bars and the figure are right while a take plays, and the stored
+    number is only what the pill shows at rest. It is wrong by a fraction of a second and there is
+    no migration for it, because the file is the truth and the row was only ever a label.
+69. **The recorder's timing is not tested, and cannot be as the class stands.** `RecordAudioRecorder`
+    builds `plugin.AudioRecorder()` in a field, so `start` and `stop` need a platform and only the
+    pure statics are covered. The clock-after-`start` fix is therefore **read, not proven**. Making
+    it testable means wrapping the plugin behind an interface of ours — worth doing the next time
+    anything in that file changes for another reason, not on its own.

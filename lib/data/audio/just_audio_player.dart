@@ -43,13 +43,14 @@ final class JustAudioPlayer implements AudioPlayer {
         try {
           _now = Playback(id: id);
           await _pauseQuietly();
-          await _player.setFilePath(file.path);
+          _now = Playback(id: id, length: await _player.setFilePath(file.path));
         } finally {
           _switching = false;
         }
       }
 
       if (_player.processingState == plugin.ProcessingState.completed) {
+        _report(_now = Playback(id: _now.id, length: _now.length));
         await _player.seek(Duration.zero);
       }
 
@@ -81,15 +82,20 @@ final class JustAudioPlayer implements AudioPlayer {
 
   void _onPlayerState(plugin.PlayerState state) {
     if (state.processingState == plugin.ProcessingState.completed) {
-      unawaited(_stopQuietly());
-      _now = Playback.silent;
-      _report(_now);
+      _report(
+        _now = Playback(
+          id: _now.id,
+          position: _now.length ?? _now.position,
+          length: _now.length,
+        ),
+      );
       return;
     }
     _report(
       _now = Playback(
         id: _now.id,
         position: _now.position,
+        length: _now.length,
         playing: state.playing,
       ),
     );
@@ -99,7 +105,14 @@ final class JustAudioPlayer implements AudioPlayer {
     if (_now.id == null || _switching) return;
 
     if (at < _now.position) return;
-    _report(_now = Playback(id: _now.id, position: at, playing: _now.playing));
+    _report(
+      _now = Playback(
+        id: _now.id,
+        position: at,
+        length: _now.length,
+        playing: _now.playing,
+      ),
+    );
   }
 
   void _report(Playback next) {

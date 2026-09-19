@@ -45,6 +45,10 @@ recording is not words. **Save** commits it like any chit, and the order text an
 is not recorded. **There is no transcription** (ADR-058): the recording is the record, and anything
 a chit says in words was typed by a person.
 
+**A kept recording is played from its pill**, whose bars are the playhead: they fill as it sounds,
+**against the length the player decoded rather than the one the row stores** (ADR-103), and a take
+that reaches its end rests with every bar lit until it is tapped again, when it starts over.
+
 **3.5 — retired.** *When transcription fails, the voice survives alone.* Gone with transcription
 itself (ADR-058). **The number is not reused** — it is cited from other documents and from git.
 
