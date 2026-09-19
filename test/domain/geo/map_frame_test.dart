@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
-import 'package:chitta/domain/geo/geo_point.dart';
-import 'package:chitta/domain/geo/map_frame.dart';
-import 'package:chitta/domain/geo/map_projection.dart';
-import 'package:chitta/domain/geo/outline_shape.dart';
-import 'package:chitta/domain/geo/outline_source.dart';
+import 'package:chitt/domain/geo/geo_point.dart';
+import 'package:chitt/domain/geo/map_frame.dart';
+import 'package:chitt/domain/geo/map_projection.dart';
+import 'package:chitt/domain/geo/outline_shape.dart';
+import 'package:chitt/domain/geo/outline_source.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final class _Shapes implements OutlineSource {

@@ -28,7 +28,7 @@ if (signedForRelease) {
 }
 
 android {
-    namespace = "com.infiniteants.chitta"
+    namespace = "com.infiniteants.chitt"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -38,7 +38,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.infiniteants.chitta"
+        applicationId = "com.infiniteants.chitt"
         // record_android requires 24; it is the highest floor of any plugin in
         // PACKAGES.md. path_provider asks 21, just_audio 16.
         minSdk = 24

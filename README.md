@@ -1,12 +1,13 @@
-# Chitta
+# Chitt
 
 A private journal for things that hit you during the day.
 
-**चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field where impressions land; a
-**chit** is a small slip of paper you scribble on and keep. **The app signs itself चित्त on screen
-and Chitta wherever the phone says it** — the drawer, the switcher, the stores — and **one entry is
-a chit**. The Dart package and both bundle ids are `chitta` (ADR-074); the repository directory,
-these documents and the `Chit` classes keep the short name.
+**चित्त** (*chitta*) is Sanskrit for consciousness, mind, the field where impressions land, and
+**Chitt** is that name shortened; a **chit** is a small slip of paper you scribble on and keep.
+**The app signs itself चित्त on screen and Chitt wherever the phone says it** — the drawer, the
+switcher, the stores — and **one entry is a chit**. The Dart package and both bundle ids are
+`chitt` (ADR-074, ADR-113); the repository directory, these documents and the `Chit` classes keep
+the short name.
 
 ## 0. Start here
 
@@ -29,7 +30,7 @@ hundred citations depend on it. **Never renumber.**
 
 | | Section | Lives in |
 |---|---|---|
-| §0 §1 §2 §5 §10 | Start here · What Chitta is · Core concepts · Data model · The map | this file |
+| §0 §1 §2 §5 §10 | Start here · What Chitt is · Core concepts · Data model · The map | this file |
 | **§3 §4** | **Behaviour specification · Screens** | [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) |
 | **§6 §7** | **Design system · The prototype (retired)** | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
 | **§8 §9** | **The hard question · Feature backlog** | [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) |
@@ -39,9 +40,9 @@ disagrees, that document is wrong and is fixed in the change that found it. Both
 every change closes the loop on the docs it made untrue, and nothing that has stopped earning its
 place gets committed — live in [`CLAUDE.md`](CLAUDE.md) §0.
 
-## 1. What Chitta is
+## 1. What Chitt is
 
-Chitta assumes **you write when something hits you**: several times a day, in a few words, and then
+Chitt assumes **you write when something hits you**: several times a day, in a few words, and then
 you get on with your life. Everything follows from that:
 
 | Assumption | Consequence |

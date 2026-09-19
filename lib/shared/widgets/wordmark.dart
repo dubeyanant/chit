@@ -16,7 +16,7 @@ final class Wordmark extends StatelessWidget {
     if (open == null) {
       return Semantics(
         header: true,
-        label: 'Chitta',
+        label: 'Chitt',
         excludeSemantics: true,
         child: mark,
       );
@@ -25,8 +25,8 @@ final class Wordmark extends StatelessWidget {
     return Semantics(
       header: true,
       button: true,
-      label: 'Chitta',
-      hint: 'How to use Chitta',
+      label: 'Chitt',
+      hint: 'How to use Chitt',
       excludeSemantics: true,
       child: FocusRing(
         onActivate: open,

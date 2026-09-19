@@ -10,7 +10,7 @@ class ChitApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'Chitta',
+      title: 'Chitt',
       debugShowCheckedModeBanner: false,
       theme: ChitTheme.theme,
       routerConfig: ref.watch(routerProvider),

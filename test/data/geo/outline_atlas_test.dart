@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:chitta/data/geo/asset_outline_atlas.dart';
-import 'package:chitta/data/geo/outline_atlas.dart';
-import 'package:chitta/domain/geo/geo_point.dart';
-import 'package:chitta/domain/geo/map_frame.dart';
-import 'package:chitta/domain/geo/map_projection.dart';
-import 'package:chitta/domain/geo/outline_shape.dart';
+import 'package:chitt/data/geo/asset_outline_atlas.dart';
+import 'package:chitt/data/geo/outline_atlas.dart';
+import 'package:chitt/domain/geo/geo_point.dart';
+import 'package:chitt/domain/geo/map_frame.dart';
+import 'package:chitt/domain/geo/map_projection.dart';
+import 'package:chitt/domain/geo/outline_shape.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

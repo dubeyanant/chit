@@ -1,5 +1,5 @@
-name: chitta
-description: "Chitta - a private journal for things that hit you throughout the day."
+name: chitt
+description: "Chitt - a private journal for things that hit you throughout the day."
 publish_to: 'none'
 
 version: 1.0.0+1

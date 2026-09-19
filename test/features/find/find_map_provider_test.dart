@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:chitta/core/clock.dart';
-import 'package:chitta/data/db/app_database.dart';
-import 'package:chitta/data/files/file_store.dart';
-import 'package:chitta/data/repositories/chit_repository_impl.dart';
-import 'package:chitta/domain/geo/geo_point.dart';
-import 'package:chitta/domain/models/ambient_stamp.dart';
-import 'package:chitta/domain/repositories/chit_repository.dart';
-import 'package:chitta/features/find/application/find_map_provider.dart';
+import 'package:chitt/core/clock.dart';
+import 'package:chitt/data/db/app_database.dart';
+import 'package:chitt/data/files/file_store.dart';
+import 'package:chitt/data/repositories/chit_repository_impl.dart';
+import 'package:chitt/domain/geo/geo_point.dart';
+import 'package:chitt/domain/models/ambient_stamp.dart';
+import 'package:chitt/domain/repositories/chit_repository.dart';
+import 'package:chitt/features/find/application/find_map_provider.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

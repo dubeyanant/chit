@@ -1,4 +1,4 @@
-import 'package:chitta/domain/tags/chit_tags.dart';
+import 'package:chitt/domain/tags/chit_tags.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

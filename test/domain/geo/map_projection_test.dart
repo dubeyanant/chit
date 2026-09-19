@@ -1,5 +1,5 @@
-import 'package:chitta/domain/geo/geo_point.dart';
-import 'package:chitta/domain/geo/map_projection.dart';
+import 'package:chitt/domain/geo/geo_point.dart';
+import 'package:chitt/domain/geo/map_projection.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

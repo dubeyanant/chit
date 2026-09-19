@@ -50,9 +50,15 @@ final class GuideSheet extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        for (final (int at, GuideEntry entry)
-                            in Guide.entries.indexed) ...<Widget>[
-                          if (at > 0) SizedBox(height: space.s5),
+                        Text(
+                          Guide.again,
+                          style: type.emptyNote.copyWith(
+                            color: colors.inkFaint,
+                          ),
+                        ),
+
+                        for (final GuideEntry entry in Guide.entries) ...[
+                          SizedBox(height: space.s5),
                           Semantics(
                             header: true,
                             child: Text(entry.title, style: type.chitText),
@@ -60,14 +66,6 @@ final class GuideSheet extends StatelessWidget {
                           SizedBox(height: space.s2),
                           Text(entry.words, style: type.emptyNote),
                         ],
-
-                        SizedBox(height: space.s5),
-                        Text(
-                          Guide.again,
-                          style: type.emptyNote.copyWith(
-                            color: colors.inkFaint,
-                          ),
-                        ),
                       ],
                     ),
                   ),

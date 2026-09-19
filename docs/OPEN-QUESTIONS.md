@@ -93,7 +93,7 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     without its step throws at `open` (ADR-099). **What is not closed is the other half of 004's
     cost** — with ADR-100 turning Android's backup off, a lost phone is lost chits and there is
     still no export format. That is the backlog item that now has teeth.
-41. **One stored name still says `chit`, and that is on purpose** (ADR-074). The package is `chitta`
+41. **One stored name still says `chit`, and that is on purpose** (ADR-074). The package is `chitt`
     — `pubspec.yaml`, `applicationId`, the iOS bundle id — but `driftDatabase(name: 'chit')` is not,
     so that an applicationId reversed later still finds the chits somebody wrote. Rename it only
     once nothing could be carrying data under the old id. *The two `chit.firstRun.*` preference keys

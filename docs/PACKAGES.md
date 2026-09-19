@@ -96,7 +96,7 @@ highest of any plugin here. **`image_picker` needs no Android permission of its 
 is reached by intent and the system photo picker reads nothing else, so declaring `CAMERA` would
 make a permission required that the app does not otherwise need. **iOS** —
 `NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` and
-`NSLocationWhenInUseUsageDescription`, written in Chitta's own voice and the only copy in the app
+`NSLocationWhenInUseUsageDescription`, written in Chitt's own voice and the only copy in the app
 the design never sees; `IPHONEOS_DEPLOYMENT_TARGET` is 15.0, above every plugin's floor. Both location
 strings should say what §3.6 says the app does: it records that a place was there, and never shows
 which one. The microphone string says the thing that is unusual, true and most likely to earn the

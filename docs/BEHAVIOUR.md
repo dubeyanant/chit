@@ -1,6 +1,6 @@
 # Behaviour
 
-**What Chitta does** (§3) **and what it looks like doing it** (§4). This file and
+**What Chitt does** (§3) **and what it looks like doing it** (§4). This file and
 [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) are the design authority alongside the [README](../README.md);
 where another document disagrees, that document is wrong.
 
@@ -170,7 +170,8 @@ tab they are in has stopped existing.
 tapping it raises a slip of what the app cannot teach in passing — that a chit is **held** to open
 it, that `@` names a person and `#` a topic, and that `_` joins words inside a tag and is read as a
 space. It is the only place in the app that explains itself. **It shows itself once**, on the first
-launch of an install (ADR-111), and closes with the line that says how to get back to it; after
+launch of an install (ADR-111), and **opens with the line that says how to get back to it** — the
+first thing read on the one showing nobody asked for is how to ask for it again; after
 that it is reached and never shown, and an uninstall is the only thing that resets it.
 
 **4.1 Today (home).** The wordmark — चित्त, and nothing beside it — then weekday and date on

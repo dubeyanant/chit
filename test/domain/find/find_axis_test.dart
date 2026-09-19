@@ -1,8 +1,8 @@
-import 'package:chitta/domain/ambient/ambient_words.dart';
-import 'package:chitta/domain/find/find_axis.dart';
-import 'package:chitta/domain/models/motion_state.dart';
-import 'package:chitta/domain/models/weather_condition.dart';
-import 'package:chitta/domain/tags/chit_tags.dart';
+import 'package:chitt/domain/ambient/ambient_words.dart';
+import 'package:chitt/domain/find/find_axis.dart';
+import 'package:chitt/domain/models/motion_state.dart';
+import 'package:chitt/domain/models/weather_condition.dart';
+import 'package:chitt/domain/tags/chit_tags.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,7 +1,7 @@
-import 'package:chitta/domain/models/chit.dart';
-import 'package:chitta/domain/models/day_summary.dart';
-import 'package:chitta/features/past/application/month_provider.dart';
-import 'package:chitta/shared/day_group.dart';
+import 'package:chitt/domain/models/chit.dart';
+import 'package:chitt/domain/models/day_summary.dart';
+import 'package:chitt/features/past/application/month_provider.dart';
+import 'package:chitt/shared/day_group.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

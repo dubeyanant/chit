@@ -1,4 +1,4 @@
-import 'package:chitta/domain/guide.dart';
+import 'package:chitt/domain/guide.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

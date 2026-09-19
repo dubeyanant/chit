@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:chitta/data/files/guide_memory_file.dart';
+import 'package:chitt/data/files/guide_memory_file.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 

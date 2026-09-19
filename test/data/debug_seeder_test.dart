@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:chitta/data/db/app_database.dart';
-import 'package:chitta/data/dev/debug_seeder.dart';
-import 'package:chitta/data/files/file_store.dart';
-import 'package:chitta/data/repositories/chit_repository_impl.dart';
-import 'package:chitta/domain/models/ambient_stamp.dart';
-import 'package:chitta/domain/models/chit.dart';
-import 'package:chitta/domain/models/motion_state.dart';
-import 'package:chitta/domain/models/weather_condition.dart';
-import 'package:chitta/domain/repositories/chit_repository.dart';
+import 'package:chitt/data/db/app_database.dart';
+import 'package:chitt/data/dev/debug_seeder.dart';
+import 'package:chitt/data/files/file_store.dart';
+import 'package:chitt/data/repositories/chit_repository_impl.dart';
+import 'package:chitt/domain/models/ambient_stamp.dart';
+import 'package:chitt/domain/models/chit.dart';
+import 'package:chitt/domain/models/motion_state.dart';
+import 'package:chitt/domain/models/weather_condition.dart';
+import 'package:chitt/domain/repositories/chit_repository.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;

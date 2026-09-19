@@ -1,5 +1,5 @@
-import 'package:chitta/domain/services/audio_player.dart';
-import 'package:chitta/shared/widgets/audio_pill.dart';
+import 'package:chitt/domain/services/audio_player.dart';
+import 'package:chitt/shared/widgets/audio_pill.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_audio_player.dart';

@@ -1,4 +1,4 @@
-import 'package:chitta/core/clock.dart';
+import 'package:chitt/core/clock.dart';
 
 final class FakeClock implements Clock {
   FakeClock(this._now);
