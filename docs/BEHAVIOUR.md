@@ -244,7 +244,9 @@ until Save.
 below, a question, two answers in the two button weights — **the quiet one always lets go, the
 bright one always keeps**, and dragging, tapping the scrim or pressing back keeps. Three acts, three
 words: *Discard* throws away something in flight, *Cancel* abandons an edit, *Delete this chit*
-destroys a record.
+destroys a record. **Which answer gets the wide slot is not that rule** (ADR-105): everywhere but
+one, the bright *keep* is the wide one; on *Delete this chit* the quiet *Delete* is, with Keep it
+small to its left.
 
 **Every change to the recording is staged until Save** (ADR-063, ADR-065): Remove stages a removal,
 the pill goes and the microphone comes back; a take kept from the sheet is staged as a replacement

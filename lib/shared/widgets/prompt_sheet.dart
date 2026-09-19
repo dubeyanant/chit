@@ -10,6 +10,7 @@ Future<bool> showPromptSheet(
   required String keep,
   required String letGo,
   String? detail,
+  bool roomForLetGo = false,
 }) async {
   final bool? letGone = await showModalBottomSheet<bool>(
     context: context,
@@ -21,6 +22,7 @@ Future<bool> showPromptSheet(
       detail: detail,
       keep: keep,
       letGo: letGo,
+      roomForLetGo: roomForLetGo,
     ),
   );
   return letGone ?? false;
@@ -32,6 +34,7 @@ final class PromptSheet extends StatelessWidget {
     required this.keep,
     required this.letGo,
     this.detail,
+    this.roomForLetGo = false,
     super.key,
   });
 
@@ -42,6 +45,8 @@ final class PromptSheet extends StatelessWidget {
   final String keep;
 
   final String letGo;
+
+  final bool roomForLetGo;
 
   @override
   Widget build(BuildContext context) {
@@ -79,21 +84,40 @@ final class PromptSheet extends StatelessWidget {
                   Text(detail!, style: type.emptyNote),
                 ],
                 SizedBox(height: space.s5),
-                Row(
-                  children: <Widget>[
-                    QuietButton(
-                      label: letGo,
-                      onPressed: () => Navigator.of(context).pop(true),
-                    ),
-                    SizedBox(width: space.s2),
-                    Expanded(
-                      child: PrimaryButton(
+                if (roomForLetGo)
+                  Row(
+                    children: <Widget>[
+                      PrimaryButton(
                         label: keep,
                         onPressed: () async => Navigator.of(context).pop(false),
                       ),
-                    ),
-                  ],
-                ),
+                      SizedBox(width: space.s2),
+                      Expanded(
+                        child: QuietButton(
+                          label: letGo,
+                          wide: true,
+                          onPressed: () => Navigator.of(context).pop(true),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: <Widget>[
+                      QuietButton(
+                        label: letGo,
+                        onPressed: () => Navigator.of(context).pop(true),
+                      ),
+                      SizedBox(width: space.s2),
+                      Expanded(
+                        child: PrimaryButton(
+                          label: keep,
+                          onPressed: () async =>
+                              Navigator.of(context).pop(false),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),

@@ -228,3 +228,9 @@ nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 3
     pure statics are covered. The clock-after-`start` fix is therefore **read, not proven**. Making
     it testable means wrapping the plugin behind an interface of ours — worth doing the next time
     anything in that file changes for another reason, not on its own.
+70. **The wide Delete has not been looked at, and it may read as size without weight** (ADR-105).
+    `QuietButton` draws no box — no border, no fill, faint ink — so filling the slot makes it wide
+    rather than prominent, and `PrimaryButton` in the small slot is a bordered box hugging its
+    label. Whether that reads as *Delete is the bigger button* is the question. **If it does not,
+    the fix is giving Delete a box of its own, and that would touch ADR-064's weights** — which is
+    the line this change was shaped to stay on the right side of.

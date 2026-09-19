@@ -325,6 +325,7 @@ class _DeleteControl extends ConsumerWidget {
       question: 'Delete this chit?',
       keep: 'Keep it',
       letGo: 'Delete',
+      roomForLetGo: true,
     );
     if (!delete) return;
 
