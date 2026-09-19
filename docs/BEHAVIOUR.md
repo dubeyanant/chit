@@ -94,10 +94,12 @@ at the same speed. **A motion that did not arrive is not drawn.** **`flying` wil
 fire, and that is not a bug to fix** — most devices disable GPS in airplane mode, so there is no
 fix and no speed; a barometer is the honest route if it ever matters.
 
-**3.6.3 When capture happens.** At launch, and at a save holding something stale (ADR-042,
-ADR-045); no polling, no refresh on resume. **One minute** is set by the **place**, not the weather,
-so the preview can be hours old on a phone left open all day — but **no chit is ever recorded with
-it**, saving re-reading, so the staleness is on the screen and never in the data. **The place is
+**3.6.3 When capture happens.** At launch, at a save holding something stale (ADR-042, ADR-045),
+and **on coming back to the app when what is on screen is half an hour old** (ADR-104); no polling.
+**One minute** is set by the **place**, not the weather, and it is the window a *save* uses; the
+half hour is the window a *screen* uses, so a glance away costs nothing — but **no chit is ever
+recorded with a stale reading**, saving re-reading, so what staleness is left is on the screen and
+never in the data. **The place is
 asked for at a save** (ADR-094), never at launch and never behind a screen of ours: the OS decides
 how many times, a refusal means quieter chits, and nothing in the UI mentions it either way. **The
 permission and the phone's location switch are separate asks**, in that order, and the switch is

@@ -38,8 +38,7 @@ final class Playback {
   int get hashCode => Object.hash(id, position, length, playing);
 
   @override
-  String toString() =>
-      'Playback($id, $position of $length, playing: $playing)';
+  String toString() => 'Playback($id, $position of $length, playing: $playing)';
 }
 
 abstract interface class AudioPlayer {

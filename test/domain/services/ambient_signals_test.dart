@@ -1,3 +1,4 @@
+import 'package:chitta/core/clock.dart';
 import 'package:chitta/domain/models/motion_state.dart';
 import 'package:chitta/domain/models/weather_condition.dart';
 import 'package:chitta/domain/services/ambient_signals.dart';
@@ -5,6 +6,8 @@ import 'package:chitta/domain/services/location_service.dart';
 import 'package:chitta/domain/services/weather_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/fake_clock.dart';
 
 void main() {
   ProviderContainer containerWith(_CountingLocation location) {
@@ -107,7 +110,101 @@ void main() {
       );
     },
   );
+
+  group('coming back to the app — ADR-104', () {
+    final DateTime opened = DateTime(2026, 9, 19, 9, 30);
+
+    ({ProviderContainer container, FakeClock clock, _CountingLocation location})
+    appOpenedAt(DateTime when) {
+      final FakeClock clock = FakeClock(when);
+      final _CountingLocation location = _CountingLocation();
+      final ProviderContainer container = ProviderContainer(
+        overrides: [
+          clockProvider.overrideWithValue(clock),
+          weatherServiceProvider.overrideWith(
+            (Ref ref) => const _Weather(WeatherCondition.raining),
+          ),
+          locationServiceProvider.overrideWith((Ref ref) => location),
+        ],
+      );
+      addTearDown(container.dispose);
+      return (container: container, clock: clock, location: location);
+    }
+
+    test('nothing captured means nothing to be stale — no fix', () async {
+      final app = appOpenedAt(opened);
+
+      await app.container
+          .read(ambientSignalsProvider.notifier)
+          .refreshIfShownTooLong();
+
+      expect(
+        app.location.fixes,
+        0,
+        reason: 'a resume before the launch capture must not race it',
+      );
+    });
+
+    test('a glance away leaves the reading alone', () async {
+      final app = appOpenedAt(opened);
+      await app.container.read(ambientSignalsProvider.notifier).prime();
+
+      app.clock.moveTo(opened.add(AmbientSignals.shownFor - oneSecond));
+      await app.container
+          .read(ambientSignalsProvider.notifier)
+          .refreshIfShownTooLong();
+
+      expect(app.location.fixes, 1, reason: 'the launch capture, and no more');
+    });
+
+    test('a sky left on screen too long is read again', () async {
+      final app = appOpenedAt(opened);
+      await app.container.read(ambientSignalsProvider.notifier).prime();
+
+      app.clock.moveTo(opened.add(AmbientSignals.shownFor));
+      await app.container
+          .read(ambientSignalsProvider.notifier)
+          .refreshIfShownTooLong();
+
+      expect(app.location.fixes, 2);
+    });
+
+    test(
+      'a refresh restarts the clock, so two resumes are not two fixes',
+      () async {
+        final app = appOpenedAt(opened);
+        await app.container.read(ambientSignalsProvider.notifier).prime();
+
+        app.clock.moveTo(opened.add(AmbientSignals.shownFor));
+        final AmbientSignals signals = app.container.read(
+          ambientSignalsProvider.notifier,
+        );
+        await signals.refreshIfShownTooLong();
+        await signals.refreshIfShownTooLong();
+
+        expect(
+          app.location.fixes,
+          2,
+          reason: 'the second resume found it fresh',
+        );
+      },
+    );
+
+    test('a clock that went backwards is not treated as age', () async {
+      final app = appOpenedAt(opened);
+      await app.container.read(ambientSignalsProvider.notifier).prime();
+
+      app.clock.moveTo(opened.subtract(const Duration(hours: 2)));
+      await app.container
+          .read(ambientSignalsProvider.notifier)
+          .refreshIfShownTooLong();
+
+      expect(app.location.fixes, 1);
+    });
+  });
 }
+
+const Duration oneSecond = Duration(seconds: 1);
 
 final class _Weather implements WeatherService {
   const _Weather(this.condition);

@@ -129,12 +129,15 @@ void main() {
     expect(platform.loaded, isEmpty);
   });
 
-  test('a take carries the length the player decoded, not the row\'s', () async {
-    await player.play(id: 'a', path: path('a.m4a'));
-    await pumpEventQueue();
+  test(
+    'a take carries the length the player decoded, not the row\'s',
+    () async {
+      await player.play(id: 'a', path: path('a.m4a'));
+      await pumpEventQueue();
 
-    expect(seen.last.length, const Duration(seconds: 3));
-  });
+      expect(seen.last.length, const Duration(seconds: 3));
+    },
+  );
 
   test('a take that finishes holds at its end, lit', () async {
     await player.play(id: 'a', path: path('a.m4a'));

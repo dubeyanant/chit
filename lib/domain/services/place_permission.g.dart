@@ -41,7 +41,7 @@ final class PlacePermissionProvider
   }
 }
 
-String _$placePermissionHash() => r'f5c43f50284e380aeb51d23e9ccfd8f56e54905e';
+String _$placePermissionHash() => r'788858ec72fd2c10b1d174396b799f4d719f708f';
 
 abstract class _$PlacePermission extends $Notifier<PlaceAsk> {
   PlaceAsk build();

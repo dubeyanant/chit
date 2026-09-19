@@ -37,10 +37,25 @@ class AmbientSignals extends _$AmbientSignals {
 
   static const Duration freshFor = Duration(minutes: 1);
 
+  static const Duration shownFor = Duration(minutes: 30);
+
   @override
   AmbientReading build() => nothing;
 
   Future<void> prime() => refresh();
+
+  Future<void> refreshIfShownTooLong() async {
+    if (!isShowingSomethingOld(ref.read(clockProvider).now())) return;
+    await refresh();
+  }
+
+  bool isShowingSomethingOld(DateTime now) {
+    final DateTime? at = state.readAt;
+    if (at == null) return false;
+
+    final Duration age = now.difference(at);
+    return !age.isNegative && age >= shownFor;
+  }
 
   Future<void> refresh() async {
     final AmbientReading reading = await ref

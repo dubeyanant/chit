@@ -24,16 +24,16 @@ Ordered by how much each reinforces what chit already is, not by appetite.
 **v1.1 is planned** and holds **an export format** — restore-only and text-only, which ADR-100 makes
 the only way a chit survives a lost phone — plus **resurfacing** (3), a **photo per chit** if its
 shape survives the deciding, and three fixes to what v1 shipped: the location ask, the audio pill's
-playhead, and item 23's stale sky. After it: §8.3 answered with real usage, then the backlog above,
-then responsive web. Deliberately not on the list: **any speech engine, cloud or on-device**
+playhead, and the stale sky of item 23. After it: §8.3 answered with real usage, then the backlog
+above, then responsive web. Deliberately not on the list: **any speech engine, cloud or on-device**
 (ADR-005, ADR-058).
 
 ## Known and unscheduled
 
 Things a future session needs to know that are not work anybody has planned. **Numbers are stable**
 — they are cited from the other documents and from the source, so a closed item keeps its number and
-nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 24, 25–27, 30, 31, 34, 38, 39, 40, 43, 44, 47, 48, 52, 53, 63, 66;
-retired: 32, 33, 35, 36.**
+nothing is renumbered. **Closed: 2, 3, 4, 9–15, 17, 19, 20, 23, 24, 25–27, 30, 31, 34, 38, 39, 40, 43, 44, 47, 48,
+52, 53, 63, 66; retired: 32, 33, 35, 36.**
 
 1. **Nobody has looked at the type on a handset beside the original prototype.**
    `ChitType._opticalSizeFor` converts logical pixels to points at 0.75, which is what a browser does
@@ -63,12 +63,13 @@ retired: 32, 33, 35, 36.**
     phone's settings; location still says nothing, deliberately. **A refused location *switch* is
     the softer case** (ADR-102): it is offered again on the next launch, so it is spent for a run
     and never for good.
-23. **The open chit's preview goes stale without bound, and now it is only the weather**
-    (ADR-042). ADR-080 took the clock off that line, which was the half a person could tell was
-    wrong by looking at it; what is left is a sky word that can be hours old on a phone left open
-    all day. **No chit is ever saved with it** — the save re-reads past one minute (ADR-045) — so
-    this is a wrong word on the screen and never a wrong row. The smallest honest fix is still a
-    refresh when the app returns to the foreground after a long absence.
+23. **— closed by the fix it named** (ADR-104). *The open chit's preview went stale without bound.*
+    Coming back to the app re-reads when what is on screen is half an hour old. **What it leaves
+    behind is the number**: thirty minutes is a judgement like ADR-078's 60% cloud cover, picked so
+    a glance away costs nothing and a pocketed phone catches up, and measured against nothing. Move
+    it if a sky word still reads wrong on returning, or if the fixes show up in the battery — item
+    29 is the other half of that ledger. **The window a save uses is still one minute** and the two
+    must not be merged: they answer different questions.
 28. **Answered by measuring instead of classifying** (ADR-078). Partly cloudy is no longer a code
     question: `cloud_cover >= 60%` is overcast and below it is clear, and code 2 only decides when
     the quantity is missing. **60 is a judgement, not a measurement** — the okta scale calls 50–84%

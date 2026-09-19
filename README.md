@@ -99,7 +99,7 @@ nothing enters `pubspec.yaml` without a line there ·
 ```
 lib/
 ├── main.dart   runApp(ProviderScope(child: ChitApp()))
-├── app/        the application root and the router (ADR-011)
+├── app/        the application root, the router (ADR-011), the resume watch (ADR-104)
 ├── core/       the design system, the clock, the haptic vocabulary, the BuildContext accessors
 ├── domain/     models and interfaces. Pure Dart; imports neither of the two below
 ├── data/       the implementations: Drift, files, network, platform plugins

@@ -119,7 +119,10 @@ read where it is used. **A throw and a hang both produce `null`**, the one delib
 *fail loudly in development*. **`AmbientSignals` owns *when*, `AmbientCapture` owns *what***: a
 reading is good for one minute, the row is written first and patched only if stale, and
 `updateAmbient` is a separate method so one rule lives in the type — **the patch moves neither
-`createdAt` nor `updatedAt`**.
+`createdAt` nor `updatedAt`**. It holds the two windows both (ADR-104): the minute a **save** may
+write from, and the half hour a **screen** may show. `lib/app/ambient_resume.dart` is the whole of
+the second — one `AppLifecycleListener` in a keepAlive provider, because what outlives a build is
+Riverpod's, read once in `main` so it is built rather than waited for.
 
 **The five-second prompt.** The timer lives in the controller, not the widget: the field relays out
 whenever the keyboard arrives or the action row grows, and a widget-held timer would restart each

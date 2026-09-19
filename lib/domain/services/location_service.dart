@@ -40,23 +40,9 @@ final class GeoFix {
       'GeoFix($lat, $lon, speed: $speed ±$speedAccuracy, altitude: $altitude)';
 }
 
-enum LocationPermissionOutcome {
-  granted,
+enum LocationPermissionOutcome { granted, denied, deniedForever }
 
-  denied,
-
-  deniedForever,
-}
-
-enum LocationServiceOutcome {
-  alreadyOn,
-
-  turnedOn,
-
-  refused,
-
-  notPermitted,
-}
+enum LocationServiceOutcome { alreadyOn, turnedOn, refused, notPermitted }
 
 abstract interface class LocationService {
   Future<GeoFix?> currentFix();
